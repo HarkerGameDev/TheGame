@@ -1,6 +1,7 @@
 ﻿using System;
+using Source;
 
-namespace TheGame
+namespace ClubFair
 {
 #if WINDOWS || LINUX
     /// <summary>
