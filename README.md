@@ -11,6 +11,7 @@ Look at the [google doc](https://docs.google.com/document/d/1ofddsIU92CeK2RtJ5eg
 * ***Could someone with a Mac make a new project as described in the email***
 * Control-click the Mac project and select "Set As Startup Project"
 * Clicking the run button as usual should now work
+* I did what was described in the email but put it in a seperate branch because it can't load assets correctly
 
 ## Adding content
 * Make a change
