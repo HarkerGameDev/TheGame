@@ -121,7 +121,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Source\Source.csproj">
-      <Project>{5cded029-4adb-4700-952f-be5809450734}</Project>
+      <Project>{5CDED029-4ADB-4700-952F-BE5809450734}</Project>
       <Name>Source</Name>
     </ProjectReference>
   </ItemGroup>

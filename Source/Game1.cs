@@ -60,7 +60,6 @@ namespace Source
 		public Game1()
 		{
 			graphics = new GraphicsDeviceManager(this);
-			Content.RootDirectory = "Content";
 		}
 
 		/// <summary>
@@ -98,6 +97,7 @@ namespace Source
 		/// </summary>
 		protected override void LoadContent()
 		{
+			Content.RootDirectory = "Content";
 			// Create a new SpriteBatch, which can be used to draw textures.
 			spriteBatch = new SpriteBatch(GraphicsDevice);
 

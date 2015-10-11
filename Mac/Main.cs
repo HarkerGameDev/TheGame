@@ -1,16 +1,14 @@
-﻿#region Using Statements
+#region Using Statements
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
 using MonoMac.AppKit;
 using MonoMac.Foundation;
-
 using Source;
-
 #endregion
 
-namespace ClubFair
+namespace MacGame
 {
 	static class Program
 	{
@@ -52,5 +50,6 @@ namespace ClubFair
 	}
 
 }
+
 
 
