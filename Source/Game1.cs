@@ -7,71 +7,54 @@ using System.Collections.Generic;
 namespace Source
 {
 	/// <summary>
-	/// This is the main type for your game.
+	/// This is the main type for the game.
+    /// 
+    /// IMPORTANT NOTES - PLEASE READ ALL:
+    /// - (0,0) is in the top left for everything
+    /// - 1 unit is 1 cm (look at GRAVIY)
+    /// - Please follow the style guide in place, which is
+    ///   * ALL_CAPS for global constants
+    ///   * UpperCamelCase for members (instance fields and methods)
+    ///   * lowerCamelCase for other variables
+    /// - Search for 'TODO' for things that need to be finished
+    /// - For things that need to be added, look at the google doc, https://docs.google.com/document/d/1ofddsIU92CeK2RtJ5eg3PWEG8U2o49VdmNxmAJwwMMg/edit
+    /// - Make good commit messages
+    /// - PLEEAASSEEE do your assigned task, or say you can't do it so that someone else can
 	/// </summary>
 	public class Game1 : Game
 	{
 		// Game related constants
-		const int PLAYERS = 5;
-		const float PEACE_TIME = 3;
-		const double GAME_TIME = 20.0;
-		const float MIN_TAG = 2.0f;
-		const float MIN_POWER_TIME = 5.0f;
-		const float MAX_POWER_TIME = 10.0f;
+		const int GRAVITY = 980;
 
 		// Player related constants
-		const int SPEED_1 = 520;
-		const float SPEED_2_SCALE = 0.86f;
-		const int RADIUS_1 = 32;
-		const float RADIUS_2_SCALE = 1.25f;
-
-		// Powerup related constants
-		const int POWERUP_LENGTH = 50;
-		const float POWERUP_DURATION = 4.0f;
-		const float POWERUP_FASTER_ALL = 2.0f;
-		const float POWERUP_SLOWER_ALL = 0.5f;
+		const int PLAYER_SPEED = 200;
+        const int JUMP_VEL = 500;
 
 		GraphicsDeviceManager graphics;     // this is always here
 		SpriteBatch spriteBatch;            // so is this
 		Texture2D whiteRect;                // useful for drawing rectangles
-		SpriteFont font, fontBig;           // fonts need to always be generated and loaded using content manager
+        SpriteFont font, fontBig;           // fonts need to always be generated and loaded using content manager
 
 		bool paused;
-		Player[] players;
+        bool pausePressed;
+        bool gameRunning;
+		Player player;
 		Random rand;
-		float resetTime;    //Time until current player swaps
-		float powerTime;    //Time until new powerup spawns
-		int current;
-		int deadPlayers;
-		double _gameTime;   //Total game time used for scaling level
-		int totalGames;
-		List<Powerup> powerUps;
+        double _gameTime;   //Total game time of play - high scores
+        List<Rectangle> floors;
 
 		class Player
 		{
-			public Vector2 Position;
-			public float Radius;
-			public float Speed;
-			public Color Color;
-			public bool Alive;
-			public int Wins;
-		}
+            public Rectangle Rect;
+            public Vector2 Velocity;
+            public bool Falling;
 
-		// IMPORTANT! The order of the colors defined here must correspond to the order
-		// in which the enum PowerType is defined.
-		Color[] _powerUpColors = { Color.Red, Color.Blue, Color.Purple, Color.Cyan };
-
-		enum PowerType  // Don't forget to add a color if you add a new powerup
-		{
-			AllFaster, AllSlower, RedWins, BecomeRed
-		}
-
-		class Powerup
-		{
-			public Vector2 Position;
-			public PowerType Type;
-			public int PlayerAffected;
-			public float TimeLeft;
+            public Player()
+            {
+                Rect = new Rectangle(100, 100, 20, 50);
+                Velocity = new Vector2(0, 0);
+                Falling = false;
+            }
 		}
 
 		public Game1()
@@ -89,58 +72,24 @@ namespace Source
 		protected override void Initialize()
 		{
 			// set game to fullscreen and match monitor resolution
-			graphics.PreferredBackBufferWidth = GraphicsDevice.DisplayMode.Width;
-			graphics.PreferredBackBufferHeight = GraphicsDevice.DisplayMode.Height;
-			graphics.IsFullScreen = true;
+			graphics.PreferredBackBufferWidth = GraphicsDevice.DisplayMode.Width / 2;
+			graphics.PreferredBackBufferHeight = GraphicsDevice.DisplayMode.Height / 2;
+			graphics.IsFullScreen = false;
 			graphics.ApplyChanges();
 
-			// initialize all players with a random color, and specified Speed and Radius
-			players = new Player[PLAYERS];
+			// initialize all global variables
 			rand = new Random();
-			int width = graphics.GraphicsDevice.Viewport.Width;     // width of screen
-			int height = graphics.GraphicsDevice.Viewport.Height;   // height of screen
-            for (int i = 0; i < players.Length; i++)
-            {
-                Player player = new Player();
-                players[i] = player;
-                player.Color = new Color(rand.Next(256), rand.Next(256), rand.Next(256));
-                player.Speed = SPEED_1;
-                player.Radius = RADIUS_1;
-                player.Wins = 0;
-            }
-
-			totalGames = 0;
 			paused = false;
+            pausePressed = false;
+            gameRunning = true;
 
-			Reset();
+            // initialize objects
+            player = new Player();
+            floors = new List<Rectangle>();
+            floors.Add(new Rectangle(50, 300, 400, 50)); // TODO !!FOR TESTING ONLY!! - make a proper level file or random generation
+            floors.Add(new Rectangle(50, 200, 200, 20));
 
 			base.Initialize();
-		}
-
-		/// <summary>
-		/// Starts a new round. It is important to note the difference between Reset()
-		/// and Initialize(). Initialize() is called ONLY ONCE when the program is run.
-		/// Reset(), in the way I have written it, is called whenever a new round is started,
-		/// so when only player remains. This means resetting colors, speeds, or wins of the players
-		/// should NOT be done in Reset()
-		/// </summary>
-		private void Reset()
-		{
-			resetTime = PEACE_TIME;
-			powerTime = PEACE_TIME;
-			current = -1;
-			deadPlayers = 0;
-			_gameTime = 0;
-
-			int width = graphics.GraphicsDevice.Viewport.Width;
-			int height = graphics.GraphicsDevice.Viewport.Height;
-			foreach (Player player in players)
-			{
-				player.Position = new Vector2(rand.Next(width), rand.Next(height));
-				player.Alive = true;
-			}
-
-			powerUps = new List<Powerup>();
 		}
 
 		/// <summary>
@@ -178,60 +127,70 @@ namespace Source
 		}
 
 		/// <summary>
-		/// Moves player 0 based on input from the keyboard
+		/// Moves the player based on input from gamepad, if connected, or keyboard. Use
+        /// velocity for physics based movement, and the player will be moved here accordingly
 		/// </summary>
 		/// <param name="deltaTime">Time since last call</param>
-		private void moveKeyboardPlayer(float deltaTime)
-		{
-			KeyboardState state = Keyboard.GetState();
-			float speed;
-            Player player = players[0];
+		private void MovePlayer(float deltaTime)
+        {
+            // use GamePadCapabilities to see if connected gamepad has required inputs
+            GamePadCapabilities capabilities = GamePad.GetCapabilities(PlayerIndex.One);
 
-			// Important, ALWAYS multiply speed by delta time when moving
-			speed = deltaTime * player.Speed;
+            if (capabilities.IsConnected)
+            {
+                // Important, ALWAYS multiply speed by delta time when moving
+                float speed = deltaTime * PLAYER_SPEED;
 
-			if (state.IsKeyDown(Keys.Right) || state.IsKeyDown(Keys.D))
-				player.Position.X += speed;
-			if (state.IsKeyDown(Keys.Left) || state.IsKeyDown(Keys.A))
-				player.Position.X -= speed;
-			if (state.IsKeyDown(Keys.Down) || state.IsKeyDown(Keys.S))
-				player.Position.Y += speed;
-			if (state.IsKeyDown(Keys.Up) || state.IsKeyDown(Keys.W))
-				player.Position.Y -= speed;
+                // add deadzone and move. Note, Y axis is inverted
+                GamePadState state = GamePad.GetState(PlayerIndex.One, GamePadDeadZone.Circular);
+                player.Rect.X += (int)(state.ThumbSticks.Left.X * speed);
+                player.Rect.Y -= (int)(state.ThumbSticks.Left.Y * speed);
+                if (state.IsButtonDown(Buttons.A) && !player.Falling)
+                    player.Velocity.Y = -JUMP_VEL;
+            }
+            else // use keyboard
+            {
+                // again, ALWAYS scale anything that moves by deltaTime
+                int speed = (int)(deltaTime * PLAYER_SPEED);
+
+                KeyboardState state = Keyboard.GetState();
+                if (state.IsKeyDown(Keys.Right) || state.IsKeyDown(Keys.D))
+                    player.Rect.X += speed;
+                if (state.IsKeyDown(Keys.Left) || state.IsKeyDown(Keys.A))
+                    player.Rect.X -= speed;
+                if (!player.Falling && (state.IsKeyDown(Keys.Up) || state.IsKeyDown(Keys.W)))
+                    player.Velocity.Y = -JUMP_VEL;
+            }
+
+            // for now, use Velocity only for physics related things (like gravity)
+            player.Rect.Offset(player.Velocity * deltaTime);
 		}
 
-		/// <summary>
-		/// Moves players 1 to 4 based on input from gamepads
-		/// </summary>
-		/// <param name="deltaTime">Time since last call</param>
-		private void moveGamePadPlayers(float deltaTime)
-		{
-			// Connected gamepads use enums, for whatever reason
-			for (PlayerIndex index = PlayerIndex.One; index <= PlayerIndex.Four; index++)
-			{
-				// use GamePadCapabilities to see if connected gamepad has required inputs
-				GamePadCapabilities capabilities = GamePad.GetCapabilities(index);
-				if (capabilities.IsConnected && capabilities.HasLeftXThumbStick)
-				{
-					// convert enum to integer from 1-4 (for players array)
-					int i = (int)index + 1;
-
-					// make sure there is no index out of bounds if there are less than 5 players
-					if (i < players.Length)
-					{
-						// again, ALWAYS scale anything that moves by deltaTime
-						float speed;
-                        Player player = players[i];
-						speed = deltaTime * player.Speed;
-
-						// add deadzone and move. Note, Y axis is inverted
-						GamePadState state = GamePad.GetState(index, GamePadDeadZone.Circular);
-						player.Position.X += state.ThumbSticks.Left.X * speed;
-						player.Position.Y -= state.ThumbSticks.Left.Y * speed;
-					}
-				}
-			}
-		}
+        /// <summary>
+        /// Check collisions to the floors/ ceilings
+        /// </summary>
+        private void CheckFloors()
+        {
+            player.Falling = true;
+            foreach (Rectangle rect in floors)
+            {
+                if (player.Rect.Intersects(rect))
+                {
+                    player.Velocity.Y = 0;
+                    // check if floor is a ceiling or a floor
+                    if (player.Rect.Center.Y < rect.Bottom)
+                    {
+                        player.Rect.Y = rect.Top - player.Rect.Height;
+                        player.Falling = false;
+                    }
+                    else
+                    {
+                        player.Rect.Y = rect.Bottom;
+                    }
+                    // TODO check sideways collisions (try it now, it's pretty bad)
+                }
+            }
+        }
 
 		/// <summary>
 		/// Allows the game to run logic such as updating the world,
@@ -243,195 +202,34 @@ namespace Source
 			// ALWAYS do this
 			float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
+            // Handle end game
+            // TODO put this in pause menu later
 			if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
 				Exit();
 
-			// Note, this does not work well. See if you can figure out why (and fix it)   :)
-			if (Keyboard.GetState().IsKeyDown(Keys.Space))
-				paused = !paused;
+            // Handle toggle pause
+            // TODO open pause menu
+            if (Keyboard.GetState().IsKeyDown(Keys.Space) || GamePad.GetState(PlayerIndex.One).Buttons.Start == ButtonState.Pressed)
+            {
+                if (!pausePressed)
+                {
+                    paused = !paused;
+                    pausePressed = true;
+                }
+            }
+            else
+            {
+                pausePressed = false;
+            }
 
 			// This is pretty much how pause always works
-			if (!paused) {
+			if (!paused && gameRunning) {
 				_gameTime += deltaTime;
 
-				// Decrease time for powerups (be sure to do this before any crazy messing about)
-				for (int i=powerUps.Count-1; i>=0; i--)
-				{
-					Powerup power = powerUps [i];
-                    if (power.PlayerAffected >= 0)          // powerup has been collected
-                    {
-                        powerUps[i].TimeLeft -= deltaTime;
-                        if (powerUps[i].TimeLeft < 0)
-                            powerUps.RemoveAt(i);
-                    }
-				}
+                player.Velocity.Y += GRAVITY * deltaTime;
+                MovePlayer(deltaTime);
 
-                // Apply global powerups
-				foreach (Powerup power in powerUps)
-				{
-					if (power.PlayerAffected >= 0)
-					{
-						switch (power.Type)
-						{
-						case PowerType.AllFaster:
-							deltaTime *= POWERUP_FASTER_ALL;    // Note: changing deltaTime could have VERY SEVERE side effects, and I think it does in this case
-							break;
-						case PowerType.AllSlower:
-							deltaTime *= POWERUP_SLOWER_ALL;
-							break;
-                        case PowerType.RedWins:         // Note of warning: this does not kill red. It makes the current red player instantly win.
-                            if(current>=0)
-                            {
-                                players[current].Alive = false;
-                                deadPlayers++;
-                            }
-                            break;
-						case PowerType.BecomeRed:
-							// make sure the new red player is not dead
-							if (players [power.PlayerAffected].Alive) {
-								players [current].Radius /= RADIUS_2_SCALE;
-								players [current].Speed /= SPEED_2_SCALE;
-
-								current = power.PlayerAffected;
-								// Set new player radius and speed scales
-								players [current].Speed *= SPEED_2_SCALE;
-								players [current].Radius *= RADIUS_2_SCALE;
-                                resetTime = 1;          // Make sure game does not try to automatically set the next current player
-							}
-							break;
-						}
-					}
-				}
-
-				// reset game once everyone is dead
-				if (deadPlayers >= players.Length - 1)
-				{
-					players[current].Wins++;
-                    players[current].Speed /= SPEED_2_SCALE;
-                    players[current].Radius /= RADIUS_2_SCALE;
-					Reset();
-					totalGames++;
-				}
-
-				moveKeyboardPlayer(deltaTime);
-				moveGamePadPlayers(deltaTime);
-
-				// resetTime is time until red player switches
-				resetTime -= deltaTime;
-				if (resetTime < 0)
-				{
-                    // Undo radius and speed scales
-                    if (current >= 0)
-                    {
-                        players[current].Speed /= SPEED_2_SCALE;
-                        players[current].Radius /= RADIUS_2_SCALE;
-                    }
-
-					// Time to reset is randomly acquired
-					resetTime = (float)rand.NextDouble() + MIN_TAG;
-
-					int next = rand.Next(players.Length);
-
-					// make sure the new red player is not the same or dead
-					while (next == current || !players[next].Alive)
-						next = rand.Next(players.Length);
-					current = next;
-
-                    // Set new player radius and speed scales
-                    players[current].Speed *= SPEED_2_SCALE;
-                    players[current].Radius = ((float)players[current].Radius * RADIUS_2_SCALE);
-				}
-
-				// Calculate bounds of the shrinking, playable screen by using game time since reset
-				int minX = (int)((_gameTime) / GAME_TIME * (double)graphics.GraphicsDevice.Viewport.Width / 2.0);
-				int minY = (int)((_gameTime) / GAME_TIME * (double)graphics.GraphicsDevice.Viewport.Height / 2.0);
-				int width = graphics.GraphicsDevice.Viewport.Width - minX * 2;
-				int height = graphics.GraphicsDevice.Viewport.Height - minY * 2;
-
-				// powerTime is time until a powerup is spawned
-				powerTime -= deltaTime;
-				if (powerTime < 0)
-				{
-					powerTime = (float)rand.NextDouble() * (MAX_POWER_TIME - MIN_POWER_TIME) + MIN_POWER_TIME;
-
-					// Create a new powerup
-                    Powerup power = new Powerup();
-
-					// Get type of powerup randomly
-					Array values = Enum.GetValues(typeof(PowerType));
-                    power.Type = (PowerType)values.GetValue(rand.Next(values.Length));
-                    
-                    // use something like this for testing
-                    //power.Type = PowerType.RedWins;
-
-					power.PlayerAffected = -1;  // -1 means nobody picked it up. Why? Because I said so.
-					power.TimeLeft = POWERUP_DURATION;
-					power.Position = new Vector2(rand.Next(width) + minX, rand.Next(height) + minY);
-
-					powerUps.Add(power);
-				}
-				for (int i = 0; i < powerUps.Count; i++) {
-					Powerup power = powerUps[i];
-					int maxX, maxY;
-					maxX = minX + width - (int)(POWERUP_LENGTH);
-					maxY = minY + height - (int)(POWERUP_LENGTH);
-
-					// Make sure powerup is within bounds
-					if (power.Position.X > maxX)
-						power.Position.X = maxX;
-					else if (power.Position.X < minX)
-						power.Position.X = minX;
-					if (power.Position.Y > maxY)
-						power.Position.Y = maxY;
-					else if (power.Position.Y < minY)
-						power.Position.Y = minY;
-				}
-				for (int i = 0; i < players.Length; i++)
-				{
-                    Player player = players[i];
-                    if (player.Alive)
-                    {
-                        // Calculate bounds for player
-                        int maxX, maxY;
-                        maxX = minX + width - (int)(player.Radius * 2);
-                        maxY = minY + height - (int)(player.Radius * 2);
-
-                        // Make sure player is within bounds
-                        if (player.Position.X > maxX)
-                            player.Position.X = maxX;
-                        else if (player.Position.X < minX)
-                            player.Position.X = minX;
-                        if (player.Position.Y > maxY)
-                            player.Position.Y = maxY;
-                        else if (player.Position.Y < minY)
-                            player.Position.Y = minY;
-
-                        // check collisions to tag player
-                        if (i != current && current >= 0)
-                        {
-                            // Circle collisions are really easy because only the distance between the centers matter
-                            float dist = (players[current].Position - player.Position).Length();
-                            if (dist < players[current].Radius + player.Radius)
-                            {
-                                player.Alive = false;
-                                deadPlayers++;
-                            }
-                        }
-
-                        // check collisions to pick up powerup
-                        foreach (Powerup power in powerUps)
-                        {
-                            if (power.PlayerAffected < 0)
-                            {
-                                float dist = (player.Position - power.Position).Length();
-                                if (dist < player.Radius + POWERUP_LENGTH)
-                                {
-                                    power.PlayerAffected = i;
-                                }
-                            }
-                        }
-                    }
-				}
+                CheckFloors();      // do this after moving the player so it doesn't look like the player is in the floor
 			}
 
 			base.Update(gameTime);
@@ -443,97 +241,65 @@ namespace Source
 		/// <param name="gameTime">Provides a snapshot of timing values.</param>
 		protected override void Draw(GameTime gameTime)
 		{
-			GraphicsDevice.Clear(Color.Black);
+			GraphicsDevice.Clear(Color.CornflowerBlue);
+
+            int width = GraphicsDevice.Viewport.Width;
+            int height = GraphicsDevice.Viewport.Height;
 
 			spriteBatch.Begin();
 
-			// Calculate bounds of the shrinking, playable screen by using game time since reset
-			int minX = (int)((_gameTime) / GAME_TIME * (double)graphics.GraphicsDevice.Viewport.Width / 2.0);
-			int minY = (int)((_gameTime) / GAME_TIME * (double)graphics.GraphicsDevice.Viewport.Height / 2.0);
-			int width = graphics.GraphicsDevice.Viewport.Width - minX * 2;
-			int height = graphics.GraphicsDevice.Viewport.Height - minY * 2;
+			// Draw the player
+			spriteBatch.Draw(whiteRect, player.Rect, Color.Green);
 
-			// Draw a blue rectangle in the playable area, using a scale and mask on the 1x1 white rectangle
-			spriteBatch.Draw(whiteRect, new Rectangle(minX, minY, width, height), Color.CornflowerBlue);
-
-			// Draw the powerups
-			foreach (Powerup power in powerUps)
+			// Draw the floors
+			foreach (Rectangle rect in floors)
 			{
-                if (power.PlayerAffected < 0)
-				    spriteBatch.Draw(whiteRect, 
-					    new Rectangle((int)power.Position.X, (int)power.Position.Y, POWERUP_LENGTH, POWERUP_LENGTH),
-					    _powerUpColors[(int)power.Type]);
+                spriteBatch.Draw(whiteRect, rect, Color.Azure);
 			}
-
-			// Draw the players
-            for (int i = 0; i < players.Length; i++)
-            {
-                Player player = players[i];
-                if (player.Alive)
-                {
-                    Texture2D circle = CreateCircle((int)player.Radius);
-                    if (i == current)
-                        spriteBatch.Draw(circle, player.Position, Color.Red);
-                    else
-                        spriteBatch.Draw(circle, player.Position, player.Color);
-                }
-            }
-
-			// Display scores in the top left
-			System.Text.StringBuilder text = new System.Text.StringBuilder();
-			text.AppendLine("Scores");
-			for (int i=0; i<players.Length; i++) {
-				text.AppendLine(string.Format("Player {0}: {1}", i+1, players[i].Wins));
-			}
-			text.AppendLine(string.Format("Total games - {0}", totalGames));
-			spriteBatch.DrawString(font, text, new Vector2(10, 10), Color.Green);
-
-			// Show instructions if no player is red (game is in initial peace time)
-			if (current < 0)
-				spriteBatch.DrawString(fontBig, "Run from red", new Vector2(600, 400), Color.Red);
 
 			// Show paused screen if game is paused
 			if (paused)
-				spriteBatch.DrawString(fontBig, "Paused", new Vector2(600, 100), Color.Yellow);
-
-			spriteBatch.DrawString(fontBig, "GAME DEV CLUB!", new Vector2(500, 100), Color.Red);
+            {
+                float centerY = width / 2.0f - fontBig.MeasureString("Paused").X / 2.0f;
+				spriteBatch.DrawString(fontBig, "Paused", new Vector2(height * 0.1f, centerY), Color.Yellow);
+            }
 
 			spriteBatch.End();
 			base.Draw(gameTime);
 		}
 
-		/// <summary>
-		/// Dynamically creates a circle with given radius
-		/// </summary>
-		/// <param name="radius">Desired radius of circle</param>
-		/// <returns>A Texture2D circle colored white for masking</returns>
-		private Texture2D CreateCircle(int radius)
-		{
-			int outerRadius = radius * 2 + 2; // So circle doesn't go out of bounds
-			Texture2D texture = new Texture2D(GraphicsDevice, outerRadius, outerRadius);
+        ///// <summary>
+        ///// Dynamically creates a circle with given radius
+        ///// </summary>
+        ///// <param name="radius">Desired radius of circle</param>
+        ///// <returns>A Texture2D circle colored white for masking</returns>
+        //private Texture2D CreateCircle(int radius)
+        //{
+        //    int outerRadius = radius * 2 + 2; // So circle doesn't go out of bounds
+        //    Texture2D texture = new Texture2D(GraphicsDevice, outerRadius, outerRadius);
 
-			Color[] data = new Color[outerRadius * outerRadius];
+        //    Color[] data = new Color[outerRadius * outerRadius];
 
-			// Colour the entire texture transparent first.
-			for (int i = 0; i < data.Length; i++)
-				data[i] = Color.Transparent;
+        //    // Colour the entire texture transparent first.
+        //    for (int i = 0; i < data.Length; i++)
+        //        data[i] = Color.Transparent;
 
-			// Work out the minimum step necessary using trigonometry + sine approximation.
-			double angleStep = 1f / radius;
+        //    // Work out the minimum step necessary using trigonometry + sine approximation.
+        //    double angleStep = 1f / radius;
 
-			for (double angle = 0; angle < Math.PI; angle += angleStep)
-			{
-				// Use the parametric definition of a circle: http://en.wikipedia.org/wiki/Circle#Cartesian_coordinates
-				int x = (int)Math.Round(radius + radius * Math.Cos(angle));
-				int y = (int)Math.Round(radius + radius * Math.Sin(angle));
+        //    for (double angle = 0; angle < Math.PI; angle += angleStep)
+        //    {
+        //        // Use the parametric definition of a circle: http://en.wikipedia.org/wiki/Circle#Cartesian_coordinates
+        //        int x = (int)Math.Round(radius + radius * Math.Cos(angle));
+        //        int y = (int)Math.Round(radius + radius * Math.Sin(angle));
 
-				// Fill in the pixels in between the points. I am using vertical fills here
-				for (int i=radius*2 - y; i<=y; i++)
-					data[i * outerRadius + x + 1] = Color.White;
-			}
+        //        // Fill in the pixels in between the points. I am using vertical fills here
+        //        for (int i=radius*2 - y; i<=y; i++)
+        //            data[i * outerRadius + x + 1] = Color.White;
+        //    }
 
-			texture.SetData(data);
-			return texture;
-		}
+        //    texture.SetData(data);
+        //    return texture;
+        //}
 	}
 }
