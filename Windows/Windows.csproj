@@ -92,9 +92,6 @@
     <Content Include="Icon.ico" />
   </ItemGroup>
   <ItemGroup>
-    <MonoGameContentReference Include="Content\Content.mgcb" />
-  </ItemGroup>
-  <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0">
       <Visible>False</Visible>
       <ProductName>Microsoft .NET Framework 4 %28x86 and x64%29</ProductName>
@@ -117,6 +114,9 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <MonoGameContentReference Include="..\Source\Content\Content.mgcb">
+      <Link>Content\Content.mgcb</Link>
+    </MonoGameContentReference>
     <None Include="app.config" />
   </ItemGroup>
   <ItemGroup>

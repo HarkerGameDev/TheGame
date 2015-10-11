@@ -176,8 +176,6 @@ namespace Source
             {
                 if (player.Rect.Intersects(rect))
                 {
-                    
-                    
                     // check if floor is a ceiling or a floor
                     if (player.Rect.Center.Y < rect.Top)
                     {
@@ -189,7 +187,7 @@ namespace Source
                     {
                         player.Velocity.Y = 0;
                         player.Rect.Y = rect.Bottom;
-                    }// check sideways collisions
+                    }   // check sideways collisions
                     else if (player.Rect.Center.X < rect.Left)
                     {
                         player.Velocity.X = 0;
@@ -200,9 +198,7 @@ namespace Source
                         player.Velocity.X = 0;
                         player.Rect.X = rect.Right;
                     }
-
-                    
-
+                    // TODO fix the horrible snapping
                 }
             }
         }
