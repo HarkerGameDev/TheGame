@@ -176,18 +176,33 @@ namespace Source
             {
                 if (player.Rect.Intersects(rect))
                 {
-                    player.Velocity.Y = 0;
+                    
+                    
                     // check if floor is a ceiling or a floor
-                    if (player.Rect.Center.Y < rect.Bottom)
+                    if (player.Rect.Center.Y < rect.Top)
                     {
+                        player.Velocity.Y = 0;
                         player.Rect.Y = rect.Top - player.Rect.Height;
                         player.Falling = false;
                     }
-                    else
+                    else if(player.Rect.Center.Y > rect.Bottom)
                     {
+                        player.Velocity.Y = 0;
                         player.Rect.Y = rect.Bottom;
+                    }// check sideways collisions
+                    else if (player.Rect.Center.X < rect.Left)
+                    {
+                        player.Velocity.X = 0;
+                        player.Rect.X = rect.Left-player.Rect.Width;
                     }
-                    // TODO check sideways collisions (try it now, it's pretty bad)
+                    else if (player.Rect.Center.X > rect.Right)
+                    {
+                        player.Velocity.X = 0;
+                        player.Rect.X = rect.Right;
+                    }
+
+                    
+
                 }
             }
         }
