@@ -87,8 +87,11 @@ namespace Source
             floors = new List<Rectangle>();
             floors.Add(new Rectangle(50, 300, 400, 50)); // TODO !!FOR TESTING ONLY!! - make a proper level file or random generation
             floors.Add(new Rectangle(50, 200, 200, 20));
+            floors.Add(new Rectangle(200, 180, 50, 20));
 
-			base.Initialize();
+            floors.Add(new Rectangle(0, graphics.PreferredBackBufferHeight-20, graphics.PreferredBackBufferWidth, 20));
+            floors.Add(new Rectangle(0, 0, 20, graphics.PreferredBackBufferHeight));
+            base.Initialize();
 		}
 
 		/// <summary>
@@ -171,44 +174,55 @@ namespace Source
         /// </summary>
         private void CheckFloors()
         {
+            int offsetX = 5;
+            int offsetY = (int)(Math.Floor(player.Velocity.Y / 20)) + 3;
             player.Falling = true;
             foreach (Rectangle rect in floors)
             {
-                if (player.Rect.Intersects(rect))
+                // check if floor is a ceiling or a floor
+                if (between(player.Rect.Bottom, rect.Top, offsetY + rect.Top) && player.Rect.Intersects(rect))
                 {
-                    // check if floor is a ceiling or a floor
-                    if (player.Rect.Center.Y < rect.Top)
-                    {
-                        player.Velocity.Y = 0;
-                        player.Rect.Y = rect.Top - player.Rect.Height;
-                        player.Falling = false;
-                    }
-                    else if(player.Rect.Center.Y > rect.Bottom)
-                    {
-                        player.Velocity.Y = 0;
-                        player.Rect.Y = rect.Bottom;
-                    }   // check sideways collisions
-                    else if (player.Rect.Center.X < rect.Left)
-                    {
-                        player.Velocity.X = 0;
-                        player.Rect.X = rect.Left-player.Rect.Width;
-                    }
-                    else if (player.Rect.Center.X > rect.Right)
-                    {
-                        player.Velocity.X = 0;
-                        player.Rect.X = rect.Right;
-                    }
-                    // TODO fix the horrible snapping
+                    player.Velocity.Y = 0;
+                    player.Falling = false;
+                    player.Rect.Y = rect.Top - player.Rect.Height;
                 }
+                else if (between(player.Rect.Top, rect.Bottom + offsetY, rect.Bottom) && player.Rect.Intersects(rect))
+                {
+                    player.Velocity.Y = 0;
+                    player.Rect.Y = rect.Bottom;
+                }
+
+                if (between(player.Rect.Right, rect.Left, rect.Left + offsetX) && player.Rect.Intersects(rect))
+                {
+                    player.Velocity.X = 0;
+                    player.Rect.X = rect.Left - player.Rect.Width;
+                }
+                else if (between(player.Rect.Left, rect.Right - offsetX, rect.Right) && player.Rect.Intersects(rect))
+                {
+                    player.Velocity.X = 0;
+                    player.Rect.X = rect.Right;
+                }
+
             }
         }
 
-		/// <summary>
-		/// Allows the game to run logic such as updating the world,
-		/// checking for collisions, gathering input, and playing audio.
-		/// </summary>
-		/// <param name="gameTime">Provides a snapshot of timing values.</param>
-		protected override void Update(GameTime gameTime)
+        private bool between(int ham, int bread1, int bread2)
+        {
+            //bread1 < bread2
+            if (ham > bread1 && ham < bread2)
+            {
+                return true;
+            }
+            return false;
+        }
+
+
+        /// <summary>
+        /// Allows the game to run logic such as updating the world,
+        /// checking for collisions, gathering input, and playing audio.
+        /// </summary>
+        /// <param name="gameTime">Provides a snapshot of timing values.</param>
+        protected override void Update(GameTime gameTime)
 		{
 			// ALWAYS do this
 			float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
