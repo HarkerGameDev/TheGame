@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PipelineBuildEvent xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <SourceFile>C:/Users/Nikita/Desktop/Nikita/Projects/Monogame/TheGame/Source/Content/ScoreBig.spritefont</SourceFile>
+  <SourceTime>2015-10-10T23:49:45.9337495-07:00</SourceTime>
+  <DestFile>C:/Users/Nikita/Desktop/Nikita/Projects/Monogame/TheGame/Source/Content/bin/Windows/ScoreBig.xnb</DestFile>
+  <DestTime>2015-10-11T21:44:04.950819-07:00</DestTime>
+  <Importer>FontDescriptionImporter</Importer>
+  <ImporterTime>2015-04-29T10:14:44-07:00</ImporterTime>
+  <Processor>FontDescriptionProcessor</Processor>
+  <ProcessorTime>2015-04-29T10:14:44-07:00</ProcessorTime>
+  <Parameters>
+    <Key>TextureFormat</Key>
+    <Value>Compressed</Value>
+  </Parameters>
+  <Dependencies />
+  <BuildAsset />
+  <BuildOutput />
+</PipelineBuildEvent>
