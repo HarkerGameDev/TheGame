@@ -1,7 +1,7 @@
 ﻿using System;
 using Source;
 
-namespace ClubFair
+namespace Windows
 {
 #if WINDOWS || LINUX
     /// <summary>

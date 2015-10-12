@@ -6,8 +6,8 @@
     <ProjectGuid>{1569B3C4-FF30-4C98-8501-EC23DDDA7AA3}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ClubFair</RootNamespace>
-    <AssemblyName>ClubFair</AssemblyName>
+    <RootNamespace>Game</RootNamespace>
+    <AssemblyName>Game</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <MonoGamePlatform>Windows</MonoGamePlatform>
     <MonoGameContentBuilderExe>
