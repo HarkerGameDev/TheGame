@@ -85,13 +85,38 @@ namespace Source
             // initialize objects
             player = new Player();
             floors = new List<Rectangle>();
-            floors.Add(new Rectangle(50, 300, 400, 50)); // TODO !!FOR TESTING ONLY!! - make a proper level file or random generation
-            floors.Add(new Rectangle(50, 200, 200, 20));
-            floors.Add(new Rectangle(200, 180, 50, 20));
+            int levelWidth = 1000;
+            int levelHeight = graphics.PreferredBackBufferHeight;
+            //floors.Add(new Rectangle(50, 300, 400, 50)); // TODO !!FOR TESTING ONLY!! - make a proper level file or random generation
+            //floors.Add(new Rectangle(50, 200, 200, 20));
+            //floors.Add(new Rectangle(250, 180, 50, 40));
 
             floors.Add(new Rectangle(0, graphics.PreferredBackBufferHeight-20, graphics.PreferredBackBufferWidth, 20));
             floors.Add(new Rectangle(0, 0, 20, graphics.PreferredBackBufferHeight));
-            base.Initialize();
+
+            //Random level generation: Just random 20x20 squares
+            Random random = new Random();
+            bool aboveFloor = false;
+            for (int x = 1; x < (int)Math.Floor(levelWidth/20); x++)
+            {
+                for (int y = (int)Math.Floor(levelHeight / 20); y >= 0; y--)
+                {
+                    if (random.Next(0, 5) == 0)
+                    {
+                        if (aboveFloor)
+                        {
+                            aboveFloor = false;
+                        }else
+                        {
+                            floors.Add(new Rectangle(x*20, y*20, 20, 20));
+                            aboveFloor = true;
+                        }
+                    }
+                }
+                aboveFloor = false;
+            }
+
+                base.Initialize();
 		}
 
 		/// <summary>
@@ -174,7 +199,7 @@ namespace Source
         /// </summary>
         private void CheckFloors()
         {
-            int offsetX = 5;
+            int offsetX = 4;
             int offsetY = (int)(Math.Floor(player.Velocity.Y / 20)) + 3;
             player.Falling = true;
             foreach (Rectangle rect in floors)
