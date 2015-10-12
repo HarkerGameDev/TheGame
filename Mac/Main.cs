@@ -8,7 +8,7 @@ using MonoMac.Foundation;
 using Source;
 #endregion
 
-namespace MacGame
+namespace Game
 {
 	static class Program
 	{

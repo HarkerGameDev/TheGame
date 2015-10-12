@@ -1,7 +1,7 @@
 ﻿using System;
 using Source;
 
-namespace Windows
+namespace Game
 {
 #if WINDOWS || LINUX
     /// <summary>

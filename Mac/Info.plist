@@ -14,5 +14,7 @@
 	<string>NSApplication</string>
 	<key>CFBundleShortVersionString</key>
 	<string>0.1</string>
+	<key>NSMainNibFile</key>
+	<string>MainMenu</string>
 </dict>
 </plist>

@@ -8,10 +8,7 @@ Ask friends to email harkergamedev@gmail.com with their github account to join
 Look at the [google doc](https://docs.google.com/document/d/1ofddsIU92CeK2RtJ5eg3PWEG8U2o49VdmNxmAJwwMMg/edit?usp=sharing)
 
 ## Running on mac
-* ***Could someone with a Mac make a new project as described in the email***
-* Control-click the Mac project and select "Set As Startup Project"
-* Clicking the run button as usual should now work
-* I did what was described in the email but put it in a seperate branch because it can't load assets correctly
+* Somehow managed to fix the god-awful Mac issues based on [this link](https://github.com/mono/MonoGame/issues/3790#issuecomment-128841617)
 
 ## Adding content
 * Make a change
