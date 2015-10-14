@@ -1,8 +1,12 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System;
+using System.Collections.Generic;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using System;
-using System.Collections.Generic;
+using FarseerPhysics;
+using FarseerPhysics.Dynamics;
+using FarseerPhysics.Dynamics.Contacts;
+using FarseerPhysics.Factories;
 
 namespace Source
 {
@@ -10,8 +14,8 @@ namespace Source
 	/// This is the main type for the game.
     /// 
     /// IMPORTANT NOTES - PLEASE READ ALL:
-    /// - (0,0) is in the top left for everything
-    /// - 1 unit is 1 cm (look at GRAVIY)
+    /// - (0,0) is in the top left for drawing to screen, and (0,0) is in the center for Farseer physics
+    /// - Farseer uses meters, monogame uses pixels -- use ConvertUnits to convert
     /// - Please follow the style guide in place, which is
     ///   * ALL_CAPS for global constants
     ///   * UpperCamelCase for members (instance fields and methods)
@@ -23,39 +27,110 @@ namespace Source
 	/// </summary>
 	public class Game1 : Game
 	{
-		// Game related constants
-		const int GRAVITY = 980;
+        // Farseer user data
+        private const int PLAYER = 0;
+        private const int FLOOR = 1;
 
-		// Player related constants
-		const int PLAYER_SPEED = 200;
-        const int JUMP_VEL = 500;
+        private const float MIN_VELOCITY = 1f;  // m/s -- what can be considered 0 horizontal velocity
+        private const float MAX_VELOCITY = 13f; // m/s -- approximate Usaine Bolt speed
+        private const float SLOWDOWN = 0.7f;    // N/s -- impulse applied in opposite direction of travel to simulate friction
+        private const double JUMP_WAIT = 1;
 
-		GraphicsDeviceManager graphics;     // this is always here
-		SpriteBatch spriteBatch;            // so is this
-		Texture2D whiteRect;                // useful for drawing rectangles
-        SpriteFont font, fontBig;           // fonts need to always be generated and loaded using content manager
+		private GraphicsDeviceManager graphics;
+		private SpriteBatch spriteBatch;
+        private KeyboardState prevKeyState;
+        private GamePadState prevPadState;
+		private Texture2D whiteRect;
+        private SpriteFont font, fontBig;
 
-		bool paused;
-        bool pausePressed;
-        bool gameRunning;
-		Player player;
-		Random rand;
-        double _gameTime;   //Total game time of play - high scores
-        List<Rectangle> floors;
+        private Random rand;
+        private World world;
 
-		class Player
+		private bool paused;
+		private Player player;
+        private List<Item> floors;
+        
+		class Item
 		{
-            public Rectangle Rect;
-            public Vector2 Velocity;
-            public bool Falling;
+            public Body Body;
+            public Vector2 Origin;
+            public Vector2 Scale;
 
-            public Player()
+            protected Item()
             {
-                Rect = new Rectangle(100, 100, 20, 50);
-                Velocity = new Vector2(0, 0);
-                Falling = false;
+                Origin = new Vector2(0.5f, 0.5f);
+            }
+            
+            public Item(World world, Vector2 position1, Vector2 position2)
+            {
+                Vector2 dist = position2 - position1;
+                float width = dist.Length();
+                float height = 0.2f;
+                Vector2 center = position1 + dist / 2;
+                float rotation = (float)Math.Atan2(dist.Y, dist.X);
+
+                Body = BodyFactory.CreateRectangle(world, width, height, 1f, center, FLOOR);
+                Scale = ConvertUnits.ToDisplayUnits(new Vector2(width, height));
+                Origin = new Vector2(0.5f, 0.5f);
+
+                Body.BodyType = BodyType.Static;
+                Body.IsStatic = true;
+                Body.FixedRotation = true;
+                Body.Rotation = rotation;
+                Body.Friction = 0.7f;
+                Body.Restitution = 0.1f;    // Bounciness. Everything is ever so slightly bouncy so it doesn't feel like a rock with VHB tape.
             }
 		}
+
+        class Player : Item
+        {
+            public bool CanJump
+            {
+                get
+                {
+                    return Collisions > 0 && JumpWait < 0;
+                }
+            }
+            private int Collisions;
+            public double JumpWait;
+
+            public Player(World world) : base()
+            {
+                float width = 0.8f;
+                float height = 1.8f;
+                Body = BodyFactory.CreateCapsule(world, height - width, width / 2, 1f, PLAYER);
+                Body.Position = new Vector2(3f, 8f);
+                Scale = ConvertUnits.ToDisplayUnits(new Vector2(width, height));
+
+                //Falling = true;
+                Collisions = 0;
+                JumpWait = 0;
+
+                Fixture foot = FixtureFactory.AttachRectangle(1f, 0.3f, 0f, new Vector2(0f, 0.8f), Body);
+                foot.IsSensor = true;
+                foot.OnCollision += YesJump;
+                foot.OnSeparation += NoJump;
+
+                Body.BodyType = BodyType.Kinematic;
+                Body.IsStatic = false;
+                Body.FixedRotation = true;
+                Body.Friction = 0f;     // Friction is handled for the player individually because it decreases speed otherwise
+            }
+
+            private bool YesJump(Fixture f1, Fixture f2, Contact contact)
+            {
+                Collisions++;
+                //Falling = false;
+                return true;
+            }
+
+            private void NoJump(Fixture f1, Fixture f2)
+            {
+                Collisions--;
+                //if (Collisions <= 0)
+                //    Falling = true;
+            }
+        }
 
 		public Game1()
 		{
@@ -70,53 +145,29 @@ namespace Source
 		/// </summary>
 		protected override void Initialize()
 		{
-			// set game to fullscreen and match monitor resolution
-			graphics.PreferredBackBufferWidth = GraphicsDevice.DisplayMode.Width / 2;
-			graphics.PreferredBackBufferHeight = GraphicsDevice.DisplayMode.Height / 2;
-			graphics.IsFullScreen = false;
-			graphics.ApplyChanges();
+            // Modify screen size
+            graphics.PreferredBackBufferWidth = GraphicsDevice.DisplayMode.Width / 2;
+            graphics.PreferredBackBufferHeight = GraphicsDevice.DisplayMode.Height / 2;
+            graphics.IsFullScreen = false;
+            graphics.ApplyChanges();
 
-			// initialize all global variables
-			rand = new Random();
-			paused = false;
-            pausePressed = false;
-            gameRunning = true;
+            // Sets how many pixels is a meter for Farseer
+            ConvertUnits.SetDisplayUnitToSimUnitRatio(32f);
 
-            // initialize objects
-            player = new Player();
-            floors = new List<Rectangle>();
-            int levelWidth = 1000;
-            int levelHeight = graphics.PreferredBackBufferHeight;
-            //floors.Add(new Rectangle(50, 300, 400, 50)); // TODO !!FOR TESTING ONLY!! - make a proper level file or random generation
-            //floors.Add(new Rectangle(50, 200, 200, 20));
-            //floors.Add(new Rectangle(250, 180, 50, 40));
+            // Create objects
+            world = new World(new Vector2(0, 13f));
+            rand = new Random();
+            player = new Player(world);
+            floors = new List<Item>();
 
-            floors.Add(new Rectangle(0, graphics.PreferredBackBufferHeight-20, graphics.PreferredBackBufferWidth, 20));
-            floors.Add(new Rectangle(0, 0, 20, graphics.PreferredBackBufferHeight));
+            // Set variables
+            paused = false;
 
-            //Random level generation: Just random 20x20 squares
-            Random random = new Random();
-            bool aboveFloor = false;
-            for (int x = 1; x < (int)Math.Floor(levelWidth/20); x++)
-            {
-                for (int y = (int)Math.Floor(levelHeight / 20); y >= 0; y--)
-                {
-                    if (random.Next(0, 5) == 0)
-                    {
-                        if (aboveFloor)
-                        {
-                            aboveFloor = false;
-                        }else
-                        {
-                            floors.Add(new Rectangle(x*20, y*20, 20, 20));
-                            aboveFloor = true;
-                        }
-                    }
-                }
-                aboveFloor = false;
-            }
+            // Initialize previous keyboard and gamepad states
+            prevKeyState = new KeyboardState();
+            prevPadState = new GamePadState();
 
-                base.Initialize();
+            base.Initialize();      // This calls LoadContent()
 		}
 
 		/// <summary>
@@ -129,16 +180,23 @@ namespace Source
 			// Create a new SpriteBatch, which can be used to draw textures.
 			spriteBatch = new SpriteBatch(GraphicsDevice);
 
-			// create a white rectangle by making a 1x1 pixel block. Size can be 
-			// changed during drawing by scaling. Color is white because color masking
-			// in spritebatch (Draw) uses White as the color to replace by the mask.
+			// Use this to draw rectangles
 			whiteRect = new Texture2D(GraphicsDevice, 1, 1);
 			whiteRect.SetData(new[] { Color.White });
 
-			// Load fonts. Important note, fonts need to be loaded and created from the
-			// content manager. Look up "monogame fonts" on the internet for more info.
+			// Load fonts using Content Manager
 			font = Content.Load<SpriteFont>("Score");
 			fontBig = Content.Load<SpriteFont>("ScoreBig");
+
+            // Farseer level hard-coding
+            // TODO load some file instead of hardcoding
+            floors.Add(new Item(world, new Vector2(1f, 15f), new Vector2(29f, 15f)));
+            floors.Add(new Item(world, new Vector2(1f, 9f), new Vector2(12f, 9f)));
+            floors.Add(new Item(world, new Vector2(18f, 9f), new Vector2(29f, 9f)));
+            floors.Add(new Item(world, new Vector2(8f, 13f), new Vector2(15f, 10f)));
+            floors.Add(new Item(world, new Vector2(1f, 3f), new Vector2(12f, 3f)));
+            floors.Add(new Item(world, new Vector2(18f, 3f), new Vector2(29f, 3f)));
+            floors.Add(new Item(world, new Vector2(8f, 7f), new Vector2(15f, 4f)));
 		}
 
 		/// <summary>
@@ -154,94 +212,6 @@ namespace Source
 			Content.Unload();
 		}
 
-		/// <summary>
-		/// Moves the player based on input from gamepad, if connected, or keyboard. Use
-        /// velocity for physics based movement, and the player will be moved here accordingly
-		/// </summary>
-		/// <param name="deltaTime">Time since last call</param>
-		private void MovePlayer(float deltaTime)
-        {
-            // use GamePadCapabilities to see if connected gamepad has required inputs
-            GamePadCapabilities capabilities = GamePad.GetCapabilities(PlayerIndex.One);
-
-            if (capabilities.IsConnected)
-            {
-                // Important, ALWAYS multiply speed by delta time when moving
-                float speed = deltaTime * PLAYER_SPEED;
-
-                // add deadzone and move. Note, Y axis is inverted
-                GamePadState state = GamePad.GetState(PlayerIndex.One, GamePadDeadZone.Circular);
-                player.Rect.X += (int)(state.ThumbSticks.Left.X * speed);
-                player.Rect.Y -= (int)(state.ThumbSticks.Left.Y * speed);
-                if (state.IsButtonDown(Buttons.A) && !player.Falling)
-                    player.Velocity.Y = -JUMP_VEL;
-            }
-            else // use keyboard
-            {
-                // again, ALWAYS scale anything that moves by deltaTime
-                int speed = (int)(deltaTime * PLAYER_SPEED);
-
-                KeyboardState state = Keyboard.GetState();
-                if (state.IsKeyDown(Keys.Right) || state.IsKeyDown(Keys.D))
-                    player.Rect.X += speed;
-                if (state.IsKeyDown(Keys.Left) || state.IsKeyDown(Keys.A))
-                    player.Rect.X -= speed;
-                if (!player.Falling && (state.IsKeyDown(Keys.Up) || state.IsKeyDown(Keys.W)))
-                    player.Velocity.Y = -JUMP_VEL;
-            }
-
-            // for now, use Velocity only for physics related things (like gravity)
-            player.Rect.Offset(player.Velocity * deltaTime);
-		}
-
-        /// <summary>
-        /// Check collisions to the floors/ ceilings
-        /// </summary>
-        private void CheckFloors()
-        {
-            int offsetX = 4;
-            int offsetY = (int)(Math.Floor(player.Velocity.Y / 20)) + 3;
-            player.Falling = true;
-            foreach (Rectangle rect in floors)
-            {
-                // check if floor is a ceiling or a floor
-                if (between(player.Rect.Bottom, rect.Top, offsetY + rect.Top) && player.Rect.Intersects(rect))
-                {
-                    player.Velocity.Y = 0;
-                    player.Falling = false;
-                    player.Rect.Y = rect.Top - player.Rect.Height;
-                }
-                else if (between(player.Rect.Top, rect.Bottom + offsetY, rect.Bottom) && player.Rect.Intersects(rect))
-                {
-                    player.Velocity.Y = 0;
-                    player.Rect.Y = rect.Bottom;
-                }
-
-                if (between(player.Rect.Right, rect.Left, rect.Left + offsetX) && player.Rect.Intersects(rect))
-                {
-                    player.Velocity.X = 0;
-                    player.Rect.X = rect.Left - player.Rect.Width;
-                }
-                else if (between(player.Rect.Left, rect.Right - offsetX, rect.Right) && player.Rect.Intersects(rect))
-                {
-                    player.Velocity.X = 0;
-                    player.Rect.X = rect.Right;
-                }
-
-            }
-        }
-
-        private bool between(int ham, int bread1, int bread2)
-        {
-            //bread1 < bread2
-            if (ham > bread1 && ham < bread2)
-            {
-                return true;
-            }
-            return false;
-        }
-
-
         /// <summary>
         /// Allows the game to run logic such as updating the world,
         /// checking for collisions, gathering input, and playing audio.
@@ -249,41 +219,73 @@ namespace Source
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
 		{
-			// ALWAYS do this
-			float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
-
-            // Handle end game
+			// Handle end game
             // TODO put this in pause menu later
-			if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
+			if (Keyboard.GetState().IsKeyDown(Keys.Escape))
 				Exit();
 
             // Handle toggle pause
             // TODO open pause menu
-            if (Keyboard.GetState().IsKeyDown(Keys.Space) || GamePad.GetState(PlayerIndex.One).Buttons.Start == ButtonState.Pressed)
-            {
-                if (!pausePressed)
-                {
-                    paused = !paused;
-                    pausePressed = true;
-                }
-            }
-            else
-            {
-                pausePressed = false;
-            }
+            if (Keyboard.GetState().IsKeyDown(Keys.Space) && !prevKeyState.IsKeyDown(Keys.Space))
+                paused = !paused;
 
 			// This is pretty much how pause always works
-			if (!paused && gameRunning) {
-				_gameTime += deltaTime;
+            if (!paused)
+            {
+                HandleKeyboard();
 
-                player.Velocity.Y += GRAVITY * deltaTime;
-                MovePlayer(deltaTime);
+                CheckPlayer();
+                player.JumpWait -= gameTime.ElapsedGameTime.TotalSeconds;
 
-                CheckFloors();      // do this after moving the player so it doesn't look like the player is in the floor
-			}
+                world.Step((float)gameTime.ElapsedGameTime.TotalMilliseconds * 0.001f);
+            }
+
+            prevKeyState = Keyboard.GetState();
+            prevPadState = GamePad.GetState(0);
 
 			base.Update(gameTime);
 		}
+
+        private void HandleKeyboard()
+        {
+            KeyboardState state = Keyboard.GetState();
+
+            //float impulse = 0.5f * (2 - Math.Abs(player.Body.LinearVelocity.X) / MAX_VELOCITY);
+            float impulse = MathHelper.SmoothStep(0.5f, 0f, Math.Abs(player.Body.LinearVelocity.X) / MAX_VELOCITY);
+
+            if (state.IsKeyDown(Keys.Right))
+            {
+                player.Body.ApplyLinearImpulse(new Vector2(impulse, 0f));
+                if (player.Body.LinearVelocity.X < 0f && player.CanJump)  // change direction quickly
+                    player.Body.ApplyLinearImpulse(new Vector2(SLOWDOWN, 0f));
+            }
+            else if (state.IsKeyDown(Keys.Left))
+            {
+                player.Body.ApplyLinearImpulse(new Vector2(-impulse, 0f));
+                if (player.Body.LinearVelocity.X > 0f && player.CanJump)  // change direction quickly
+                {
+                    player.Body.ApplyLinearImpulse(new Vector2(-SLOWDOWN, 0f));
+                }
+            }
+            else if (player.CanJump)   // player is on the ground
+            {
+                if (Math.Abs(player.Body.LinearVelocity.X) < MIN_VELOCITY)
+                    player.Body.LinearVelocity = new Vector2(0f, player.Body.LinearVelocity.Y);
+                else
+                    player.Body.ApplyLinearImpulse(new Vector2(Math.Sign(player.Body.LinearVelocity.X) * -SLOWDOWN, 0f));
+            }
+            if (state.IsKeyDown(Keys.Up) && player.CanJump)
+            {
+                player.JumpWait = JUMP_WAIT;
+                player.Body.ApplyLinearImpulse(new Vector2(0f, -13f));
+            }
+        }
+
+        private void CheckPlayer()
+        {
+            if (player.Body.Position.Y > ConvertUnits.ToSimUnits(graphics.GraphicsDevice.Viewport.Height))
+                player = new Player(world);
+        }
 
 		/// <summary>
 		/// This is called when the game should draw itself.
@@ -296,60 +298,25 @@ namespace Source
             int width = GraphicsDevice.Viewport.Width;
             int height = GraphicsDevice.Viewport.Height;
 
+            // Draw player and floors
 			spriteBatch.Begin();
-
-			// Draw the player
-			spriteBatch.Draw(whiteRect, player.Rect, Color.Green);
-
-			// Draw the floors
-			foreach (Rectangle rect in floors)
+            spriteBatch.Draw(whiteRect, ConvertUnits.ToDisplayUnits(player.Body.Position), null, Color.Red, player.Body.Rotation, player.Origin, player.Scale, SpriteEffects.None, 0f);
+			foreach (Item item in floors)
 			{
-                spriteBatch.Draw(whiteRect, rect, Color.Azure);
+                spriteBatch.Draw(whiteRect, ConvertUnits.ToDisplayUnits(item.Body.Position), null, Color.Azure, item.Body.Rotation, item.Origin, item.Scale, SpriteEffects.None, 0f);
 			}
+            spriteBatch.End();
 
 			// Show paused screen if game is paused
+            spriteBatch.Begin();
 			if (paused)
             {
                 float centerY = width / 2.0f - fontBig.MeasureString("Paused").X / 2.0f;
 				spriteBatch.DrawString(fontBig, "Paused", new Vector2(height * 0.1f, centerY), Color.Yellow);
             }
-
 			spriteBatch.End();
-			base.Draw(gameTime);
+
+            base.Draw(gameTime);
 		}
-
-        ///// <summary>
-        ///// Dynamically creates a circle with given radius
-        ///// </summary>
-        ///// <param name="radius">Desired radius of circle</param>
-        ///// <returns>A Texture2D circle colored white for masking</returns>
-        //private Texture2D CreateCircle(int radius)
-        //{
-        //    int outerRadius = radius * 2 + 2; // So circle doesn't go out of bounds
-        //    Texture2D texture = new Texture2D(GraphicsDevice, outerRadius, outerRadius);
-
-        //    Color[] data = new Color[outerRadius * outerRadius];
-
-        //    // Colour the entire texture transparent first.
-        //    for (int i = 0; i < data.Length; i++)
-        //        data[i] = Color.Transparent;
-
-        //    // Work out the minimum step necessary using trigonometry + sine approximation.
-        //    double angleStep = 1f / radius;
-
-        //    for (double angle = 0; angle < Math.PI; angle += angleStep)
-        //    {
-        //        // Use the parametric definition of a circle: http://en.wikipedia.org/wiki/Circle#Cartesian_coordinates
-        //        int x = (int)Math.Round(radius + radius * Math.Cos(angle));
-        //        int y = (int)Math.Round(radius + radius * Math.Sin(angle));
-
-        //        // Fill in the pixels in between the points. I am using vertical fills here
-        //        for (int i=radius*2 - y; i<=y; i++)
-        //            data[i * outerRadius + x + 1] = Color.White;
-        //    }
-
-        //    texture.SetData(data);
-        //    return texture;
-        //}
 	}
 }

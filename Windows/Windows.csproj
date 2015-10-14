@@ -27,7 +27,7 @@
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
@@ -121,7 +121,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Source\Source.csproj">
-      <Project>{5CDED029-4ADB-4700-952F-BE5809450734}</Project>
+      <Project>{e757db6f-a3c0-463e-89be-ac72bc371e89}</Project>
       <Name>Source</Name>
     </ProjectReference>
   </ItemGroup>
