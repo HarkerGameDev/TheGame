@@ -1,17 +1,29 @@
 ﻿<Properties StartupItem="Mac/Mac.csproj">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Mac/Main.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Source/Game1.cs">
     <Files>
       <File FileName="README.md" Line="1" Column="1" />
-      <File FileName="Mac/Main.cs" Line="12" Column="1" />
-      <File FileName="Source/Game1.cs" Line="115" Column="3" />
+      <File FileName="Mac/Main.cs" Line="1" Column="1" />
+      <File FileName="Source/Game1.cs" Line="31" Column="30" />
+      <File FileName="Farseer Physics Engine/Collision/Collision.cs" Line="29" Column="17" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
         <State name="__root__">
           <Node name="TheGame" expanded="True">
-            <Node name="Mac" expanded="True" selected="True" />
-            <Node name="Source" expanded="True" />
+            <Node name="Farseer Physics MonoGame" expanded="True">
+              <Node name="References" expanded="True" />
+              <Node name="Collision" expanded="True" />
+            </Node>
+            <Node name="Mac" expanded="True">
+              <Node name="References" expanded="True">
+                <Node name="From Packages" expanded="True" />
+              </Node>
+            </Node>
+            <Node name="Source" expanded="True">
+              <Node name="References" expanded="True" selected="True" />
+            </Node>
+            <Node name="Windows" expanded="True" />
           </Node>
         </State>
       </Pad>
