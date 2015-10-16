@@ -46,6 +46,7 @@ namespace Source
 		private SpriteBatch spriteBatch;
         private KeyboardState prevKeyState;
         private GamePadState prevPadState;
+        private MouseState prevMouseState;
 		private Texture2D whiteRect;
         private SpriteFont font, fontBig;
 
@@ -62,7 +63,11 @@ namespace Source
         private Vector2 screenCenter;
 
         private bool editLevel;
-        private Floor editingFloorSize;
+        public Floor currentFloor;
+        private bool editingFloor;
+        private Vector2 startDraw;
+        private Vector2 endDraw;
+        private Vector2 screenOffset;
 
 		private bool paused;
 		private Player player;
@@ -75,11 +80,6 @@ namespace Source
             public Vector2 Scale;
 
             private Vector2 start;
-
-            protected Floor()
-            {
-                Origin = new Vector2(0.5f, 0.5f);
-            }
             
             public Floor(World world, Vector2 position1, Vector2 position2)
             {
@@ -168,15 +168,12 @@ namespace Source
             private bool StartTouch(Fixture f1, Fixture f2, Contact contact)
             {
                 Collisions++;
-                //Falling = false;
                 return true;
             }
 
             private void EndTouch(Fixture f1, Fixture f2)
             {
                 Collisions--;
-                //if (Collisions <= 0)
-                //    Falling = true;
             }
         }
 
@@ -216,6 +213,7 @@ namespace Source
             // Initialize previous keyboard and gamepad states
             prevKeyState = new KeyboardState();
             prevPadState = new GamePadState();
+            prevMouseState = new MouseState();
 
             base.Initialize();      // This calls LoadContent()
 		}
@@ -235,6 +233,7 @@ namespace Source
             int height = graphics.GraphicsDevice.Viewport.Height;
             cameraBounds = new Rectangle((int)(width * SCREEN_LEFT), (int)(height * SCREEN_TOP), (int)(width * (SCREEN_RIGHT - SCREEN_LEFT)), (int)(height * (1 - 2 * SCREEN_TOP)));
             screenCenter = cameraBounds.Center.ToVector2();
+            screenOffset = Vector2.Zero;
 
 			// Use this to draw rectangles
 			whiteRect = new Texture2D(GraphicsDevice, 1, 1);
@@ -244,15 +243,8 @@ namespace Source
 			font = Content.Load<SpriteFont>("Score");
 			fontBig = Content.Load<SpriteFont>("ScoreBig");
 
-            // Farseer level hard-coding
-            // TODO load some file instead of hardcoding
-            floors.Add(new Floor(world, new Vector2(1f, 15f), new Vector2(29f, 15f)));
-            floors.Add(new Floor(world, new Vector2(1f, 9f), new Vector2(12f, 9f)));
-            floors.Add(new Floor(world, new Vector2(18f, 9f), new Vector2(29f, 9f)));
-            floors.Add(new Floor(world, new Vector2(8f, 13f), new Vector2(15f, 10f)));
-            floors.Add(new Floor(world, new Vector2(1f, 3f), new Vector2(12f, 3f)));
-            floors.Add(new Floor(world, new Vector2(18f, 3f), new Vector2(29f, 3f)));
-            floors.Add(new Floor(world, new Vector2(8f, 7f), new Vector2(15f, 4f)));
+            // Loads level stored in LEVEL_FILE
+            LoadLevel();
 		}
 
 		/// <summary>
@@ -292,7 +284,11 @@ namespace Source
                 if (editLevel)
                     ConvertUnits.SetDisplayUnitToSimUnitRatio(8f);
                 else
+                {
                     ConvertUnits.SetDisplayUnitToSimUnitRatio(32f);
+                    screenOffset = Vector2.Zero;
+                    currentFloor = null;
+                }
             }
 
             if (editLevel)
@@ -321,7 +317,6 @@ namespace Source
         {
             KeyboardState state = Keyboard.GetState();
 
-            //float impulse = 0.5f * (2 - Math.Abs(player.Body.LinearVelocity.X) / MAX_VELOCITY);
             float impulse = MathHelper.SmoothStep(0.5f, 0f, Math.Abs(player.Body.LinearVelocity.X) / MAX_VELOCITY);
             impulse = (float)Math.Pow(impulse, 0.5);
 
@@ -355,15 +350,11 @@ namespace Source
                 player.Body.ApplyLinearImpulse(new Vector2(0f, -13f));
             }
 
-            //screenCenter.X = MathHelper.SmoothStep(cameraBounds.Left, cameraBounds.Right, player.Body.LinearVelocity.X / MAX_VELOCITY / 2f + 0.5f);
-            //screenCenter.Y = MathHelper.SmoothStep(cameraBounds.Top, cameraBounds.Bottom, player.Body.LinearVelocity.Y / MAX_VELOCITY / 2f + 0.5f);
-
             // TODO ever so slight camera shake when going fast
             float deltaX = ((cameraBounds.Center.X - screenCenter.X) / cameraBounds.Width - player.Body.LinearVelocity.X / MAX_VELOCITY) * CAMERA_SCALE;
             deltaX = MathHelper.Clamp(deltaX, -MAX_CAMERA_SPEED_X, MAX_CAMERA_SPEED_X);
             screenCenter.X += deltaX;
             screenCenter.X = MathHelper.Clamp(screenCenter.X, cameraBounds.Left, cameraBounds.Right);
-            //Console.WriteLine(string.Format("deltaX: {0}", deltaX));
 
             float deltaY = ((cameraBounds.Center.Y - screenCenter.Y) / cameraBounds.Height - player.Body.LinearVelocity.Y / MAX_VELOCITY) * CAMERA_SCALE;
             deltaY = MathHelper.Clamp(deltaY, -MAX_CAMERA_SPEED_Y, MAX_CAMERA_SPEED_Y);
@@ -381,32 +372,53 @@ namespace Source
         {
             KeyboardState keyboard = Keyboard.GetState();
             MouseState mouse = Mouse.GetState();
-            Vector2 mouseSimPos = ConvertUnits.ToSimUnits(mouse.Position.ToVector2() - cameraBounds.Center.ToVector2()) + player.Body.Position;
+            Vector2 mouseSimPos = ConvertUnits.ToSimUnits(mouse.Position.ToVector2() - cameraBounds.Center.ToVector2() - screenOffset) + player.Body.Position;
             mouseSimPos.X = (float)Math.Round(mouseSimPos.X);
             mouseSimPos.Y = (float)Math.Round(mouseSimPos.Y);
 
             if (mouse.LeftButton == ButtonState.Pressed)
             {
-                if (editingFloorSize == null)
+                if (editingFloor)                                   // Draw the floor
                 {
-                    editingFloorSize = new Floor(world, mouseSimPos, mouseSimPos + new Vector2(1f, 0f));
-                    floors.Add(editingFloorSize);
-                    paused = true;
+                    endDraw = mouseSimPos;
                 }
                 else
                 {
-                    editingFloorSize.SetEnd(mouseSimPos);
+                    if (keyboard.IsKeyDown(Keys.LeftControl))       // Start drawing a floor
+                    {
+                        editingFloor = true;
+                        startDraw = mouseSimPos;
+                        endDraw = mouseSimPos;
+                    }
+                    else
+                    {
+                        if (keyboard.IsKeyDown(Keys.LeftShift))     // Select a floor
+                        {
+                            Fixture fix = world.TestPoint(ConvertUnits.ToSimUnits(mouse.Position.ToVector2() - cameraBounds.Center.ToVector2() - screenOffset) + player.Body.Position);
+                            if (fix != null && (int)fix.Body.UserData == FLOOR)
+                                currentFloor = floors.Find(f => f.Body == fix.Body);
+                        }
+                        else                                        // Move camera
+                        {
+                            screenOffset += mouse.Position.ToVector2() - prevMouseState.Position.ToVector2();
+                        }
+                    }
                 }
+                
             }
-            else if (editingFloorSize != null)
+            else if (editingFloor)                                  // Make the floor
             {
-                //Vector2 halfDist = mouseSimPos - editingFloorSize.Body.Position;
-                //editingFloorSize = new Floor(world, 2 * editingFloorSize.Body.Position - mouseSimPos, mouseSimPos);
-                editingFloorSize = new Floor(world, editingFloorSize.Scale.X, editingFloorSize.Body.Position, editingFloorSize.Body.Rotation);
-                paused = false;
-                editingFloorSize = null;
+                currentFloor = new Floor(world, startDraw, endDraw);
+                floors.Add(currentFloor);
+                editingFloor = false;
             }
-            else if (keyboard.IsKeyDown(Keys.LeftControl))
+            else if (keyboard.IsKeyDown(Keys.Back) && currentFloor != null)
+            {                                                       // Delete selected floor
+                currentFloor.Body.Dispose();
+                floors.Remove(currentFloor);
+                currentFloor = null;
+            }
+            else if (keyboard.IsKeyDown(Keys.LeftControl))          // Save and load level
             {
                 if (keyboard.IsKeyDown(Keys.S) && !prevKeyState.IsKeyDown(Keys.S))
                 {
@@ -417,6 +429,8 @@ namespace Source
                     LoadLevel();
                 }
             }
+
+            prevMouseState = mouse;
         }
 
         private void SaveLevel()
@@ -463,17 +477,25 @@ namespace Source
             // Calculate camera location matrix
             Matrix view;
             if (editLevel)
-                view = Matrix.CreateTranslation(new Vector3(cameraBounds.Center.ToVector2() - ConvertUnits.ToDisplayUnits(player.Body.Position), 0f));
+                view = Matrix.CreateTranslation(new Vector3(screenOffset + cameraBounds.Center.ToVector2() - ConvertUnits.ToDisplayUnits(player.Body.Position), 0f));
             else
-                view = Matrix.CreateTranslation(new Vector3(screenCenter - ConvertUnits.ToDisplayUnits(player.Body.Position), 0f));                
+                view = Matrix.CreateTranslation(new Vector3(screenOffset + screenCenter - ConvertUnits.ToDisplayUnits(player.Body.Position), 0f));                
 
             // Draw player and floors
             spriteBatch.Begin(transformMatrix: view);
             spriteBatch.Draw(whiteRect, ConvertUnits.ToDisplayUnits(player.Body.Position), null, Color.Red, player.Body.Rotation, player.Origin, ConvertUnits.ToDisplayUnits(player.Scale), SpriteEffects.None, 0f);
 			foreach (Floor item in floors)
-			{
                 spriteBatch.Draw(whiteRect, ConvertUnits.ToDisplayUnits(item.Body.Position), null, Color.Azure, item.Body.Rotation, item.Origin, ConvertUnits.ToDisplayUnits(item.Scale), SpriteEffects.None, 0f);
-			}
+            if (currentFloor != null)
+                spriteBatch.Draw(whiteRect, ConvertUnits.ToDisplayUnits(currentFloor.Body.Position), null, Color.Green, currentFloor.Body.Rotation,
+                    currentFloor.Origin, ConvertUnits.ToDisplayUnits(currentFloor.Scale + new Vector2(0, 0.2f)), SpriteEffects.None, 0f);
+            if (editingFloor) {
+                Vector2 dist = ConvertUnits.ToDisplayUnits(endDraw - startDraw);
+                float rotation = (float)Math.Atan2(dist.Y, dist.X);
+                Vector2 scale = new Vector2(dist.Length(), ConvertUnits.ToDisplayUnits(0.2f));
+                Vector2 origin = new Vector2(0.5f, 0.5f);
+                spriteBatch.Draw(whiteRect, ConvertUnits.ToDisplayUnits(startDraw) + dist / 2, null, Color.Azure, rotation, origin, scale, SpriteEffects.None, 0f);
+            }
             spriteBatch.End();
 
 			// Show paused screen if game is paused
