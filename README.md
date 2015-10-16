@@ -5,7 +5,8 @@ Ask friends to email harkergamedev@gmail.com with their github account to join
 
 
 ## TODO
-Look at the [google doc](https://docs.google.com/document/d/1ofddsIU92CeK2RtJ5eg3PWEG8U2o49VdmNxmAJwwMMg/edit?usp=sharing)
+* Look at the [google doc](https://docs.google.com/document/d/1ofddsIU92CeK2RtJ5eg3PWEG8U2o49VdmNxmAJwwMMg/edit?usp=sharing)
+* Note to art theme: Aim for a super-actiony mix of [a new york asthetic](http://www.newyorkwallpapershd.com/user-content/uploads/wall/o/10/New-York-Empire-State-Building-1920x1200-Wallpaper.jpg) and [Just Cause 2](https://nigmabox.files.wordpress.com/2014/01/011justcause2_2010-05-10_09-29-42-95.jpeg)
 
 ## Running on mac
 * Somehow managed to fix the god-awful Mac issues based on [this link](https://github.com/mono/MonoGame/issues/3790#issuecomment-128841617)
