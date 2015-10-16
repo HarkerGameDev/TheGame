@@ -31,7 +31,11 @@ namespace Source
 	/// </summary>
 	public class Game1 : Game
 	{
+#if MONOMAC
         private const String LEVEL_FILE = "../../../../../../test.lvl";
+#else
+        private const String LEVEL_FILE = "../../../../test.lvl";
+#endif
 
         // Farseer user data
         private const int PLAYER = 0;
