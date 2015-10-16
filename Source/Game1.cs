@@ -31,7 +31,7 @@ namespace Source
 	/// </summary>
 	public class Game1 : Game
 	{
-        private const String LEVEL_FILE = "../../../../test.lvl";
+        private const String LEVEL_FILE = "../../../../../../test.lvl";
 
         // Farseer user data
         private const int PLAYER = 0;
