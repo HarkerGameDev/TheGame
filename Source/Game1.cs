@@ -27,24 +27,33 @@ namespace Source
     /// - Search for 'TODO' for things that need to be finished
     /// - For things that need to be added, look at the google doc, https://docs.google.com/document/d/1ofddsIU92CeK2RtJ5eg3PWEG8U2o49VdmNxmAJwwMMg/edit
     /// - Make good commit messages
-    /// - PLEEAASSEEE do your assigned task, or say you can't do it so that someone else can
+    /// - There are no "assigned tasks" anymore, just subteams - do what needs to be done on the TOOD list (google doc)
 	/// </summary>
 	public class Game1 : Game
 	{
+        // LEVEL_FILE should point to "test.lvl" in the root project directory
 #if MONOMAC
         private const String LEVEL_FILE = "../../../../../../test.lvl";
 #else
         private const String LEVEL_FILE = "../../../../test.lvl";
 #endif
 
-        // Farseer user data
+        // Farseer user data - basically, just use this as if it were an enum
         private const int PLAYER = 0;
         private const int FLOOR = 1;
 
+        private const float PIXEL_METER = 32f;      // pixels per meter for normal game
+        private const float PIXEL_METER_EDIT = 8f;  // pixels per meter when in edit mode for level
+        private const float FLOOR_HEIGHT = 0.2f;    // height in meters of a floor
+
+        private const float GRAVITY = 13f;      // N   -- downwards gravity for the world
         private const float MIN_VELOCITY = 1f;  // m/s -- what can be considered 0 horizontal velocity
         private const float MAX_VELOCITY = 13f; // m/s -- approximate Usaine Bolt speed
+        private const float MAX_IMPULSE = 0.5f; // N/s -- the impulse which is applied when player starts moving after standing still
+        private const double IMPULSE_POW = 0.5; //     -- the player's horizontal input impulse is taken to the following power for extra smoothing
+        private const float JUMP_IMPULSE = 13F; // N/s -- the upwards impulse applied when player jumps
         private const float SLOWDOWN = 0.7f;    // N/s -- impulse applied in opposite direction of travel to simulate friction
-        private const double JUMP_WAIT = 1;
+        private const double JUMP_WAIT = 1;     // s   -- how long the player needs to wait before jumping again
 
 		private GraphicsDeviceManager graphics;
 		private SpriteBatch spriteBatch;
@@ -57,12 +66,12 @@ namespace Source
         private Random rand;
         private World world;
 
-        private const float CAMERA_SCALE = 20f;
-        private const float MAX_CAMERA_SPEED_X = 5f; //5
-        private const float MAX_CAMERA_SPEED_Y = 3f; //3
-        private const float SCREEN_LEFT = 0.1f;
-        private const float SCREEN_RIGHT = 0.35f;
-        private const float SCREEN_TOP = 0.3f;
+        private const float CAMERA_SCALE = 20f;         // how fast the camera moves
+        private const float MAX_CAMERA_SPEED_X = 5f;    // maximum x speed of camera
+        private const float MAX_CAMERA_SPEED_Y = 3f;    // maximum y speed of camera
+        private const float SCREEN_LEFT = 0.1f;         // defines how far left the player can be on wobble-screen
+        private const float SCREEN_RIGHT = 0.35f;       // defines the right limit of the player on wobble-screen
+        private const float SCREEN_TOP = 0.3f;          // defines the distance from the top or bottom of the screen for the player in wobble-screen
         private Rectangle cameraBounds;
         private Vector2 screenCenter;
 
@@ -77,6 +86,9 @@ namespace Source
 		private Player player;
         private List<Floor> floors;
         
+        /// <summary>
+        /// Defines a floor. Floors have constant height and 2 vertices
+        /// </summary>
 		public class Floor
 		{
             public Body Body;
@@ -85,6 +97,12 @@ namespace Source
 
             private Vector2 start;
             
+            /// <summary>
+            /// Creates a new floor
+            /// </summary>
+            /// <param name="world">The current world</param>
+            /// <param name="position1">The starting position for the floor</param>
+            /// <param name="position2">The finishing position for the floor</param>
             public Floor(World world, Vector2 position1, Vector2 position2)
             {
                 start = position1;
@@ -96,6 +114,13 @@ namespace Source
                 MakeFloor(world, width, center, rotation);
             }
 
+            /// <summary>
+            /// Creates a new floor
+            /// </summary>
+            /// <param name="world">The current world</param>
+            /// <param name="width">The width of the floor</param>
+            /// <param name="center">The center of the floor</param>
+            /// <param name="rotation">Rotation to be used for the floor</param>
             public Floor(World world, float width, Vector2 center, float rotation)
             {
                 MakeFloor(world, width, center, rotation);
@@ -103,8 +128,8 @@ namespace Source
 
             private void MakeFloor(World world, float width, Vector2 center, float rotation)
             {
-                Body = BodyFactory.CreateRectangle(world, width, 0.2f, 1f, center, FLOOR);
-                Scale = new Vector2(width, 0.2f);
+                Body = BodyFactory.CreateRectangle(world, width, FLOOR_HEIGHT, 1f, center, FLOOR);
+                Scale = new Vector2(width, FLOOR_HEIGHT);
                 Origin = new Vector2(0.5f, 0.5f);
 
                 Body.BodyType = BodyType.Static;
@@ -114,21 +139,11 @@ namespace Source
                 Body.Friction = 0.7f;
                 Body.Restitution = 0.1f;    // Bounciness. Everything is ever so slightly bouncy so it doesn't feel like a rock with VHB tape.
             }
-
-            public void SetEnd(Vector2 end)
-            {
-                Vector2 dist = end - start;
-                float width = dist.Length();
-                float height = 0.2f;
-                Vector2 center = start + dist / 2;
-                float rotation = (float)Math.Atan2(dist.Y, dist.X);
-
-                Scale = new Vector2(width, height);
-                Body.Rotation = rotation;
-                Body.Position = center;
-            }
 		}
 
+        /// <summary>
+        /// Defines the main player character
+        /// </summary>
         class Player
         {
             public Body Body;
@@ -145,19 +160,23 @@ namespace Source
             private int Collisions;
             public double JumpWait;
 
+            /// <summary>
+            /// Creates a new player with a capsule hitbox of height 1.8m, width 0.8m, and position (0,0)
+            /// </summary>
+            /// <param name="world">The current world</param>
             public Player(World world)
             {
                 float width = 0.8f;
                 float height = 1.8f;
                 Body = BodyFactory.CreateCapsule(world, height - width, width / 2, 1f, PLAYER);
-                Body.Position = new Vector2(3f, 8f);
+                Body.Position = Vector2.Zero;
                 Scale = new Vector2(width, height);
                 Origin = new Vector2(0.5f, 0.5f);
 
-                //Falling = true;
                 Collisions = 0;
                 JumpWait = 0;
 
+                // A 'foot' hitbox sensor is used to see if the player is standing on ground and can jump
                 Fixture foot = FixtureFactory.AttachRectangle(1f, 0.3f, 0f, new Vector2(0f, 0.8f), Body);
                 foot.IsSensor = true;
                 foot.OnCollision += StartTouch;
@@ -166,7 +185,7 @@ namespace Source
                 Body.BodyType = BodyType.Kinematic;
                 Body.IsStatic = false;
                 Body.FixedRotation = true;
-                Body.Friction = 0f;     // Friction is handled for the player individually because it decreases speed otherwise
+                Body.Friction = 0f;
             }
 
             private bool StartTouch(Fixture f1, Fixture f2, Contact contact)
@@ -202,10 +221,10 @@ namespace Source
             graphics.ApplyChanges();
 
             // Sets how many pixels is a meter for Farseer
-            ConvertUnits.SetDisplayUnitToSimUnitRatio(32f);
+            ConvertUnits.SetDisplayUnitToSimUnitRatio(PIXEL_METER);
 
             // Create objects
-            world = new World(new Vector2(0, 13f));     // gravity in N
+            world = new World(new Vector2(0, GRAVITY));
             rand = new Random();
             player = new Player(world);
             floors = new List<Floor>();
@@ -229,7 +248,6 @@ namespace Source
 		protected override void LoadContent()
 		{
 			Content.RootDirectory = "Content";
-			// Create a new SpriteBatch, which can be used to draw textures.
 			spriteBatch = new SpriteBatch(GraphicsDevice);
 
             // Initialize camera
@@ -239,15 +257,15 @@ namespace Source
             screenCenter = cameraBounds.Center.ToVector2();
             screenOffset = Vector2.Zero;
 
-			// Use this to draw rectangles
+			// Use this to draw any rectangles
 			whiteRect = new Texture2D(GraphicsDevice, 1, 1);
 			whiteRect.SetData(new[] { Color.White });
 
-			// Load fonts using Content Manager
-			font = Content.Load<SpriteFont>("Score");
-			fontBig = Content.Load<SpriteFont>("ScoreBig");
+			// Load assets in the Content Manager
+			font = Content.Load<SpriteFont>("Fonts/Score");
+			fontBig = Content.Load<SpriteFont>("Fonts/ScoreBig");
 
-            // Loads level stored in LEVEL_FILE
+            // Load the level stored in LEVEL_FILE
             LoadLevel();
 		}
 
@@ -272,7 +290,7 @@ namespace Source
         protected override void Update(GameTime gameTime)
 		{
 			// Handle end game
-            // TODO put this in pause menu later
+            // TODO put this in a pause menu
 			if (Keyboard.GetState().IsKeyDown(Keys.Escape))
 				Exit();
 
@@ -282,14 +300,15 @@ namespace Source
                 paused = !paused;
 
             // Toggle edit level
+            // TODO much better level editing/ creation
             if (Keyboard.GetState().IsKeyDown(Keys.E) && !prevKeyState.IsKeyDown(Keys.E))
             {
                 editLevel = !editLevel;
                 if (editLevel)
-                    ConvertUnits.SetDisplayUnitToSimUnitRatio(8f);
+                    ConvertUnits.SetDisplayUnitToSimUnitRatio(PIXEL_METER_EDIT);
                 else
                 {
-                    ConvertUnits.SetDisplayUnitToSimUnitRatio(32f);
+                    ConvertUnits.SetDisplayUnitToSimUnitRatio(PIXEL_METER);
                     screenOffset = Vector2.Zero;
                     currentFloor = null;
                 }
@@ -300,7 +319,6 @@ namespace Source
                 HandleEditLevel();
             }
 
-            // This is pretty much how pause always works
             if (!paused)
             {
                 HandleKeyboard();
@@ -317,28 +335,31 @@ namespace Source
 			base.Update(gameTime);
 		}
 
+        /// <summary>
+        /// Handles all keyboard input for the game. Moves the player and recalculates wobble-screen.
+        /// </summary>
         private void HandleKeyboard()
         {
             KeyboardState state = Keyboard.GetState();
 
-            float impulse = MathHelper.SmoothStep(0.5f, 0f, Math.Abs(player.Body.LinearVelocity.X) / MAX_VELOCITY);
-            impulse = (float)Math.Pow(impulse, 0.5);
+            float impulse = MathHelper.SmoothStep(MAX_IMPULSE, 0f, Math.Abs(player.Body.LinearVelocity.X) / MAX_VELOCITY);
+            impulse = (float)Math.Pow(impulse, IMPULSE_POW);
 
-            if (state.IsKeyDown(Keys.Right))
+            if (state.IsKeyDown(Keys.Right))                    // move right
             {
                 player.Body.ApplyLinearImpulse(new Vector2(impulse, 0f));
-                if (player.Body.LinearVelocity.X < 0f && player.CanJump)  // change direction quickly
+                if (player.Body.LinearVelocity.X < 0f && player.CanJump)  // change direction quicker
                     player.Body.ApplyLinearImpulse(new Vector2(SLOWDOWN, 0f));
             }
-            else if (state.IsKeyDown(Keys.Left))
+            else if (state.IsKeyDown(Keys.Left))                // move left
             {
                 player.Body.ApplyLinearImpulse(new Vector2(-impulse, 0f));
-                if (player.Body.LinearVelocity.X > 0f && player.CanJump)  // change direction quickly
+                if (player.Body.LinearVelocity.X > 0f && player.CanJump)  // change direction quickler
                 {
                     player.Body.ApplyLinearImpulse(new Vector2(-SLOWDOWN, 0f));
                 }
             }
-            else if (player.CanJump)   // player is on the ground
+            else if (player.CanJump)                            // slow down if no input and on ground
             {
                 if (Math.Abs(player.Body.LinearVelocity.X) < MIN_VELOCITY)
                     player.Body.LinearVelocity = new Vector2(0f, player.Body.LinearVelocity.Y);
@@ -348,12 +369,13 @@ namespace Source
                     player.Body.ApplyLinearImpulse(new Vector2(Math.Sign(player.Body.LinearVelocity.X) * -SLOWDOWN, 0f));
                 }
             }
-            if (state.IsKeyDown(Keys.Up) && player.CanJump)
+            if (state.IsKeyDown(Keys.Up) && player.CanJump)     // jump
             {
                 player.JumpWait = JUMP_WAIT;
-                player.Body.ApplyLinearImpulse(new Vector2(0f, -13f));
+                player.Body.ApplyLinearImpulse(new Vector2(0f, -JUMP_IMPULSE));
             }
 
+            // Calculate wobble-screen
             // TODO ever so slight camera shake when going fast
             float deltaX = ((cameraBounds.Center.X - screenCenter.X) / cameraBounds.Width - player.Body.LinearVelocity.X / MAX_VELOCITY) * CAMERA_SCALE;
             deltaX = MathHelper.Clamp(deltaX, -MAX_CAMERA_SPEED_X, MAX_CAMERA_SPEED_X);
@@ -366,16 +388,30 @@ namespace Source
             screenCenter.Y = MathHelper.Clamp(screenCenter.Y, cameraBounds.Top, cameraBounds.Bottom);
         }
 
+        /// <summary>
+        /// Checks if the user is offscreen, and resets the player if it is
+        /// </summary>
         private void CheckPlayer()
         {
             if (player.Body.Position.Y > ConvertUnits.ToSimUnits(graphics.GraphicsDevice.Viewport.Height))
                 player = new Player(world);
         }
 
+        /// <summary>
+        /// Handles all keypresses for editing a level. These are the controls:
+        /// - Press 'E' to enter edit level mode.
+        /// - Shift-drag to select a floor (move your mouse slowly)
+        /// - Backspace to delete selected floor
+        /// - Ctrl-drag to create a new floor
+        /// - Ctrl-S to save your current level as test.lvl in the root project directory (be sure to copy and rename it if you want to keep it) - confirmation in console
+        /// - Ctrl-O to open the level in test.lvl -- NOTE, this will override ANY changes you made, so be careful
+        /// </summary>
         private void HandleEditLevel()
         {
             KeyboardState keyboard = Keyboard.GetState();
             MouseState mouse = Mouse.GetState();
+
+            // Snap the mouse position to 1x1 meter grid
             Vector2 mouseSimPos = ConvertUnits.ToSimUnits(mouse.Position.ToVector2() - cameraBounds.Center.ToVector2() - screenOffset) + player.Body.Position;
             mouseSimPos.X = (float)Math.Round(mouseSimPos.X);
             mouseSimPos.Y = (float)Math.Round(mouseSimPos.Y);
@@ -412,8 +448,11 @@ namespace Source
             }
             else if (editingFloor)                                  // Make the floor
             {
-                currentFloor = new Floor(world, startDraw, endDraw);
-                floors.Add(currentFloor);
+                if (startDraw != endDraw)
+                {
+                    currentFloor = new Floor(world, startDraw, endDraw);
+                    floors.Add(currentFloor);
+                }
                 editingFloor = false;
             }
             else if (keyboard.IsKeyDown(Keys.Back) && currentFloor != null)
@@ -437,6 +476,9 @@ namespace Source
             prevMouseState = mouse;
         }
 
+        /// <summary>
+        /// Saves a level (the floors) to the file in LEVEL_FILE
+        /// </summary>
         private void SaveLevel()
         {
             using (BinaryWriter writer = new BinaryWriter(File.Open(LEVEL_FILE, FileMode.Create)))
@@ -452,6 +494,9 @@ namespace Source
             Console.WriteLine("Saved");
         }
 
+        /// <summary>
+        /// Load a level (the floors) from the file in LEVEL_FILE
+        /// </summary>
         private void LoadLevel()
         {
             floors.Clear();
@@ -475,9 +520,6 @@ namespace Source
 		{
 			GraphicsDevice.Clear(Color.CornflowerBlue);
 
-            int width = GraphicsDevice.Viewport.Width;
-            int height = GraphicsDevice.Viewport.Height;
-
             // Calculate camera location matrix
             Matrix view;
             if (editLevel)
@@ -492,22 +534,23 @@ namespace Source
                 spriteBatch.Draw(whiteRect, ConvertUnits.ToDisplayUnits(item.Body.Position), null, Color.Azure, item.Body.Rotation, item.Origin, ConvertUnits.ToDisplayUnits(item.Scale), SpriteEffects.None, 0f);
             if (currentFloor != null)
                 spriteBatch.Draw(whiteRect, ConvertUnits.ToDisplayUnits(currentFloor.Body.Position), null, Color.Green, currentFloor.Body.Rotation,
-                    currentFloor.Origin, ConvertUnits.ToDisplayUnits(currentFloor.Scale + new Vector2(0, 0.2f)), SpriteEffects.None, 0f);
+                    currentFloor.Origin, ConvertUnits.ToDisplayUnits(currentFloor.Scale + new Vector2(0, FLOOR_HEIGHT)), SpriteEffects.None, 0f);
             if (editingFloor) {
                 Vector2 dist = ConvertUnits.ToDisplayUnits(endDraw - startDraw);
                 float rotation = (float)Math.Atan2(dist.Y, dist.X);
-                Vector2 scale = new Vector2(dist.Length(), ConvertUnits.ToDisplayUnits(0.2f));
+                Vector2 scale = new Vector2(dist.Length(), ConvertUnits.ToDisplayUnits(FLOOR_HEIGHT));
                 Vector2 origin = new Vector2(0.5f, 0.5f);
                 spriteBatch.Draw(whiteRect, ConvertUnits.ToDisplayUnits(startDraw) + dist / 2, null, Color.Azure, rotation, origin, scale, SpriteEffects.None, 0f);
             }
             spriteBatch.End();
 
 			// Show paused screen if game is paused
+            // TODO display a proper pause menu
             spriteBatch.Begin();
 			if (paused)
             {
-                float centerY = width / 2.0f - fontBig.MeasureString("Paused").X / 2.0f;
-				spriteBatch.DrawString(fontBig, "Paused", new Vector2(height * 0.1f, centerY), Color.Yellow);
+                float centerX = GraphicsDevice.Viewport.Width / 2.0f - fontBig.MeasureString("Paused").X / 2.0f;
+				spriteBatch.DrawString(fontBig, "Paused", new Vector2(centerX, GraphicsDevice.Viewport.Height * 0.1f), Color.Yellow);
             }
 			spriteBatch.End();
 

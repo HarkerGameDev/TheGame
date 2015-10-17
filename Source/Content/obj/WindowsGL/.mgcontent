@@ -4,7 +4,7 @@
   <Platform>WindowsGL</Platform>
   <Config />
   <SourceFiles>
-    <File>C:/Users/Nikita/Desktop/Nikita/Projects/Monogame/TheGame/Source/Content/Score.spritefont</File>
-    <File>C:/Users/Nikita/Desktop/Nikita/Projects/Monogame/TheGame/Source/Content/ScoreBig.spritefont</File>
+    <File>C:/Users/Nikita/Desktop/Nikita/Projects/Monogame/TheGame/Source/Content/Fonts/Score.spritefont</File>
+    <File>C:/Users/Nikita/Desktop/Nikita/Projects/Monogame/TheGame/Source/Content/Fonts/ScoreBig.spritefont</File>
   </SourceFiles>
 </SourceFileCollection>

@@ -159,4 +159,4 @@ $RECYCLE.BIN/
 # ------Custom----------
 
 # Generated content files
-!Source/Content/*
+!Source/Content/bin/
