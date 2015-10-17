@@ -54,7 +54,8 @@ namespace Source
         private const double IMPULSE_POW = 0.5; //     -- the player's horizontal input impulse is taken to the following power for extra smoothing
         private const float JUMP_IMPULSE = 13F; // N/s -- the upwards impulse applied when player jumps
         private const float SLOWDOWN = 0.7f;    // N/s -- impulse applied in opposite direction of travel to simulate friction
-        private const double JUMP_WAIT = 1;     // s   -- how long the player needs to wait before jumping again
+        private const float AIR_RESIST = 0.45f; //     -- air resistance on a scale of 0 to 1, where 1 is as if player is on ground
+        private const double JUMP_WAIT = 0.5;   // s   -- how long the player needs to wait before jumping again
 
 		private GraphicsDeviceManager graphics;
 		private SpriteBatch spriteBatch;
@@ -150,7 +151,9 @@ namespace Source
             public Body Body;
             public Vector2 Origin;
             public Vector2 Scale;
-            public bool ghost;
+
+            public float oldY;
+            public bool Ghost;
 
             public bool CanJump
             {
@@ -176,12 +179,12 @@ namespace Source
                 Scale = new Vector2(width, height);
                 Origin = new Vector2(0.5f, 0.5f);
 
-                ghost = false;
+                Ghost = false;
                 Collisions = 0;
                 JumpWait = 0;
 
                 // A 'foot' hitbox sensor is used to see if the player is standing on ground and can jump
-                Fixture foot = FixtureFactory.AttachRectangle(1f, 0.3f, 0f, new Vector2(0f, 0.8f), Body);
+                Fixture foot = FixtureFactory.AttachRectangle(0.6f, 0.5f, 0f, new Vector2(0f, 0.9f), Body);
                 foot.IsSensor = true;
                 foot.OnCollision += StartTouch;
                 foot.OnSeparation += EndTouch;
@@ -192,9 +195,16 @@ namespace Source
                 Body.Friction = 0f;
             }
 
+            public void Update(double deltaTime)
+            {
+                JumpWait -= deltaTime;
+                if (Ghost && Body.Position.Y - oldY > FLOOR_HEIGHT * 2 + Scale.Y)
+                    Ghost = false;
+            }
+
             private bool BodyTouch(Fixture f1, Fixture f2, Contact contact)
             {
-                if (ghost)
+                if (Ghost)
                 {
                     return false;
                 }
@@ -203,17 +213,15 @@ namespace Source
 
             private bool StartTouch(Fixture f1, Fixture f2, Contact contact)
             {
-                Collisions++;
-                if (ghost)
-                {
-                    return false;
-                }
+                if (!Ghost)
+                    Collisions++;
                 return true;
             }
 
             private void EndTouch(Fixture f1, Fixture f2)
             {
                 Collisions--;
+                Console.WriteLine(Collisions);
             }
         }
 
@@ -341,7 +349,7 @@ namespace Source
                 HandleKeyboard();
 
                 CheckPlayer();
-                player.JumpWait -= gameTime.ElapsedGameTime.TotalSeconds;
+                player.Update(gameTime.ElapsedGameTime.TotalSeconds);
 
                 world.Step((float)gameTime.ElapsedGameTime.TotalMilliseconds * 0.001f);
             }
@@ -381,7 +389,7 @@ namespace Source
                 float slow = SLOWDOWN;
                 if (!player.CanJump)
                 {
-                    slow = SLOWDOWN * 2 / 3; //air resistance
+                    slow = SLOWDOWN * AIR_RESIST;
                 }
                 if (Math.Abs(player.Body.LinearVelocity.X) < MIN_VELOCITY)
                     player.Body.LinearVelocity = new Vector2(0f, player.Body.LinearVelocity.Y);
@@ -398,15 +406,10 @@ namespace Source
             }
             if (state.IsKeyDown(Keys.Down) && player.CanJump)
             {
-                player.ghost = true;
-                float oldY = player.Body.Position.Y;
-                player.Body.ApplyLinearImpulse(new Vector2(0f, 6f));
-
-                Timer tmr = new Timer();
-                tmr.Interval = 100;
-                tmr.Elapsed += (sender, e) => timerHandler(tmr, oldY);
-                tmr.Start();
-                
+                if (!player.Ghost && player.Body.LinearVelocity.Y == 0)
+                    player.Body.ApplyLinearImpulse(new Vector2(0f, 6f));
+                player.Ghost = true;
+                player.oldY = player.Body.Position.Y;
             }
 
             // Calculate wobble-screen
@@ -420,15 +423,6 @@ namespace Source
             deltaY = MathHelper.Clamp(deltaY, -MAX_CAMERA_SPEED_Y, MAX_CAMERA_SPEED_Y);
             screenCenter.Y += deltaY;
             screenCenter.Y = MathHelper.Clamp(screenCenter.Y, cameraBounds.Top, cameraBounds.Bottom);
-        }
-
-        private void timerHandler(Timer tmr, float oldY)
-        {
-            if (player.Body.Position.Y - oldY >= FLOOR_HEIGHT + 1.8f)
-            {
-                tmr.Stop();
-                player.ghost = false;
-            }
         }
 
         /// <summary>
@@ -572,18 +566,18 @@ namespace Source
 
             // Draw player and floors
             spriteBatch.Begin(transformMatrix: view);
-            spriteBatch.Draw(whiteRect, ConvertUnits.ToDisplayUnits(player.Body.Position), null, Color.Red, player.Body.Rotation, player.Origin, ConvertUnits.ToDisplayUnits(player.Scale), SpriteEffects.None, 0f);
+            DrawRect(player.Body, Color.Red, player.Origin, player.Scale);
+            DrawRect(player.Body.Position + new Vector2(0f, 0.9f), Color.Gold, 0f, new Vector2(0.5f, 0.5f), new Vector2(0.6f, 0.5f));
 			foreach (Floor item in floors)
-                spriteBatch.Draw(whiteRect, ConvertUnits.ToDisplayUnits(item.Body.Position), null, Color.Azure, item.Body.Rotation, item.Origin, ConvertUnits.ToDisplayUnits(item.Scale), SpriteEffects.None, 0f);
+                DrawRect(item.Body, Color.Azure, item.Origin, item.Scale);
             if (currentFloor != null)
-                spriteBatch.Draw(whiteRect, ConvertUnits.ToDisplayUnits(currentFloor.Body.Position), null, Color.Green, currentFloor.Body.Rotation,
-                    currentFloor.Origin, ConvertUnits.ToDisplayUnits(currentFloor.Scale + new Vector2(0, FLOOR_HEIGHT)), SpriteEffects.None, 0f);
+                DrawRect(currentFloor.Body, Color.Green, currentFloor.Origin, currentFloor.Scale + new Vector2(0, FLOOR_HEIGHT));
             if (editingFloor) {
-                Vector2 dist = ConvertUnits.ToDisplayUnits(endDraw - startDraw);
+                Vector2 dist = endDraw - startDraw;
                 float rotation = (float)Math.Atan2(dist.Y, dist.X);
-                Vector2 scale = new Vector2(dist.Length(), ConvertUnits.ToDisplayUnits(FLOOR_HEIGHT));
+                Vector2 scale = new Vector2(dist.Length(), FLOOR_HEIGHT);
                 Vector2 origin = new Vector2(0.5f, 0.5f);
-                spriteBatch.Draw(whiteRect, ConvertUnits.ToDisplayUnits(startDraw) + dist / 2, null, Color.Azure, rotation, origin, scale, SpriteEffects.None, 0f);
+                DrawRect(startDraw + dist / 2, Color.Azure, rotation, origin, scale);
             }
             spriteBatch.End();
 
@@ -599,5 +593,30 @@ namespace Source
 
             base.Draw(gameTime);
 		}
+
+        /// <summary>
+        /// Draws a rectangle. Make sure this is called AFTER spriteBatch.Begin()
+        /// </summary>
+        /// <param name="position">The center of the rectangle</param>
+        /// <param name="color"></param>
+        /// <param name="rotation"></param>
+        /// <param name="origin">The center of the texture</param>
+        /// <param name="scale">The horizontal and vertical scale for the rectangle</param>
+        private void DrawRect(Vector2 position, Color color, float rotation, Vector2 origin, Vector2 scale)
+        {
+            spriteBatch.Draw(whiteRect, ConvertUnits.ToDisplayUnits(position), null, color, rotation, origin, ConvertUnits.ToDisplayUnits(scale), SpriteEffects.None, 0f);
+        }
+
+        /// <summary>
+        /// Draws a rectangle. Make sure this is called AFTER spriteBatch.Begin()
+        /// </summary>
+        /// <param name="body">The body for the rectangle to draw</param>
+        /// <param name="color"></param>
+        /// <param name="origin">The center for the texture to use</param>
+        /// <param name="scale">The horizontal and vertical scale for the rectangle</param>
+        private void DrawRect(Body body, Color color, Vector2 origin, Vector2 scale)
+        {
+            spriteBatch.Draw(whiteRect, ConvertUnits.ToDisplayUnits(body.Position), null, color, body.Rotation, origin, ConvertUnits.ToDisplayUnits(scale), SpriteEffects.None, 0f);
+        }
 	}
 }
