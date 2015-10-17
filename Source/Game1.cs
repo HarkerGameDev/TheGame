@@ -2,6 +2,7 @@
 using System.IO;
 using System.Runtime.Serialization;
 using System.Collections.Generic;
+using System.Timers;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -42,13 +43,13 @@ namespace Source
         private const int PLAYER = 0;
         private const int FLOOR = 1;
 
-        private const float PIXEL_METER = 32f;      // pixels per meter for normal game
+        private const float PIXEL_METER = 24f;      // pixels per meter for normal game
         private const float PIXEL_METER_EDIT = 8f;  // pixels per meter when in edit mode for level
         private const float FLOOR_HEIGHT = 0.2f;    // height in meters of a floor
 
         private const float GRAVITY = 13f;      // N   -- downwards gravity for the world
         private const float MIN_VELOCITY = 1f;  // m/s -- what can be considered 0 horizontal velocity
-        private const float MAX_VELOCITY = 13f; // m/s -- approximate Usaine Bolt speed
+        private const float MAX_VELOCITY = 20f; // m/s -- approximate Usaine Bolt speed
         private const float MAX_IMPULSE = 0.5f; // N/s -- the impulse which is applied when player starts moving after standing still
         private const double IMPULSE_POW = 0.5; //     -- the player's horizontal input impulse is taken to the following power for extra smoothing
         private const float JUMP_IMPULSE = 13F; // N/s -- the upwards impulse applied when player jumps
@@ -69,7 +70,7 @@ namespace Source
         private const float CAMERA_SCALE = 20f;         // how fast the camera moves
         private const float MAX_CAMERA_SPEED_X = 5f;    // maximum x speed of camera
         private const float MAX_CAMERA_SPEED_Y = 3f;    // maximum y speed of camera
-        private const float SCREEN_LEFT = 0.1f;         // defines how far left the player can be on wobble-screen
+        private const float SCREEN_LEFT = 0.2f;         // defines how far left the player can be on wobble-screen
         private const float SCREEN_RIGHT = 0.35f;       // defines the right limit of the player on wobble-screen
         private const float SCREEN_TOP = 0.3f;          // defines the distance from the top or bottom of the screen for the player in wobble-screen
         private Rectangle cameraBounds;
@@ -149,6 +150,7 @@ namespace Source
             public Body Body;
             public Vector2 Origin;
             public Vector2 Scale;
+            public bool ghost;
 
             public bool CanJump
             {
@@ -168,11 +170,13 @@ namespace Source
             {
                 float width = 0.8f;
                 float height = 1.8f;
+                
                 Body = BodyFactory.CreateCapsule(world, height - width, width / 2, 1f, PLAYER);
                 Body.Position = Vector2.Zero;
                 Scale = new Vector2(width, height);
                 Origin = new Vector2(0.5f, 0.5f);
 
+                ghost = false;
                 Collisions = 0;
                 JumpWait = 0;
 
@@ -181,16 +185,29 @@ namespace Source
                 foot.IsSensor = true;
                 foot.OnCollision += StartTouch;
                 foot.OnSeparation += EndTouch;
-
+                Body.OnCollision += BodyTouch;
                 Body.BodyType = BodyType.Kinematic;
                 Body.IsStatic = false;
                 Body.FixedRotation = true;
                 Body.Friction = 0f;
             }
 
+            private bool BodyTouch(Fixture f1, Fixture f2, Contact contact)
+            {
+                if (ghost)
+                {
+                    return false;
+                }
+                return true;
+            }
+
             private bool StartTouch(Fixture f1, Fixture f2, Contact contact)
             {
                 Collisions++;
+                if (ghost)
+                {
+                    return false;
+                }
                 return true;
             }
 
@@ -359,14 +376,19 @@ namespace Source
                     player.Body.ApplyLinearImpulse(new Vector2(-SLOWDOWN, 0f));
                 }
             }
-            else if (player.CanJump)                            // slow down if no input and on ground
+            else                            // slow down if no input and on ground
             {
+                float slow = SLOWDOWN;
+                if (!player.CanJump)
+                {
+                    slow = SLOWDOWN * 2 / 3; //air resistance
+                }
                 if (Math.Abs(player.Body.LinearVelocity.X) < MIN_VELOCITY)
                     player.Body.LinearVelocity = new Vector2(0f, player.Body.LinearVelocity.Y);
                 else
                 {
                     int playerVelSign = Math.Sign(player.Body.LinearVelocity.X);
-                    player.Body.ApplyLinearImpulse(new Vector2(Math.Sign(player.Body.LinearVelocity.X) * -SLOWDOWN, 0f));
+                    player.Body.ApplyLinearImpulse(new Vector2(Math.Sign(player.Body.LinearVelocity.X) * -slow, 0f));
                 }
             }
             if (state.IsKeyDown(Keys.Up) && player.CanJump)     // jump
@@ -374,18 +396,39 @@ namespace Source
                 player.JumpWait = JUMP_WAIT;
                 player.Body.ApplyLinearImpulse(new Vector2(0f, -JUMP_IMPULSE));
             }
+            if (state.IsKeyDown(Keys.Down) && player.CanJump)
+            {
+                player.ghost = true;
+                float oldY = player.Body.Position.Y;
+                player.Body.ApplyLinearImpulse(new Vector2(0f, 6f));
+
+                Timer tmr = new Timer();
+                tmr.Interval = 100;
+                tmr.Elapsed += (sender, e) => timerHandler(tmr, oldY);
+                tmr.Start();
+                
+            }
 
             // Calculate wobble-screen
             // TODO ever so slight camera shake when going fast
             float deltaX = ((cameraBounds.Center.X - screenCenter.X) / cameraBounds.Width - player.Body.LinearVelocity.X / MAX_VELOCITY) * CAMERA_SCALE;
             deltaX = MathHelper.Clamp(deltaX, -MAX_CAMERA_SPEED_X, MAX_CAMERA_SPEED_X);
-            screenCenter.X += deltaX;
+            screenCenter.X += deltaX/5;
             screenCenter.X = MathHelper.Clamp(screenCenter.X, cameraBounds.Left, cameraBounds.Right);
 
             float deltaY = ((cameraBounds.Center.Y - screenCenter.Y) / cameraBounds.Height - player.Body.LinearVelocity.Y / MAX_VELOCITY) * CAMERA_SCALE;
             deltaY = MathHelper.Clamp(deltaY, -MAX_CAMERA_SPEED_Y, MAX_CAMERA_SPEED_Y);
             screenCenter.Y += deltaY;
             screenCenter.Y = MathHelper.Clamp(screenCenter.Y, cameraBounds.Top, cameraBounds.Bottom);
+        }
+
+        private void timerHandler(Timer tmr, float oldY)
+        {
+            if (player.Body.Position.Y - oldY >= FLOOR_HEIGHT + 1.8f)
+            {
+                tmr.Stop();
+                player.ghost = false;
+            }
         }
 
         /// <summary>
