@@ -20,6 +20,7 @@ namespace Source
     /// This is the main type for the game.
     /// 
     /// IMPORTANT NOTES - PLEASE READ ALL:
+    /// - Please use (0,0) as the bottom left for all levels -- you will see a green box there
     /// - (0,0) is in the top left for drawing to screen, and (0,0) is in the center for Farseer physics
     /// - Farseer uses meters, monogame uses pixels -- use ConvertUnits to convert
     /// - Please follow the style guide in place, which is
@@ -30,19 +31,19 @@ namespace Source
     /// - For things that need to be added, look at the google doc, https://docs.google.com/document/d/1ofddsIU92CeK2RtJ5eg3PWEG8U2o49VdmNxmAJwwMMg/edit
     /// - Make good commit messages
     /// - There are no "assigned tasks" anymore, just subteams - do what needs to be done on the TOOD list (google doc)
+    /// - No magic numbers permitted!
     /// </summary>
     public class Game1 : Game
     {
         // LEVEL_FILE should point to "test.lvl" in the root project directory
 
 #if MONOMAC
-        private String[] tempFiles = Directory.GetFiles("../../../../", "*.lvl");
-        //private const String LEVEL_FILE = "../../../../../../test.lvl";
+        private String[] levelFiles = Directory.GetFiles("../../../../../../", "level*.lvl");
+        //private const String LEVEL_FILE = "../../../../../../new.lvl";
 #else
-        private String[] tempFiles = Directory.GetFiles("../../../../", "*.lvl");
-        //private const String LEVEL_FILE = "../../../../test.lvl";
+        private String[] levelFiles = Directory.GetFiles("../../../../", "level*.lvl");
+        //private const String LEVEL_FILE = "../../../../new.lvl";
 #endif
-        private String[] levelFiles;
 
         // Farseer user data - basically, just use this as if it were an enum
         private const int PLAYER = 0;
@@ -95,7 +96,9 @@ namespace Source
         private Player player;
         private List<Floor> floors;
 
-        private int level = 2;
+        private const float LOAD_NEW = 10f;     // the next level will be loaded when the player is this far from the current end
+        private const int level = -1;            // if this is greater than 0, levels will not be procedurally generated (useful for editing)
+        private float levelEnd;
 
         /// <summary>
         /// Defines a floor. Floors have constant height and 2 vertices
@@ -106,8 +109,6 @@ namespace Source
             public Vector2 Origin;
             public Vector2 Scale;
 
-            private Vector2 start;
-
             /// <summary>
             /// Creates a new floor
             /// </summary>
@@ -116,7 +117,6 @@ namespace Source
             /// <param name="position2">The finishing position for the floor</param>
             public Floor(World world, Vector2 position1, Vector2 position2)
             {
-                start = position1;
                 Vector2 dist = position2 - position1;
                 float width = dist.Length();
                 Vector2 center = position1 + dist / 2;
@@ -184,7 +184,7 @@ namespace Source
                 float height = 1.8f;
 
                 Body = BodyFactory.CreateCapsule(world, height - width, width / 2, 1f, PLAYER);
-                Body.Position = Vector2.Zero;
+                Body.Position = new Vector2(1f, -2f);
                 Scale = new Vector2(width, height);
                 Origin = new Vector2(0.5f, 0.5f);
 
@@ -246,18 +246,6 @@ namespace Source
         /// </summary>
         protected override void Initialize()
         {
-            levelFiles = new String[tempFiles.Length];
-            int at = 0;
-            for (int i = 0; i < tempFiles.Length; i++)
-            {
-                if (tempFiles[i].Contains("level" + at + ".lvl"))
-                {
-                    levelFiles[at] = tempFiles[i];
-                    at++;
-                }
-            }
-            tempFiles = null;
-
             // Modify screen size
             graphics.PreferredBackBufferWidth = GraphicsDevice.DisplayMode.Width / 2;
             graphics.PreferredBackBufferHeight = GraphicsDevice.DisplayMode.Height / 2;
@@ -311,6 +299,7 @@ namespace Source
             fontBig = Content.Load<SpriteFont>("Fonts/ScoreBig");
 
             // Load the level stored in LEVEL_FILE
+            levelEnd = 0;
             LoadLevel();
         }
 
@@ -367,7 +356,8 @@ namespace Source
 
             if (!paused)
             {
-                HandleKeyboard();
+                if (currentFloor == null)
+                    HandleKeyboard();
 
                 CheckPlayer();
                 player.Update(gameTime.ElapsedGameTime.TotalSeconds);
@@ -467,22 +457,17 @@ namespace Source
         }
 
         /// <summary>
-        /// Checks if the user is offscreen, and resets the player if it is
-        /// </summary>
-        private void CheckPlayer()
-        {
-            if (player.Body.Position.Y > ConvertUnits.ToSimUnits(graphics.GraphicsDevice.Viewport.Height))
-                player = new Player(world);
-        }
-
-        /// <summary>
         /// Handles all keypresses for editing a level. These are the controls:
         /// - Press 'E' to enter edit level mode.
         /// - Shift-drag to select a floor (move your mouse slowly)
         /// - Backspace to delete selected floor
+        /// - Alt-drag to modify currently selected floor
+        /// - Tap left, right, up, or down to move selected floor
         /// - Ctrl-drag to create a new floor
         /// - Ctrl-S to save your current level as test.lvl in the root project directory (be sure to copy and rename it if you want to keep it) - confirmation in console
         /// - Ctrl-O to open the level in test.lvl -- NOTE, this will override ANY changes you made, so be careful
+        /// - + and - zoom in and out
+        /// - Drag mouse with nothing held down to pan camera
         /// </summary>
         private void HandleEditLevel()
         {
@@ -516,6 +501,23 @@ namespace Source
                             if (fix != null && (int)fix.Body.UserData == FLOOR)
                                 currentFloor = floors.Find(f => f.Body == fix.Body);
                         }
+                        else if (keyboard.IsKeyDown(Keys.LeftAlt) && currentFloor != null)
+                        {                                           // Resize selected floor
+                            float rotation = currentFloor.Body.Rotation;
+                            Vector2 center = currentFloor.Body.Position;
+                            float width = currentFloor.Scale.X;
+                            Vector2 offset = new Vector2(width * (float)Math.Cos(rotation), width * (float)Math.Sin(rotation)) / 2;
+                            if (offset.X < 0) offset *= -1;
+                            if (mouseSimPos.X > center.X)
+                                startDraw = center - offset;
+                            else
+                                startDraw = center + offset;
+                            endDraw = mouseSimPos;
+                            currentFloor.Body.Dispose();
+                            floors.Remove(currentFloor);
+                            currentFloor = null;
+                            editingFloor = true;
+                        }
                         else                                        // Move camera
                         {
                             screenOffset += mouse.Position.ToVector2() - prevMouseState.Position.ToVector2();
@@ -533,25 +535,68 @@ namespace Source
                 }
                 editingFloor = false;
             }
-            else if (keyboard.IsKeyDown(Keys.Back) && currentFloor != null)
+            else if (currentFloor != null)
             {                                                       // Delete selected floor
-                currentFloor.Body.Dispose();
-                floors.Remove(currentFloor);
-                currentFloor = null;
+                if (keyboard.IsKeyDown(Keys.Back))
+                {
+                    currentFloor.Body.Dispose();
+                    floors.Remove(currentFloor);
+                    currentFloor = null;
+                }
+                else if (ToggleKey(Keys.Up))
+                    currentFloor.Body.Position = currentFloor.Body.Position + new Vector2(0f, -1f);
+                else if (ToggleKey(Keys.Left))
+                    currentFloor.Body.Position = currentFloor.Body.Position + new Vector2(-1f, 0f);
+                else if (ToggleKey(Keys.Right))
+                    currentFloor.Body.Position = currentFloor.Body.Position + new Vector2(1f, 0f);
+                else if (ToggleKey(Keys.Down))
+                    currentFloor.Body.Position = currentFloor.Body.Position + new Vector2(0f, 1f);
+                else if (keyboard.IsKeyDown(Keys.Enter))
+                    currentFloor = null;
             }
-            else if (keyboard.IsKeyDown(Keys.LeftControl))          // Save and load level
+            if (keyboard.IsKeyDown(Keys.LeftControl))               // Save and load level
             {
-                if (keyboard.IsKeyDown(Keys.S) && !prevKeyState.IsKeyDown(Keys.S))
+                if (ToggleKey(Keys.S) && level >= 0)
                 {
                     SaveLevel();
                 }
-                else if (keyboard.IsKeyDown(Keys.O) && !prevKeyState.IsKeyDown(Keys.O))
+                else if (ToggleKey(Keys.O))
                 {
                     LoadLevel();
                 }
             }
+            else if (ToggleKey(Keys.OemPlus))                       // Zoom in and out
+                ConvertUnits.SetDisplayUnitToSimUnitRatio(ConvertUnits.ToDisplayUnits(1f) * 2);
+            else if (ToggleKey(Keys.OemMinus))
+                ConvertUnits.SetDisplayUnitToSimUnitRatio(ConvertUnits.ToDisplayUnits(1f) / 2);
 
             prevMouseState = mouse;
+        }
+
+        private bool ToggleKey(Keys key)
+        {
+            return Keyboard.GetState().IsKeyDown(key) && prevKeyState.IsKeyUp(key);
+        }
+
+        /// <summary>
+        /// Checks if the user is off the level, and resets the player if it is
+        /// </summary>
+        private void CheckPlayer()
+        {
+            if (player.Body.Position.Y > 10f)
+            {
+                player = new Player(world);
+                if (level < 0)
+                {
+                    levelEnd = 0;
+                    currentFloor = null;
+                    foreach (Floor floor in floors)
+                        floor.Body.Dispose();
+                    floors.Clear();
+                }
+            }
+            else if (player.Body.Position.X > levelEnd - LOAD_NEW && level < 0)
+                LoadLevel();
         }
 
         /// <summary>
@@ -573,21 +618,29 @@ namespace Source
         }
 
         /// <summary>
-        /// Load a level (the floors) from the file in LEVEL_FILE
+        /// Load the level specified in level and increments levelEnd
         /// </summary>
         private void LoadLevel()
         {
-            floors.Clear();
-            using (BinaryReader reader = new BinaryReader(File.Open(levelFiles[level], FileMode.Open)))
+            float max = 0;
+            int loading;
+            if (level >= 0)
+                loading = level;
+            else
+                loading = rand.Next(0, levelFiles.Length);
+            using (BinaryReader reader = new BinaryReader(File.Open(levelFiles[loading], FileMode.Open)))
             {
                 while (reader.BaseStream.Position != reader.BaseStream.Length)
                 {
                     float width = reader.ReadSingle();
-                    Vector2 center = new Vector2(reader.ReadSingle(), reader.ReadSingle());
+                    Vector2 center = new Vector2(reader.ReadSingle() + levelEnd, reader.ReadSingle());
                     float rotation = reader.ReadSingle();
                     floors.Add(new Floor(world, width, center, rotation));
+                    float end = center.X - levelEnd + (float)Math.Cos(rotation) * width / 2f;
+                    if (end > max) max = end;
                 }
             }
+            levelEnd += max;
         }
 
         /// <summary>
@@ -621,6 +674,8 @@ namespace Source
                 Vector2 origin = new Vector2(0.5f, 0.5f);
                 DrawRect(startDraw + dist / 2, Color.Azure, rotation, origin, scale);
             }
+            if (editLevel)
+                DrawRect(Vector2.Zero, Color.LightGreen, 0f, new Vector2(0.5f, 0.5f), new Vector2(1, 1));
             spriteBatch.End();
 
             // Show paused screen if game is paused
