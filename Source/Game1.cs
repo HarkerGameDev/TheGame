@@ -64,6 +64,10 @@ namespace Source
         private const double JUMP_WAIT = 0.5;   // s   -- how long the player needs to wait before jumping again
         private const float PUSH_VEL = 1f;      // m/s -- the player is given a little push going down platforms under this velocity
         private const float PUSH_POW = 10f;     // N/s -- the impulse applied to the player to get down a platform
+        private const float MIN_WOBBLE = 3f;    //     -- the minimum ratio between max velocity and (max - current velocity) for wobbling
+        private const float MAX_WOBBLE = 8f;    //     -- the maximum ratio for wobbling; we don't want wobble amplifier 40x
+        private const int LEVEL_ANNOUNCE_WAIT = 40;//  -- how long the new level announcement is displayed, 20 = 1s
+
 
         private GraphicsDeviceManager graphics;
         private SpriteBatch spriteBatch;
@@ -99,6 +103,9 @@ namespace Source
         private const float LOAD_NEW = 10f;     // the next level will be loaded when the player is this far from the current end
         private const int level = -1;            // if this is greater than 0, levels will not be procedurally generated (useful for editing)
         private float levelEnd;
+
+        private int levelAnnounceWaitAt = 5;
+        private int currentLevel = 0;
 
         /// <summary>
         /// Defines a floor. Floors have constant height and 2 vertices
@@ -255,7 +262,7 @@ namespace Source
 
             // Sets how many pixels is a meter for Farseer
             ConvertUnits.SetDisplayUnitToSimUnitRatio(PIXEL_METER);
-
+            
             // Create objects
             world = new World(new Vector2(0, GRAVITY));
             rand = new Random();
@@ -265,6 +272,7 @@ namespace Source
             // Set variables
             paused = false;
             editLevel = false;
+            
 
             // Initialize previous keyboard and gamepad states
             prevKeyState = new KeyboardState();
@@ -367,18 +375,12 @@ namespace Source
 
             prevKeyState = Keyboard.GetState();
             prevPadState = GamePad.GetState(0);
-            if (MAX_VELOCITY - player.Body.LinearVelocity.X <= MAX_VELOCITY / 8)
-            {
-                wobbleScreen(8);
-            }
-            else if (MAX_VELOCITY - player.Body.LinearVelocity.X <= MAX_VELOCITY / 4)
-            {
-                wobbleScreen(4);
-            }
-            else if (MAX_VELOCITY - player.Body.LinearVelocity.X <= MAX_VELOCITY / 3)
-            {
-                wobbleScreen(3);
-            }
+            float wobbleRatio = MAX_VELOCITY / (MAX_VELOCITY - player.Body.LinearVelocity.X);
+            if (wobbleRatio >= MAX_WOBBLE)
+                wobbleScreen(MAX_WOBBLE);
+            else if (wobbleRatio >= MIN_WOBBLE)
+                wobbleScreen(wobbleRatio);
+            
 
             base.Update(gameTime);
         }
@@ -583,6 +585,7 @@ namespace Source
         /// </summary>
         private void CheckPlayer()
         {
+
             if (player.Body.Position.Y > 10f)
             {
                 player = new Player(world);
@@ -597,6 +600,7 @@ namespace Source
             }
             else if (player.Body.Position.X > levelEnd - LOAD_NEW && level < 0)
                 LoadLevel();
+
         }
 
         /// <summary>
@@ -623,6 +627,7 @@ namespace Source
         private void LoadLevel()
         {
             float max = 0;
+            
             int loading;
             if (level >= 0)
                 loading = level;
@@ -641,6 +646,8 @@ namespace Source
                 }
             }
             levelEnd += max;
+            levelAnnounceWaitAt = LEVEL_ANNOUNCE_WAIT;
+            currentLevel++;
         }
 
         /// <summary>
@@ -685,6 +692,14 @@ namespace Source
             {
                 float centerX = GraphicsDevice.Viewport.Width / 2.0f - fontBig.MeasureString("Paused").X / 2.0f;
                 spriteBatch.DrawString(fontBig, "Paused", new Vector2(centerX, GraphicsDevice.Viewport.Height * 0.1f), Color.Yellow);
+                levelAnnounceWaitAt = 0; //Prevent overlap of pause and level texts
+            }
+
+            if (levelAnnounceWaitAt > 0)
+            {
+                float centerX = GraphicsDevice.Viewport.Width / 2.0f - fontBig.MeasureString("Level " + currentLevel).X / 2.0f;
+                spriteBatch.DrawString(fontBig, "Level " + currentLevel, new Vector2(centerX, GraphicsDevice.Viewport.Height * 0.1f), Color.Aqua);
+                levelAnnounceWaitAt--;
             }
             spriteBatch.End();
 
