@@ -3,9 +3,11 @@ using System.IO;
 using System.Runtime.Serialization;
 using System.Collections.Generic;
 using System.Timers;
+
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+
 using FarseerPhysics;
 using FarseerPhysics.Common;
 using FarseerPhysics.Dynamics;
@@ -404,11 +406,14 @@ namespace Source
                 player.JumpWait = JUMP_WAIT;
                 player.Body.ApplyLinearImpulse(new Vector2(0f, -JUMP_IMPULSE));
             }
-            if (state.IsKeyDown(Keys.Down) && player.CanJump)
+            if (state.IsKeyDown(Keys.Down))
             {
-                if (!player.Ghost && player.Body.LinearVelocity.Y == 0)
-                    player.Body.ApplyLinearImpulse(new Vector2(0f, 6f));
+                bool wasGhost = player.Ghost;
                 player.Ghost = true;
+                Console.WriteLine(player.Body.LinearVelocity.Y);
+                if (!wasGhost && (player.Body.LinearVelocity.Y < 0.04 && player.Body.LinearVelocity.Y > -0.04) && player.CanJump)
+                    player.Body.ApplyLinearImpulse(new Vector2(0f, 6f));
+                
                 player.oldY = player.Body.Position.Y;
             }
 
