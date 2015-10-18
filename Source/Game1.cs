@@ -406,14 +406,10 @@ namespace Source
                 player.JumpWait = JUMP_WAIT;
                 player.Body.ApplyLinearImpulse(new Vector2(0f, -JUMP_IMPULSE));
             }
-            if (state.IsKeyDown(Keys.Down))
+            if (state.IsKeyDown(Keys.Down) && player.CanJump && !player.Ghost && (player.Body.LinearVelocity.Y < 0.04 && player.Body.LinearVelocity.Y > -0.04))
             {
-                bool wasGhost = player.Ghost;
+                player.Body.ApplyLinearImpulse(new Vector2(0f, 6f));
                 player.Ghost = true;
-                Console.WriteLine(player.Body.LinearVelocity.Y);
-                if (!wasGhost && (player.Body.LinearVelocity.Y < 0.04 && player.Body.LinearVelocity.Y > -0.04) && player.CanJump)
-                    player.Body.ApplyLinearImpulse(new Vector2(0f, 6f));
-                
                 player.oldY = player.Body.Position.Y;
             }
 
