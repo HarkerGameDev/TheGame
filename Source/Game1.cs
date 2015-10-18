@@ -48,7 +48,7 @@ namespace Source
         private const int PLAYER = 0;
         private const int FLOOR = 1;
 
-        private const float PIXEL_METER = 24f;      // pixels per meter for normal game
+        private const float PIXEL_METER = 16f;      // pixels per meter for normal game
         private const float PIXEL_METER_EDIT = 8f;  // pixels per meter when in edit mode for level
         private const float FLOOR_HEIGHT = 0.2f;    // height in meters of a floor
 
@@ -57,10 +57,12 @@ namespace Source
         private const float MAX_VELOCITY = 40f; // m/s -- approximate Usaine Bolt speed
         private const float MAX_IMPULSE = 0.5f; // N/s -- the impulse which is applied when player starts moving after standing still
         private const double IMPULSE_POW = 0.5; //     -- the player's horizontal input impulse is taken to the following power for extra smoothing
-        private const float JUMP_IMPULSE = 26F; // N/s -- the upwards impulse applied when player jumps
+        private const float JUMP_IMPULSE = 26f; // N/s -- the upwards impulse applied when player jumps
         private const float SLOWDOWN = 0.7f;    // N/s -- impulse applied in opposite direction of travel to simulate friction
         private const float AIR_RESIST = 0.45f; //     -- air resistance on a scale of 0 to 1, where 1 is as if player is on ground
         private const double JUMP_WAIT = 0.5;   // s   -- how long the player needs to wait before jumping again
+        private const float PUSH_VEL = 1f;      // m/s -- the player is given a little push going down platforms under this velocity
+        private const float PUSH_POW = 10f;     // N/s -- the impulse applied to the player to get down a platform
 
         private GraphicsDeviceManager graphics;
         private SpriteBatch spriteBatch;
@@ -435,10 +437,10 @@ namespace Source
                 player.JumpWait = JUMP_WAIT;
                 player.Body.ApplyLinearImpulse(new Vector2(0f, -JUMP_IMPULSE));
             }
-            if (state.IsKeyDown(Keys.Down) && player.CanJump && !player.Ghost && (player.Body.LinearVelocity.Y > -0.04 && player.Body.LinearVelocity.Y < 0.04))
+            if (state.IsKeyDown(Keys.Down) && player.CanJump && !player.Ghost)
             {                                                   // fall
-                    
-                player.Body.ApplyLinearImpulse(new Vector2(0f, 6f));
+                if (player.Body.LinearVelocity.Y <= PUSH_VEL)
+                    player.Body.ApplyLinearImpulse(new Vector2(0f, PUSH_POW));
                 player.Ghost = true;
                 player.oldY = player.Body.Position.Y;
             }
