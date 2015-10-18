@@ -2,7 +2,6 @@
 using System.IO;
 using System.Runtime.Serialization;
 using System.Collections.Generic;
-using System.Timers;
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -223,7 +222,6 @@ namespace Source
             private void EndTouch(Fixture f1, Fixture f2)
             {
                 Collisions--;
-                Console.WriteLine(Collisions);
             }
         }
 
@@ -386,7 +384,7 @@ namespace Source
                     player.Body.ApplyLinearImpulse(new Vector2(-SLOWDOWN, 0f));
                 }
             }
-            else                            // slow down if no input and on ground
+            else                                                // air resistance and friction
             {
                 float slow = SLOWDOWN;
                 if (!player.CanJump)
@@ -406,9 +404,10 @@ namespace Source
                 player.JumpWait = JUMP_WAIT;
                 player.Body.ApplyLinearImpulse(new Vector2(0f, -JUMP_IMPULSE));
             }
-            if (state.IsKeyDown(Keys.Down) && player.CanJump && !player.Ghost && (player.Body.LinearVelocity.Y < 0.04 && player.Body.LinearVelocity.Y > -0.04))
-            {
-                player.Body.ApplyLinearImpulse(new Vector2(0f, 6f));
+            if (state.IsKeyDown(Keys.Down) && player.CanJump && !player.Ghost && player.Body.LinearVelocity.Y > -0.04)
+            {                                                   // fall
+                if (player.Body.LinearVelocity.Y < 0.04)
+                    player.Body.ApplyLinearImpulse(new Vector2(0f, 6f));
                 player.Ghost = true;
                 player.oldY = player.Body.Position.Y;
             }
