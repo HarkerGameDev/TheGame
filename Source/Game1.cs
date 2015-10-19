@@ -49,24 +49,26 @@ namespace Source
         private const int PLAYER = 0;
         private const int FLOOR = 1;
 
-        private const float PIXEL_METER = 16f;      // pixels per meter for normal game
+        private const float PIXEL_METER = 32f;      // pixels per meter for normal game
         private const float PIXEL_METER_EDIT = 8f;  // pixels per meter when in edit mode for level
+        private const int VIEW_WIDTH = 1280;        // width of unscaled screen in pixels
+        private const int VIEW_HEIGHT = 720;        // height of unscaled screen in pixels
         private const float FLOOR_HEIGHT = 0.2f;    // height in meters of a floor
 
         private const float GRAVITY = 26f;      // N   -- downwards gravity for the world
         private const float MIN_VELOCITY = 1f;  // m/s -- what can be considered 0 horizontal velocity
         private const float MAX_VELOCITY = 40f; // m/s -- approximate Usaine Bolt speed
-        private const float MAX_IMPULSE = 0.5f; // N/s -- the impulse which is applied when player starts moving after standing still
+        private const float MAX_IMPULSE = 1f;   // N/s -- the impulse which is applied when player starts moving after standing still
         private const double IMPULSE_POW = 0.5; //     -- the player's horizontal input impulse is taken to the following power for extra smoothing
         private const float JUMP_IMPULSE = 26f; // N/s -- the upwards impulse applied when player jumps
-        private const float SLOWDOWN = 0.7f;    // N/s -- impulse applied in opposite direction of travel to simulate friction
-        private const float AIR_RESIST = 0.45f; //     -- air resistance on a scale of 0 to 1, where 1 is as if player is on ground
+        private const float SLOWDOWN = 2f;      // N/s -- impulse applied in opposite direction of travel to simulate friction
+        private const float AIR_RESIST = 0.75f; //     -- air resistance on a scale of 0 to 1, where 1 is as if player is on ground
         private const double JUMP_WAIT = 0.5;   // s   -- how long the player needs to wait before jumping again
         private const float PUSH_VEL = 1f;      // m/s -- the player is given a little push going down platforms under this velocity
         private const float PUSH_POW = 10f;     // N/s -- the impulse applied to the player to get down a platform
-        private const float MIN_WOBBLE = 3f;    //     -- the minimum ratio between max velocity and (max - current velocity) for wobbling
-        private const float MAX_WOBBLE = 8f;    //     -- the maximum ratio for wobbling; we don't want wobble amplifier 40x
-        private const int LEVEL_ANNOUNCE_WAIT = 40;//  -- how long the new level announcement is displayed, 20 = 1s
+        private const float MIN_WOBBLE = 2.5f;  //     -- the minimum ratio between max velocity and (max - current velocity) for wobbling
+        private const float MAX_WOBBLE = 5f;    //     -- the maximum ratio for wobbling; we don't want wobble amplifier 40x
+        private const float LEVEL_ANNOUNCE_WAIT = 1; //s  -- how long the new level announcement is displayed
 
 
         private GraphicsDeviceManager graphics;
@@ -104,7 +106,7 @@ namespace Source
         private const int level = -1;            // if this is greater than 0, levels will not be procedurally generated (useful for editing)
         private float levelEnd;
 
-        private int levelAnnounceWaitAt = 5;
+        private float levelAnnounceWaitAt = LEVEL_ANNOUNCE_WAIT;
         private int currentLevel = 0;
 
         /// <summary>
@@ -254,8 +256,8 @@ namespace Source
         protected override void Initialize()
         {
             // Modify screen size
-            graphics.PreferredBackBufferWidth = GraphicsDevice.DisplayMode.Width / 2;
-            graphics.PreferredBackBufferHeight = GraphicsDevice.DisplayMode.Height / 2;
+            graphics.PreferredBackBufferWidth = VIEW_WIDTH;
+            graphics.PreferredBackBufferHeight = VIEW_HEIGHT;
             graphics.IsFullScreen = false;
             IsMouseVisible = true;
             graphics.ApplyChanges();
@@ -371,16 +373,16 @@ namespace Source
                 player.Update(gameTime.ElapsedGameTime.TotalSeconds);
 
                 world.Step((float)gameTime.ElapsedGameTime.TotalMilliseconds * 0.001f);
+
+                float wobbleRatio = MAX_VELOCITY / (MAX_VELOCITY - player.Body.LinearVelocity.X);
+                if (wobbleRatio >= MAX_WOBBLE)
+                    wobbleScreen(MAX_WOBBLE);
+                else if (wobbleRatio >= MIN_WOBBLE)
+                    wobbleScreen(wobbleRatio);
             }
 
             prevKeyState = Keyboard.GetState();
             prevPadState = GamePad.GetState(0);
-            float wobbleRatio = MAX_VELOCITY / (MAX_VELOCITY - player.Body.LinearVelocity.X);
-            if (wobbleRatio >= MAX_WOBBLE)
-                wobbleScreen(MAX_WOBBLE);
-            else if (wobbleRatio >= MIN_WOBBLE)
-                wobbleScreen(wobbleRatio);
-            
 
             base.Update(gameTime);
         }
@@ -596,6 +598,7 @@ namespace Source
                     foreach (Floor floor in floors)
                         floor.Body.Dispose();
                     floors.Clear();
+                    currentLevel = 0;
                 }
             }
             else if (player.Body.Position.X > levelEnd - LOAD_NEW && level < 0)
@@ -699,7 +702,7 @@ namespace Source
             {
                 float centerX = GraphicsDevice.Viewport.Width / 2.0f - fontBig.MeasureString("Level " + currentLevel).X / 2.0f;
                 spriteBatch.DrawString(fontBig, "Level " + currentLevel, new Vector2(centerX, GraphicsDevice.Viewport.Height * 0.1f), Color.Aqua);
-                levelAnnounceWaitAt--;
+                levelAnnounceWaitAt -= (float)gameTime.ElapsedGameTime.TotalSeconds;
             }
             spriteBatch.End();
 
