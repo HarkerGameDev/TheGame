@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Microsoft.Xna.Framework.Media;
 
 using FarseerPhysics;
 using FarseerPhysics.Common;
@@ -100,7 +101,8 @@ namespace Source
         private List<Floor> floors;
 
         private const float LOAD_NEW = 100f;     // the next level will be loaded when the player is this far from the current end
-        private const int level = -1;            // if this is greater than 0, levels will not be procedurally generated (useful for editing)
+        private const int LEVEL = -1;            // if this is greater than 0, levels will not be procedurally generated (useful for editing)
+        private const string SONG = "Chiptune dash";    // the song to play, over, and over, and over again. NEVER STOP THE PARTY!
         private int levelEnd;
         private FloorData levels;
 
@@ -156,10 +158,10 @@ namespace Source
             public int LoadLevel(int levelEnd)
             {
                 int i;
-                if (level < 0)
+                if (LEVEL < 0)
                     i = rand.Next(data.Length);
                 else
-                    i = level;
+                    i = LEVEL;
                 foreach (Vector4 floor in data[i])
                 {
                     floors.Add(new Floor(world, floor.X, new Vector2(floor.Y + levelEnd, floor.Z), floor.W));
@@ -387,6 +389,11 @@ namespace Source
             // Load the level stored in LEVEL_FILE
             levelEnd = 0;
             LoadLevel();
+
+            // Load the song
+            Song song = Content.Load<Song>("Music/" + SONG);
+            MediaPlayer.IsRepeating = true;
+            MediaPlayer.Play(song);
         }
 
         /// <summary>
@@ -636,7 +643,7 @@ namespace Source
             }
             if (keyboard.IsKeyDown(Keys.LeftControl))               // Save and load level
             {
-                if (ToggleKey(Keys.S) && level >= 0)
+                if (ToggleKey(Keys.S) && LEVEL >= 0)
                 {
                     SaveLevel();
                 }
@@ -667,7 +674,7 @@ namespace Source
             if (player.Body.Position.Y > 10f)
             {
                 player = new Player(world);
-                if (level < 0)
+                if (LEVEL < 0)
                 {
                     levelEnd = 0;
                     currentFloor = null;
@@ -676,7 +683,7 @@ namespace Source
                     floors.Clear();
                 }
             }
-            else if (player.Body.Position.X > levelEnd - LOAD_NEW && level < 0)
+            else if (player.Body.Position.X > levelEnd - LOAD_NEW && LEVEL < 0)
                 LoadLevel();
 
         }
@@ -686,7 +693,7 @@ namespace Source
         /// </summary>
         private void SaveLevel()
         {
-            using (BinaryWriter writer = new BinaryWriter(File.Open(LEVELS_DIR + "level" + level, FileMode.Create)))
+            using (BinaryWriter writer = new BinaryWriter(File.Open(LEVELS_DIR + "level" + LEVEL, FileMode.Create)))
             {
                 foreach (Floor floor in floors)
                 {

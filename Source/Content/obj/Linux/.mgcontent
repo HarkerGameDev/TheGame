@@ -6,5 +6,8 @@
   <SourceFiles>
     <File>C:/Users/Nikita/Desktop/Nikita/Projects/Monogame/TheGame/Source/Content/Fonts/Score.spritefont</File>
     <File>C:/Users/Nikita/Desktop/Nikita/Projects/Monogame/TheGame/Source/Content/Fonts/ScoreBig.spritefont</File>
+    <File>C:/Users/Nikita/Desktop/Nikita/Projects/Monogame/TheGame/Source/Content/Music/Chiptune dash.mp3</File>
+    <File>C:/Users/Nikita/Desktop/Nikita/Projects/Monogame/TheGame/Source/Content/Music/Classic dash.mp3</File>
+    <File>C:/Users/Nikita/Desktop/Nikita/Projects/Monogame/TheGame/Source/Content/Music/Hot potato.mp3</File>
   </SourceFiles>
 </SourceFileCollection>

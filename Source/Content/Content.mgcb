@@ -25,3 +25,21 @@
 /processorParam:TextureFormat=Compressed
 /build:Fonts/ScoreBig.spritefont
 
+#begin Music/Chiptune dash.mp3
+/importer:Mp3Importer
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Music/Chiptune dash.mp3
+
+#begin Music/Classic dash.mp3
+/importer:Mp3Importer
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Music/Classic dash.mp3
+
+#begin Music/Hot potato.mp3
+/importer:Mp3Importer
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Music/Hot potato.mp3
+
