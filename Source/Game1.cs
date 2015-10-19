@@ -38,11 +38,9 @@ namespace Source
         // LEVEL_FILE should point to "test.lvl" in the root project directory
 
 #if MONOMAC
-        private String[] levelFiles = Directory.GetFiles("../../../../../../", "level*.lvl");
-        //private const String LEVEL_FILE = "../../../../../../new.lvl";
+        private String LEVELS_DIR = "../../../../../../";
 #else
-        private String[] levelFiles = Directory.GetFiles("../../../../", "level*.lvl");
-        //private const String LEVEL_FILE = "../../../../new.lvl";
+        private String LEVELS_DIR = "../../../../";
 #endif
 
         // Farseer user data - basically, just use this as if it were an enum
@@ -68,7 +66,6 @@ namespace Source
         private const float PUSH_POW = 10f;     // N/s -- the impulse applied to the player to get down a platform
         private const float MIN_WOBBLE = 2.5f;  //     -- the minimum ratio between max velocity and (max - current velocity) for wobbling
         private const float MAX_WOBBLE = 5f;    //     -- the maximum ratio for wobbling; we don't want wobble amplifier 40x
-        private const float LEVEL_ANNOUNCE_WAIT = 1; //s  -- how long the new level announcement is displayed
 
 
         private GraphicsDeviceManager graphics;
@@ -102,12 +99,74 @@ namespace Source
         private Player player;
         private List<Floor> floors;
 
-        private const float LOAD_NEW = 10f;     // the next level will be loaded when the player is this far from the current end
+        private const float LOAD_NEW = 100f;     // the next level will be loaded when the player is this far from the current end
         private const int level = -1;            // if this is greater than 0, levels will not be procedurally generated (useful for editing)
-        private float levelEnd;
+        private int levelEnd;
+        private FloorData levels;
 
-        private float levelAnnounceWaitAt = LEVEL_ANNOUNCE_WAIT;
-        private int currentLevel = 0;
+        /// <summary>
+        /// Stores data for each level in memory
+        /// </summary>
+        public class FloorData
+        {
+            private List<Vector4>[] data;
+            private World world;
+            private List<Floor> floors;
+            private int[] max;
+            private Random rand;
+
+            /// <summary>
+            /// Creates a new floordata object to store level data
+            /// </summary>
+            /// <param name="world">The current world</param>
+            /// <param name="floors">The list where floors are stored</param>
+            /// <param name="totalLevels">Total number of levels</param>
+            public FloorData(World world, List<Floor> floors, int totalLevels)
+            {
+                this.world = world;
+                this.floors = floors;
+                data = new List<Vector4>[totalLevels];
+                for (int i = 0; i < data.Length; i++)
+                {
+                    data[i] = new List<Vector4>();
+                }
+                max = new int[totalLevels];
+                rand = new Random();
+            }
+            
+            /// <summary>
+            /// Adds a new floor to the specified level
+            /// </summary>
+            /// <param name="width">Width of the floor</param>
+            /// <param name="center">Center of the floor</param>
+            /// <param name="rotation">Rotation of the floor</param>
+            /// <param name="level">The level in which this floor is located</param>
+            public void AddFloor(float width, Vector2 center, float rotation, int level)
+            {
+                data[level].Add(new Vector4(width, center.X, center.Y, rotation));
+                float end = center.X + (float)Math.Cos(rotation) * width / 2f;
+                if (end > max[level]) max[level] = (int)Math.Round(end);
+            }
+
+            /// <summary>
+            /// Loads a level into the world and floors list
+            /// </summary>
+            /// <param name="levelEnd">The current end of the game</param>
+            /// <returns>The amount by which levelEnd should be incremented</returns>
+            public int LoadLevel(int levelEnd)
+            {
+                int i;
+                if (level < 0)
+                    i = rand.Next(data.Length);
+                else
+                    i = level;
+                foreach (Vector4 floor in data[i])
+                {
+                    floors.Add(new Floor(world, floor.X, new Vector2(floor.Y + levelEnd, floor.Z), floor.W));
+                }
+                return max[i];
+            }
+        }
 
         /// <summary>
         /// Defines a floor. Floors have constant height and 2 vertices
@@ -292,6 +351,23 @@ namespace Source
         {
             Content.RootDirectory = "Content";
             spriteBatch = new SpriteBatch(GraphicsDevice);
+
+            // Load the levels into memory
+            string[] levelFiles = Directory.GetFiles(LEVELS_DIR, "level*.lvl");
+            levels = new FloorData(world, floors, levelFiles.Length);
+            for (int i = 0; i < levelFiles.Length; i++)
+            {
+                using (BinaryReader reader = new BinaryReader(File.Open(levelFiles[i], FileMode.Open)))
+                {
+                    while (reader.BaseStream.Position != reader.BaseStream.Length)
+                    {
+                        float floorWidth = reader.ReadSingle();
+                        Vector2 center = new Vector2(reader.ReadSingle() + levelEnd, reader.ReadSingle());
+                        float rotation = reader.ReadSingle();
+                        levels.AddFloor(floorWidth, center, rotation, i);
+                    }
+                }
+            }
 
             // Initialize camera
             int width = graphics.GraphicsDevice.Viewport.Width;
@@ -598,7 +674,6 @@ namespace Source
                     foreach (Floor floor in floors)
                         floor.Body.Dispose();
                     floors.Clear();
-                    currentLevel = 0;
                 }
             }
             else if (player.Body.Position.X > levelEnd - LOAD_NEW && level < 0)
@@ -611,7 +686,7 @@ namespace Source
         /// </summary>
         private void SaveLevel()
         {
-            using (BinaryWriter writer = new BinaryWriter(File.Open(levelFiles[level], FileMode.Create)))
+            using (BinaryWriter writer = new BinaryWriter(File.Open(LEVELS_DIR + "level" + level, FileMode.Create)))
             {
                 foreach (Floor floor in floors)
                 {
@@ -629,28 +704,7 @@ namespace Source
         /// </summary>
         private void LoadLevel()
         {
-            float max = 0;
-            
-            int loading;
-            if (level >= 0)
-                loading = level;
-            else
-                loading = rand.Next(0, levelFiles.Length);
-            using (BinaryReader reader = new BinaryReader(File.Open(levelFiles[loading], FileMode.Open)))
-            {
-                while (reader.BaseStream.Position != reader.BaseStream.Length)
-                {
-                    float width = reader.ReadSingle();
-                    Vector2 center = new Vector2(reader.ReadSingle() + levelEnd, reader.ReadSingle());
-                    float rotation = reader.ReadSingle();
-                    floors.Add(new Floor(world, width, center, rotation));
-                    float end = center.X - levelEnd + (float)Math.Cos(rotation) * width / 2f;
-                    if (end > max) max = end;
-                }
-            }
-            levelEnd += max;
-            levelAnnounceWaitAt = LEVEL_ANNOUNCE_WAIT;
-            currentLevel++;
+            levelEnd += levels.LoadLevel(levelEnd);
         }
 
         /// <summary>
@@ -695,15 +749,14 @@ namespace Source
             {
                 float centerX = GraphicsDevice.Viewport.Width / 2.0f - fontBig.MeasureString("Paused").X / 2.0f;
                 spriteBatch.DrawString(fontBig, "Paused", new Vector2(centerX, GraphicsDevice.Viewport.Height * 0.1f), Color.Yellow);
-                levelAnnounceWaitAt = 0; //Prevent overlap of pause and level texts
             }
 
-            if (levelAnnounceWaitAt > 0)
-            {
-                float centerX = GraphicsDevice.Viewport.Width / 2.0f - fontBig.MeasureString("Level " + currentLevel).X / 2.0f;
-                spriteBatch.DrawString(fontBig, "Level " + currentLevel, new Vector2(centerX, GraphicsDevice.Viewport.Height * 0.1f), Color.Aqua);
-                levelAnnounceWaitAt -= (float)gameTime.ElapsedGameTime.TotalSeconds;
-            }
+            //if (levelAnnounceWaitAt > 0)
+            //{
+            //    float centerX = GraphicsDevice.Viewport.Width / 2.0f - fontBig.MeasureString("Level " + currentLevel).X / 2.0f;
+            //    spriteBatch.DrawString(fontBig, "Level " + currentLevel, new Vector2(centerX, GraphicsDevice.Viewport.Height * 0.1f), Color.Aqua);
+            //    levelAnnounceWaitAt -= (float)gameTime.ElapsedGameTime.TotalSeconds;
+            //}
             spriteBatch.End();
 
             base.Draw(gameTime);
