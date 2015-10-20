@@ -2,6 +2,7 @@
 using System.IO;
 using System.Runtime.Serialization;
 using System.Collections.Generic;
+//using System.Windows.Media;
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -71,7 +72,6 @@ namespace Source
         private SpriteFont font, fontBig;
 
         private Random rand;
-        private World world;
 
         private const float CAMERA_SCALE = 20f;         // how fast the camera moves
         private const float MAX_CAMERA_SPEED_X = 5f;    // maximum x speed of camera
@@ -79,7 +79,7 @@ namespace Source
         private const float SCREEN_LEFT = 0.2f;         // defines how far left the player can be on wobble-screen
         private const float SCREEN_RIGHT = 0.35f;       // defines the right limit of the player on wobble-screen
         private const float SCREEN_TOP = 0.3f;          // defines the distance from the top or bottom of the screen for the player in wobble-screen
-        private Rectangle cameraBounds;
+        private Microsoft.Xna.Framework.Rectangle cameraBounds;
         private Vector2 screenCenter;
 
         private bool editLevel;
@@ -100,13 +100,13 @@ namespace Source
         private int levelEnd;
         private FloorData levels;
 
+
         /// <summary>
         /// Stores data for each level in memory
         /// </summary>
         public class FloorData
         {
             private List<Vector4>[] data;
-            private World world;
             private List<Floor> floors;
             private int[] max;
             private Random rand;
@@ -117,9 +117,8 @@ namespace Source
             /// <param name="world">The current world</param>
             /// <param name="floors">The list where floors are stored</param>
             /// <param name="totalLevels">Total number of levels</param>
-            public FloorData(World world, List<Floor> floors, int totalLevels)
+            public FloorData(List<Floor> floors, int totalLevels)
             {
-                this.world = world;
                 this.floors = floors;
                 data = new List<Vector4>[totalLevels];
                 for (int i = 0; i < data.Length; i++)
@@ -129,7 +128,7 @@ namespace Source
                 max = new int[totalLevels];
                 rand = new Random();
             }
-            
+
             /// <summary>
             /// Adds a new floor to the specified level
             /// </summary>
@@ -158,7 +157,7 @@ namespace Source
                     i = LEVEL;
                 foreach (Vector4 floor in data[i])
                 {
-                    floors.Add(new Floor(world, floor.X, new Vector2(floor.Y + levelEnd, floor.Z), floor.W));
+                    floors.Add(new Floor(floor.X, new Vector2(floor.Y + levelEnd, floor.Z), floor.W));
                 }
                 return max[i];
             }
@@ -169,7 +168,7 @@ namespace Source
         /// </summary>
 		public class Floor
         {
-            public Body Body;
+            public Rectangle Body;
             public Vector2 Origin;
             public Vector2 Scale;
 
@@ -179,14 +178,14 @@ namespace Source
             /// <param name="world">The current world</param>
             /// <param name="position1">The starting position for the floor</param>
             /// <param name="position2">The finishing position for the floor</param>
-            public Floor(World world, Vector2 position1, Vector2 position2)
+            public Floor(Vector2 position1, Vector2 position2)
             {
                 Vector2 dist = position2 - position1;
                 float width = dist.Length();
                 Vector2 center = position1 + dist / 2;
                 float rotation = (float)Math.Atan2(dist.Y, dist.X);
 
-                MakeFloor(world, width, center, rotation);
+                MakeFloor(width, center, rotation);
             }
 
             /// <summary>
@@ -196,14 +195,16 @@ namespace Source
             /// <param name="width">The width of the floor</param>
             /// <param name="center">The center of the floor</param>
             /// <param name="rotation">Rotation to be used for the floor</param>
-            public Floor(World world, float width, Vector2 center, float rotation)
+            public Floor(float width, Vector2 center, float rotation)
             {
-                MakeFloor(world, width, center, rotation);
+                MakeFloor(width, center, rotation);
             }
 
-            private void MakeFloor(World world, float width, Vector2 center, float rotation)
+            private void MakeFloor(float width, Vector2 center, float rotation)
             {
-                Body = BodyFactory.CreateRectangle(world, width, FLOOR_HEIGHT, 1f, center, FLOOR);
+                Body = new Rectangle((int)(center.X - width / 2), (int)(center.Y - FLOOR_HEIGHT / 2), (int)width, (int)FLOOR_HEIGHT);
+
+                /*Body = BodyFactory.CreateRectangle(world, width, FLOOR_HEIGHT, 1f, center, FLOOR);
                 Scale = new Vector2(width, FLOOR_HEIGHT);
                 Origin = new Vector2(0.5f, 0.5f);
 
@@ -213,7 +214,9 @@ namespace Source
                 Body.Rotation = rotation;
                 Body.Friction = 0.7f;
                 Body.Restitution = 0.1f;    // Bounciness. Everything is ever so slightly bouncy so it doesn't feel like a rock with VHB tape.
+                */
             }
+
         }
 
         /// <summary>
@@ -221,9 +224,11 @@ namespace Source
         /// </summary>
         class Player
         {
-            public Body Body;
+            public Rectangle Body;
             public Vector2 Origin;
             public Vector2 Scale;
+
+            public Vector2 LinearVelocity;
 
             public float oldY;
             public bool Ghost;
@@ -242,60 +247,35 @@ namespace Source
             /// Creates a new player with a capsule hitbox of height 1.8m, width 0.8m, and position (0,0)
             /// </summary>
             /// <param name="world">The current world</param>
-            public Player(World world)
+            public Player()
             {
-                float width = 0.8f;
-                float height = 1.8f;
+                int width = 1;
+                int height = 2;
 
-                Body = BodyFactory.CreateCapsule(world, height - width, width / 2, 1f, PLAYER);
-                Body.Position = new Vector2(1f, -2f);
-                Scale = new Vector2(width, height);
-                Origin = new Vector2(0.5f, 0.5f);
+                LinearVelocity = new Vector2(0f, 0f);
+
+                Body = new Rectangle(1, -2, width, height);
 
                 Ghost = false;
                 Collisions = 0;
                 JumpWait = 0;
-
-                // A 'foot' hitbox sensor is used to see if the player is standing on ground and can jump
-                Fixture foot = FixtureFactory.AttachRectangle(0.6f, 0.5f, 0f, new Vector2(0f, 0.9f), Body);
-                foot.IsSensor = true;
-                foot.OnCollision += StartTouch;
-                foot.OnSeparation += EndTouch;
-                Body.OnCollision += BodyTouch;
-                Body.BodyType = BodyType.Kinematic;
-                Body.IsStatic = false;
-                Body.FixedRotation = true;
-                Body.Friction = 0f;
             }
 
             public void Update(double deltaTime)
             {
                 JumpWait -= deltaTime;
-                if (Ghost && Body.Position.Y - oldY > FLOOR_HEIGHT * 2 + Scale.Y)
+                if (Ghost && Body.Top - oldY > FLOOR_HEIGHT * 2 + Scale.Y)
                     Ghost = false;
             }
 
-            private bool BodyTouch(Fixture f1, Fixture f2, Contact contact)
+            public void ApplyLinearImpulse(Vector2 impulse)
             {
-                if (Ghost)
-                {
-                    return false;
-                }
-                return true;
+                LinearVelocity = new Vector2(LinearVelocity.X + impulse.X, LinearVelocity.Y + impulse.Y);
             }
 
-            private bool StartTouch(Fixture f1, Fixture f2, Contact contact)
-            {
-                if (!Ghost)
-                    Collisions++;
-                return true;
-            }
 
-            private void EndTouch(Fixture f1, Fixture f2)
-            {
-                Collisions--;
-            }
         }
+
 
         public Game1()
         {
@@ -317,19 +297,16 @@ namespace Source
             IsMouseVisible = true;
             graphics.ApplyChanges();
 
-            // Sets how many pixels is a meter for Farseer
-            ConvertUnits.SetDisplayUnitToSimUnitRatio(PIXEL_METER);
-            
+
             // Create objects
-            world = new World(new Vector2(0, GRAVITY));
             rand = new Random();
-            player = new Player(world);
+            player = new Player();
             floors = new List<Floor>();
 
             // Set variables
             paused = false;
             editLevel = false;
-            
+
 
             // Initialize previous keyboard and gamepad states
             prevKeyState = new KeyboardState();
@@ -350,7 +327,7 @@ namespace Source
 
             // Load the levels into memory
             string[] levelFiles = Directory.GetFiles(LEVELS_DIR, "level*.lvl");
-            levels = new FloorData(world, floors, levelFiles.Length);
+            levels = new FloorData(floors, levelFiles.Length);
             for (int i = 0; i < levelFiles.Length; i++)
             {
                 using (BinaryReader reader = new BinaryReader(File.Open(levelFiles[i], FileMode.Open)))
@@ -428,10 +405,12 @@ namespace Source
             {
                 editLevel = !editLevel;
                 if (editLevel)
-                    ConvertUnits.SetDisplayUnitToSimUnitRatio(PIXEL_METER_EDIT);
+                {
+                    //ConvertUnits.SetDisplayUnitToSimUnitRatio(PIXEL_METER_EDIT);
+                }
                 else
                 {
-                    ConvertUnits.SetDisplayUnitToSimUnitRatio(PIXEL_METER);
+                    //ConvertUnits.SetDisplayUnitToSimUnitRatio(PIXEL_METER);
                     screenOffset = Vector2.Zero;
                     currentFloor = null;
                 }
@@ -450,9 +429,9 @@ namespace Source
                 CheckPlayer();
                 player.Update(gameTime.ElapsedGameTime.TotalSeconds);
 
-                world.Step((float)gameTime.ElapsedGameTime.TotalMilliseconds * 0.001f);
+                //world.Step((float)gameTime.ElapsedGameTime.TotalMilliseconds * 0.001f);
 
-                float wobbleRatio = MAX_VELOCITY / (MAX_VELOCITY - player.Body.LinearVelocity.X);
+                float wobbleRatio = MAX_VELOCITY / (MAX_VELOCITY - player.LinearVelocity.X);
                 if (wobbleRatio >= MAX_WOBBLE)
                     wobbleScreen(MAX_WOBBLE);
                 else if (wobbleRatio >= MIN_WOBBLE)
@@ -472,21 +451,21 @@ namespace Source
         {
             KeyboardState state = Keyboard.GetState();
 
-            float impulse = MathHelper.SmoothStep(MAX_IMPULSE, 0f, Math.Abs(player.Body.LinearVelocity.X) / MAX_VELOCITY);
+            float impulse = MathHelper.SmoothStep(MAX_IMPULSE, 0f, Math.Abs(player.LinearVelocity.X) / MAX_VELOCITY);
             impulse = (float)Math.Pow(impulse, IMPULSE_POW);
 
             if (state.IsKeyDown(Keys.Right))                    // move right
             {
-                player.Body.ApplyLinearImpulse(new Vector2(impulse, 0f));
-                if (player.Body.LinearVelocity.X < 0f && player.CanJump)  // change direction quicker
-                    player.Body.ApplyLinearImpulse(new Vector2(SLOWDOWN, 0f));
+                player.ApplyLinearImpulse(new Vector2(impulse, 0f));
+                if (player.LinearVelocity.X < 0f && player.CanJump)  // change direction quicker
+                    player.ApplyLinearImpulse(new Vector2(SLOWDOWN, 0f));
             }
             else if (state.IsKeyDown(Keys.Left))                // move left
             {
-                player.Body.ApplyLinearImpulse(new Vector2(-impulse, 0f));
-                if (player.Body.LinearVelocity.X > 0f && player.CanJump)  // change direction quickler
+                player.ApplyLinearImpulse(new Vector2(-impulse, 0f));
+                if (player.LinearVelocity.X > 0f && player.CanJump)  // change direction quickler
                 {
-                    player.Body.ApplyLinearImpulse(new Vector2(-SLOWDOWN, 0f));
+                    player.ApplyLinearImpulse(new Vector2(-SLOWDOWN, 0f));
                 }
             }
             else                            // air resistance and friction
@@ -496,35 +475,35 @@ namespace Source
                 {
                     slow = SLOWDOWN * AIR_RESIST;
                 }
-                if (Math.Abs(player.Body.LinearVelocity.X) < MIN_VELOCITY)
-                    player.Body.LinearVelocity = new Vector2(0f, player.Body.LinearVelocity.Y);
+                if (Math.Abs(player.LinearVelocity.X) < MIN_VELOCITY)
+                    player.LinearVelocity = new Vector2(0f, player.LinearVelocity.Y);
                 else
                 {
-                    int playerVelSign = Math.Sign(player.Body.LinearVelocity.X);
-                    player.Body.ApplyLinearImpulse(new Vector2(Math.Sign(player.Body.LinearVelocity.X) * -slow, 0f));
+                    int playerVelSign = Math.Sign(player.LinearVelocity.X);
+                    player.ApplyLinearImpulse(new Vector2(Math.Sign(player.LinearVelocity.X) * -slow, 0f));
                 }
             }
             if (state.IsKeyDown(Keys.Up) && player.CanJump)     // jump
             {
                 player.JumpWait = JUMP_WAIT;
-                player.Body.ApplyLinearImpulse(new Vector2(0f, -JUMP_IMPULSE));
+                player.ApplyLinearImpulse(new Vector2(0f, -JUMP_IMPULSE));
             }
             if (state.IsKeyDown(Keys.Down) && player.CanJump && !player.Ghost)
             {                                                   // fall
-                if (player.Body.LinearVelocity.Y <= PUSH_VEL)
-                    player.Body.ApplyLinearImpulse(new Vector2(0f, PUSH_POW));
+                if (player.LinearVelocity.Y <= PUSH_VEL)
+                    player.ApplyLinearImpulse(new Vector2(0f, PUSH_POW));
                 player.Ghost = true;
-                player.oldY = player.Body.Position.Y;
+                player.oldY = player.Body.Top;
             }
 
             // Calculate wobble-screen
             // TODO ever so slight camera shake when going fast
-            float deltaX = ((cameraBounds.Center.X - screenCenter.X) / cameraBounds.Width - player.Body.LinearVelocity.X / MAX_VELOCITY) * CAMERA_SCALE;
+            float deltaX = ((cameraBounds.Center.X - screenCenter.X) / cameraBounds.Width - player.LinearVelocity.X / MAX_VELOCITY) * CAMERA_SCALE;
             deltaX = MathHelper.Clamp(deltaX, -MAX_CAMERA_SPEED_X, MAX_CAMERA_SPEED_X);
             screenCenter.X += deltaX / 5;
             screenCenter.X = MathHelper.Clamp(screenCenter.X, cameraBounds.Left, cameraBounds.Right);
 
-            float deltaY = ((cameraBounds.Center.Y - screenCenter.Y) / cameraBounds.Height - player.Body.LinearVelocity.Y / MAX_VELOCITY) * CAMERA_SCALE;
+            float deltaY = ((cameraBounds.Center.Y - screenCenter.Y) / cameraBounds.Height - player.LinearVelocity.Y / MAX_VELOCITY) * CAMERA_SCALE;
             deltaY = MathHelper.Clamp(deltaY, -MAX_CAMERA_SPEED_Y, MAX_CAMERA_SPEED_Y);
             screenCenter.Y += deltaY;
             screenCenter.Y = MathHelper.Clamp(screenCenter.Y, cameraBounds.Top, cameraBounds.Bottom);
