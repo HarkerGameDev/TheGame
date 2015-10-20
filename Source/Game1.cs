@@ -8,13 +8,6 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
 
-using FarseerPhysics;
-using FarseerPhysics.Common;
-using FarseerPhysics.Dynamics;
-using FarseerPhysics.Dynamics.Contacts;
-using FarseerPhysics.Factories;
-using FarseerPhysics.Collision.Shapes;
-
 namespace Source
 {
     /// <summary>
@@ -103,6 +96,7 @@ namespace Source
         private const float LOAD_NEW = 100f;     // the next level will be loaded when the player is this far from the current end
         private const int LEVEL = -1;            // if this is greater than 0, levels will not be procedurally generated (useful for editing)
         private const string SONG = "Chiptune dash";    // the song to play, over, and over, and over again. NEVER STOP THE PARTY!
+        private const float VOLUME = 0f;        // volume of background music, on a scale of 0 to ??(I don't know!)
         private int levelEnd;
         private FloorData levels;
 
@@ -393,6 +387,7 @@ namespace Source
             // Load the song
             Song song = Content.Load<Song>("Music/" + SONG);
             MediaPlayer.IsRepeating = true;
+            MediaPlayer.Volume = VOLUME;
             MediaPlayer.Play(song);
         }
 
