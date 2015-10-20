@@ -216,6 +216,7 @@ namespace Source
                 Body.Restitution = 0.1f;    // Bounciness. Everything is ever so slightly bouncy so it doesn't feel like a rock with VHB tape.
                 */
             }
+            
 
         }
 
@@ -418,7 +419,7 @@ namespace Source
 
             if (editLevel)
             {
-                HandleEditLevel();
+                //HandleEditLevel();
             }
 
             if (!paused)
@@ -530,7 +531,7 @@ namespace Source
         /// - + and - zoom in and out
         /// - Drag mouse with nothing held down to pan camera
         /// </summary>
-        private void HandleEditLevel()
+        /*private void HandleEditLevel()
         {
             KeyboardState keyboard = Keyboard.GetState();
             MouseState mouse = Mouse.GetState();
@@ -638,26 +639,26 @@ namespace Source
         {
             return Keyboard.GetState().IsKeyDown(key) && prevKeyState.IsKeyUp(key);
         }
-
+        */
         /// <summary>
         /// Checks if the user is off the level, and resets the player if it is
         /// </summary>
         private void CheckPlayer()
         {
 
-            if (player.Body.Position.Y > 10f)
+            if (player.Body.Top > 10f)
             {
-                player = new Player(world);
+                player = new Player();
                 if (LEVEL < 0)
                 {
                     levelEnd = 0;
                     currentFloor = null;
-                    foreach (Floor floor in floors)
-                        floor.Body.Dispose();
+                    //foreach (Floor floor in floors)
+                        //floor.Dispose();
                     floors.Clear();
                 }
             }
-            else if (player.Body.Position.X > levelEnd - LOAD_NEW && LEVEL < 0)
+            else if (player.Body.Left > levelEnd - LOAD_NEW && LEVEL < 0)
                 LoadLevel();
 
         }
@@ -672,9 +673,9 @@ namespace Source
                 foreach (Floor floor in floors)
                 {
                     writer.Write(floor.Scale.X);
-                    writer.Write(floor.Body.Position.X);
-                    writer.Write(floor.Body.Position.Y);
-                    writer.Write(floor.Body.Rotation);
+                    writer.Write(floor.Body.Left);
+                    writer.Write(floor.Body.Top);
+                    writer.Write(0f);
                 }
             }
             Console.WriteLine("Saved");
@@ -697,7 +698,7 @@ namespace Source
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
             // Calculate camera location matrix
-            Matrix view;
+            /*Matrix view;
             if (editLevel)
                 view = Matrix.CreateTranslation(new Vector3(screenOffset + cameraBounds.Center.ToVector2() - ConvertUnits.ToDisplayUnits(player.Body.Position), 0f));
             else
@@ -722,7 +723,7 @@ namespace Source
             if (editLevel)
                 DrawRect(Vector2.Zero, Color.LightGreen, 0f, new Vector2(0.5f, 0.5f), new Vector2(1, 1));
             spriteBatch.End();
-
+            */
             // Show paused screen if game is paused
             // TODO display a proper pause menu
             spriteBatch.Begin();
@@ -753,7 +754,7 @@ namespace Source
         /// <param name="scale">The horizontal and vertical scale for the rectangle</param>
         private void DrawRect(Vector2 position, Color color, float rotation, Vector2 origin, Vector2 scale)
         {
-            spriteBatch.Draw(whiteRect, ConvertUnits.ToDisplayUnits(position), null, color, rotation, origin, ConvertUnits.ToDisplayUnits(scale), SpriteEffects.None, 0f);
+            //spriteBatch.Draw(whiteRect, ConvertUnits.ToDisplayUnits(position), null, color, rotation, origin, ConvertUnits.ToDisplayUnits(scale), SpriteEffects.None, 0f);
         }
 
         /// <summary>
@@ -763,9 +764,9 @@ namespace Source
         /// <param name="color"></param>
         /// <param name="origin">The center for the texture to use</param>
         /// <param name="scale">The horizontal and vertical scale for the rectangle</param>
-        private void DrawRect(Body body, Color color, Vector2 origin, Vector2 scale)
+        private void DrawRect(Color color, Vector2 origin, Vector2 scale)
         {
-            spriteBatch.Draw(whiteRect, ConvertUnits.ToDisplayUnits(body.Position), null, color, body.Rotation, origin, ConvertUnits.ToDisplayUnits(scale), SpriteEffects.None, 0f);
+            //spriteBatch.Draw(whiteRect, ConvertUnits.ToDisplayUnits(body.Position), null, color, body.Rotation, origin, ConvertUnits.ToDisplayUnits(scale), SpriteEffects.None, 0f);
         }
     }
 }
