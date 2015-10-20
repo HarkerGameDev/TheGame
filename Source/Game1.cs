@@ -79,7 +79,7 @@ namespace Source
         private const float SCREEN_LEFT = 0.2f;         // defines how far left the player can be on wobble-screen
         private const float SCREEN_RIGHT = 0.35f;       // defines the right limit of the player on wobble-screen
         private const float SCREEN_TOP = 0.3f;          // defines the distance from the top or bottom of the screen for the player in wobble-screen
-        private Microsoft.Xna.Framework.Rectangle cameraBounds;
+        private Rectangle cameraBounds;
         private Vector2 screenCenter;
 
         private bool editLevel;
@@ -100,6 +100,67 @@ namespace Source
         private int levelEnd;
         private FloorData levels;
 
+        private List<Rect> rects;
+
+        /// <summary>
+        /// A custom rectangle comprised of lines
+        /// </summary>
+        public class Rect
+        {
+            public float X;
+            public float Y;
+            List<Vector2> points = new List<Vector2>();
+            
+            //List<Line> lines = new List<Line>();
+            public Vector2 center;
+            public float Width;
+            public float Height;
+            public float Rotation; //Degrees in rotation(counterclockwise)
+            
+            public Rect(float x, float y, float width, float height, float rotation)
+            {
+                Width = width;
+                Height = height;
+                Rotation = rotation;
+                center = new Vector2(x + width / 2, y + height / 2);
+                points.Add(RotatePoint(center, new Vector2(x, y), rotation * (float)Math.PI / 180));
+                points.Add(RotatePoint(center, new Vector2(x+width, y), rotation * (float)Math.PI / 180));
+                points.Add(RotatePoint(center, new Vector2(x+width, y+height), rotation * (float)Math.PI / 180));
+                points.Add(RotatePoint(center, new Vector2(x, y+height), rotation * (float)Math.PI / 180));
+                X = points[0].X;
+                Y = points[0].Y;
+
+                /*
+                double angleTotal = Math.Atan2(height/2, width/2) + rotation; //Angle of new vertex to horizontal
+                double radius = Math.Sqrt(Math.Pow(height, 2) + Math.Pow(width, 2)) / 2;
+                float dX = (float)(width / 2 - Math.Cos(angleTotal) * radius);
+                float dY = (float)(Math.Sin(angleTotal) * radius - height / 2);
+
+                points[0] = new Vector2(X+dX, Y-dY);
+                points[1] = new Vector2(X+width-dX, Y+dY);
+                points[2] = new Vector2(X+width-dX, Y+height+dY);
+                points[3] = new Vector2(X);
+
+
+                X += dX;
+                Y -= dY;
+                */
+            }
+
+
+            private Vector2 RotatePoint(Vector2 pivot, Vector2 point, float angle)
+            {
+                // Rotate clockwise, angle in radians
+                double leX = ((Math.Cos(angle) * (point.X - pivot.X)) -
+                                   (Math.Sin(angle) * (point.Y - pivot.Y)) +
+                                   pivot.X);
+                double leY = ((Math.Sin(angle) * (point.X - pivot.X)) +
+                                   (Math.Cos(angle) * (point.Y - pivot.Y)) +
+                                   pivot.Y);
+                return new Vector2((float)leX, (float)leY);
+            }
+
+        }
 
         /// <summary>
         /// Stores data for each level in memory
@@ -216,7 +277,7 @@ namespace Source
                 Body.Restitution = 0.1f;    // Bounciness. Everything is ever so slightly bouncy so it doesn't feel like a rock with VHB tape.
                 */
             }
-            
+
 
         }
 
@@ -303,6 +364,8 @@ namespace Source
             rand = new Random();
             player = new Player();
             floors = new List<Floor>();
+            rects = new List<Rect>();
+            rects.Add(new Rect(10f,10f,10f,10f,0f));
 
             // Set variables
             paused = false;
@@ -325,7 +388,7 @@ namespace Source
         {
             Content.RootDirectory = "Content";
             spriteBatch = new SpriteBatch(GraphicsDevice);
-
+            
             // Load the levels into memory
             string[] levelFiles = Directory.GetFiles(LEVELS_DIR, "level*.lvl");
             levels = new FloorData(floors, levelFiles.Length);
@@ -367,6 +430,7 @@ namespace Source
             MediaPlayer.IsRepeating = true;
             MediaPlayer.Volume = VOLUME;
             MediaPlayer.Play(song);
+            
         }
 
         /// <summary>
@@ -696,7 +760,13 @@ namespace Source
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
-
+            spriteBatch.Begin();
+            spriteBatch.Draw(whiteRect, new Rectangle((int)200, (int)200, (int)100, (int)200), null, Color.Red, (float)Math.PI * 2, new Vector2(0,0), SpriteEffects.None, 0);
+            /*foreach (Rect rect in rects)
+            {
+                spriteBatch.Draw(whiteRect, new Rectangle((int)rect.X, (int)rect.Y, (int)rect.Width, (int)rect.Height), null, Color.Red, 0, rect.center, SpriteEffects.None, 0);
+            }*/
+            spriteBatch.End();
             // Calculate camera location matrix
             /*Matrix view;
             if (editLevel)
