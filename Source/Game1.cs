@@ -63,6 +63,8 @@ namespace Source
         private const float MIN_WOBBLE = 2.5f;  //     -- the minimum ratio between max velocity and (max - current velocity) for wobbling
         private const float MAX_WOBBLE = 5f;    //     -- the maximum ratio for wobbling; we don't want wobble amplifier 40x
 
+        private const string SONG = "Chiptune dash";    // the song to play, over, and over, and over again. NEVER STOP THE PARTY!
+        private const float VOLUME = 0f;                // volume for song
 
         private GraphicsDeviceManager graphics;
         private SpriteBatch spriteBatch;
@@ -97,7 +99,6 @@ namespace Source
 
         private const float LOAD_NEW = 100f;     // the next level will be loaded when the player is this far from the current end
         private const int LEVEL = -1;            // if this is greater than 0, levels will not be procedurally generated (useful for editing)
-        private const string SONG = "Chiptune dash";    // the song to play, over, and over, and over again. NEVER STOP THE PARTY!
         private int levelEnd;
         private FloorData levels;
 
@@ -224,7 +225,7 @@ namespace Source
             fontBig = Content.Load<SpriteFont>("Fonts/ScoreBig");
 
             // Create objects
-            player = new Player(whiteRect, new Vector2(0, -10));
+            player = new Player(whiteRect, new Vector2(2, -10));
             world = new World(player);
             rand = new Random();
             floors = new List<Floor>();
@@ -260,6 +261,7 @@ namespace Source
             // Load the song
             Song song = Content.Load<Song>("Music/" + SONG);
             MediaPlayer.IsRepeating = true;
+            MediaPlayer.Volume = VOLUME;
             MediaPlayer.Play(song);
         }
 

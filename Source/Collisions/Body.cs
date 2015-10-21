@@ -38,7 +38,9 @@ namespace Source.Collisions
             this.Position = position;
             this.Size = size;
             this.Rotation = rotation;
-            this.CollisionExceptions = new List<Body>();
+
+            CollisionExceptions = new List<Body>();
+            Velocity = Vector2.Zero;
             color = Color.White;
             origin = new Vector2(texture.Width / 2.0f, texture.Height / 2.0f);
             
@@ -170,10 +172,7 @@ namespace Source.Collisions
                 }
 
 
-                if (Intersect)
-                        return true;
-                    else
-                        return false;
+                return Intersect;
             
         }
 

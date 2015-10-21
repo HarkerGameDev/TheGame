@@ -13,23 +13,33 @@ namespace Source.Collisions
     /// </summary>
     public class World
     {
-        private const float GRAVITY = 10f;
+        private const float GRAVITY = 8f;
 
         private Player player;
+        private List<Body> bodies; // try to optimize this somehow (something faster than a list maybe)
 
         public World(Player player)
         {
             this.player = player;
+            bodies = new List<Body>();
         }
 
         public void Add(Body body)
         {
-
+            bodies.Add(body);
         }
 
         public void Step(float deltaTime)
         {
-
+            player.Velocity.Y += GRAVITY * deltaTime;
+            player.Position += player.Velocity * deltaTime;
+            foreach (Body body in bodies)
+            {
+                if (player.Intersects(body))
+                {
+                    player.Position += player.MinimumTranslationVector;
+                }
+            }
         }
 
         public Body TestPoint(Vector2 point)

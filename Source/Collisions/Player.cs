@@ -13,14 +13,10 @@ namespace Source.Collisions
     /// </summary>
     public class Player : Body
     {
-        public Vector2 Velocity;
-
         public Player(Texture2D texture, Vector2 position)
             : base(texture, position, new Vector2(0.8f, 1.8f))
         {
             color = Color.Red;
-
-            Velocity = Vector2.Zero;
         }
     }
 }
