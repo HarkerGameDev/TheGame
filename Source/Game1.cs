@@ -51,12 +51,12 @@ namespace Source
 
         private const float GRAVITY = 26f;      // N   -- downwards gravity for the world
         private const float MIN_VELOCITY = 1f;  // m/s -- what can be considered 0 horizontal velocity
-        private const float MAX_VELOCITY = 40f; // m/s -- approximate Usaine Bolt speed
+        private const float MAX_VELOCITY = 5f; // m/s -- approximate Usaine Bolt speed
         private const float MAX_IMPULSE = 1f;   // N/s -- the impulse which is applied when player starts moving after standing still
         private const double IMPULSE_POW = 0.5; //     -- the player's horizontal input impulse is taken to the following power for extra smoothing
-        private const float JUMP_IMPULSE = 26f; // N/s -- the upwards impulse applied when player jumps
-        private const float SLOWDOWN = 2f;      // N/s -- impulse applied in opposite direction of travel to simulate friction
-        private const float AIR_RESIST = 0.75f; //     -- air resistance on a scale of 0 to 1, where 1 is as if player is on ground
+        private const float JUMP_IMPULSE = 10f; // N/s -- the upwards impulse applied when player jumps
+        private const float SLOWDOWN = 1f;      // N/s -- impulse applied in opposite direction of travel to simulate friction
+        private const float AIR_RESIST = 0.25f; //     -- air resistance on a scale of 0 to 1, where 1 is as if player is on ground
         private const double JUMP_WAIT = 0.5;   // s   -- how long the player needs to wait before jumping again
         private const float PUSH_VEL = 1f;      // m/s -- the player is given a little push going down platforms under this velocity
         private const float PUSH_POW = 10f;     // N/s -- the impulse applied to the player to get down a platform
@@ -291,6 +291,15 @@ namespace Source
             if (Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
+            if (Keyboard.GetState().IsKeyDown(Keys.I))
+            {
+                for (int x = 0; x < floors.Count; x++)
+                {
+                    Console.WriteLine(floors[x].Intersects(floors[floors.Count-1]));
+                }
+            }
+                
+
             // Handle toggle pause
             // TODO open pause menu
             if (Keyboard.GetState().IsKeyDown(Keys.Space) && !prevKeyState.IsKeyDown(Keys.Space))
@@ -321,7 +330,7 @@ namespace Source
                 if (currentFloor == null)
                     HandleKeyboard();
 
-                //CheckPlayer();
+                CheckPlayer();
                 //player.Update(gameTime.ElapsedGameTime.TotalSeconds);
 
                 world.Step((float)gameTime.ElapsedGameTime.TotalSeconds);
@@ -344,52 +353,52 @@ namespace Source
         /// </summary>
         private void HandleKeyboard()
         {
-            //KeyboardState state = Keyboard.GetState();
+            KeyboardState state = Keyboard.GetState();
 
-            //float impulse = MathHelper.SmoothStep(MAX_IMPULSE, 0f, Math.Abs(player.Body.LinearVelocity.X) / MAX_VELOCITY);
-            //impulse = (float)Math.Pow(impulse, IMPULSE_POW);
-
-            //if (state.IsKeyDown(Keys.Right))                    // move right
-            //{
-            //    player.Body.ApplyLinearImpulse(new Vector2(impulse, 0f));
-            //    if (player.Body.LinearVelocity.X < 0f && player.CanJump)  // change direction quicker
-            //        player.Body.ApplyLinearImpulse(new Vector2(SLOWDOWN, 0f));
-            //}
-            //else if (state.IsKeyDown(Keys.Left))                // move left
-            //{
-            //    player.Body.ApplyLinearImpulse(new Vector2(-impulse, 0f));
-            //    if (player.Body.LinearVelocity.X > 0f && player.CanJump)  // change direction quickler
-            //    {
-            //        player.Body.ApplyLinearImpulse(new Vector2(-SLOWDOWN, 0f));
-            //    }
-            //}
-            //else                            // air resistance and friction
-            //{
-            //    float slow = SLOWDOWN;
-            //    if (!player.CanJump)
-            //    {
-            //        slow = SLOWDOWN * AIR_RESIST;
-            //    }
-            //    if (Math.Abs(player.Body.LinearVelocity.X) < MIN_VELOCITY)
-            //        player.Body.LinearVelocity = new Vector2(0f, player.Body.LinearVelocity.Y);
-            //    else
-            //    {
-            //        int playerVelSign = Math.Sign(player.Body.LinearVelocity.X);
-            //        player.Body.ApplyLinearImpulse(new Vector2(Math.Sign(player.Body.LinearVelocity.X) * -slow, 0f));
-            //    }
-            //}
-            //if (state.IsKeyDown(Keys.Up) && player.CanJump)     // jump
-            //{
-            //    player.JumpWait = JUMP_WAIT;
-            //    player.Body.ApplyLinearImpulse(new Vector2(0f, -JUMP_IMPULSE));
-            //}
-            //if (state.IsKeyDown(Keys.Down) && player.CanJump && !player.Ghost)
-            //{                                                   // fall
-            //    if (player.Body.LinearVelocity.Y <= PUSH_VEL)
-            //        player.Body.ApplyLinearImpulse(new Vector2(0f, PUSH_POW));
-            //    player.Ghost = true;
-            //    player.oldY = player.Body.Position.Y;
-            //}
+            float impulse = MathHelper.SmoothStep(MAX_IMPULSE, 0f, Math.Abs(player.Velocity.X) / MAX_VELOCITY);
+            impulse = (float)Math.Pow(impulse, IMPULSE_POW);
+            impulse = 0.5f;
+            if (state.IsKeyDown(Keys.Right))                    // move right
+            {
+                player.Velocity += (new Vector2(impulse, 0f));
+                if (player.Velocity.X < 0f && player.CanJump)  // change direction quicker
+                    player.Velocity += (new Vector2(SLOWDOWN, 0f));
+            }
+            else if (state.IsKeyDown(Keys.Left))                // move left
+            {
+                player.Velocity += (new Vector2(-impulse, 0f));
+                if (player.Velocity.X > 0f && player.CanJump)  // change direction quickler
+                {
+                    player.Velocity += (new Vector2(-SLOWDOWN, 0f));
+                }
+            }
+            else                            // air resistance and friction
+            {
+                float slow = SLOWDOWN;
+                if (!player.CanJump)
+                {
+                    slow = SLOWDOWN * AIR_RESIST;
+                }
+                if (Math.Abs(player.Velocity.X) < MIN_VELOCITY)
+                    player.Velocity = new Vector2(0f, player.Velocity.Y);
+                else
+                {
+                    int playerVelSign = Math.Sign(player.Velocity.X);
+                    player.Velocity += (new Vector2(Math.Sign(player.Velocity.X) * -slow, 0f));
+                }
+            }
+            if (state.IsKeyDown(Keys.Up) && player.CanJump)     // jump
+            {
+                player.JumpWait = JUMP_WAIT;
+                player.Velocity += (new Vector2(0f, -JUMP_IMPULSE));
+            }
+            if (state.IsKeyDown(Keys.Down) && player.CanJump && !player.Ghost)
+            {                                                   // fall
+                if (player.Velocity.Y <= PUSH_VEL)
+                    player.Velocity += (new Vector2(0f, PUSH_POW));
+                player.Ghost = true;
+                player.oldY = player.Position.Y;
+            }
 
             // Calculate wobble-screen
             // TODO ever so slight camera shake when going fast
@@ -539,18 +548,18 @@ namespace Source
         /// </summary>
         private void CheckPlayer()
         {
-            //if (player.Body.Position.Y > 10f)
-            //{
-            //    player = new Player(world);
-            //    if (LEVEL < 0)
-            //    {
-            //        levelEnd = 0;
-            //        currentFloor = null;
-            //        foreach (Floor floor in floors)
-            //            floor.Body.Dispose();
-            //        floors.Clear();
-            //    }
-            //}
+            if (player.Position.Y > 10f)
+            {
+                player = new Player(whiteRect, new Vector2(2, -10));
+                //if (LEVEL < 0)
+                //{
+                //    levelEnd = 0;
+                //    currentFloor = null;
+                //    foreach (Floor floor in floors)
+                //        floor.Body.Dispose();
+                //    floors.Clear();
+                //}
+            }
             //else if (player.Body.Position.X > levelEnd - LOAD_NEW && LEVEL < 0)
             //    LoadLevel();
         }

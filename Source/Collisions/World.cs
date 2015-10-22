@@ -31,13 +31,24 @@ namespace Source.Collisions
 
         public void Step(float deltaTime)
         {
+            player.CanJump = false;
             player.Velocity.Y += GRAVITY * deltaTime;
             player.Position += player.Velocity * deltaTime;
             foreach (Body body in bodies)
             {
-                if (player.Intersects(body))
+                if (player.Intersects(body) == 1 || player.Intersects(body) == 2)
                 {
-                    player.Position += player.MinimumTranslationVector;
+                    player.Position.X -= player.Velocity.X * deltaTime;
+                    player.Velocity.X = 0;
+                }else if (player.Intersects(body) == 3)
+                {
+                    player.Position.Y -= player.Velocity.Y * deltaTime;
+                    player.Velocity.Y = 0;
+                }else if(player.Intersects(body) == 4)
+                {
+                    player.Position.Y -= player.Velocity.Y * deltaTime;
+                    player.CanJump = true;
+                    player.Velocity.Y = 0;
                 }
             }
         }

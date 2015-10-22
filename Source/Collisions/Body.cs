@@ -21,7 +21,7 @@ namespace Source.Collisions
         public Vector2 Velocity;
 
         private List<Vector2> Points;
-        private List<Vector2> Edges;
+        public List<List<Vector2>> Edges;
 
         protected Color color;
 
@@ -43,17 +43,26 @@ namespace Source.Collisions
             Velocity = Vector2.Zero;
             color = Color.White;
             origin = new Vector2(texture.Width / 2.0f, texture.Height / 2.0f);
-            
-            Center = new Vector2(position.X + size.X / 2, position.Y + size.Y / 2);
+
+            Vector2 dposition = ConvertUnits.ToDisplayUnits(Position);
+            Center = new Vector2(dposition.X + size.X / 2, dposition.Y + size.Y / 2);
             Points = new List<Vector2>();
-            Points.Add(RotatePoint(Center, new Vector2(position.X, position.Y), rotation * (float)Math.PI / 180));
-            Points.Add(RotatePoint(Center, new Vector2(position.X + size.X, position.Y), rotation * (float)Math.PI / 180));
-            Points.Add(RotatePoint(Center, new Vector2(position.X + size.X, position.Y + size.Y), rotation * (float)Math.PI / 180));
-            Points.Add(RotatePoint(Center, new Vector2(position.X, position.Y + size.Y), rotation * (float)Math.PI / 180));
-            Edges = new List<Vector2>();
-            for(int x = 0; x < 4; x++)
+            Points.Add(RotatePoint(dposition, new Vector2(dposition.X - size.X / 2, dposition.Y - size.Y / 2), rotation * (float)Math.PI / 180));
+            Points.Add(RotatePoint(dposition, new Vector2(dposition.X + size.X / 2, dposition.Y - size.Y / 2), rotation * (float)Math.PI / 180));
+            Points.Add(RotatePoint(dposition, new Vector2(dposition.X + size.X / 2, dposition.Y + size.Y / 2), rotation * (float)Math.PI / 180));
+            Points.Add(RotatePoint(dposition, new Vector2(dposition.X - size.X / 2, dposition.Y + size.Y / 2), rotation * (float)Math.PI / 180));
+
+            /*Points.Add(new Vector2(dposition.X - size.X / 2, dposition.Y - size.Y / 2));
+            Points.Add(new Vector2(dposition.X + size.X / 2, dposition.Y - size.Y / 2));
+            Points.Add(new Vector2(dposition.X + size.X / 2, dposition.Y + size.Y / 2));
+            Points.Add(new Vector2(dposition.X - size.X / 2, dposition.Y + size.Y / 2));*/
+            Edges = new List<List<Vector2>>();
+            for (int x = 0; x < 4; x++)
             {
-                Edges.Add(new Vector2(Points[x].X-Points[(x+1)%4].X, Points[x].Y - Points[(x + 1) % 4].Y));
+                List<Vector2> line = new List<Vector2>();
+                line.Add(new Vector2(Points[x].X, Points[x].Y));
+                line.Add(new Vector2(Points[(x + 1) % 4].X, Points[(x + 1) % 4].Y));
+                Edges.Add(line);
             }
 
         }
@@ -81,14 +90,49 @@ namespace Source.Collisions
 
 
         /// <summary>
-        /// Intersection detection function, stores results in WillIntersect and Intersect
-        /// Mostly derived from http://www.codeproject.com/Articles/15573/2D-Polygon-Collision-Detection
+        /// Intersection detection function
         /// </summary>
         /// <param name="other">The other Body to check intersection with</param>
         /// <returns>True if intersects and false if not</returns>
-        public bool Intersects(Body other)
+        public int Intersects(Body other)
+        {   // 0: No intersection
+            // 1: Right side intersection
+            // 2: Left side intersection
+            // 3: Top intersection
+            // 4: Bottom intersection
+            // 5: Everything else
+            bool left = between(Position.X - Size.X / 2, other.Position.X - other.Size.X / 2, other.Position.X + other.Size.X / 2);
+            bool right = between(Position.X + Size.X / 2, other.Position.X - other.Size.X / 2, other.Position.X + other.Size.X / 2);
+            bool top = between(Position.Y - Size.Y / 2, other.Position.Y - other.Size.Y / 2, other.Position.Y + other.Size.Y / 2);
+            bool bottom = between(Position.Y + Size.Y / 2, other.Position.Y - other.Size.Y / 2, other.Position.Y + other.Size.Y / 2);
+            int code = 0;
+            if (left && right && bottom && !top)
+                code = 4;
+            else if (left && right && top && !bottom)
+                code = 3;
+            else if (!left && right && !top && !bottom && between(other.Position.Y - other.Size.Y / 2, Position.Y - Size.Y / 2, Position.Y + Size.Y / 2))
+                code = 1;
+            else if (left && !right && !top && !bottom && between(other.Position.Y - other.Size.Y / 2, Position.Y - Size.Y / 2, Position.Y + Size.Y / 2))
+                code = 2;
+            else if ((left || right) && (top || bottom))
+                code = 5;
+            else
+                code = 0;
+
+            return code;
+        }
+
+        
+        
+        private bool between(float a, float b, float c)
         {
-            //Separating Axis Theorem
+            return a >= b && a <= c;
+        }
+            
+
+
+
+            /*Separating Axis Theorem
                 Intersect = true;
                 WillIntersect = true;
                 int edgeCountA = 4;
@@ -197,6 +241,7 @@ namespace Source.Collisions
                     }
                 }
             }
+            
         }
 
         private float IntervalDistance(float minA, float maxA, float minB, float maxB)
@@ -209,6 +254,6 @@ namespace Source.Collisions
             {
                 return minA - maxB;
             }
-        }
+        }*/
     }
 }
