@@ -23,5 +23,17 @@ namespace Source.Collisions
         {
             color = Color.Red;
         }
+
+        /// <summary>
+        /// Intersection detection function (only works for horizontal and vertical walls)
+        /// </summary>
+        /// <param name="other">The other Body to check intersection with</param>
+        /// <returns>True if intersects and false if not</returns>
+        public bool Intersects(Body other)
+        {
+            if (Bottom > other.Top && Bottom < other.Bottom && Left < other.Right && Right > other.Left)
+                CanJump = true;
+            return Bottom > other.Top && Top < other.Bottom && Left < other.Right && Right > other.Left;
+        }
     }
 }

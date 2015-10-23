@@ -48,20 +48,20 @@ namespace Source
         private const int VIEW_WIDTH = 1280;        // width of unscaled screen in pixels
         private const int VIEW_HEIGHT = 720;        // height of unscaled screen in pixels
         private const float FLOOR_HEIGHT = 0.2f;    // height in meters of a floor
+        private Vector2 PLAYER_POSITION = new Vector2(2, -20f);   // starting position of player
 
-        private const float GRAVITY = 26f;      // N   -- downwards gravity for the world
         private const float MIN_VELOCITY = 1f;  // m/s -- what can be considered 0 horizontal velocity
-        private const float MAX_VELOCITY = 5f; // m/s -- approximate Usaine Bolt speed
-        private const float MAX_IMPULSE = 1f;   // N/s -- the impulse which is applied when player starts moving after standing still
+        private const float MAX_VELOCITY = 30f; // m/s -- approximate Usaine Bolt speed
+        private const float MAX_IMPULSE = 40f;   // m/s^2 -- the impulse which is applied when player starts moving after standing still
         private const double IMPULSE_POW = 0.5; //     -- the player's horizontal input impulse is taken to the following power for extra smoothing
-        private const float JUMP_IMPULSE = 10f; // N/s -- the upwards impulse applied when player jumps
-        private const float SLOWDOWN = 1f;      // N/s -- impulse applied in opposite direction of travel to simulate friction
-        private const float AIR_RESIST = 0.25f; //     -- air resistance on a scale of 0 to 1, where 1 is as if player is on ground
+        private const float JUMP_IMPULSE = 14f; // m/s -- the upwards impulse applied when player jumps
+        private const float SLOWDOWN = 45f;      // m/s^2 -- impulse applied in opposite direction of travel to simulate friction
+        private const float AIR_RESIST = 0.75f; //     -- air resistance on a scale of 0 to 1, where 1 is as if player is on ground
         private const double JUMP_WAIT = 0.5;   // s   -- how long the player needs to wait before jumping again
         private const float PUSH_VEL = 1f;      // m/s -- the player is given a little push going down platforms under this velocity
-        private const float PUSH_POW = 10f;     // N/s -- the impulse applied to the player to get down a platform
-        private const float MIN_WOBBLE = 2.5f;  //     -- the minimum ratio between max velocity and (max - current velocity) for wobbling
-        private const float MAX_WOBBLE = 5f;    //     -- the maximum ratio for wobbling; we don't want wobble amplifier 40x
+        private const float PUSH_POW = 10f;     // m/s -- the impulse applied to the player to get down a platform
+        private const float MIN_WOBBLE = 0f;  //     -- the minimum ratio between max velocity and (max - current velocity) for wobbling
+        private const float MAX_WOBBLE = 0f;    //     -- the maximum ratio for wobbling; we don't want wobble amplifier 40x
 
         private const string SONG = "Chiptune dash";    // the song to play, over, and over, and over again. NEVER STOP THE PARTY!
         private const float VOLUME = 0f;                // volume for song
@@ -225,7 +225,7 @@ namespace Source
             fontBig = Content.Load<SpriteFont>("Fonts/ScoreBig");
 
             // Create objects
-            player = new Player(whiteRect, new Vector2(2, -10));
+            player = new Player(whiteRect, PLAYER_POSITION);
             world = new World(player);
             rand = new Random();
             floors = new List<Floor>();
@@ -291,13 +291,13 @@ namespace Source
             if (Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
-            if (Keyboard.GetState().IsKeyDown(Keys.I))
-            {
-                for (int x = 0; x < floors.Count; x++)
-                {
-                    Console.WriteLine(floors[x].Intersects(floors[floors.Count-1]));
-                }
-            }
+            //if (Keyboard.GetState().IsKeyDown(Keys.I))
+            //{
+            //    for (int x = 0; x < floors.Count; x++)
+            //    {
+            //        Console.WriteLine(floors[x].Intersects(floors[floors.Count-1]));
+            //    }
+            //}
                 
 
             // Handle toggle pause
@@ -327,13 +327,14 @@ namespace Source
 
             if (!paused)
             {
+                float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
                 if (currentFloor == null)
-                    HandleKeyboard();
+                    HandleKeyboard(deltaTime);
 
                 CheckPlayer();
                 //player.Update(gameTime.ElapsedGameTime.TotalSeconds);
 
-                world.Step((float)gameTime.ElapsedGameTime.TotalSeconds);
+                world.Step(deltaTime);
 
                 float wobbleRatio = MAX_VELOCITY / (MAX_VELOCITY - player.Velocity.X);
                 if (wobbleRatio >= MAX_WOBBLE)
@@ -351,34 +352,36 @@ namespace Source
         /// <summary>
         /// Handles all keyboard input for the game. Moves the player and recalculates wobble-screen.
         /// </summary>
-        private void HandleKeyboard()
+        private void HandleKeyboard(float deltaTime)
         {
             KeyboardState state = Keyboard.GetState();
 
-            float impulse = MathHelper.SmoothStep(MAX_IMPULSE, 0f, Math.Abs(player.Velocity.X) / MAX_VELOCITY);
-            impulse = (float)Math.Pow(impulse, IMPULSE_POW);
-            impulse = 0.5f;
+            float impulse = MAX_IMPULSE * deltaTime;
+            //float impulse = MathHelper.SmoothStep(MAX_IMPULSE, 0f, Math.Abs(player.Velocity.X) / MAX_VELOCITY) * deltaTime;
+            //impulse = (float)Math.Pow(impulse, IMPULSE_POW);
+
+            float slow = SLOWDOWN * deltaTime;
+            if (!player.CanJump)
+            {
+                slow *= AIR_RESIST;
+            }
+
             if (state.IsKeyDown(Keys.Right))                    // move right
             {
                 player.Velocity += (new Vector2(impulse, 0f));
                 if (player.Velocity.X < 0f && player.CanJump)  // change direction quicker
-                    player.Velocity += (new Vector2(SLOWDOWN, 0f));
+                    player.Velocity += (new Vector2(slow, 0f));
             }
             else if (state.IsKeyDown(Keys.Left))                // move left
             {
                 player.Velocity += (new Vector2(-impulse, 0f));
                 if (player.Velocity.X > 0f && player.CanJump)  // change direction quickler
                 {
-                    player.Velocity += (new Vector2(-SLOWDOWN, 0f));
+                    player.Velocity += (new Vector2(-slow, 0f));
                 }
             }
             else                            // air resistance and friction
             {
-                float slow = SLOWDOWN;
-                if (!player.CanJump)
-                {
-                    slow = SLOWDOWN * AIR_RESIST;
-                }
                 if (Math.Abs(player.Velocity.X) < MIN_VELOCITY)
                     player.Velocity = new Vector2(0f, player.Velocity.Y);
                 else
@@ -390,12 +393,12 @@ namespace Source
             if (state.IsKeyDown(Keys.Up) && player.CanJump)     // jump
             {
                 player.JumpWait = JUMP_WAIT;
-                player.Velocity += (new Vector2(0f, -JUMP_IMPULSE));
+                player.Velocity = (new Vector2(player.Velocity.X, -JUMP_IMPULSE));
             }
             if (state.IsKeyDown(Keys.Down) && player.CanJump && !player.Ghost)
             {                                                   // fall
                 if (player.Velocity.Y <= PUSH_VEL)
-                    player.Velocity += (new Vector2(0f, PUSH_POW));
+                    player.Velocity = (new Vector2(player.Velocity.X, PUSH_POW));
                 player.Ghost = true;
                 player.oldY = player.Position.Y;
             }
@@ -548,20 +551,22 @@ namespace Source
         /// </summary>
         private void CheckPlayer()
         {
+            player.Velocity.X = MathHelper.Clamp(player.Velocity.X, -MAX_VELOCITY, MAX_VELOCITY);
             if (player.Position.Y > 10f)
             {
-                player = new Player(whiteRect, new Vector2(2, -10));
-                //if (LEVEL < 0)
-                //{
-                //    levelEnd = 0;
-                //    currentFloor = null;
-                //    foreach (Floor floor in floors)
-                //        floor.Body.Dispose();
-                //    floors.Clear();
-                //}
+                player.Position = PLAYER_POSITION;
+                player.Velocity = Vector2.Zero;
+                if (LEVEL < 0)
+                {
+                    levelEnd = 0;
+                    currentFloor = null;
+                    //foreach (Floor floor in floors)
+                    //    floor.Body.Dispose();
+                    floors.Clear();
+                }
             }
-            //else if (player.Body.Position.X > levelEnd - LOAD_NEW && LEVEL < 0)
-            //    LoadLevel();
+            else if (player.Position.X > levelEnd - LOAD_NEW && LEVEL < 0)
+                LoadLevel();
         }
 
         /// <summary>
@@ -607,10 +612,10 @@ namespace Source
 
             // Draw player and floors
             spriteBatch.Begin(transformMatrix: view);
-            player.Draw(spriteBatch);
             //DrawRect(player.Body.Position + new Vector2(0f, 0.9f), Color.Gold, 0f, new Vector2(0.5f, 0.5f), new Vector2(0.6f, 0.5f));
             foreach (Floor item in floors)
                 item.Draw(spriteBatch);
+            player.Draw(spriteBatch);
             //if (currentFloor != null)
             //    DrawRect(currentFloor.Body, Color.Green, currentFloor.Origin, currentFloor.Scale + new Vector2(0, FLOOR_HEIGHT));
             if (editingFloor)

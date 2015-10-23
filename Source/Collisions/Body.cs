@@ -20,17 +20,46 @@ namespace Source.Collisions
         public Vector2 Center;
         public Vector2 Velocity;
 
-        private List<Vector2> Points;
-        public List<List<Vector2>> Edges;
+        //private List<Vector2> Points;
+        //public List<List<Vector2>> Edges;
 
         protected Color color;
 
         private Texture2D texture;
         private Vector2 origin;
 
-        public bool WillIntersect; //If it will intersect depending on velocity       -- Updated in Intersect method
-        public bool Intersect; //If it already intersects                             -- Updated in Intersect method
-        public Vector2 MinimumTranslationVector; //Vector needed to push them apart   -- Updated in Intersect method
+        //public bool WillIntersect; //If it will intersect depending on velocity       -- Updated in Intersect method
+        //public bool Intersect; //If it already intersects                             -- Updated in Intersect method
+        //public Vector2 MinimumTranslationVector; //Vector needed to push them apart   -- Updated in Intersect method
+
+        public float Left
+        {
+            get
+            {
+                return Center.X - Size.X / 2 + Position.X;
+            }
+        }
+        public float Right
+        {
+            get
+            {
+                return Center.X + Size.X / 2 + Position.X;
+            }
+        }
+        public float Top
+        {
+            get
+            {
+                return Center.Y - Size.Y / 2 + Position.Y;
+            }
+        }
+        public float Bottom
+        {
+            get
+            {
+                return Center.Y + Size.Y / 2 + Position.Y;
+            }
+        }
 
         public Body(Texture2D texture, Vector2 position, Vector2 size, float rotation = 0f)
         {
@@ -44,26 +73,26 @@ namespace Source.Collisions
             color = Color.White;
             origin = new Vector2(texture.Width / 2.0f, texture.Height / 2.0f);
 
-            Vector2 dposition = ConvertUnits.ToDisplayUnits(Position);
-            Center = new Vector2(dposition.X + size.X / 2, dposition.Y + size.Y / 2);
-            Points = new List<Vector2>();
-            Points.Add(RotatePoint(dposition, new Vector2(dposition.X - size.X / 2, dposition.Y - size.Y / 2), rotation * (float)Math.PI / 180));
-            Points.Add(RotatePoint(dposition, new Vector2(dposition.X + size.X / 2, dposition.Y - size.Y / 2), rotation * (float)Math.PI / 180));
-            Points.Add(RotatePoint(dposition, new Vector2(dposition.X + size.X / 2, dposition.Y + size.Y / 2), rotation * (float)Math.PI / 180));
-            Points.Add(RotatePoint(dposition, new Vector2(dposition.X - size.X / 2, dposition.Y + size.Y / 2), rotation * (float)Math.PI / 180));
+            //Vector2 dposition = ConvertUnits.ToDisplayUnits(Position);
+            //Center = new Vector2(dposition.X + size.X / 2, dposition.Y + size.Y / 2);
+            //Points = new List<Vector2>();
+            //Points.Add(RotatePoint(dposition, new Vector2(dposition.X - size.X / 2, dposition.Y - size.Y / 2), rotation * (float)Math.PI / 180));
+            //Points.Add(RotatePoint(dposition, new Vector2(dposition.X + size.X / 2, dposition.Y - size.Y / 2), rotation * (float)Math.PI / 180));
+            //Points.Add(RotatePoint(dposition, new Vector2(dposition.X + size.X / 2, dposition.Y + size.Y / 2), rotation * (float)Math.PI / 180));
+            //Points.Add(RotatePoint(dposition, new Vector2(dposition.X - size.X / 2, dposition.Y + size.Y / 2), rotation * (float)Math.PI / 180));
 
             /*Points.Add(new Vector2(dposition.X - size.X / 2, dposition.Y - size.Y / 2));
             Points.Add(new Vector2(dposition.X + size.X / 2, dposition.Y - size.Y / 2));
             Points.Add(new Vector2(dposition.X + size.X / 2, dposition.Y + size.Y / 2));
             Points.Add(new Vector2(dposition.X - size.X / 2, dposition.Y + size.Y / 2));*/
-            Edges = new List<List<Vector2>>();
-            for (int x = 0; x < 4; x++)
-            {
-                List<Vector2> line = new List<Vector2>();
-                line.Add(new Vector2(Points[x].X, Points[x].Y));
-                line.Add(new Vector2(Points[(x + 1) % 4].X, Points[(x + 1) % 4].Y));
-                Edges.Add(line);
-            }
+            //Edges = new List<List<Vector2>>();
+            //for (int x = 0; x < 4; x++)
+            //{
+            //    List<Vector2> line = new List<Vector2>();
+            //    line.Add(new Vector2(Points[x].X, Points[x].Y));
+            //    line.Add(new Vector2(Points[(x + 1) % 4].X, Points[(x + 1) % 4].Y));
+            //    Edges.Add(line);
+            //}
 
         }
 
@@ -73,61 +102,61 @@ namespace Source.Collisions
         }
 
 
-        private Vector2 RotatePoint(Vector2 pivot, Vector2 point, float CWAngle)
-        {
-            // Rotate counterclockwise, angle in radians
-            float angle = 2 * (float)Math.PI - CWAngle;
-            double leX = ((Math.Cos(angle) * (point.X - pivot.X)) -
-                               (Math.Sin(angle) * (point.Y - pivot.Y)) +
-                               pivot.X);
-            double leY = ((Math.Sin(angle) * (point.X - pivot.X)) +
-                               (Math.Cos(angle) * (point.Y - pivot.Y)) +
-                               pivot.Y);
-            return new Vector2((float)leX, (float)leY);
-        }
+        //private Vector2 RotatePoint(Vector2 pivot, Vector2 point, float CWAngle)
+        //{
+        //    // Rotate counterclockwise, angle in radians
+        //    float angle = 2 * (float)Math.PI - CWAngle;
+        //    double leX = ((Math.Cos(angle) * (point.X - pivot.X)) -
+        //                       (Math.Sin(angle) * (point.Y - pivot.Y)) +
+        //                       pivot.X);
+        //    double leY = ((Math.Sin(angle) * (point.X - pivot.X)) +
+        //                       (Math.Cos(angle) * (point.Y - pivot.Y)) +
+        //                       pivot.Y);
+        //    return new Vector2((float)leX, (float)leY);
+        //}
 
 
 
 
-        /// <summary>
-        /// Intersection detection function
-        /// </summary>
-        /// <param name="other">The other Body to check intersection with</param>
-        /// <returns>True if intersects and false if not</returns>
-        public int Intersects(Body other)
-        {   // 0: No intersection
-            // 1: Right side intersection
-            // 2: Left side intersection
-            // 3: Top intersection
-            // 4: Bottom intersection
-            // 5: Everything else
-            bool left = between(Position.X - Size.X / 2, other.Position.X - other.Size.X / 2, other.Position.X + other.Size.X / 2);
-            bool right = between(Position.X + Size.X / 2, other.Position.X - other.Size.X / 2, other.Position.X + other.Size.X / 2);
-            bool top = between(Position.Y - Size.Y / 2, other.Position.Y - other.Size.Y / 2, other.Position.Y + other.Size.Y / 2);
-            bool bottom = between(Position.Y + Size.Y / 2, other.Position.Y - other.Size.Y / 2, other.Position.Y + other.Size.Y / 2);
-            int code = 0;
-            if (left && right && bottom && !top)
-                code = 4;
-            else if (left && right && top && !bottom)
-                code = 3;
-            else if (!left && right && !top && !bottom && between(other.Position.Y - other.Size.Y / 2, Position.Y - Size.Y / 2, Position.Y + Size.Y / 2))
-                code = 1;
-            else if (left && !right && !top && !bottom && between(other.Position.Y - other.Size.Y / 2, Position.Y - Size.Y / 2, Position.Y + Size.Y / 2))
-                code = 2;
-            else if ((left || right) && (top || bottom))
-                code = 5;
-            else
-                code = 0;
+        ///// <summary>
+        ///// Intersection detection function
+        ///// </summary>
+        ///// <param name="other">The other Body to check intersection with</param>
+        ///// <returns>True if intersects and false if not</returns>
+        //public int Intersects(Body other)
+        //{   // 0: No intersection
+        //    // 1: Right side intersection
+        //    // 2: Left side intersection
+        //    // 3: Top intersection
+        //    // 4: Bottom intersection
+        //    // 5: Everything else
+        //    bool left = between(Position.X - Size.X / 2, other.Position.X - other.Size.X / 2, other.Position.X + other.Size.X / 2);
+        //    bool right = between(Position.X + Size.X / 2, other.Position.X - other.Size.X / 2, other.Position.X + other.Size.X / 2);
+        //    bool top = between(Position.Y - Size.Y / 2, other.Position.Y - other.Size.Y / 2, other.Position.Y + other.Size.Y / 2);
+        //    bool bottom = between(Position.Y + Size.Y / 2, other.Position.Y - other.Size.Y / 2, other.Position.Y + other.Size.Y / 2);
+        //    int code = 0;
+        //    if (left && right && bottom && !top)
+        //        code = 4;
+        //    else if (left && right && top && !bottom)
+        //        code = 3;
+        //    else if (!left && right && !top && !bottom && between(other.Position.Y - other.Size.Y / 2, Position.Y - Size.Y / 2, Position.Y + Size.Y / 2))
+        //        code = 1;
+        //    else if (left && !right && !top && !bottom && between(other.Position.Y - other.Size.Y / 2, Position.Y - Size.Y / 2, Position.Y + Size.Y / 2))
+        //        code = 2;
+        //    else if ((left || right) && (top || bottom))
+        //        code = 5;
+        //    else
+        //        code = 0;
 
-            return code;
-        }
+        //    return code;
+        //}
 
         
         
-        private bool between(float a, float b, float c)
-        {
-            return a >= b && a <= c;
-        }
+        //private bool between(float a, float b, float c)
+        //{
+        //    return a >= b && a <= c;
+        //}
             
 
 

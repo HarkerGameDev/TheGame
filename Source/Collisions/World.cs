@@ -13,10 +13,10 @@ namespace Source.Collisions
     /// </summary>
     public class World
     {
-        private const float GRAVITY = 8f;
+        private const float GRAVITY = 26f;
 
         private Player player;
-        private List<Body> bodies; // try to optimize this somehow (something faster than a list maybe)
+        private List<Body> bodies;
 
         public World(Player player)
         {
@@ -33,21 +33,26 @@ namespace Source.Collisions
         {
             player.CanJump = false;
             player.Velocity.Y += GRAVITY * deltaTime;
-            player.Position += player.Velocity * deltaTime;
+            player.CanJump = false;
+
+            Console.WriteLine(player.Velocity);
+
+            player.Position.X += player.Velocity.X * deltaTime;
             foreach (Body body in bodies)
             {
-                if (player.Intersects(body) == 1 || player.Intersects(body) == 2)
+                if (player.Intersects(body))
                 {
                     player.Position.X -= player.Velocity.X * deltaTime;
                     player.Velocity.X = 0;
-                }else if (player.Intersects(body) == 3)
+                }
+            }
+
+            player.Position.Y += player.Velocity.Y * deltaTime;
+            foreach (Body body in bodies)
+            {
+                if (player.Intersects(body))
                 {
                     player.Position.Y -= player.Velocity.Y * deltaTime;
-                    player.Velocity.Y = 0;
-                }else if(player.Intersects(body) == 4)
-                {
-                    player.Position.Y -= player.Velocity.Y * deltaTime;
-                    player.CanJump = true;
                     player.Velocity.Y = 0;
                 }
             }
