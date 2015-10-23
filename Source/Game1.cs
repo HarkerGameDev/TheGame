@@ -98,7 +98,7 @@ namespace Source
         private List<Floor> floors;
 
         private const float LOAD_NEW = 100f;     // the next level will be loaded when the player is this far from the current end
-        private const int LEVEL = -1;            // if this is greater than 0, levels will not be procedurally generated (useful for editing)
+        private const int LEVEL = 4;            // if this is greater than 0, levels will not be procedurally generated (useful for editing)
         private int levelEnd;
         private FloorData levels;
 
@@ -465,7 +465,7 @@ namespace Source
                     {
                         if (keyboard.IsKeyDown(Keys.LeftShift))     // Select a floor
                         {
-                            Body body = world.TestPoint(ConvertUnits.ToSimUnits(mouse.Position.ToVector2() - cameraBounds.Center.ToVector2() - screenOffset) + player.Position);
+                            Body body = world.TestPoint(mouseSimPos);
                             if (body != null && body is Floor)
                                 currentFloor = (Floor)body;
                         }
@@ -500,6 +500,7 @@ namespace Source
                 {
                     currentFloor = new Floor(whiteRect, startDraw, endDraw);
                     floors.Add(currentFloor);
+                    world.Add(currentFloor);
                 }
                 editingFloor = false;
             }
@@ -516,7 +517,7 @@ namespace Source
                 else if (ToggleKey(Keys.Left))
                     currentFloor.Position += new Vector2(-1f, 0f);
                 else if (ToggleKey(Keys.Right))
-                    currentFloor.Position = new Vector2(1f, 0f);
+                    currentFloor.Position += new Vector2(1f, 0f);
                 else if (ToggleKey(Keys.Down))
                     currentFloor.Position += new Vector2(0f, 1f);
                 else if (keyboard.IsKeyDown(Keys.Enter))
@@ -574,7 +575,7 @@ namespace Source
         /// </summary>
         private void SaveLevel()
         {
-            using (BinaryWriter writer = new BinaryWriter(File.Open(LEVELS_DIR + "level" + LEVEL, FileMode.Create)))
+            using (BinaryWriter writer = new BinaryWriter(File.Open(LEVELS_DIR + "level.lvl" + LEVEL, FileMode.Create)))
             {
                 foreach (Floor floor in floors)
                 {
@@ -616,8 +617,8 @@ namespace Source
             foreach (Floor item in floors)
                 item.Draw(spriteBatch);
             player.Draw(spriteBatch);
-            //if (currentFloor != null)
-            //    DrawRect(currentFloor.Body, Color.Green, currentFloor.Origin, currentFloor.Scale + new Vector2(0, FLOOR_HEIGHT));
+            if (currentFloor != null)
+                DrawRect(currentFloor.Position, Color.Green, currentFloor.Rotation, currentFloor.Origin, currentFloor.Size);
             if (editingFloor)
             {
                 Vector2 dist = endDraw - startDraw;

@@ -35,8 +35,6 @@ namespace Source.Collisions
             player.Velocity.Y += GRAVITY * deltaTime;
             player.CanJump = false;
 
-            Console.WriteLine(player.Velocity);
-
             player.Position.X += player.Velocity.X * deltaTime;
             foreach (Body body in bodies)
             {
@@ -60,6 +58,14 @@ namespace Source.Collisions
 
         public Body TestPoint(Vector2 point)
         {
+            foreach (Body body in bodies)
+            {
+                if (body.TestPoint(point))
+                {
+                    Console.WriteLine("Found body at " + body.Position);
+                    return body;
+                }
+            }
             return null;
         }
     }

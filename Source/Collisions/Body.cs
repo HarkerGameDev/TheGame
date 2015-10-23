@@ -19,6 +19,7 @@ namespace Source.Collisions
         public List<Body> CollisionExceptions; //Exceptions to collisions(ie. player player collision exception)
         public Vector2 Center;
         public Vector2 Velocity;
+        public Vector2 Origin;
 
         //private List<Vector2> Points;
         //public List<List<Vector2>> Edges;
@@ -26,7 +27,6 @@ namespace Source.Collisions
         protected Color color;
 
         private Texture2D texture;
-        private Vector2 origin;
 
         //public bool WillIntersect; //If it will intersect depending on velocity       -- Updated in Intersect method
         //public bool Intersect; //If it already intersects                             -- Updated in Intersect method
@@ -71,7 +71,7 @@ namespace Source.Collisions
             CollisionExceptions = new List<Body>();
             Velocity = Vector2.Zero;
             color = Color.White;
-            origin = new Vector2(texture.Width / 2.0f, texture.Height / 2.0f);
+            Origin = new Vector2(texture.Width / 2.0f, texture.Height / 2.0f);
 
             //Vector2 dposition = ConvertUnits.ToDisplayUnits(Position);
             //Center = new Vector2(dposition.X + size.X / 2, dposition.Y + size.Y / 2);
@@ -96,9 +96,14 @@ namespace Source.Collisions
 
         }
 
+        public bool TestPoint(Vector2 point)
+        {
+            return Left <= point.X && Right >= point.X && Top <= point.Y && Bottom >= point.Y;
+        }
+
         public void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(Position), null, color, Rotation, origin, ConvertUnits.ToDisplayUnits(Size), SpriteEffects.None, 0f);
+            spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(Position), null, color, Rotation, Origin, ConvertUnits.ToDisplayUnits(Size), SpriteEffects.None, 0f);
         }
 
 
