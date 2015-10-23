@@ -38,16 +38,24 @@ namespace Source.Collisions
             Console.WriteLine(player.Velocity);
 
             player.Position.X += player.Velocity.X * deltaTime;
+            foreach (Body body in bodies)
+            {
+                if (player.Intersects(body))
+                {
+                    player.Position.X -= player.Velocity.X * deltaTime;
+                    player.Velocity.X = 0;
+                }
+            }
+
             player.Position.Y += player.Velocity.Y * deltaTime;
             foreach (Body body in bodies)
             {
-                if(!player.Ghost)
-                    player.Intersects(body, deltaTime);
-                if (player.Ghost && player.Position.Y > player.oldY + player.Size.Y + 0.2f)
-                    player.Ghost = false;
-
+                if (player.Intersects(body))
+                {
+                    player.Position.Y -= player.Velocity.Y * deltaTime;
+                    player.Velocity.Y = 0;
+                }
             }
-
         }
 
         public Body TestPoint(Vector2 point)

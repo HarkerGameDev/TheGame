@@ -554,7 +554,6 @@ namespace Source
             player.Velocity.X = MathHelper.Clamp(player.Velocity.X, -MAX_VELOCITY, MAX_VELOCITY);
             if (player.Position.Y > 10f)
             {
-                player.Ghost = false;
                 player.Position = PLAYER_POSITION;
                 player.Velocity = Vector2.Zero;
                 if (LEVEL < 0)
@@ -616,7 +615,6 @@ namespace Source
             //DrawRect(player.Body.Position + new Vector2(0f, 0.9f), Color.Gold, 0f, new Vector2(0.5f, 0.5f), new Vector2(0.6f, 0.5f));
             foreach (Floor item in floors)
                 item.Draw(spriteBatch);
-            
             player.Draw(spriteBatch);
             //if (currentFloor != null)
             //    DrawRect(currentFloor.Body, Color.Green, currentFloor.Origin, currentFloor.Scale + new Vector2(0, FLOOR_HEIGHT));
