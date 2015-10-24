@@ -35,7 +35,20 @@ namespace Source.Collisions
             player.Velocity.Y += GRAVITY * deltaTime;
             player.CanJump = false;
 
+            if (player.surfaceRotated != null && Math.Sign(2 * (float)Math.PI - player.surfaceRotated.Rotation) == Math.Sign(player.Velocity.X))
+            {
+                player.Velocity.X = 30f;
+                player.Position.X += player.Velocity.X * (float)Math.Cos(player.surfaceRotated.Rotation) * deltaTime;
+                player.Position.Y -= player.Velocity.X * (float)Math.Sin(player.surfaceRotated.Rotation) * deltaTime;
+                player.Velocity.Y = 0;
+                player.Intersects(player.surfaceRotated);
+                Step(deltaTime);
+                return;
+            }
+
+            
             player.Position.X += player.Velocity.X * deltaTime;
+
             foreach (Body body in bodies)
             {
                 if (player.Intersects(body))
@@ -45,10 +58,11 @@ namespace Source.Collisions
                 }
             }
 
+            
             player.Position.Y += player.Velocity.Y * deltaTime;
             foreach (Body body in bodies)
             {
-                if (player.Intersects(body))
+                if (player.Intersects(body) || (player.Left < body.Right && player.Right > body.Left && player.Bottom > body.Top && player.Bottom-player.Velocity.Y*deltaTime < body.Top))
                 {
                     //Console.WriteLine("Intersection with: " + body.Position);
                     player.Position.Y -= player.Velocity.Y * deltaTime;

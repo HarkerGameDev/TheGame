@@ -97,27 +97,7 @@ namespace Source.Collisions
                 Rotation -= MathHelper.PiOver2;
             }
             Console.WriteLine("Rotation2: " + Rotation);
-
-            //Vector2 dposition = ConvertUnits.ToDisplayUnits(Position);
-            //Center = new Vector2(dposition.X + size.X / 2, dposition.Y + size.Y / 2);
-            //Points = new List<Vector2>();
-            //Points.Add(RotatePoint(dposition, new Vector2(dposition.X - size.X / 2, dposition.Y - size.Y / 2), rotation * (float)Math.PI / 180));
-            //Points.Add(RotatePoint(dposition, new Vector2(dposition.X + size.X / 2, dposition.Y - size.Y / 2), rotation * (float)Math.PI / 180));
-            //Points.Add(RotatePoint(dposition, new Vector2(dposition.X + size.X / 2, dposition.Y + size.Y / 2), rotation * (float)Math.PI / 180));
-            //Points.Add(RotatePoint(dposition, new Vector2(dposition.X - size.X / 2, dposition.Y + size.Y / 2), rotation * (float)Math.PI / 180));
-
-            /*Points.Add(new Vector2(dposition.X - size.X / 2, dposition.Y - size.Y / 2));
-            Points.Add(new Vector2(dposition.X + size.X / 2, dposition.Y - size.Y / 2));
-            Points.Add(new Vector2(dposition.X + size.X / 2, dposition.Y + size.Y / 2));
-            Points.Add(new Vector2(dposition.X - size.X / 2, dposition.Y + size.Y / 2));*/
-            //Edges = new List<List<Vector2>>();
-            //for (int x = 0; x < 4; x++)
-            //{
-            //    List<Vector2> line = new List<Vector2>();
-            //    line.Add(new Vector2(Points[x].X, Points[x].Y));
-            //    line.Add(new Vector2(Points[(x + 1) % 4].X, Points[(x + 1) % 4].Y));
-            //    Edges.Add(line);
-            //}
+            
 
         }
 
