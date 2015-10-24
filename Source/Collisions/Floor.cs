@@ -21,13 +21,11 @@ namespace Source.Collisions
         }
 
         public Floor(Texture2D texture, Vector2 start, Vector2 end)
-            : base(texture, Vector2.Zero, Vector2.Zero) {
+            : base(texture, 
+            start + (end - start) / 2, 
+            new Vector2((end - start).Length(), FLOOR_HEIGHT),
+            (float)Math.Atan2(end.Y - start.Y, end.X - start.X)) {
             color = Color.Azure;
-
-            Vector2 dist = end - start;
-            Position = start + dist / 2;
-            Size = new Vector2(dist.Length(), FLOOR_HEIGHT);
-            Rotation = (float)Math.Atan2(dist.Y, dist.X);
         }
     }
 }

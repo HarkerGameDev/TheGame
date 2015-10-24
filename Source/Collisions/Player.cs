@@ -25,15 +25,29 @@ namespace Source.Collisions
         }
 
         /// <summary>
-        /// Intersection detection function (only works for horizontal and vertical walls)
+        /// Intersection detection function (only works for horizontal and vertical walls) and updates player status appropriately
         /// </summary>
         /// <param name="other">The other Body to check intersection with</param>
         /// <returns>True if intersects and false if not</returns>
         public bool Intersects(Body other)
         {
-            if (Bottom > other.Top && Bottom < other.Bottom && Left < other.Right && Right > other.Left)
-                CanJump = true;
-            return Bottom > other.Top && Top < other.Bottom && Left < other.Right && Right > other.Left;
+            if (other.Rotation == 0f)
+            {
+                if (Bottom > other.Top && Bottom < other.Bottom && Right < other.Right && Left > other.Left)
+                    CanJump = true;
+                return Bottom > other.Top && Top < other.Bottom && Left < other.Right && Right > other.Left;
+            }
+            else
+            {
+                Vector2 diag = new Vector2(Size.X / 2, -Size.Y / 2);
+                //Console.WriteLine("Point: " + (Position + diag));
+                bool bottom1 = other.TestPoint(Position + Size / 2);
+                bool bottom2 = other.TestPoint(Position - diag);
+                if (bottom1 && bottom2)
+                    CanJump = true;
+                return (bottom1 || other.TestPoint(Position - Size / 2) ||
+                    other.TestPoint(Position + diag) || bottom2);
+            }
         }
     }
 }

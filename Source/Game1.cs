@@ -444,22 +444,21 @@ namespace Source
 
             // Snap the mouse position to 1x1 meter grid
             Vector2 mouseSimPos = ConvertUnits.ToSimUnits(mouse.Position.ToVector2() - cameraBounds.Center.ToVector2() - screenOffset) + player.Position;
-            mouseSimPos.X = (float)Math.Round(mouseSimPos.X);
-            mouseSimPos.Y = (float)Math.Round(mouseSimPos.Y);
+            Vector2 mouseSimPosRound = new Vector2((float)Math.Round(mouseSimPos.X), (float)Math.Round(mouseSimPos.Y));
 
             if (mouse.LeftButton == ButtonState.Pressed)
             {
                 if (editingFloor)                                   // Draw the floor
                 {
-                    endDraw = mouseSimPos;
+                    endDraw = mouseSimPosRound;
                 }
                 else
                 {
                     if (keyboard.IsKeyDown(Keys.LeftControl))       // Start drawing a floor
                     {
                         editingFloor = true;
-                        startDraw = mouseSimPos;
-                        endDraw = mouseSimPos;
+                        startDraw = mouseSimPosRound;
+                        endDraw = mouseSimPosRound;
                     }
                     else
                     {
@@ -476,11 +475,11 @@ namespace Source
                             float width = currentFloor.Size.X;
                             Vector2 offset = new Vector2(width * (float)Math.Cos(rotation), width * (float)Math.Sin(rotation)) / 2;
                             if (offset.X < 0) offset *= -1;
-                            if (mouseSimPos.X > center.X)
+                            if (mouseSimPosRound.X > center.X)
                                 startDraw = center - offset;
                             else
                                 startDraw = center + offset;
-                            endDraw = mouseSimPos;
+                            endDraw = mouseSimPosRound;
                             //currentFloor.Body.Dispose();
                             floors.Remove(currentFloor);
                             currentFloor = null;

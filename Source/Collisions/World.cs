@@ -50,6 +50,7 @@ namespace Source.Collisions
             {
                 if (player.Intersects(body))
                 {
+                    //Console.WriteLine("Intersection with: " + body.Position);
                     player.Position.Y -= player.Velocity.Y * deltaTime;
                     player.Velocity.Y = 0;
                 }
