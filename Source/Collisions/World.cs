@@ -14,6 +14,7 @@ namespace Source.Collisions
     public class World
     {
         private const float GRAVITY = 26f;
+        private const float MAX_CLIMB_SLOPE = MathHelper.PiOver4;
 
         private Player player;
         private List<Body> bodies;
@@ -45,34 +46,29 @@ namespace Source.Collisions
             player.Velocity.Y += GRAVITY * deltaTime;
             player.CanJump = false;
 
-            if (player.surfaceRotated != null && Math.Sign(2 * (float)Math.PI - player.surfaceRotated.Rotation) == Math.Sign(player.Velocity.X))
-            {
-                player.Velocity.X = 30f;
-                player.Position.X += player.Velocity.X * (float)Math.Cos(player.surfaceRotated.Rotation) * deltaTime;
-                player.Position.Y -= player.Velocity.X * (float)Math.Sin(player.surfaceRotated.Rotation) * deltaTime;
-                player.Velocity.Y = 0;
-                player.Intersects(player.surfaceRotated);
-                Step(deltaTime);
-                return;
-            }
-
-            
             player.Position.X += player.Velocity.X * deltaTime;
-
             foreach (Body body in bodies)
             {
                 if (player.Intersects(body))
                 {
                     player.Position.X -= player.Velocity.X * deltaTime;
-                    player.Velocity.X = 0;
+                    Console.WriteLine(body.Rotation);
+                    if (body.Rotation > 0)
+                    {
+                        player.Velocity.Y -= player.Velocity.X * (float)Math.Sin(body.Rotation);
+                        player.Velocity.X = player.Velocity.X * (float)Math.Cos(body.Rotation);
+                    }
+                    else
+                    {
+                        player.Velocity.X = 0;
+                    }
                 }
             }
 
-            
             player.Position.Y += player.Velocity.Y * deltaTime;
             foreach (Body body in bodies)
             {
-                if (player.Intersects(body) || (player.Left < body.Right && player.Right > body.Left && player.Bottom > body.Top && player.Bottom-player.Velocity.Y*deltaTime < body.Top))
+                if (player.Intersects(body))
                 {
                     //Console.WriteLine("Intersection with: " + body.Position);
                     player.Position.Y -= player.Velocity.Y * deltaTime;

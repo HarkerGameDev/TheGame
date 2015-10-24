@@ -17,7 +17,6 @@ namespace Source.Collisions
         public double JumpWait = 0.5;
         public bool Ghost = false;
         public float oldY = 0f;
-        public Body surfaceRotated = null;
 
         public Player(Texture2D texture, Vector2 position)
             : base(texture, position, new Vector2(0.8f, 1.8f))
@@ -32,7 +31,6 @@ namespace Source.Collisions
         /// <returns>True if intersects and false if not</returns>
         public bool Intersects(Body other)
         {
-            surfaceRotated = null;
             if (other.Rotation == 0f)
             {
                 if (Bottom > other.Top && Bottom < other.Bottom && Right < other.Right && Left > other.Left)
@@ -41,17 +39,12 @@ namespace Source.Collisions
             }
             else
             {
-                Vector2 diag = new Vector2(Size.X / 2, -Size.Y / 2);
                 //Console.WriteLine("Point: " + (Position + diag));
-                bool bottom1 = other.TestPoint(Position + Size / 2);
-                bool bottom2 = other.TestPoint(Position - diag);
-                if (bottom1 || bottom2)
-                {
+                bool bottomR = other.TestPoint(Position + new Vector2(Size.X / 2, Size.Y / 2));
+                bool bottomL = other.TestPoint(Position + new Vector2(-Size.X / 2, Size.Y / 2));
+                if (bottomR || bottomL)
                     CanJump = true;
-                    surfaceRotated = other;
-                }
-                return (bottom1 || other.TestPoint(Position - Size / 2) ||
-                    other.TestPoint(Position + diag) || bottom2);
+                return other.Contains(this);
             }
         }
     }

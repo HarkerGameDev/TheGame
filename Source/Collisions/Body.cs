@@ -14,135 +14,171 @@ namespace Source.Collisions
     public abstract class Body
     {
         public Vector2 Position;
-        public float Rotation;
-        public Vector2 Size;
         public List<Body> CollisionExceptions; //Exceptions to collisions(ie. player player collision exception)
         public Vector2 Velocity;
-        public Vector2 Origin;
 
-        //private List<Vector2> Points;
-        //public List<List<Vector2>> Edges;
+        public float Rotation { get { return rotation; } }
+        public Vector2 Size { get { return size; } }
+        public Vector2 Origin { get { return origin; } }
+
+        private Vector2 topLeft, topRight, botLeft, botRight;
+
+        private float rotation;
+        private Vector2 size;
+        private Vector2 origin;
 
         protected Color color;
 
         private Texture2D texture;
 
-        //public bool WillIntersect; //If it will intersect depending on velocity       -- Updated in Intersect method
-        //public bool Intersect; //If it already intersects                             -- Updated in Intersect method
-        //public Vector2 MinimumTranslationVector; //Vector needed to push them apart   -- Updated in Intersect method
-
-        public float Left
-        {
-            get
-            {
-                return Position.X - Size.X / 2;
-            }
-        }
-        public float Right
-        {
-            get
-            {
-                return Position.X + Size.X / 2;
-            }
-        }
-        public float Top
-        {
-            get
-            {
-                return Position.Y - Size.Y / 2;
-            }
-        }
-        public float Bottom
-        {
-            get
-            {
-                return Position.Y + Size.Y / 2;
-            }
-        }
+        public float Left { get { return Position.X - size.X / 2; } }
+        public float Right { get { return Position.X + size.X / 2; } }
+        public float Top { get { return Position.Y - size.Y / 2; } }
+        public float Bottom { get { return Position.Y + size.Y / 2; } }
 
         public Body(Texture2D texture, Vector2 position, Vector2 size, float rotation = 0f)
         {
             this.texture = texture;
             this.Position = position;
-            this.Size = size;
-            this.Rotation = MathHelper.WrapAngle(rotation);
+            this.size = size;
+            this.rotation = MathHelper.WrapAngle(rotation);
 
             CollisionExceptions = new List<Body>();
             Velocity = Vector2.Zero;
             color = Color.White;
-            Origin = new Vector2(texture.Width / 2.0f, texture.Height / 2.0f);
+            origin = new Vector2(texture.Width / 2.0f, texture.Height / 2.0f);
 
-            Console.WriteLine("Rotation1: " + Rotation);
-            if (Math.Abs(Rotation) == MathHelper.Pi)            // floor is flat
-            {
-                Rotation = 0f;
-            }
-            else if (Math.Abs(Rotation) == MathHelper.PiOver2)  // floor is vertical
-            {
-                Rotation = 0f;
-                Size = new Vector2(Size.Y, Size.X);
-            }
-            else if (Rotation < -MathHelper.PiOver2)
-            {
-                Rotation += MathHelper.Pi;
-            }
-            else if (Rotation < 0)
-            {
-                Size = new Vector2(Size.Y, Size.X);
-                Rotation += MathHelper.PiOver2;
-            }
-            else if (Rotation > MathHelper.PiOver2)
-            {
-                Size = new Vector2(Size.Y, Size.X);
-                Rotation -= MathHelper.PiOver2;
-            }
-            Console.WriteLine("Rotation2: " + Rotation);
-            
 
+            Console.WriteLine("Rotation1: " + rotation);
+            if (Math.Abs(rotation) == MathHelper.Pi)            // floor is flat
+            {
+                rotation = 0f;
+            }
+            else if (Math.Abs(rotation) == MathHelper.PiOver2)  // floor is vertical
+            {
+                rotation = 0f;
+                size = new Vector2(size.Y, size.X);
+            }
+            else if (rotation < -MathHelper.PiOver2)
+            {
+                rotation += MathHelper.Pi;
+            }
+            else if (rotation < 0)
+            {
+                size = new Vector2(size.Y, size.X);
+                rotation += MathHelper.PiOver2;
+            }
+            else if (rotation > MathHelper.PiOver2)
+            {
+                size = new Vector2(size.Y, size.X);
+                rotation -= MathHelper.PiOver2;
+            }
+            Console.WriteLine("Rotation2: " + rotation);
+
+
+            float cos = (float)Math.Cos(rotation);
+            float sin = (float)Math.Sin(rotation);
+            Vector2 distX = new Vector2(size.X * cos, size.X * sin) / 2;
+            Vector2 distY = new Vector2(size.Y * sin, -size.Y * cos) / 2;
+
+            topLeft = -distX + distY;
+            topRight = distX + distY;
+            botLeft = -distX - distY;
+            botRight = distX - distY;
         }
 
         public bool TestPoint(Vector2 point)
         {
-            if (Rotation == 0f)
+            if (rotation == 0f)
                 return Left <= point.X && Right >= point.X && Top <= point.Y && Bottom >= point.Y;
             else
             {
-                float cos = (float)Math.Cos(Rotation);
-                float sin = (float)Math.Sin(Rotation);
-                Vector2 distX = new Vector2(Size.X * cos, Size.X * sin) / 2;
-                Vector2 distY = new Vector2(Size.Y * sin, -Size.Y * cos) / 2;
-
-                Vector2 topLeft = Position - distX + distY;
-                Vector2 topRight = Position + distX + distY;
-                Vector2 botLeft = Position - distX - distY;
-                Vector2 botRight = Position + distX - distY;
+                Vector2 tL = Position + topLeft;
+                Vector2 tR = Position + topRight;
+                Vector2 bL = Position + botLeft;
+                Vector2 bR = Position + botRight;
 
                 Vector2 pos;
-                if (Between(point.X, botLeft.X, topLeft.X))         // check left half of top
-                    pos = LineFunction(point.X, botLeft, topLeft);
-                else if (Between(point.X, topLeft.X, topRight.X))   // check right half of top
-                    pos = LineFunction(point.X, topLeft, topRight);
+                if (Between(point.X, bL.X, tL.X))         // check left half of top
+                    pos = LineFunction(point.X, bL, tL);
+                else if (Between(point.X, tL.X, tR.X))   // check right half of top
+                    pos = LineFunction(point.X, tL, tR);
                 else
                     return false;
 
                 if (pos.Y <= point.Y)
                 {
-                    if (Between(point.X, botLeft.X, botRight.X))    // check left half of bottom
+                    if (Between(point.X, bL.X, bR.X))    // check left half of bottom
                     {
                         //Console.WriteLine("From: " + botLeft + " | To: " + botRight);
-                        Vector2 pos2 = LineFunction(point.X, botLeft, botRight);
+                        Vector2 pos2 = LineFunction(point.X, bL, bR);
                         //Console.WriteLine("Point: " + point + " | Pos: " + pos + " | Pos2: " + pos2);
                         return pos2.Y >= point.Y;
                     }
-                    else                                            // check right half of bottom
+                    else                                // check right half of bottom
                     {
-                        Vector2 pos2 = LineFunction(point.X, botRight, topRight);
+                        Vector2 pos2 = LineFunction(point.X, bR, tR);
                         return pos2.Y >= point.Y;
                     }
                 }
 
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Checks if given body is inside this body
+        /// </summary>
+        /// <param name="body">Body must have 0 rotation to work properly</param>
+        /// <returns></returns>
+        public bool Contains(Body body)
+        {
+            Vector2 tL = Position + topLeft;
+            Vector2 tR = Position + topRight;
+            Vector2 bL = Position + botLeft;
+            Vector2 bR = Position + botRight;
+
+            if (body.TestPoint(tL) || body.TestPoint(tR) || body.TestPoint(bL) || body.TestPoint(bR))
+                return true;
+
+            return Check(body, body.Left) || Check(body, body.Right);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="body">Body must have 0 rotation to work properly</param>
+        /// <returns></returns>
+        private bool Check(Body body, float x)
+        {
+            Vector2 tL = Position + topLeft;
+            Vector2 tR = Position + topRight;
+            Vector2 bL = Position + botLeft;
+            Vector2 bR = Position + botRight;
+
+            Vector2 pos;
+            if (Between(x, bL.X, tL.X))         // check left half of top
+                pos = LineFunction(x, bL, tL);
+            else if (Between(x, tL.X, tR.X))   // check right half of top
+                pos = LineFunction(x, tL, tR);
+            else
+                return false;
+
+            if (pos.Y <= body.Bottom)
+            {
+                if (Between(x, bL.X, bR.X))    // check left half of bottom
+                {
+                    Vector2 pos2 = LineFunction(x, bL, bR);
+                    return pos2.Y >= body.Top;
+                }
+                else                            // check right half of bottom
+                {
+                    Vector2 pos2 = LineFunction(x, bR, tR);
+                    return pos2.Y >= body.Top;
+                }
+            }
+
+            return false;
         }
 
         private bool Between(float val, float min, float max)
@@ -158,13 +194,13 @@ namespace Source.Collisions
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(Position), null, color, Rotation, Origin, ConvertUnits.ToDisplayUnits(Size), SpriteEffects.None, 0f);
+            spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(Position), null, color, rotation, origin, ConvertUnits.ToDisplayUnits(size), SpriteEffects.None, 0f);
 
             // testing corners.
-            float cos = (float)Math.Cos(Rotation);
-            float sin = (float)Math.Sin(Rotation);
-            Vector2 distX = new Vector2(Size.X * cos, Size.X * sin) / 2;
-            Vector2 distY = new Vector2(Size.Y * sin, -Size.Y * cos) / 2;
+            float cos = (float)Math.Cos(rotation);
+            float sin = (float)Math.Sin(rotation);
+            Vector2 distX = new Vector2(size.X * cos, size.X * sin) / 2;
+            Vector2 distY = new Vector2(size.Y * sin, -size.Y * cos) / 2;
 
             Vector2 topLeft = Position - distX + distY;
             Vector2 topRight = Position + distX + distY;
@@ -172,15 +208,15 @@ namespace Source.Collisions
             Vector2 botRight = Position + distX - distY;
 
             Vector2 testingSize = new Vector2(10, 10);
-            spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(topLeft), null, Color.Purple, 0f, Origin, testingSize, SpriteEffects.None, 0f);
-            spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(topRight), null, Color.Orange, 0f, Origin, testingSize, SpriteEffects.None, 0f);
-            spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(botLeft), null, Color.Yellow, 0f, Origin, testingSize, SpriteEffects.None, 0f);
-            spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(botRight), null, Color.Black, 0f, Origin, testingSize, SpriteEffects.None, 0f);
+            spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(topLeft), null, Color.Purple, 0f, origin, testingSize, SpriteEffects.None, 0f);
+            spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(topRight), null, Color.Orange, 0f, origin, testingSize, SpriteEffects.None, 0f);
+            spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(botLeft), null, Color.Yellow, 0f, origin, testingSize, SpriteEffects.None, 0f);
+            spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(botRight), null, Color.Black, 0f, origin, testingSize, SpriteEffects.None, 0f);
 
             Vector2 dist = topLeft - botLeft;
             float x = botLeft.X + 1f;
             Vector2 pos = new Vector2(x, (dist.Y / dist.X) * (x - botLeft.X) + botLeft.Y);
-            spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(pos), null, Color.Pink, 0f, Origin, testingSize, SpriteEffects.None, 0f);
+            spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(pos), null, Color.Pink, 0f, origin, testingSize, SpriteEffects.None, 0f);
         }
 
 
