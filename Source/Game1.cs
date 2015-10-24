@@ -33,10 +33,10 @@ namespace Source
     {
         // LEVEL_FILE should point to "test.lvl" in the root project directory
 
-#if MONOMAC
-        private String LEVELS_DIR = "../../../../../../";
-#else
+#if WINDOWS
         private String LEVELS_DIR = "../../../../";
+#else
+        private String LEVELS_DIR = "../../../../../../";
 #endif
 
         // Farseer user data - basically, just use this as if it were an enum
@@ -47,7 +47,6 @@ namespace Source
         private const float PIXEL_METER_EDIT = 8f;  // pixels per meter when in edit mode for level
         private const int VIEW_WIDTH = 1280;        // width of unscaled screen in pixels
         private const int VIEW_HEIGHT = 720;        // height of unscaled screen in pixels
-        private const float FLOOR_HEIGHT = 0.2f;    // height in meters of a floor
         private Vector2 PLAYER_POSITION = new Vector2(2, -20f);   // starting position of player
 
         private const float MIN_VELOCITY = 1f;  // m/s -- what can be considered 0 horizontal velocity
@@ -98,7 +97,7 @@ namespace Source
         private List<Floor> floors;
 
         private const float LOAD_NEW = 100f;     // the next level will be loaded when the player is this far from the current end
-        private const int LEVEL = 4;            // if this is greater than 0, levels will not be procedurally generated (useful for editing)
+        private const int LEVEL = -1;            // if this is greater than -1, levels will not be procedurally generated (useful for editing)
         private int levelEnd;
         private FloorData levels;
 
@@ -107,12 +106,26 @@ namespace Source
         /// </summary>
         public class FloorData
         {
-            private List<Vector4>[] data;
+            private List<Data>[] data;
             private World world;
             private Texture2D texture;
             private List<Floor> floors;
             private int[] max;
             private Random rand;
+
+            private struct Data
+            {
+                public Vector2 Size;
+                public Vector2 Center;
+                public float Rotation;
+
+                public Data(Vector2 size, Vector2 center, float rotation)
+                {
+                    this.Size = size;
+                    this.Center = center;
+                    this.Rotation = rotation;
+                }
+            }
 
             /// <summary>
             /// Creates a new floordata object to store level data
@@ -126,10 +139,10 @@ namespace Source
                 this.world = world;
                 this.texture = texture;
                 this.floors = floors;
-                data = new List<Vector4>[totalLevels];
+                data = new List<Data>[totalLevels];
                 for (int i = 0; i < data.Length; i++)
                 {
-                    data[i] = new List<Vector4>();
+                    data[i] = new List<Data>();
                 }
                 max = new int[totalLevels];
                 rand = new Random();
@@ -138,15 +151,15 @@ namespace Source
             /// <summary>
             /// Adds a new floor to the specified level
             /// </summary>
-            /// <param name="width">Width of the floor</param>
+            /// <param name="size">Size of the floor</param>
             /// <param name="center">Center of the floor</param>
             /// <param name="rotation">Rotation of the floor</param>
             /// <param name="level">The level in which this floor is located</param>
-            public void AddFloor(float width, Vector2 center, float rotation, int level)
+            public void AddFloor(Vector2 size, Vector2 center, float rotation, int level)
             {
-                data[level].Add(new Vector4(center, width, rotation));
-                float end = center.X + (float)Math.Cos(rotation) * width / 2f;
-                if (end > max[level]) max[level] = (int)Math.Round(end);
+                data[level].Add(new Data(size, center, rotation));
+                float end = center.X + (float)Math.Cos(rotation) * size.X / 2f;
+                if (end > max[level]) max[level] = (int)Math.Floor(end);
             }
 
             /// <summary>
@@ -161,11 +174,11 @@ namespace Source
                     i = rand.Next(data.Length);
                 else
                     i = LEVEL;
-                foreach (Vector4 floor in data[i])
+                foreach (Data floor in data[i])
                 {
-                    Floor item = new Floor(texture, new Vector2(floor.X + levelEnd, floor.Y), floor.Z, floor.W);
-                    world.Add(item);    // Note: world is collisions
+                    Floor item = new Floor(texture, new Vector2(floor.Center.X + levelEnd, floor.Center.Y), floor.Size, floor.Rotation);
                     floors.Add(item);   // Note: floors is drawing (this may be combined with world if it's a good idea)
+                    world.Add(item);    // Note: world is collisions
                 }
                 return max[i];
             }
@@ -239,7 +252,7 @@ namespace Source
                 {
                     while (reader.BaseStream.Position != reader.BaseStream.Length)
                     {
-                        float floorWidth = reader.ReadSingle();
+                        Vector2 floorWidth = new Vector2(reader.ReadSingle(), reader.ReadSingle());
                         Vector2 center = new Vector2(reader.ReadSingle() + levelEnd, reader.ReadSingle());
                         float rotation = reader.ReadSingle();
                         levels.AddFloor(floorWidth, center, rotation, i);
@@ -482,6 +495,7 @@ namespace Source
                             endDraw = mouseSimPosRound;
                             //currentFloor.Body.Dispose();
                             floors.Remove(currentFloor);
+                            world.Remove(currentFloor);
                             currentFloor = null;
                             editingFloor = true;
                         }
@@ -509,6 +523,7 @@ namespace Source
                 {
                     //currentFloor.Body.Dispose();
                     floors.Remove(currentFloor);
+                    world.Remove(currentFloor);
                     currentFloor = null;
                 }
                 else if (ToggleKey(Keys.Up))
@@ -563,6 +578,7 @@ namespace Source
                     //foreach (Floor floor in floors)
                     //    floor.Body.Dispose();
                     floors.Clear();
+                    world.Clear();
                 }
             }
             else if (player.Position.X > levelEnd - LOAD_NEW && LEVEL < 0)
@@ -574,11 +590,12 @@ namespace Source
         /// </summary>
         private void SaveLevel()
         {
-            using (BinaryWriter writer = new BinaryWriter(File.Open(LEVELS_DIR + "level.lvl" + LEVEL, FileMode.Create)))
+            using (BinaryWriter writer = new BinaryWriter(File.Open(LEVELS_DIR + "level" + LEVEL + ".lvl", FileMode.Create)))
             {
                 foreach (Floor floor in floors)
                 {
                     writer.Write(floor.Size.X);
+                    writer.Write(floor.Size.Y);
                     writer.Write(floor.Position.X);
                     writer.Write(floor.Position.Y);
                     writer.Write(floor.Rotation);
@@ -622,7 +639,7 @@ namespace Source
             {
                 Vector2 dist = endDraw - startDraw;
                 float rotation = (float)Math.Atan2(dist.Y, dist.X);
-                Vector2 scale = new Vector2(dist.Length(), FLOOR_HEIGHT);
+                Vector2 scale = new Vector2(dist.Length(), Floor.FLOOR_HEIGHT);
                 Vector2 origin = new Vector2(0.5f, 0.5f);
                 DrawRect(startDraw + dist / 2, Color.Azure, rotation, origin, scale);
             }

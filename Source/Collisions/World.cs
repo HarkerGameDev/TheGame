@@ -29,6 +29,16 @@ namespace Source.Collisions
             bodies.Add(body);
         }
 
+        public void Remove(Body body)
+        {
+            bodies.Remove(body);
+        }
+
+        public void Clear()
+        {
+            bodies.Clear();
+        }
+
         public void Step(float deltaTime)
         {
             player.CanJump = false;
