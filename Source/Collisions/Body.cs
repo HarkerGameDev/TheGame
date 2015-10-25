@@ -23,7 +23,7 @@ namespace Source.Collisions
 
         private Vector2 topLeft, topRight, botLeft, botRight;
 
-        private float rotation;
+        protected float rotation;
         private Vector2 size;
         private Vector2 origin;
 
@@ -138,7 +138,11 @@ namespace Source.Collisions
             Vector2 bL = Position + botLeft;
             Vector2 bR = Position + botRight;
 
-            if (player.TestPoint(tL) || player.TestPoint(tR) || player.TestPoint(bL) || player.TestPoint(bR))
+            bool bottom = player.TestPoint(bL) || player.TestPoint(bR);
+            if (bottom)
+                player.CollideBottom = 2;
+
+            if (player.TestPoint(tL) || player.TestPoint(tR) || bottom)
                 return true;
 
             return Check(player, player.Left) | Check(player, player.Right);
@@ -203,25 +207,20 @@ namespace Source.Collisions
             spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(Position), null, color, rotation, origin, ConvertUnits.ToDisplayUnits(size), SpriteEffects.None, 0f);
 
             // testing corners.
-            float cos = (float)Math.Cos(rotation);
-            float sin = (float)Math.Sin(rotation);
-            Vector2 distX = new Vector2(size.X * cos, size.X * sin) / 2;
-            Vector2 distY = new Vector2(size.Y * sin, -size.Y * cos) / 2;
-
-            Vector2 topLeft = Position - distX + distY;
-            Vector2 topRight = Position + distX + distY;
-            Vector2 botLeft = Position - distX - distY;
-            Vector2 botRight = Position + distX - distY;
+            Vector2 tL = Position + topLeft;
+            Vector2 tR = Position + topRight;
+            Vector2 bL = Position + botLeft;
+            Vector2 bR = Position + botRight;
 
             Vector2 testingSize = new Vector2(10, 10);
-            spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(topLeft), null, Color.Purple, 0f, origin, testingSize, SpriteEffects.None, 0f);
-            spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(topRight), null, Color.Orange, 0f, origin, testingSize, SpriteEffects.None, 0f);
-            spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(botLeft), null, Color.Yellow, 0f, origin, testingSize, SpriteEffects.None, 0f);
-            spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(botRight), null, Color.Black, 0f, origin, testingSize, SpriteEffects.None, 0f);
+            spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(tL), null, Color.Purple, 0f, origin, testingSize, SpriteEffects.None, 0f);
+            spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(tR), null, Color.Orange, 0f, origin, testingSize, SpriteEffects.None, 0f);
+            spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(bL), null, Color.Yellow, 0f, origin, testingSize, SpriteEffects.None, 0f);
+            spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(bR), null, Color.Black, 0f, origin, testingSize, SpriteEffects.None, 0f);
 
-            Vector2 dist = topLeft - botLeft;
-            float x = botLeft.X + 1f;
-            Vector2 pos = new Vector2(x, (dist.Y / dist.X) * (x - botLeft.X) + botLeft.Y);
+            Vector2 dist = tL - bL;
+            float x = bL.X + 1f;
+            Vector2 pos = new Vector2(x, (dist.Y / dist.X) * (x - bL.X) + bL.Y);
             spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(pos), null, Color.Pink, 0f, origin, testingSize, SpriteEffects.None, 0f);
         }
 

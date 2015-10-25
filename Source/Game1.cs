@@ -415,6 +415,10 @@ namespace Source
                 player.Ghost = true;
                 player.oldY = player.Position.Y;
             }
+            if (state.IsKeyDown(Keys.J))
+            {
+                player.Position = PLAYER_POSITION;
+            }
 
             // Calculate wobble-screen
             // TODO ever so slight camera shake when going fast

@@ -47,6 +47,7 @@ namespace Source.Collisions
             player.CanJump = false;
 
             player.Position.X += player.Velocity.X * deltaTime;
+            player.setRotation(0);
             foreach (Body body in bodies)
             {
                 float speed = player.Velocity.X * deltaTime;
@@ -58,15 +59,14 @@ namespace Source.Collisions
                     {
                         if (player.CollideBottom >= 2)
                         {
+                            player.setRotation(body);
                             player.Position.X += speed * (float)Math.Cos(body.Rotation);
                             player.Position.Y -= Math.Abs(speed) * (float)Math.Sin(body.Rotation);
                             player.CanJump = true;
-                            Console.WriteLine("bottom");
                         }
                         else
                         {
                             player.Velocity.X = 0;
-                            Console.WriteLine("not bottom");
                         }
                     }
                     player.Position.X -= speed;

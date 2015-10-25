@@ -44,5 +44,18 @@ namespace Source.Collisions
                 return other.Contains(this);
             }
         }
+
+        public void setRotation(Body body)
+        {
+            if (body.Size.X > body.Size.Y)
+                rotation = body.Rotation;
+            else
+                rotation = body.Rotation - MathHelper.PiOver2;
+        }
+
+        public void setRotation(float rot)
+        {
+            rotation = rot;
+        }
     }
 }
