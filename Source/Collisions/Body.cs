@@ -129,27 +129,27 @@ namespace Source.Collisions
         /// <summary>
         /// Checks if given body is inside this body
         /// </summary>
-        /// <param name="body">Body must have 0 rotation to work properly</param>
+        /// <param name="player">Body must have 0 rotation to work properly</param>
         /// <returns></returns>
-        public bool Contains(Body body)
+        public bool Contains(Player player)
         {
             Vector2 tL = Position + topLeft;
             Vector2 tR = Position + topRight;
             Vector2 bL = Position + botLeft;
             Vector2 bR = Position + botRight;
 
-            if (body.TestPoint(tL) || body.TestPoint(tR) || body.TestPoint(bL) || body.TestPoint(bR))
+            if (player.TestPoint(tL) || player.TestPoint(tR) || player.TestPoint(bL) || player.TestPoint(bR))
                 return true;
 
-            return Check(body, body.Left) || Check(body, body.Right);
+            return Check(player, player.Left) | Check(player, player.Right);
         }
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="body">Body must have 0 rotation to work properly</param>
+        /// <param name="player">Body must have 0 rotation to work properly</param>
         /// <returns></returns>
-        private bool Check(Body body, float x)
+        private bool Check(Player player, float x)
         {
             Vector2 tL = Position + topLeft;
             Vector2 tR = Position + topRight;
@@ -164,17 +164,23 @@ namespace Source.Collisions
             else
                 return false;
 
-            if (pos.Y <= body.Bottom)
+            if (pos.Y > player.Top)
+            {
+                player.CollideBottom++;
+                //Console.WriteLine("Top");
+            }
+
+            if (pos.Y <= player.Bottom)
             {
                 if (Between(x, bL.X, bR.X))    // check left half of bottom
                 {
                     Vector2 pos2 = LineFunction(x, bL, bR);
-                    return pos2.Y >= body.Top;
+                    return pos2.Y >= player.Top;
                 }
                 else                            // check right half of bottom
                 {
                     Vector2 pos2 = LineFunction(x, bR, tR);
-                    return pos2.Y >= body.Top;
+                    return pos2.Y >= player.Top;
                 }
             }
 

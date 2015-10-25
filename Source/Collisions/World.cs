@@ -49,19 +49,31 @@ namespace Source.Collisions
             player.Position.X += player.Velocity.X * deltaTime;
             foreach (Body body in bodies)
             {
+                float speed = player.Velocity.X * deltaTime;
                 if (player.Intersects(body))
                 {
-                    player.Position.X -= player.Velocity.X * deltaTime;
-                    Console.WriteLine(body.Rotation);
-                    if (body.Rotation > 0)
-                    {
-                        player.Velocity.Y -= player.Velocity.X * (float)Math.Sin(body.Rotation);
-                        player.Velocity.X = player.Velocity.X * (float)Math.Cos(body.Rotation);
-                    }
+                    if (body.Rotation == 0)
+                        player.Velocity.X = 0;
                     else
                     {
-                        player.Velocity.X = 0;
+                        if (player.CollideBottom >= 2)
+                        {
+                            player.Position.X += speed * (float)Math.Cos(body.Rotation);
+                            player.Position.Y -= Math.Abs(speed) * (float)Math.Sin(body.Rotation);
+                            player.CanJump = true;
+                            Console.WriteLine("bottom");
+                        }
+                        else
+                        {
+                            player.Velocity.X = 0;
+                            Console.WriteLine("not bottom");
+                        }
                     }
+                    player.Position.X -= speed;
+                }
+                else
+                {
+                    player.CollideBottom = 0;
                 }
             }
 

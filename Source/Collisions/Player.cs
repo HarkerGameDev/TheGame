@@ -17,6 +17,7 @@ namespace Source.Collisions
         public double JumpWait = 0.5;
         public bool Ghost = false;
         public float oldY = 0f;
+        public int CollideBottom = 0;
 
         public Player(Texture2D texture, Vector2 position)
             : base(texture, position, new Vector2(0.8f, 1.8f))
@@ -40,10 +41,6 @@ namespace Source.Collisions
             else
             {
                 //Console.WriteLine("Point: " + (Position + diag));
-                bool bottomR = other.TestPoint(Position + new Vector2(Size.X / 2, Size.Y / 2));
-                bool bottomL = other.TestPoint(Position + new Vector2(-Size.X / 2, Size.Y / 2));
-                if (bottomR || bottomL)
-                    CanJump = true;
                 return other.Contains(this);
             }
         }
