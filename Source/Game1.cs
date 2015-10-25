@@ -406,6 +406,8 @@ namespace Source
             {
                 player.Velocity = (new Vector2(player.Velocity.X, -JUMP_IMPULSE));
             }
+
+            player.Ghost = false;
             if (state.IsKeyDown(Keys.Down))
             {                                                   // fall
                 //if (player.Velocity.Y <= PUSH_VEL)
@@ -414,7 +416,8 @@ namespace Source
             }
             if (state.IsKeyDown(Keys.R))                        // reset
             {
-                player = new Player(whiteRect, PLAYER_POSITION);
+                player.MovePosition(PLAYER_POSITION - player.Position);
+                player.Velocity = Vector2.Zero;
             }
 
             // Calculate wobble-screen
@@ -567,7 +570,8 @@ namespace Source
             player.Velocity.X = MathHelper.Clamp(player.Velocity.X, -MAX_VELOCITY, MAX_VELOCITY);
             if (player.Position.Y > 10f)
             {
-                player = new Player(whiteRect, PLAYER_POSITION);
+                player.MovePosition(PLAYER_POSITION-player.Position);
+                player.Velocity = Vector2.Zero;
                 if (LEVEL < 0)
                 {
                     levelEnd = 0;

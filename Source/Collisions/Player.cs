@@ -16,6 +16,7 @@ namespace Source.Collisions
         public bool CanJump = false;
         public bool Ghost = false;
         public Body Ignore = null;
+        public float oldY = 0;
         public int CollideBottom = 0;
 
         public Player(Texture2D texture, Vector2 position)

@@ -33,34 +33,33 @@ namespace Source.Collisions
             player.Move(deltaTime);
 
             //Console.WriteLine(player.Velocity);
-            foreach (Floor floor in floors)
+            if (!player.Ghost)
             {
-                Vector2 translation = player.Intersects(floor);
-                if (translation != Vector2.Zero)
+                foreach (Floor floor in floors)
                 {
-                    float newX;
-                    float newY;
-                    if (translation.X == 0)
-                        newX = player.Velocity.X;
-                    else
+                    Vector2 translation = player.Intersects(floor);
+                    if (translation != Vector2.Zero)
                     {
-                        newX = -1 * translation.X;
-                        player.Velocity.X = 0;
-                    }
+                        float newX;
+                        float newY;
+                        if (translation.X != 0 && floor.Rotation == 0)
+                            player.Velocity.X = 0;
 
-                    if (translation.Y == 0)
-                        newY = player.Velocity.Y;
-                    else
-                    {
-                        newY = -1 * translation.Y;
-                        player.Velocity.Y = 0;
-                        if (newY < 0)
-                            player.CanJump = true;
-                    }
-                    Vector2 newPosition = new Vector2(-1*translation.X, -1*translation.Y);
-                    player.MovePosition(newPosition);
 
-                    //Console.WriteLine("Colliding with: " + floor.Position + "   Pushing to:   " + newPosition + "   Vector:    "+ new Vector2(-1 * translation.X, -1 * translation.Y));
+                        if (translation.Y != 0)
+                        {
+                            player.Velocity.Y = 0;
+                            if (translation.Y > 0)
+                                player.CanJump = true;
+                            else
+                                player.CanJump = false;
+                        }
+                        Vector2 newPosition = new Vector2(-1 * translation.X, -1 * translation.Y);
+                        player.MovePosition(newPosition);
+
+                        //Writing all this to console lags the game
+                        //Console.WriteLine("Colliding with: " + floor.Position + "   Pushing to:   " + newPosition + "   Vector:    "+ new Vector2(-1 * translation.X, -1 * translation.Y));
+                    }
                 }
             }
         }
