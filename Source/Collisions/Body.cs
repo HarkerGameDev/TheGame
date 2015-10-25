@@ -94,6 +94,15 @@ namespace Source.Collisions
             }
         }
 
+        public void MovePosition(Vector2 by)
+        {
+            position += by;
+            for (int i = 0; i < Points.Length; i++)
+            {
+                Points[i] += by;
+            }
+        }
+
         public void Draw(SpriteBatch spriteBatch)
         {
             spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(position), null, color, rotation, origin, ConvertUnits.ToDisplayUnits(size), SpriteEffects.None, 0f);
@@ -152,13 +161,13 @@ namespace Source.Collisions
                 float intervalDistance = IntervalDistance(minA, maxA, minB, maxB);
                 if (intervalDistance > 0)
                 {
-                    break;
+                    return Vector2.Zero;
                 }
 
                 // Check if the current interval distance is the minimum one. If so store
                 // the interval distance and the current distance.
                 // This will be used to calculate the minimum translation Vector2
-                if (intervalDistance < minIntervalDistance)
+                if (intervalDistance > minIntervalDistance || minIntervalDistance == 0)
                 {
                     minIntervalDistance = intervalDistance;
                     translationAxis = axis;
@@ -168,13 +177,13 @@ namespace Source.Collisions
                         translationAxis = -translationAxis;
                 }
             }
-
+            //Console.WriteLine(minIntervalDistance);
             return translationAxis * minIntervalDistance;
         }
 
         private static void ProjectRectangle(Vector2 axis, Body body, ref float min, ref float max)
         {
-            // Project a point on an axis using the dot product. Truthfully, I never really paid attention in precalc
+            // Project a point on an axis using the dot product.
             float dotProduct = axis.X * body.Points[0].X + axis.Y * body.Points[0].Y;
             min = dotProduct;
             max = dotProduct;

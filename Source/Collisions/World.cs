@@ -32,12 +32,35 @@ namespace Source.Collisions
 
             player.Move(deltaTime);
 
+            //Console.WriteLine(player.Velocity);
             foreach (Floor floor in floors)
             {
-                if (player.Intersects(floor) != Vector2.Zero)
+                Vector2 translation = player.Intersects(floor);
+                if (translation != Vector2.Zero)
                 {
-                    player.Velocity = Vector2.Zero;
-                    Console.WriteLine("Colliding with: " + floor.Position);
+                    float newX;
+                    float newY;
+                    if (translation.X == 0)
+                        newX = player.Velocity.X;
+                    else
+                    {
+                        newX = -1 * translation.X;
+                        player.Velocity.X = 0;
+                    }
+
+                    if (translation.Y == 0)
+                        newY = player.Velocity.Y;
+                    else
+                    {
+                        newY = -1 * translation.Y;
+                        player.Velocity.Y = 0;
+                        if (newY < 0)
+                            player.CanJump = true;
+                    }
+                    Vector2 newPosition = new Vector2(-1*translation.X, -1*translation.Y);
+                    player.MovePosition(newPosition);
+
+                    //Console.WriteLine("Colliding with: " + floor.Position + "   Pushing to:   " + newPosition + "   Vector:    "+ new Vector2(-1 * translation.X, -1 * translation.Y));
                 }
             }
         }
