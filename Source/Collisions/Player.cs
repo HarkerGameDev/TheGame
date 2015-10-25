@@ -14,9 +14,8 @@ namespace Source.Collisions
     public class Player : Body
     {
         public bool CanJump = false;
-        public double JumpWait = 0.5;
         public bool Ghost = false;
-        public float oldY = 0f;
+        public Body Ignore = null;
         public int CollideBottom = 0;
 
         public Player(Texture2D texture, Vector2 position)
@@ -40,7 +39,6 @@ namespace Source.Collisions
             }
             else
             {
-                //Console.WriteLine("Point: " + (Position + diag));
                 return other.Contains(this);
             }
         }

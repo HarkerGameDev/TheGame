@@ -14,7 +14,6 @@ namespace Source.Collisions
     public abstract class Body
     {
         public Vector2 Position;
-        public List<Body> CollisionExceptions; //Exceptions to collisions(ie. player player collision exception)
         public Vector2 Velocity;
 
         public float Rotation { get { return rotation; } }
@@ -36,14 +35,13 @@ namespace Source.Collisions
         public float Top { get { return Position.Y - size.Y / 2; } }
         public float Bottom { get { return Position.Y + size.Y / 2; } }
 
-        public Body(Texture2D texture, Vector2 position, Vector2 size, float rotation = 0f)
+        public Body(Texture2D texture, Vector2 position, Vector2 scale, float rot = 0f)
         {
             this.texture = texture;
-            this.Position = position;
-            this.size = size;
-            this.rotation = MathHelper.WrapAngle(rotation);
+            Position = position;
+            size = scale;
+            rotation = MathHelper.WrapAngle(rot);
 
-            CollisionExceptions = new List<Body>();
             Velocity = Vector2.Zero;
             color = Color.White;
             origin = new Vector2(texture.Width / 2.0f, texture.Height / 2.0f);
@@ -145,6 +143,7 @@ namespace Source.Collisions
             if (player.TestPoint(tL) || player.TestPoint(tR) || bottom)
                 return true;
 
+            player.CollideBottom = 0;
             return Check(player, player.Left) | Check(player, player.Right);
         }
 

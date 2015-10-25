@@ -17,20 +17,20 @@ namespace Source.Collisions
         private const float MAX_CLIMB_SLOPE = MathHelper.PiOver4;
 
         private Player player;
-        private List<Body> bodies;
+        private List<Floor> bodies;
 
         public World(Player player)
         {
             this.player = player;
-            bodies = new List<Body>();
+            bodies = new List<Floor>();
         }
 
-        public void Add(Body body)
+        public void Add(Floor body)
         {
             bodies.Add(body);
         }
 
-        public void Remove(Body body)
+        public void Remove(Floor body)
         {
             bodies.Remove(body);
         }
@@ -42,51 +42,65 @@ namespace Source.Collisions
 
         public void Step(float deltaTime)
         {
-            player.CanJump = false;
             player.Velocity.Y += GRAVITY * deltaTime;
             player.CanJump = false;
+            int totalCollisions = 0;
 
             player.Position.X += player.Velocity.X * deltaTime;
             player.setRotation(0);
-            foreach (Body body in bodies)
+            foreach (Floor body in bodies)
             {
-                float speed = player.Velocity.X * deltaTime;
                 if (player.Intersects(body))
                 {
-                    if (body.Rotation == 0)
-                        player.Velocity.X = 0;
-                    else
+                    totalCollisions++;
+
+                    if (player.Velocity.Y < 0 && body.JumpUp)
+                        player.Ghost = true;
+
+                    if (!player.Ghost || body.Size.Y > body.Size.X && body.Rotation == 0f)
                     {
-                        if (player.CollideBottom >= 2)
-                        {
-                            player.setRotation(body);
-                            player.Position.X += speed * (float)Math.Cos(body.Rotation);
-                            player.Position.Y -= Math.Abs(speed) * (float)Math.Sin(body.Rotation);
-                            player.CanJump = true;
-                        }
+                        float speed = player.Velocity.X * deltaTime;
+                        if (body.Rotation == 0)
+                            player.Velocity.X = 0;
                         else
                         {
-                            player.Velocity.X = 0;
+                            if (player.CollideBottom >= 2)
+                            {
+                                player.setRotation(body);
+                                player.Position.X += speed * (float)Math.Cos(body.Rotation);
+                                player.Position.Y -= Math.Abs(speed) * (float)Math.Sin(body.Rotation);
+                                player.CanJump = true;
+                            }
+                            else
+                            {
+                                player.Velocity.X = 0;
+                            }
                         }
+                        player.Position.X -= speed;
                     }
-                    player.Position.X -= speed;
-                }
-                else
-                {
-                    player.CollideBottom = 0;
                 }
             }
 
             player.Position.Y += player.Velocity.Y * deltaTime;
-            foreach (Body body in bodies)
+            foreach (Floor body in bodies)
             {
                 if (player.Intersects(body))
                 {
-                    //Console.WriteLine("Intersection with: " + body.Position);
-                    player.Position.Y -= player.Velocity.Y * deltaTime;
-                    player.Velocity.Y = 0;
+                    totalCollisions++;
+
+                    if (player.Velocity.Y < 0 && body.JumpUp)
+                        player.Ghost = true;
+
+                    if (!player.Ghost || body.Size.Y > body.Size.X && body.Rotation == 0f)
+                    {
+                        player.Position.Y -= player.Velocity.Y * deltaTime;
+                        player.Velocity.Y = 0;
+                    }
                 }
             }
+
+            if (totalCollisions == 0)
+                player.Ghost = false;
         }
 
         public Body TestPoint(Vector2 point)
@@ -95,7 +109,7 @@ namespace Source.Collisions
             {
                 if (body.TestPoint(point))
                 {
-                    Console.WriteLine("Found body at " + body.Position);
+                    Console.WriteLine("Rotation = " + body.Rotation);
                     return body;
                 }
             }

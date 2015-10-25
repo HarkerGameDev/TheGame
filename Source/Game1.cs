@@ -97,7 +97,7 @@ namespace Source
         private List<Floor> floors;
 
         private const float LOAD_NEW = 100f;     // the next level will be loaded when the player is this far from the current end
-        private const int LEVEL = 4;            // if this is greater than -1, levels will not be procedurally generated (useful for editing)
+        private const int LEVEL = -1;            // if this is greater than -1, levels will not be procedurally generated (useful for editing)
         private int levelEnd;
         private FloorData levels;
 
@@ -405,17 +405,15 @@ namespace Source
             }
             if (state.IsKeyDown(Keys.Up) && player.CanJump)     // jump
             {
-                player.JumpWait = JUMP_WAIT;
                 player.Velocity = (new Vector2(player.Velocity.X, -JUMP_IMPULSE));
             }
-            if (state.IsKeyDown(Keys.Down) && player.CanJump && !player.Ghost)
+            if (state.IsKeyDown(Keys.Down))
             {                                                   // fall
-                if (player.Velocity.Y <= PUSH_VEL)
-                    player.Velocity = (new Vector2(player.Velocity.X, PUSH_POW));
+                //if (player.Velocity.Y <= PUSH_VEL)
+                //    player.Velocity = (new Vector2(player.Velocity.X, PUSH_POW));
                 player.Ghost = true;
-                player.oldY = player.Position.Y;
             }
-            if (state.IsKeyDown(Keys.J))
+            if (state.IsKeyDown(Keys.R))                        // reset
             {
                 player.Position = PLAYER_POSITION;
             }
