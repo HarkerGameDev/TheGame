@@ -97,7 +97,7 @@ namespace Source
         private List<Floor> floors;
 
         private const float LOAD_NEW = 100f;     // the next level will be loaded when the player is this far from the current end
-        private const int LEVEL = -1;            // if this is greater than -1, levels will not be procedurally generated (useful for editing)
+        private const int LEVEL = 4;            // if this is greater than -1, levels will not be procedurally generated (useful for editing)
         private int levelEnd;
         private FloorData levels;
 
@@ -177,8 +177,7 @@ namespace Source
                 foreach (Data floor in data[i])
                 {
                     Floor item = new Floor(texture, new Vector2(floor.Center.X + levelEnd, floor.Center.Y), floor.Size, floor.Rotation);
-                    floors.Add(item);   // Note: floors is drawing (this may be combined with world if it's a good idea)
-                    world.Add(item);    // Note: world is collisions
+                    floors.Add(item);
                 }
                 return max[i];
             }
@@ -239,9 +238,9 @@ namespace Source
 
             // Create objects
             player = new Player(whiteRect, PLAYER_POSITION);
-            world = new World(player);
             rand = new Random();
             floors = new List<Floor>();
+            world = new World(player, floors);
 
             // Load the levels into memory
             string[] levelFiles = Directory.GetFiles(LEVELS_DIR, "level*.lvl");
@@ -415,7 +414,7 @@ namespace Source
             }
             if (state.IsKeyDown(Keys.R))                        // reset
             {
-                player.Position = PLAYER_POSITION;
+                player = new Player(whiteRect, PLAYER_POSITION);
             }
 
             // Calculate wobble-screen
@@ -497,7 +496,6 @@ namespace Source
                             endDraw = mouseSimPosRound;
                             //currentFloor.Body.Dispose();
                             floors.Remove(currentFloor);
-                            world.Remove(currentFloor);
                             currentFloor = null;
                             editingFloor = true;
                         }
@@ -515,7 +513,6 @@ namespace Source
                 {
                     currentFloor = new Floor(whiteRect, startDraw, endDraw);
                     floors.Add(currentFloor);
-                    world.Add(currentFloor);
                 }
                 editingFloor = false;
             }
@@ -525,17 +522,16 @@ namespace Source
                 {
                     //currentFloor.Body.Dispose();
                     floors.Remove(currentFloor);
-                    world.Remove(currentFloor);
                     currentFloor = null;
                 }
-                else if (ToggleKey(Keys.Up))
-                    currentFloor.Position += new Vector2(0f, -1f);
-                else if (ToggleKey(Keys.Left))
-                    currentFloor.Position += new Vector2(-1f, 0f);
-                else if (ToggleKey(Keys.Right))
-                    currentFloor.Position += new Vector2(1f, 0f);
-                else if (ToggleKey(Keys.Down))
-                    currentFloor.Position += new Vector2(0f, 1f);
+                else if (keyboard.IsKeyDown(Keys.Up))
+                    currentFloor.Velocity = new Vector2(0f, -1f);
+                else if (keyboard.IsKeyDown(Keys.Left))
+                    currentFloor.Velocity = new Vector2(-1f, 0f);
+                else if (keyboard.IsKeyDown(Keys.Right))
+                    currentFloor.Velocity = new Vector2(1f, 0f);
+                else if (keyboard.IsKeyDown(Keys.Down))
+                    currentFloor.Velocity += new Vector2(0f, 1f);
                 else if (keyboard.IsKeyDown(Keys.Enter))
                     currentFloor = null;
             }
@@ -571,8 +567,7 @@ namespace Source
             player.Velocity.X = MathHelper.Clamp(player.Velocity.X, -MAX_VELOCITY, MAX_VELOCITY);
             if (player.Position.Y > 10f)
             {
-                player.Position = PLAYER_POSITION;
-                player.Velocity = Vector2.Zero;
+                player = new Player(whiteRect, PLAYER_POSITION);
                 if (LEVEL < 0)
                 {
                     levelEnd = 0;
@@ -580,7 +575,6 @@ namespace Source
                     //foreach (Floor floor in floors)
                     //    floor.Body.Dispose();
                     floors.Clear();
-                    world.Clear();
                 }
             }
             else if (player.Position.X > levelEnd - LOAD_NEW && LEVEL < 0)

@@ -24,36 +24,17 @@ namespace Source.Collisions
             color = Color.Red;
         }
 
-        /// <summary>
-        /// Intersection detection function (only works for horizontal and vertical walls) and updates player status appropriately
-        /// </summary>
-        /// <param name="other">The other Body to check intersection with</param>
-        /// <returns>True if intersects and false if not</returns>
-        public bool Intersects(Body other)
-        {
-            if (other.Rotation == 0f)
-            {
-                if (Bottom > other.Top && Bottom < other.Bottom && Right < other.Right && Left > other.Left)
-                    CanJump = true;
-                return Bottom > other.Top && Top < other.Bottom && Left < other.Right && Right > other.Left;
-            }
-            else
-            {
-                return other.Contains(this);
-            }
-        }
+        //public void setRotation(Body body)
+        //{
+        //    if (body.Size.X > body.Size.Y)
+        //        rotation = body.Rotation;
+        //    else
+        //        rotation = body.Rotation - MathHelper.PiOver2;
+        //}
 
-        public void setRotation(Body body)
-        {
-            if (body.Size.X > body.Size.Y)
-                rotation = body.Rotation;
-            else
-                rotation = body.Rotation - MathHelper.PiOver2;
-        }
-
-        public void setRotation(float rot)
-        {
-            rotation = rot;
-        }
+        //public void setRotation(float rot)
+        //{
+        //    rotation = rot;
+        //}
     }
 }

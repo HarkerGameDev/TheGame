@@ -17,99 +17,37 @@ namespace Source.Collisions
         private const float MAX_CLIMB_SLOPE = MathHelper.PiOver4;
 
         private Player player;
-        private List<Floor> bodies;
+        private List<Floor> floors;
 
-        public World(Player player)
+        public World(Player player, List<Floor> floors)
         {
             this.player = player;
-            bodies = new List<Floor>();
-        }
-
-        public void Add(Floor body)
-        {
-            bodies.Add(body);
-        }
-
-        public void Remove(Floor body)
-        {
-            bodies.Remove(body);
-        }
-
-        public void Clear()
-        {
-            bodies.Clear();
+            this.floors = floors;
         }
 
         public void Step(float deltaTime)
         {
             player.Velocity.Y += GRAVITY * deltaTime;
             player.CanJump = false;
-            int totalCollisions = 0;
 
-            player.Position.X += player.Velocity.X * deltaTime;
-            player.setRotation(0);
-            foreach (Floor body in bodies)
+            player.Move(deltaTime);
+
+            foreach (Floor floor in floors)
             {
-                if (player.Intersects(body))
+                if (player.Intersects(floor) != Vector2.Zero)
                 {
-                    totalCollisions++;
-
-                    if (player.Velocity.Y < 0 && body.JumpUp)
-                        player.Ghost = true;
-
-                    if (!player.Ghost || body.Size.Y > body.Size.X && body.Rotation == 0f)
-                    {
-                        float speed = player.Velocity.X * deltaTime;
-                        if (body.Rotation == 0)
-                            player.Velocity.X = 0;
-                        else
-                        {
-                            if (player.CollideBottom >= 2)
-                            {
-                                player.setRotation(body);
-                                player.Position.X += speed * (float)Math.Cos(body.Rotation);
-                                player.Position.Y -= Math.Abs(speed) * (float)Math.Sin(body.Rotation);
-                                player.CanJump = true;
-                            }
-                            else
-                            {
-                                player.Velocity.X = 0;
-                            }
-                        }
-                        player.Position.X -= speed;
-                    }
+                    player.Velocity = Vector2.Zero;
+                    Console.WriteLine("Colliding with: " + floor.Position);
                 }
             }
-
-            player.Position.Y += player.Velocity.Y * deltaTime;
-            foreach (Floor body in bodies)
-            {
-                if (player.Intersects(body))
-                {
-                    totalCollisions++;
-
-                    if (player.Velocity.Y < 0 && body.JumpUp)
-                        player.Ghost = true;
-
-                    if (!player.Ghost || body.Size.Y > body.Size.X && body.Rotation == 0f)
-                    {
-                        player.Position.Y -= player.Velocity.Y * deltaTime;
-                        player.Velocity.Y = 0;
-                    }
-                }
-            }
-
-            if (totalCollisions == 0)
-                player.Ghost = false;
         }
 
         public Body TestPoint(Vector2 point)
         {
-            foreach (Body body in bodies)
+            foreach (Body body in floors)
             {
                 if (body.TestPoint(point))
                 {
-                    Console.WriteLine("Rotation = " + body.Rotation);
                     return body;
                 }
             }
