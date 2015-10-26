@@ -32,12 +32,9 @@ namespace Source
     public class Game1 : Game
     {
         // LEVEL_FILE should point to "test.lvl" in the root project directory
-
-#if WINDOWS
+		private bool useDir2 = false;
         private String LEVELS_DIR = "../../../../";
-#else
-        private String LEVELS_DIR = "../../../../../../";
-#endif
+        private String LEVELS_DIR2 = "../../../../../../";
 
         // Farseer user data - basically, just use this as if it were an enum
         private const int PLAYER = 0;
@@ -196,6 +193,7 @@ namespace Source
         /// </summary>
         protected override void Initialize()
         {
+
             // Modify screen size
             graphics.PreferredBackBufferWidth = VIEW_WIDTH;
             graphics.PreferredBackBufferHeight = VIEW_HEIGHT;
@@ -244,6 +242,10 @@ namespace Source
 
             // Load the levels into memory
             string[] levelFiles = Directory.GetFiles(LEVELS_DIR, "level*.lvl");
+			if (levelFiles.Length == 0) {
+				levelFiles = Directory.GetFiles (LEVELS_DIR2, "level*.lvl");
+				useDir2 = true;
+			}
             levels = new FloorData(world, whiteRect, floors, levelFiles.Length);
             for (int i = 0; i < levelFiles.Length; i++)
             {
@@ -271,10 +273,13 @@ namespace Source
             LoadLevel();
 
             // Load the song
-            Song song = Content.Load<Song>("Music/" + SONG);
-            MediaPlayer.IsRepeating = true;
-            MediaPlayer.Volume = VOLUME;
-            MediaPlayer.Play(song);
+			try {
+              Song song = Content.Load<Song>("Music/" + SONG);
+              MediaPlayer.IsRepeating = true;
+              MediaPlayer.Volume = VOLUME;
+              MediaPlayer.Play(song);
+			} catch (Microsoft.Xna.Framework.Content.ContentLoadException cle) {
+			}
         }
 
         /// <summary>
@@ -590,7 +595,13 @@ namespace Source
         /// </summary>
         private void SaveLevel()
         {
-            using (BinaryWriter writer = new BinaryWriter(File.Open(LEVELS_DIR + "level" + LEVEL + ".lvl", FileMode.Create)))
+			String dir;
+			if (useDir2) {
+				dir = LEVELS_DIR2;
+			} else {
+				dir = LEVELS_DIR;
+			}
+            using (BinaryWriter writer = new BinaryWriter(File.Open(dir + "level" + LEVEL + ".lvl", FileMode.Create)))
             {
                 foreach (Floor floor in floors)
                 {
