@@ -66,17 +66,17 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Info.plist" />
-    <None Include="Content\Content.mgcb" />
+    <None Include="..\Source\Content\Content.mgcb" />
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
-    <BundleResource Include="Content\Score.xnb" />
-    <BundleResource Include="Content\ScoreBig.xnb" />
+    <BundleResource Include="..\Source\Content\bin\MacOSX\Fonts\Score.xnb" />
+    <BundleResource Include="..\Source\Content\bin\MacOSX\Fonts\ScoreBig.xnb" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Source\Source.csproj">
-      <Project>{5CDED029-4ADB-4700-952F-BE5809450734}</Project>
+      <Project>{E757DB6F-A3C0-463E-89BE-AC72BC371E89}</Project>
       <Name>Source</Name>
     </ProjectReference>
   </ItemGroup>
