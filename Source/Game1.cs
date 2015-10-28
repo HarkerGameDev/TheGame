@@ -640,25 +640,48 @@ namespace Source
             foreach (Player player in players)
                 averageX += player.Position.X;
             averageX /= players.Count;
-
+            List<Player> above = new List<Player>();
+            List<Player> below = new List<Player>();
             foreach (Player player in players)
             {
                 player.Velocity.X = MathHelper.Clamp(player.Velocity.X, -MAX_VELOCITY, MAX_VELOCITY);
                 if (player.Position.Y > 10f)
                 {
-                    player.MoveToPosition(PLAYER_POSITION);
+                    //player.MoveToPosition(PLAYER_POSITION);
+                    below.Add(player);
                     player.Velocity = Vector2.Zero;
-                    if (LEVEL < 0)
+                    //if (LEVEL < 0)
+                    //{
+                    //    levelEnd = 0;
+                    //    currentFloor = null;
+                    //    //foreach (Floor floor in floors)
+                    //    //    floor.Body.Dispose();
+                    //    floors.Clear();
+                    //}
+                }else
+                {
+                    above.Add(player);
+                }
+
+                if(above.Count == 0)
+                {
+                    foreach(Player pb in below)
                     {
-                        levelEnd = 0;
-                        currentFloor = null;
-                        //foreach (Floor floor in floors)
-                        //    floor.Body.Dispose();
-                        floors.Clear();
+                        pb.MoveToPosition(PLAYER_POSITION);
+                    }
+                }else
+                {
+                    foreach (Player pb in below)
+                    {
+                        pb.MoveToPosition(above[0].Position);
                     }
                 }
-                else if (player.Position.X > levelEnd - LOAD_NEW && LEVEL < 0)
+
+                if (player.Position.X > levelEnd - LOAD_NEW && LEVEL < 0)
+                {
                     LoadLevel();
+                    break;
+                }
 
                 if (player.Position.X > max.Position.X)
                     max = player;

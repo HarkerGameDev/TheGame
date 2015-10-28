@@ -48,7 +48,8 @@ namespace Source.Collisions
 
                             if (!player.Ghost)
                             {
-                                if (translation.X != 0 && floor.Rotation == 0)
+                                Console.WriteLine(translation);
+                                if (translation.X != 0 && translation.Y == 0 && floor.Rotation == 0)
                                     player.Velocity.X = 0;
 
                                 totalCollisions++;
@@ -64,8 +65,6 @@ namespace Source.Collisions
                                 Vector2 newPosition = new Vector2(-1 * translation.X, -1 * translation.Y);
                                 player.MovePosition(newPosition);
 
-                                //Writing all this to console lags the game
-                                //Console.WriteLine("Colliding with: " + floor.Position + "   Pushing to:   " + newPosition + "   Vector:    "+ new Vector2(-1 * translation.X, -1 * translation.Y));
                             }
                         }
                     }
