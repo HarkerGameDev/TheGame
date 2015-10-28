@@ -87,11 +87,7 @@ namespace Source.Collisions
         public void Move(float deltaTime)
         {
             Vector2 move = Velocity * deltaTime;
-            position += move;
-            for (int i = 0; i < Points.Length; i++)
-            {
-                Points[i] += move;
-            }
+            MovePosition(move);
         }
 
         public void MovePosition(Vector2 by)
@@ -101,6 +97,11 @@ namespace Source.Collisions
             {
                 Points[i] += by;
             }
+        }
+
+        public void MoveToPosition(Vector2 pos)
+        {
+            MovePosition(pos - position);
         }
 
         public void Draw(SpriteBatch spriteBatch)

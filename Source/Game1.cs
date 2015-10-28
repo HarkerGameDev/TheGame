@@ -79,6 +79,9 @@ namespace Source
         private const float SCREEN_LEFT = 0.2f;         // defines how far left the player can be on wobble-screen
         private const float SCREEN_RIGHT = 0.35f;       // defines the right limit of the player on wobble-screen
         private const float SCREEN_TOP = 0.3f;          // defines the distance from the top or bottom of the screen for the player in wobble-screen
+        private const float DEAD_DIST = 10f;            // players this distance or more behind the average x will move to the maximum player
+        private const double DEAD_TIME = 3;             // respawn time when a player gets behind the cutoff
+        private const double PHASE_TIME = 1;            // the point at which the player will be visible again after dying to get the player prepared
         private Rectangle cameraBounds;
         private Vector2 screenCenter;
 
@@ -90,8 +93,10 @@ namespace Source
         private Vector2 screenOffset;
 
         private bool paused;
-        private Player player;
+        private List<Player> players;
         private List<Floor> floors;
+
+        private Color[] playerColors = { Color.Red, Color.Yellow, Color.Green };
 
         private const float LOAD_NEW = 100f;     // the next level will be loaded when the player is this far from the current end
         private const int LEVEL = -1;            // if this is greater than -1, levels will not be procedurally generated (useful for editing)
@@ -235,10 +240,15 @@ namespace Source
             fontBig = Content.Load<SpriteFont>("Fonts/ScoreBig");
 
             // Create objects
-            player = new Player(whiteRect, PLAYER_POSITION);
+            players = new List<Player>();
+            foreach (Color color in playerColors)
+            {
+                players.Add(new Player(whiteRect, PLAYER_POSITION, color));
+            }
+            playerColors = null;
             rand = new Random();
             floors = new List<Floor>();
-            world = new World(player, floors);
+            world = new World(players, floors);
 
             // Load the levels into memory
             string[] levelFiles = Directory.GetFiles(LEVELS_DIR, "level*.lvl");
@@ -352,12 +362,6 @@ namespace Source
                 //player.Update(gameTime.ElapsedGameTime.TotalSeconds);
 
                 world.Step(deltaTime);
-
-                float wobbleRatio = MAX_VELOCITY / (MAX_VELOCITY - player.Velocity.X);
-                if (wobbleRatio >= MAX_WOBBLE)
-                    wobbleScreen(MAX_WOBBLE);
-                else if (wobbleRatio >= MIN_WOBBLE)
-                    wobbleScreen(wobbleRatio);
             }
 
             prevKeyState = Keyboard.GetState();
@@ -367,9 +371,79 @@ namespace Source
         }
 
         /// <summary>
-        /// Handles all keyboard input for the game. Moves the player and recalculates wobble-screen.
+        /// Handles all keyboard input for the game. Moves all players and recalculates wobble-screen.
         /// </summary>
         private void HandleKeyboard(float deltaTime)
+        {
+            KeyboardState state = Keyboard.GetState();
+
+            for (int i = 0; i < players.Count; i++)
+            {
+                Player player = players[i];
+                if (player.TimeSinceDeath < PHASE_TIME)
+                {
+                    switch (i)
+                    {
+                        case 0:
+                            HandlePlayer(deltaTime, player, Keys.Left, Keys.Right, Keys.Up, Keys.Down);
+                            break;
+                        case 1:
+                            HandlePlayer(deltaTime, player, Keys.A, Keys.D, Keys.W, Keys.S);
+                            break;
+                        case 2:
+                            HandlePlayer(deltaTime, player, Keys.J, Keys.L, Keys.I, Keys.K);
+                            break;
+                    }
+                }
+                if (player.TimeSinceDeath > 0)
+                {
+                    player.TimeSinceDeath -= deltaTime;
+                }
+            }
+
+            if (state.IsKeyDown(Keys.R))                        // reset
+            {
+                foreach (Player player in players)
+                {
+                    player.MoveToPosition(PLAYER_POSITION);
+                    player.Velocity = Vector2.Zero;
+                }
+            }
+
+            // Find average velocity across the players
+            Vector2 averageVel = Vector2.Zero;
+            foreach (Player player in players)
+                averageVel += player.Velocity;
+            averageVel /= players.Count;
+
+            // Calculate wobble-screen
+            float deltaX = ((cameraBounds.Center.X - screenCenter.X) / cameraBounds.Width - averageVel.X / MAX_VELOCITY) * CAMERA_SCALE;
+            deltaX = MathHelper.Clamp(deltaX, -MAX_CAMERA_SPEED_X, MAX_CAMERA_SPEED_X);
+            screenCenter.X += deltaX / 5;
+            screenCenter.X = MathHelper.Clamp(screenCenter.X, cameraBounds.Left, cameraBounds.Right);
+
+            float deltaY = ((cameraBounds.Center.Y - screenCenter.Y) / cameraBounds.Height - averageVel.Y / MAX_VELOCITY) * CAMERA_SCALE;
+            deltaY = MathHelper.Clamp(deltaY, -MAX_CAMERA_SPEED_Y, MAX_CAMERA_SPEED_Y);
+            screenCenter.Y += deltaY;
+            screenCenter.Y = MathHelper.Clamp(screenCenter.Y, cameraBounds.Top, cameraBounds.Bottom);
+
+            float wobbleRatio = MAX_VELOCITY / (MAX_VELOCITY - averageVel.X);
+            if (wobbleRatio >= MAX_WOBBLE)
+                wobbleScreen(MAX_WOBBLE);
+            else if (wobbleRatio >= MIN_WOBBLE)
+                wobbleScreen(wobbleRatio);
+        }
+
+        /// <summary>
+        /// Handles input for a single player for given input keys
+        /// </summary>
+        /// <param name="deltaTime"></param>
+        /// <param name="player"></param>
+        /// <param name="left"></param>
+        /// <param name="right"></param>
+        /// <param name="up"></param>
+        /// <param name="down"></param>
+        private void HandlePlayer(float deltaTime, Player player, Keys left, Keys right, Keys up, Keys down)
         {
             KeyboardState state = Keyboard.GetState();
 
@@ -383,13 +457,13 @@ namespace Source
                 slow *= AIR_RESIST;
             }
 
-            if (state.IsKeyDown(Keys.Right))                    // move right
+            if (state.IsKeyDown(right))                    // move right
             {
                 player.Velocity += (new Vector2(impulse, 0f));
                 if (player.Velocity.X < 0f && player.CanJump)  // change direction quicker
                     player.Velocity += (new Vector2(slow, 0f));
             }
-            else if (state.IsKeyDown(Keys.Left))                // move left
+            else if (state.IsKeyDown(left))                // move left
             {
                 player.Velocity += (new Vector2(-impulse, 0f));
                 if (player.Velocity.X > 0f && player.CanJump)  // change direction quickler
@@ -407,35 +481,18 @@ namespace Source
                     player.Velocity += (new Vector2(Math.Sign(player.Velocity.X) * -slow, 0f));
                 }
             }
-            if (state.IsKeyDown(Keys.Up) && player.CanJump)     // jump
+            if (state.IsKeyDown(up) && player.CanJump)     // jump
             {
                 player.Velocity = (new Vector2(player.Velocity.X, -JUMP_IMPULSE));
             }
 
             player.Ghost = false;
-            if (state.IsKeyDown(Keys.Down))
+            if (state.IsKeyDown(down))
             {                                                   // fall
                 //if (player.Velocity.Y <= PUSH_VEL)
                 //    player.Velocity = (new Vector2(player.Velocity.X, PUSH_POW));
                 player.Ghost = true;
             }
-            if (state.IsKeyDown(Keys.R))                        // reset
-            {
-                player.MovePosition(PLAYER_POSITION - player.Position);
-                player.Velocity = Vector2.Zero;
-            }
-
-            // Calculate wobble-screen
-            // TODO ever so slight camera shake when going fast
-            float deltaX = ((cameraBounds.Center.X - screenCenter.X) / cameraBounds.Width - player.Velocity.X / MAX_VELOCITY) * CAMERA_SCALE;
-            deltaX = MathHelper.Clamp(deltaX, -MAX_CAMERA_SPEED_X, MAX_CAMERA_SPEED_X);
-            screenCenter.X += deltaX / 5;
-            screenCenter.X = MathHelper.Clamp(screenCenter.X, cameraBounds.Left, cameraBounds.Right);
-
-            float deltaY = ((cameraBounds.Center.Y - screenCenter.Y) / cameraBounds.Height - player.Velocity.Y / MAX_VELOCITY) * CAMERA_SCALE;
-            deltaY = MathHelper.Clamp(deltaY, -MAX_CAMERA_SPEED_Y, MAX_CAMERA_SPEED_Y);
-            screenCenter.Y += deltaY;
-            screenCenter.Y = MathHelper.Clamp(screenCenter.Y, cameraBounds.Top, cameraBounds.Bottom);
         }
 
         private void wobbleScreen(float amplifier)
@@ -464,8 +521,14 @@ namespace Source
             KeyboardState keyboard = Keyboard.GetState();
             MouseState mouse = Mouse.GetState();
 
+            // Find average position across all players
+            Vector2 averagePos = Vector2.Zero;
+            foreach (Player player in players)
+                averagePos += player.Position;
+            averagePos /= players.Count;
+
             // Snap the mouse position to 1x1 meter grid
-            Vector2 mouseSimPos = ConvertUnits.ToSimUnits(mouse.Position.ToVector2() - cameraBounds.Center.ToVector2() - screenOffset) + player.Position;
+            Vector2 mouseSimPos = ConvertUnits.ToSimUnits(mouse.Position.ToVector2() - cameraBounds.Center.ToVector2() - screenOffset) + averagePos;
             Vector2 mouseSimPosRound = new Vector2((float)Math.Round(mouseSimPos.X), (float)Math.Round(mouseSimPos.Y));
 
             if (mouse.LeftButton == ButtonState.Pressed)
@@ -568,26 +631,54 @@ namespace Source
         }
 
         /// <summary>
-        /// Checks if the user is off the level, and resets the player if it is
+        /// Checks if the user is off the level, and resets the player if it is. Also, updates player-related game things (documentation WIP)
         /// </summary>
         private void CheckPlayer()
         {
-            player.Velocity.X = MathHelper.Clamp(player.Velocity.X, -MAX_VELOCITY, MAX_VELOCITY);
-            if (player.Position.Y > 10f)
+            Player max = players[0];
+
+            float averageX = 0;
+            foreach (Player player in players)
+                averageX += player.Position.X;
+            averageX /= players.Count;
+
+            foreach (Player player in players)
             {
-                player.MovePosition(PLAYER_POSITION-player.Position);
-                player.Velocity = Vector2.Zero;
-                if (LEVEL < 0)
+                player.Velocity.X = MathHelper.Clamp(player.Velocity.X, -MAX_VELOCITY, MAX_VELOCITY);
+                if (player.Position.Y > 10f)
                 {
-                    levelEnd = 0;
-                    currentFloor = null;
-                    //foreach (Floor floor in floors)
-                    //    floor.Body.Dispose();
-                    floors.Clear();
+                    player.MoveToPosition(PLAYER_POSITION);
+                    player.Velocity = Vector2.Zero;
+                    if (LEVEL < 0)
+                    {
+                        levelEnd = 0;
+                        currentFloor = null;
+                        //foreach (Floor floor in floors)
+                        //    floor.Body.Dispose();
+                        floors.Clear();
+                    }
+                }
+                else if (player.Position.X > levelEnd - LOAD_NEW && LEVEL < 0)
+                    LoadLevel();
+
+                if (player.Position.X > max.Position.X)
+                    max = player;
+            }
+
+            foreach (Player player in players)
+            {
+                if (player.TimeSinceDeath > 0)
+                {
+                    float val = (float)(player.TimeSinceDeath / DEAD_TIME);
+                    float newX = MathHelper.Lerp(max.Position.X, player.Position.X, val);
+                    float newY = MathHelper.Lerp(max.Position.Y, player.Position.Y, val);
+                    player.MoveToPosition(new Vector2(newX, newY));
+                }
+                else if (player.Position.X < averageX - DEAD_DIST)
+                {
+                    player.TimeSinceDeath = DEAD_TIME;
                 }
             }
-            else if (player.Position.X > levelEnd - LOAD_NEW && LEVEL < 0)
-                LoadLevel();
         }
 
         /// <summary>
@@ -631,19 +722,29 @@ namespace Source
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
+            // Find average position across all players
+            Vector2 averagePos = Vector2.Zero;
+            foreach (Player player in players)
+                averagePos += player.Position;
+            averagePos /= players.Count;
+
             // Calculate camera location matrix
             Matrix view;
             if (editLevel)
-                view = Matrix.CreateTranslation(new Vector3(screenOffset + cameraBounds.Center.ToVector2() - ConvertUnits.ToDisplayUnits(player.Position), 0f));
+                view = Matrix.CreateTranslation(new Vector3(screenOffset + cameraBounds.Center.ToVector2() - ConvertUnits.ToDisplayUnits(averagePos), 0f));
             else
-                view = Matrix.CreateTranslation(new Vector3(screenOffset + screenCenter - ConvertUnits.ToDisplayUnits(player.Position), 0f));
+                view = Matrix.CreateTranslation(new Vector3(screenOffset + screenCenter - ConvertUnits.ToDisplayUnits(averagePos), 0f));
 
             // Draw player and floors
             spriteBatch.Begin(transformMatrix: view);
             //DrawRect(player.Body.Position + new Vector2(0f, 0.9f), Color.Gold, 0f, new Vector2(0.5f, 0.5f), new Vector2(0.6f, 0.5f));
             foreach (Floor item in floors)
                 item.Draw(spriteBatch);
-            player.Draw(spriteBatch);
+            foreach (Player player in players)
+            {
+                if (player.TimeSinceDeath < PHASE_TIME)
+                    player.Draw(spriteBatch);
+            }
             if (currentFloor != null)
                 DrawRect(currentFloor.Position, Color.Green, currentFloor.Rotation, currentFloor.Origin, currentFloor.Size);
             if (editingFloor)
