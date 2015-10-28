@@ -31,24 +31,27 @@ namespace Source.Collisions
             {
                 if (player.TimeSinceDeath <= 0)
                 {
+                    int totalCollisions = 0;
+
                     player.Velocity.Y += GRAVITY * deltaTime;
                     player.CanJump = false;
 
                     player.Move(deltaTime);
 
                     //Console.WriteLine(player.Velocity);
-                    if (!player.Ghost)
+                    foreach (Floor floor in floors)
                     {
-                        foreach (Floor floor in floors)
+                        Vector2 translation = player.Intersects(floor);
+                        if (translation != Vector2.Zero)
                         {
-                            Vector2 translation = player.Intersects(floor);
-                            if (translation != Vector2.Zero)
+                            totalCollisions++;
+
+                            if (!player.Ghost)
                             {
-                                float newX;
-                                float newY;
                                 if (translation.X != 0 && floor.Rotation == 0)
                                     player.Velocity.X = 0;
 
+                                totalCollisions++;
 
                                 if (translation.Y != 0)
                                 {
@@ -66,6 +69,9 @@ namespace Source.Collisions
                             }
                         }
                     }
+
+                    if (totalCollisions == 0)
+                        player.Ghost = false;
                 }
             }
         }

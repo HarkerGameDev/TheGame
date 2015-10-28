@@ -486,7 +486,6 @@ namespace Source
                 player.Velocity = (new Vector2(player.Velocity.X, -JUMP_IMPULSE));
             }
 
-            player.Ghost = false;
             if (state.IsKeyDown(down))
             {                                                   // fall
                 //if (player.Velocity.Y <= PUSH_VEL)
