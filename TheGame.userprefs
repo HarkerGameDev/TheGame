@@ -1,10 +1,13 @@
 ﻿<Properties StartupItem="Mac/Mac.csproj">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Mac/Main.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Source/Collisions/Floor.cs">
     <Files>
       <File FileName="README.md" Line="1" Column="1" />
-      <File FileName="Mac/Main.cs" Line="43" Column="16" />
-      <File FileName="Source/Game1.cs" Line="1" Column="1" />
+      <File FileName="Mac/Main.cs" Line="40" Column="17" />
+      <File FileName="Source/Game1.cs" Line="507" Column="49" />
+      <File FileName="Source/Collisions/Body.cs" Line="124" Column="21" />
+      <File FileName="Source/Collisions/Player.cs" Line="1" Column="1" />
+      <File FileName="Source/Collisions/Floor.cs" Line="19" Column="26" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
