@@ -79,9 +79,14 @@ namespace Source.Collisions
         //    return val >= min && val <= max;
         //}
 
+        /// <summary>
+        /// Currently making a small rectangle and using Intersect to TestPoint
+        /// </summary>
+        /// <param name="point"></param>
+        /// <returns></returns>
         public bool TestPoint(Vector2 point)
         {
-            return false;
+            return Intersects(new Floor(texture, point, Floor.FLOOR_HEIGHT)) != Vector2.Zero;
         }
 
         public void Move(float deltaTime)

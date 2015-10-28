@@ -19,6 +19,7 @@ namespace Source.Collisions
         public float oldY = 0;
         public int CollideBottom = 0;
         public double TimeSinceDeath = 0;
+        public int Score = 0;
 
         public Player(Texture2D texture, Vector2 position, Color color)
             : base(texture, position, new Vector2(0.8f, 1.8f))

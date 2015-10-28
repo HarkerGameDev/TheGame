@@ -96,10 +96,10 @@ namespace Source
         private List<Player> players;
         private List<Floor> floors;
 
-        private Color[] playerColors = { Color.Red, Color.Yellow, Color.Green };
+        private Color[] playerColors = { Color.Red, Color.Yellow };
 
         private const float LOAD_NEW = 100f;     // the next level will be loaded when the player is this far from the current end
-        private const int LEVEL = -1;            // if this is greater than -1, levels will not be procedurally generated (useful for editing)
+        private const int LEVEL = 1;            // if this is greater than -1, levels will not be procedurally generated (useful for editing)
         private int levelEnd;
         private FloorData levels;
 
@@ -714,6 +714,7 @@ namespace Source
                 else if (player.Position.X < averageX - DEAD_DIST)
                 {
                     player.TimeSinceDeath = DEAD_TIME;
+                    max.Score++;
                 }
             }
         }
@@ -804,6 +805,15 @@ namespace Source
                 float centerX = GraphicsDevice.Viewport.Width / 2.0f - fontBig.MeasureString("Paused").X / 2.0f;
                 spriteBatch.DrawString(fontBig, "Paused", new Vector2(centerX, GraphicsDevice.Viewport.Height * 0.1f), Color.Yellow);
             }
+
+            // Display scores in the top left
+            System.Text.StringBuilder text = new System.Text.StringBuilder();
+            text.AppendLine("Scores");
+            for (int i = 0; i < players.Count; i++)
+            {
+                text.AppendLine(string.Format("Player {0}: {1}", i + 1, players[i].Score));
+            }
+            spriteBatch.DrawString(font, text, new Vector2(10, 10), Color.Green);
 
             //if (levelAnnounceWaitAt > 0)
             //{

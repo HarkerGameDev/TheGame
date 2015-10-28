@@ -48,7 +48,7 @@ namespace Source.Collisions
 
                             if (!player.Ghost)
                             {
-                                Console.WriteLine(translation);
+                                //Console.WriteLine(translation);
                                 if (translation.X != 0 && translation.Y == 0 && floor.Rotation == 0)
                                     player.Velocity.X = 0;
 
