@@ -33,13 +33,13 @@ namespace Source
     {
         // LEVEL_FILE should point to "test.lvl" in the root project directory
 		private bool useDir2 = false;
-        private String LEVELS_DIR = "../../../../";
-        private String LEVELS_DIR2 = "../../../../../../";
+        private const String LEVELS_DIR = "../../../../";
+        private const String LEVELS_DIR2 = "../../../../../../";
 
         // Farseer user data - basically, just use this as if it were an enum
         private const int PLAYER = 0;
         private const int FLOOR = 1;
-
+		private const int MAX_LEVELS_LOADED = 6;    // how many levels to keep loaded at a given time
         private const float PIXEL_METER = 32f;      // pixels per meter for normal game
         private const float PIXEL_METER_EDIT = 8f;  // pixels per meter when in edit mode for level
         private const int VIEW_WIDTH = 1280;        // width of unscaled screen in pixels
@@ -114,6 +114,7 @@ namespace Source
             private List<Floor> floors;
             private int[] max;
             private Random rand;
+			private int[] levelLengths = new int[MAX_LEVELS_LOADED];
 
             private struct Data
             {
@@ -171,16 +172,25 @@ namespace Source
             /// <returns>The amount by which levelEnd should be incremented</returns>
             public int LoadLevel(int levelEnd)
             {
+				for (int j = 0; j < levelLengths [0]; j++) {
+					floors.RemoveAt (0);
+				}
+				for (int k = 0; k < levelLengths.Length - 1; k++) {
+					levelLengths [k] = levelLengths [k + 1];
+				}
                 int i;
                 if (LEVEL < 0)
                     i = rand.Next(data.Length);
                 else
                     i = LEVEL;
+				int length = 0;
                 foreach (Data floor in data[i])
                 {
                     Floor item = new Floor(texture, new Vector2(floor.Center.X + levelEnd, floor.Center.Y), floor.Size, floor.Rotation);
                     floors.Add(item);
+					length++;
                 }
+				levelLengths [levelLengths.Length - 1] = length;
                 return max[i];
             }
         }
@@ -607,14 +617,19 @@ namespace Source
             }
             if (keyboard.IsKeyDown(Keys.LeftControl))               // Save and load level
             {
-                if (ToggleKey(Keys.S) && LEVEL >= 0)
-                {
-                    SaveLevel();
-                }
-                else if (ToggleKey(Keys.O))
-                {
-                    LoadLevel();
-                }
+				if (ToggleKey (Keys.S) && LEVEL >= 0)
+				{
+					SaveLevel ();
+				}
+				else if (ToggleKey (Keys.O))
+				{
+					LoadLevel ();
+				}
+				else if (ToggleKey (Keys.C))
+				{
+					floors.Clear ();
+				}
+					
             }
             else if (ToggleKey(Keys.OemPlus))                       // Zoom in and out
                 ConvertUnits.SetDisplayUnitToSimUnitRatio(ConvertUnits.ToDisplayUnits(1f) * 2);

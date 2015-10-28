@@ -160,3 +160,4 @@ $RECYCLE.BIN/
 
 # Generated content files
 !Source/Content/bin/
+*.userprefs
