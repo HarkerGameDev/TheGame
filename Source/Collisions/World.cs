@@ -14,7 +14,7 @@ namespace Source.Collisions
     public class World
     {
         private const float GRAVITY = 26f;
-        public const float BOTTOM = -1f;        // bottom of the level
+        public const float BOTTOM = -0.8f;        // bottom of the level
 
         private List<Player> players;
         private List<Floor> floors;

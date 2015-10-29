@@ -58,6 +58,7 @@ namespace Source
         private const float PUSH_POW = 10f;     // m/s -- the impulse applied to the player to get down a platform
         private const float MIN_WOBBLE = 0f;  //     -- the minimum ratio between max velocity and (max - current velocity) for wobbling
         private const float MAX_WOBBLE = 0f;    //     -- the maximum ratio for wobbling; we don't want wobble amplifier 40x
+        private const int LEVEL_DIST = 10;   // the space between levels
 
         private const string SONG = "Chiptune dash";    // the song to play, over, and over, and over again. NEVER STOP THE PARTY!
         private const float VOLUME = 0f;                // volume for song
@@ -605,13 +606,13 @@ namespace Source
                     currentFloor = null;
                 }
                 else if (keyboard.IsKeyDown(Keys.Up))
-                    currentFloor.Velocity = new Vector2(0f, -1f);
+                    currentFloor.MovePosition(-Vector2.UnitY);
                 else if (keyboard.IsKeyDown(Keys.Left))
-                    currentFloor.Velocity = new Vector2(-1f, 0f);
+                    currentFloor.MovePosition(-Vector2.UnitX);
                 else if (keyboard.IsKeyDown(Keys.Right))
-                    currentFloor.Velocity = new Vector2(1f, 0f);
+                    currentFloor.MovePosition(Vector2.UnitX);
                 else if (keyboard.IsKeyDown(Keys.Down))
-                    currentFloor.Velocity += new Vector2(0f, 1f);
+                    currentFloor.MovePosition(Vector2.UnitY);
                 else if (keyboard.IsKeyDown(Keys.Enter))
                     currentFloor = null;
             }
@@ -726,7 +727,8 @@ namespace Source
         /// </summary>
         private void LoadLevel()
         {
-            levelEnd += levels.LoadLevel(levelEnd);
+            levelEnd += levels.LoadLevel(levelEnd) + LEVEL_DIST;
+            Console.WriteLine("LevelEnd: " + levelEnd);
         }
 
         /// <summary>
@@ -752,6 +754,9 @@ namespace Source
 
             // Draw player and floors
             spriteBatch.Begin(transformMatrix: view);
+            
+            spriteBatch.Draw(whiteRect, new Rectangle(-(int)view.Translation.X, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height), Color.LightGray);
+
             //DrawRect(player.Body.Position + new Vector2(0f, 0.9f), Color.Gold, 0f, new Vector2(0.5f, 0.5f), new Vector2(0.6f, 0.5f));
             foreach (Floor item in floors)
                 item.Draw(spriteBatch);
