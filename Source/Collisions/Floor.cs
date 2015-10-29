@@ -25,6 +25,8 @@ namespace Source.Collisions
         public Floor(Texture2D texture, Vector2 position, Vector2 size, float rotation = 0f)
             : base(texture, position, size, rotation)
         {
+            if (rotation % MathHelper.Pi == 0)
+                rotation = 0;
             color = Color.Azure;
         }
 

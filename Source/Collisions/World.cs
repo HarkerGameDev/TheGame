@@ -14,6 +14,7 @@ namespace Source.Collisions
     public class World
     {
         private const float GRAVITY = 26f;
+        private const float MAX_SLOPE = MathHelper.PiOver4;
         public const float BOTTOM = -0.8f;        // bottom of the level
 
         private List<Player> players;
@@ -55,7 +56,7 @@ namespace Source.Collisions
 
                             if (!player.Ghost || floor.Solid)
                             {
-                                if (translation.X != 0 && floor.Rotation == 0)
+                                if (translation.X != 0 && Math.Abs(floor.Rotation) >= MAX_SLOPE)
                                     player.Velocity.X = 0;
 
                                 totalCollisions++;
