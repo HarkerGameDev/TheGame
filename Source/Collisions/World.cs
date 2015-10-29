@@ -53,7 +53,7 @@ namespace Source.Collisions
                         {
                             totalCollisions++;
 
-                            if (!player.Ghost)
+                            if (!player.Ghost || floor.Solid)
                             {
                                 if (translation.X != 0 && floor.Rotation == 0)
                                     player.Velocity.X = 0;

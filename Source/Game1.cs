@@ -119,15 +119,17 @@ namespace Source
 
             private struct Data
             {
-                public Vector2 Size;
+                public float Width;
                 public Vector2 Center;
                 public float Rotation;
+                public bool Solid;
 
-                public Data(Vector2 size, Vector2 center, float rotation)
+                public Data(float width, Vector2 center, float rotation, bool solid)
                 {
-                    this.Size = size;
+                    this.Width = width;
                     this.Center = center;
                     this.Rotation = rotation;
+                    this.Solid = solid;
                 }
             }
 
@@ -159,10 +161,10 @@ namespace Source
             /// <param name="center">Center of the floor</param>
             /// <param name="rotation">Rotation of the floor</param>
             /// <param name="level">The level in which this floor is located</param>
-            public void AddFloor(Vector2 size, Vector2 center, float rotation, int level)
+            public void AddFloor(float width, Vector2 center, float rotation, bool solid, int level)
             {
-                data[level].Add(new Data(size, center, rotation));
-                float end = center.X + (float)Math.Cos(rotation) * size.X / 2f;
+                data[level].Add(new Data(width, center, rotation, solid));
+                float end = center.X + (float)Math.Cos(rotation) * width / 2f;
                 if (end > max[level]) max[level] = (int)Math.Floor(end);
             }
 
@@ -187,7 +189,8 @@ namespace Source
 				int length = 0;
                 foreach (Data floor in data[i])
                 {
-                    Floor item = new Floor(texture, new Vector2(floor.Center.X + levelEnd, floor.Center.Y), floor.Size, floor.Rotation);
+                    Floor item = new Floor(texture, new Vector2(floor.Center.X + levelEnd, floor.Center.Y), new Vector2(floor.Width, Floor.FLOOR_HEIGHT), floor.Rotation);
+                    item.Solid = floor.Solid;
                     floors.Add(item);
 					length++;
                 }
@@ -268,16 +271,17 @@ namespace Source
 				useDir2 = true;
 			}
             levels = new FloorData(world, whiteRect, floors, levelFiles.Length);
-            for (int i = 0; i < levelFiles.Length; i++)
+            for (int i = LEVEL; i < levelFiles.Length; i++)
             {
                 using (BinaryReader reader = new BinaryReader(File.Open(levelFiles[i], FileMode.Open)))
                 {
                     while (reader.BaseStream.Position != reader.BaseStream.Length)
                     {
-                        Vector2 floorWidth = new Vector2(reader.ReadSingle(), reader.ReadSingle());
+                        float floorWidth = reader.ReadSingle();
                         Vector2 center = new Vector2(reader.ReadSingle() + levelEnd, reader.ReadSingle());
                         float rotation = reader.ReadSingle();
-                        levels.AddFloor(floorWidth, center, rotation, i);
+                        bool solid = reader.ReadBoolean();
+                        levels.AddFloor(floorWidth, center, rotation, solid, i);
                     }
                 }
             }
@@ -613,6 +617,8 @@ namespace Source
                     currentFloor.MovePosition(Vector2.UnitX);
                 else if (keyboard.IsKeyDown(Keys.Down))
                     currentFloor.MovePosition(Vector2.UnitY);
+                else if (ToggleKey(Keys.F))
+                    currentFloor.Solid = !currentFloor.Solid;
                 else if (keyboard.IsKeyDown(Keys.Enter))
                     currentFloor = null;
             }
@@ -713,10 +719,10 @@ namespace Source
                 foreach (Floor floor in floors)
                 {
                     writer.Write(floor.Size.X);
-                    writer.Write(floor.Size.Y);
                     writer.Write(floor.Position.X);
                     writer.Write(floor.Position.Y);
                     writer.Write(floor.Rotation);
+                    writer.Write(floor.Solid);
                 }
             }
             Console.WriteLine("Saved");
