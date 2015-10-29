@@ -100,7 +100,7 @@ namespace Source
         private Color[] playerColors = { Color.Red, Color.Yellow };
 
         private const float LOAD_NEW = 100f;     // the next level will be loaded when the player is this far from the current end
-        private const int LEVEL = 0;            // if this is greater than -1, levels will not be procedurally generated (useful for editing)
+        private const int LEVEL = -1;            // if this is greater than -1, levels will not be procedurally generated (useful for editing)
         private int levelEnd;
         private FloorData levels;
 

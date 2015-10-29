@@ -53,10 +53,11 @@ namespace Source.Collisions
                         if (translation != Vector2.Zero)
                         {
                             totalCollisions++;
+                            Console.WriteLine("Rotation: " + floor.Rotation);
 
                             if (!player.Ghost || floor.Solid)
                             {
-                                if (translation.X != 0 && Math.Abs(floor.Rotation) >= MAX_SLOPE)
+                                if (translation.X != 0 && (Math.Abs(floor.Rotation) >= MAX_SLOPE || floor.Rotation == 0))
                                     player.Velocity.X = 0;
 
                                 totalCollisions++;
