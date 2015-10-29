@@ -22,7 +22,7 @@ namespace Source.Collisions
         public int Score = 0;
 
         public Player(Texture2D texture, Vector2 position, Color color)
-            : base(texture, position, new Vector2(0.8f, 1.8f))
+            : base(texture, position, new Vector2(2f, 1.6f))
         {
             this.color = color;
         }

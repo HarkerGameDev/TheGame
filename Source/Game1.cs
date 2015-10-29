@@ -99,7 +99,7 @@ namespace Source
         private Color[] playerColors = { Color.Red, Color.Yellow };
 
         private const float LOAD_NEW = 100f;     // the next level will be loaded when the player is this far from the current end
-        private const int LEVEL = 1;            // if this is greater than -1, levels will not be procedurally generated (useful for editing)
+        private const int LEVEL = -1;            // if this is greater than -1, levels will not be procedurally generated (useful for editing)
         private int levelEnd;
         private FloorData levels;
 
@@ -253,7 +253,7 @@ namespace Source
             players = new List<Player>();
             foreach (Color color in playerColors)
             {
-                players.Add(new Player(whiteRect, PLAYER_POSITION, color));
+                players.Add(new Player(Content.Load<Texture2D>("pumpkins/001"), PLAYER_POSITION, color));
             }
             playerColors = null;
             rand = new Random();
@@ -655,48 +655,25 @@ namespace Source
             foreach (Player player in players)
                 averageX += player.Position.X;
             averageX /= players.Count;
-            List<Player> above = new List<Player>();
-            List<Player> below = new List<Player>();
+
             foreach (Player player in players)
             {
                 player.Velocity.X = MathHelper.Clamp(player.Velocity.X, -MAX_VELOCITY, MAX_VELOCITY);
                 if (player.Position.Y > 10f)
                 {
-                    //player.MoveToPosition(PLAYER_POSITION);
-                    below.Add(player);
+                    player.MoveToPosition(PLAYER_POSITION);
                     player.Velocity = Vector2.Zero;
-                    //if (LEVEL < 0)
-                    //{
-                    //    levelEnd = 0;
-                    //    currentFloor = null;
-                    //    //foreach (Floor floor in floors)
-                    //    //    floor.Body.Dispose();
-                    //    floors.Clear();
-                    //}
-                }else
-                {
-                    above.Add(player);
-                }
-
-                if(above.Count == 0)
-                {
-                    foreach(Player pb in below)
+                    if (LEVEL < 0)
                     {
-                        pb.MoveToPosition(PLAYER_POSITION);
-                    }
-                }else
-                {
-                    foreach (Player pb in below)
-                    {
-                        pb.MoveToPosition(above[0].Position);
+                        levelEnd = 0;
+                        currentFloor = null;
+                        //foreach (Floor floor in floors)
+                        //    floor.Body.Dispose();
+                        floors.Clear();
                     }
                 }
-
-                if (player.Position.X > levelEnd - LOAD_NEW && LEVEL < 0)
-                {
+                else if (player.Position.X > levelEnd - LOAD_NEW && LEVEL < 0)
                     LoadLevel();
-                    break;
-                }
 
                 if (player.Position.X > max.Position.X)
                     max = player;

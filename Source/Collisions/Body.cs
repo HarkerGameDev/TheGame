@@ -111,14 +111,14 @@ namespace Source.Collisions
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(position), null, color, rotation, origin, ConvertUnits.ToDisplayUnits(size), SpriteEffects.None, 0f);
+            spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(position), null, color, rotation, origin, ConvertUnits.ToDisplayUnits(size) / (origin * 2), SpriteEffects.None, 0f);
 
             // testing corners.
-            Vector2 testingSize = new Vector2(10, 10);
-            spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(Points[0]), null, Color.Purple, 0f, origin, testingSize, SpriteEffects.None, 0f);
-            spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(Points[1]), null, Color.Orange, 0f, origin, testingSize, SpriteEffects.None, 0f);
-            spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(Points[2]), null, Color.Yellow, 0f, origin, testingSize, SpriteEffects.None, 0f);
-            spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(Points[3]), null, Color.Black, 0f, origin, testingSize, SpriteEffects.None, 0f);
+            //Vector2 testingSize = new Vector2(10, 10);
+            //spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(Points[0]), null, Color.Purple, 0f, origin, testingSize, SpriteEffects.None, 0f);
+            //spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(Points[1]), null, Color.Orange, 0f, origin, testingSize, SpriteEffects.None, 0f);
+            //spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(Points[2]), null, Color.Yellow, 0f, origin, testingSize, SpriteEffects.None, 0f);
+            //spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(Points[3]), null, Color.Black, 0f, origin, testingSize, SpriteEffects.None, 0f);
 
             //Vector2 dist = tL - bL;
             //float x = bL.X + 1f;

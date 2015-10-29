@@ -14,7 +14,7 @@ namespace Source.Collisions
     public class World
     {
         private const float GRAVITY = 26f;
-        private const float MAX_CLIMB_SLOPE = MathHelper.PiOver4;
+        public const float BOTTOM = -1f;        // bottom of the level
 
         private List<Player> players;
         private List<Floor> floors;
@@ -38,6 +38,13 @@ namespace Source.Collisions
 
                     player.Move(deltaTime);
 
+                    if (player.Position.Y > BOTTOM)  // bottom of the level
+                    {
+                        player.Velocity.Y = 0;
+                        player.MoveToPosition(new Vector2(player.Position.X, BOTTOM));
+                        player.CanJump = true;
+                    }
+
                     //Console.WriteLine(player.Velocity);
                     foreach (Floor floor in floors)
                     {
@@ -48,8 +55,7 @@ namespace Source.Collisions
 
                             if (!player.Ghost)
                             {
-                                //Console.WriteLine(translation);
-                                if (translation.X != 0 && translation.Y == 0 && floor.Rotation == 0)
+                                if (translation.X != 0 && floor.Rotation == 0)
                                     player.Velocity.X = 0;
 
                                 totalCollisions++;
@@ -65,6 +71,8 @@ namespace Source.Collisions
                                 Vector2 newPosition = new Vector2(-1 * translation.X, -1 * translation.Y);
                                 player.MovePosition(newPosition);
 
+                                //Writing all this to console lags the game
+                                //Console.WriteLine("Colliding with: " + floor.Position + "   Pushing to:   " + newPosition + "   Vector:    "+ new Vector2(-1 * translation.X, -1 * translation.Y));
                             }
                         }
                     }
