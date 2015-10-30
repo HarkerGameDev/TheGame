@@ -257,7 +257,11 @@ namespace Source
             players = new List<Player>();
             foreach (Color color in playerColors)
             {
-                players.Add(new Player(Content.Load<Texture2D>("pumpkins/001"), PLAYER_POSITION, color));
+				try {
+					players.Add (new Player (Content.Load<Texture2D>("pumpkins/001"), PLAYER_POSITION, color));
+				} catch (Exception e) {
+					players.Add (new Player (whiteRect, PLAYER_POSITION, color));
+				}
             }
             playerColors = null;
             rand = new Random();
@@ -624,7 +628,7 @@ namespace Source
             }
             if (keyboard.IsKeyDown(Keys.LeftControl))               // Save and load level
             {
-				if (ToggleKey (Keys.S) && LEVEL >= 0)
+				if (ToggleKey (Keys.S)/* && LEVEL >= 0*/)
 				{
 					SaveLevel ();
 				}
@@ -632,7 +636,7 @@ namespace Source
 				{
 					LoadLevel ();
 				}
-				else if (ToggleKey (Keys.C))
+				else if (ToggleKey (Keys.C))						//Clear the level
 				{
 					floors.Clear ();
 				}

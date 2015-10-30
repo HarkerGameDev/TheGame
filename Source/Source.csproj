@@ -93,6 +93,36 @@
     <Content Include="Content\bin\MacOSX\Music\Chiptune dash.m4a">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Content\pumpkins\002.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\pumpkins\000.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\bin\MacOSX\pumpkins\002.xnb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\bin\MacOSX\pumpkins\001.xnb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\bin\MacOSX\pumpkins\000.xnb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\pumpkins\001.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\bin\Linux\pumpkins\001.xnb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\bin\Windows\pumpkins\001.xnb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\bin\WindowsGL\pumpkins\001.xnb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\obj\MacOSX\.mgcontent">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Content\" />
@@ -142,7 +172,6 @@
     <None Include="Content\obj\.DS_Store" />
     <None Include="Content\obj\Linux\.mgcontent" />
     <None Include="Content\obj\MacOSX\.DS_Store" />
-    <None Include="Content\obj\MacOSX\.mgcontent" />
     <None Include="Content\obj\MacOSX\Fonts\Score.mgcontent" />
     <None Include="Content\obj\MacOSX\Fonts\ScoreBig.mgcontent" />
     <None Include="Content\obj\Windows\.DS_Store" />
@@ -207,5 +236,11 @@
     <None Include="Content\Content\obj\Windows\Fonts\Score.mgcontent" />
     <None Include="Content\Content\obj\Windows\Fonts\ScoreBig.mgcontent" />
     <None Include="Content\Content\obj\WindowsGL\.mgcontent" />
+    <None Include="Content\bin\Linux\pumpkins\000.xnb" />
+    <None Include="Content\bin\Linux\pumpkins\002.xnb" />
+    <None Include="Content\bin\Windows\pumpkins\000.xnb" />
+    <None Include="Content\bin\Windows\pumpkins\002.xnb" />
+    <None Include="Content\bin\WindowsGL\pumpkins\000.xnb" />
+    <None Include="Content\bin\WindowsGL\pumpkins\002.xnb" />
   </ItemGroup>
 </Project>
