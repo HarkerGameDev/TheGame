@@ -37,12 +37,14 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="AnimatedTexture.cs" />
     <Compile Include="Collisions\Body.cs" />
     <Compile Include="Collisions\ConvertUnits.cs" />
     <Compile Include="Collisions\Floor.cs" />
     <Compile Include="Collisions\Player.cs" />
     <Compile Include="Collisions\World.cs" />
     <Compile Include="Game1.cs" />
+    <Compile Include="GameData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -124,10 +126,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Content\" />
-    <Folder Include="Content\Content\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <None Include="Content\.DS_Store" />
     <None Include="Content\Fonts\.DS_Store" />

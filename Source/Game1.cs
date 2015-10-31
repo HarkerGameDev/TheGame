@@ -31,38 +31,6 @@ namespace Source
     /// </summary>
     public class Game1 : Game
     {
-        // LEVEL_FILE should point to "test.lvl" in the root project directory
-		private bool useDir2 = false;
-        private const String LEVELS_DIR = "../../../../";
-        private const String LEVELS_DIR2 = "../../../../../../";
-
-        // Farseer user data - basically, just use this as if it were an enum
-        private const int PLAYER = 0;
-        private const int FLOOR = 1;
-		private const int MAX_LEVELS_LOADED = 6;    // how many levels to keep loaded at a given time
-        private const float PIXEL_METER = 32f;      // pixels per meter for normal game
-        private const float PIXEL_METER_EDIT = 8f;  // pixels per meter when in edit mode for level
-        private const int VIEW_WIDTH = 1280;        // width of unscaled screen in pixels
-        private const int VIEW_HEIGHT = 720;        // height of unscaled screen in pixels
-        private Vector2 PLAYER_POSITION = new Vector2(2, -20f);   // starting position of player
-
-        private const float MIN_VELOCITY = 1f;  // m/s -- what can be considered 0 horizontal velocity
-        private const float MAX_VELOCITY = 30f; // m/s -- approximate Usaine Bolt speed
-        private const float MAX_IMPULSE = 40f;   // m/s^2 -- the impulse which is applied when player starts moving after standing still
-        private const double IMPULSE_POW = 0.5; //     -- the player's horizontal input impulse is taken to the following power for extra smoothing
-        private const float JUMP_IMPULSE = 14f; // m/s -- the upwards impulse applied when player jumps
-        private const float SLOWDOWN = 45f;      // m/s^2 -- impulse applied in opposite direction of travel to simulate friction
-        private const float AIR_RESIST = 0.75f; //     -- air resistance on a scale of 0 to 1, where 1 is as if player is on ground
-        private const double JUMP_WAIT = 0.5;   // s   -- how long the player needs to wait before jumping again
-        private const float PUSH_VEL = 1f;      // m/s -- the player is given a little push going down platforms under this velocity
-        private const float PUSH_POW = 10f;     // m/s -- the impulse applied to the player to get down a platform
-        private const float MIN_WOBBLE = 0f;  //     -- the minimum ratio between max velocity and (max - current velocity) for wobbling
-        private const float MAX_WOBBLE = 0f;    //     -- the maximum ratio for wobbling; we don't want wobble amplifier 40x
-        private const int LEVEL_DIST = 10;   // the space between levels
-
-        private const string SONG = "Chiptune dash";    // the song to play, over, and over, and over again. NEVER STOP THE PARTY!
-        private const float VOLUME = 0f;                // volume for song
-
         private GraphicsDeviceManager graphics;
         private SpriteBatch spriteBatch;
         private KeyboardState prevKeyState;
@@ -74,15 +42,6 @@ namespace Source
         private Random rand;
         private World world;
 
-        private const float CAMERA_SCALE = 20f;         // how fast the camera moves
-        private const float MAX_CAMERA_SPEED_X = 5f;    // maximum x speed of camera
-        private const float MAX_CAMERA_SPEED_Y = 3f;    // maximum y speed of camera
-        private const float SCREEN_LEFT = 0.2f;         // defines how far left the player can be on wobble-screen
-        private const float SCREEN_RIGHT = 0.35f;       // defines the right limit of the player on wobble-screen
-        private const float SCREEN_TOP = 0.3f;          // defines the distance from the top or bottom of the screen for the player in wobble-screen
-        private const float DEAD_DIST = 10f;            // players this distance or more behind the average x will move to the maximum player
-        private const double DEAD_TIME = 3;             // respawn time when a player gets behind the cutoff
-        private const double PHASE_TIME = 1;            // the point at which the player will be visible again after dying to get the player prepared
         private Rectangle cameraBounds;
         private Vector2 screenCenter;
 
@@ -97,107 +56,9 @@ namespace Source
         private List<Player> players;
         private List<Floor> floors;
 
-        private Color[] playerColors = { Color.Red, Color.Yellow };
-
-        private const float LOAD_NEW = 100f;     // the next level will be loaded when the player is this far from the current end
-        private const int LEVEL = -1;            // if this is greater than -1, levels will not be procedurally generated (useful for editing)
         private int levelEnd;
-        private FloorData levels;
-
-        /// <summary>
-        /// Stores data for each level in memory
-        /// </summary>
-        public class FloorData
-        {
-            private List<Data>[] data;
-            private World world;
-            private Texture2D texture;
-            private List<Floor> floors;
-            private int[] max;
-            private Random rand;
-			private int[] levelLengths = new int[MAX_LEVELS_LOADED];
-
-            private struct Data
-            {
-                public float Width;
-                public Vector2 Center;
-                public float Rotation;
-                public bool Solid;
-
-                public Data(float width, Vector2 center, float rotation, bool solid)
-                {
-                    this.Width = width;
-                    this.Center = center;
-                    this.Rotation = rotation;
-                    this.Solid = solid;
-                }
-            }
-
-            /// <summary>
-            /// Creates a new floordata object to store level data
-            /// </summary>
-            /// <param name="world">The current world</param>
-            /// <param name="texture">The texture for the floor</param>
-            /// <param name="floors">The list where floors are stored</param>
-            /// <param name="totalLevels">Total number of levels</param>
-            public FloorData(World world, Texture2D texture, List<Floor> floors, int totalLevels)
-            {
-                this.world = world;
-                this.texture = texture;
-                this.floors = floors;
-                data = new List<Data>[totalLevels];
-                for (int i = 0; i < data.Length; i++)
-                {
-                    data[i] = new List<Data>();
-                }
-                max = new int[totalLevels];
-                rand = new Random();
-            }
-
-            /// <summary>
-            /// Adds a new floor to the specified level
-            /// </summary>
-            /// <param name="size">Size of the floor</param>
-            /// <param name="center">Center of the floor</param>
-            /// <param name="rotation">Rotation of the floor</param>
-            /// <param name="level">The level in which this floor is located</param>
-            public void AddFloor(float width, Vector2 center, float rotation, bool solid, int level)
-            {
-                data[level].Add(new Data(width, center, rotation, solid));
-                float end = center.X + (float)Math.Cos(rotation) * width / 2f;
-                if (end > max[level]) max[level] = (int)Math.Floor(end);
-            }
-
-            /// <summary>
-            /// Loads a level into the world and floors list
-            /// </summary>
-            /// <param name="levelEnd">The current end of the game</param>
-            /// <returns>The amount by which levelEnd should be incremented</returns>
-            public int LoadLevel(int levelEnd)
-            {
-				for (int j = 0; j < levelLengths [0]; j++) {
-					floors.RemoveAt (0);
-				}
-				for (int k = 0; k < levelLengths.Length - 1; k++) {
-					levelLengths [k] = levelLengths [k + 1];
-				}
-                int i;
-                if (LEVEL < 0)
-                    i = rand.Next(data.Length);
-                else
-                    i = LEVEL;
-				int length = 0;
-                foreach (Data floor in data[i])
-                {
-                    Floor item = new Floor(texture, new Vector2(floor.Center.X + levelEnd, floor.Center.Y), new Vector2(floor.Width, Floor.FLOOR_HEIGHT), floor.Rotation);
-                    item.Solid = floor.Solid;
-                    floors.Add(item);
-					length++;
-                }
-				levelLengths [levelLengths.Length - 1] = length;
-                return max[i];
-            }
-        }
+        private GameData.FloorData levels;
+        private bool useDir2 = false;
 
         public Game1()
         {
@@ -214,19 +75,18 @@ namespace Source
         {
 
             // Modify screen size
-            graphics.PreferredBackBufferWidth = VIEW_WIDTH;
-            graphics.PreferredBackBufferHeight = VIEW_HEIGHT;
+            graphics.PreferredBackBufferWidth = GameData.VIEW_WIDTH;
+            graphics.PreferredBackBufferHeight = GameData.VIEW_HEIGHT;
             graphics.IsFullScreen = false;
             IsMouseVisible = true;
             graphics.ApplyChanges();
 
             // Sets how many pixels is a meter for Farseer
-            ConvertUnits.SetDisplayUnitToSimUnitRatio(PIXEL_METER);
+            ConvertUnits.SetDisplayUnitToSimUnitRatio(GameData.PIXEL_METER);
 
             // Set variables
             paused = false;
             editLevel = false;
-
 
             // Initialize previous keyboard and gamepad states
             prevKeyState = new KeyboardState();
@@ -255,26 +115,29 @@ namespace Source
 
             // Create objects
             players = new List<Player>();
-            foreach (Color color in playerColors)
+            for (int i = 0; i < GameData.numPlayers; i++)
             {
-				try {
-					players.Add (new Player (Content.Load<Texture2D>("pumpkins/001"), PLAYER_POSITION, color));
-				} catch (Exception e) {
-					players.Add (new Player (whiteRect, PLAYER_POSITION, color));
-				}
+                try
+                {
+                    players.Add(new Player(Content.Load<Texture2D>("pumpkins/001"), GameData.PLAYER_POSITION, GameData.playerColors[i]));
+                }
+                catch (Exception e)
+                {
+                    players.Add(new Player(whiteRect, GameData.PLAYER_POSITION, GameData.playerColors[i]));
+                }
             }
-            playerColors = null;
+            GameData.playerColors = null;
             rand = new Random();
             floors = new List<Floor>();
             world = new World(players, floors);
 
             // Load the levels into memory
-            string[] levelFiles = Directory.GetFiles(LEVELS_DIR, "level*.lvl");
+            string[] levelFiles = Directory.GetFiles(GameData.LEVELS_DIR, "level*.lvl");
 			if (levelFiles.Length == 0) {
-				levelFiles = Directory.GetFiles (LEVELS_DIR2, "level*.lvl");
-				useDir2 = true;
+                levelFiles = Directory.GetFiles(GameData.LEVELS_DIR2, "level*.lvl");
+                useDir2 = true;
 			}
-            levels = new FloorData(world, whiteRect, floors, levelFiles.Length);
+            levels = new GameData.FloorData(world, whiteRect, floors, levelFiles.Length);
             for (int i = 0; i < levelFiles.Length; i++)
             {
                 using (BinaryReader reader = new BinaryReader(File.Open(levelFiles[i], FileMode.Open)))
@@ -293,7 +156,8 @@ namespace Source
             // Initialize camera
             int width = graphics.GraphicsDevice.Viewport.Width;
             int height = graphics.GraphicsDevice.Viewport.Height;
-            cameraBounds = new Rectangle((int)(width * SCREEN_LEFT), (int)(height * SCREEN_TOP), (int)(width * (SCREEN_RIGHT - SCREEN_LEFT)), (int)(height * (1 - 2 * SCREEN_TOP)));
+            cameraBounds = new Rectangle((int)(width * GameData.SCREEN_LEFT), (int)(height * GameData.SCREEN_TOP),
+                (int)(width * (GameData.SCREEN_RIGHT - GameData.SCREEN_LEFT)), (int)(height * (1 - 2 * GameData.SCREEN_TOP)));
             screenCenter = cameraBounds.Center.ToVector2();
             screenOffset = Vector2.Zero;
 
@@ -303,9 +167,9 @@ namespace Source
 
             // Load the song
 			try {
-              Song song = Content.Load<Song>("Music/" + SONG);
+                Song song = Content.Load<Song>("Music/" + GameData.SONG);
               MediaPlayer.IsRepeating = true;
-              MediaPlayer.Volume = VOLUME;
+              MediaPlayer.Volume = GameData.VOLUME;
               MediaPlayer.Play(song);
 			} catch (Microsoft.Xna.Framework.Content.ContentLoadException cle) {
 			}
@@ -357,10 +221,10 @@ namespace Source
             {
                 editLevel = !editLevel;
                 if (editLevel)
-                    ConvertUnits.SetDisplayUnitToSimUnitRatio(PIXEL_METER_EDIT);
+                    ConvertUnits.SetDisplayUnitToSimUnitRatio(GameData.PIXEL_METER_EDIT);
                 else
                 {
-                    ConvertUnits.SetDisplayUnitToSimUnitRatio(PIXEL_METER);
+                    ConvertUnits.SetDisplayUnitToSimUnitRatio(GameData.PIXEL_METER);
                     screenOffset = Vector2.Zero;
                     currentFloor = null;
                 }
@@ -399,7 +263,7 @@ namespace Source
             for (int i = 0; i < players.Count; i++)
             {
                 Player player = players[i];
-                if (player.TimeSinceDeath < PHASE_TIME)
+                if (player.TimeSinceDeath < GameData.PHASE_TIME)
                 {
                     switch (i)
                     {
@@ -424,7 +288,7 @@ namespace Source
             {
                 foreach (Player player in players)
                 {
-                    player.MoveToPosition(PLAYER_POSITION);
+                    player.MoveToPosition(GameData.PLAYER_POSITION);
                     player.Velocity = Vector2.Zero;
                 }
             }
@@ -436,20 +300,20 @@ namespace Source
             averageVel /= players.Count;
 
             // Calculate wobble-screen
-            float deltaX = ((cameraBounds.Center.X - screenCenter.X) / cameraBounds.Width - averageVel.X / MAX_VELOCITY) * CAMERA_SCALE;
-            deltaX = MathHelper.Clamp(deltaX, -MAX_CAMERA_SPEED_X, MAX_CAMERA_SPEED_X);
+            float deltaX = ((cameraBounds.Center.X - screenCenter.X) / cameraBounds.Width - averageVel.X / GameData.MAX_VELOCITY) * GameData.CAMERA_SCALE;
+            deltaX = MathHelper.Clamp(deltaX, -GameData.MAX_CAMERA_SPEED_X, GameData.MAX_CAMERA_SPEED_X);
             screenCenter.X += deltaX / 5;
             screenCenter.X = MathHelper.Clamp(screenCenter.X, cameraBounds.Left, cameraBounds.Right);
 
-            float deltaY = ((cameraBounds.Center.Y - screenCenter.Y) / cameraBounds.Height - averageVel.Y / MAX_VELOCITY) * CAMERA_SCALE;
-            deltaY = MathHelper.Clamp(deltaY, -MAX_CAMERA_SPEED_Y, MAX_CAMERA_SPEED_Y);
+            float deltaY = ((cameraBounds.Center.Y - screenCenter.Y) / cameraBounds.Height - averageVel.Y / GameData.MAX_VELOCITY) * GameData.CAMERA_SCALE;
+            deltaY = MathHelper.Clamp(deltaY, -GameData.MAX_CAMERA_SPEED_Y, GameData.MAX_CAMERA_SPEED_Y);
             screenCenter.Y += deltaY;
             screenCenter.Y = MathHelper.Clamp(screenCenter.Y, cameraBounds.Top, cameraBounds.Bottom);
 
-            float wobbleRatio = MAX_VELOCITY / (MAX_VELOCITY - averageVel.X);
-            if (wobbleRatio >= MAX_WOBBLE)
-                wobbleScreen(MAX_WOBBLE);
-            else if (wobbleRatio >= MIN_WOBBLE)
+            float wobbleRatio = GameData.MAX_VELOCITY / (GameData.MAX_VELOCITY - averageVel.X);
+            if (wobbleRatio >= GameData.MAX_WOBBLE)
+                wobbleScreen(GameData.MAX_WOBBLE);
+            else if (wobbleRatio >= GameData.MIN_WOBBLE)
                 wobbleScreen(wobbleRatio);
         }
 
@@ -466,14 +330,14 @@ namespace Source
         {
             KeyboardState state = Keyboard.GetState();
 
-            float impulse = MAX_IMPULSE * deltaTime;
+            float impulse = GameData.MAX_IMPULSE * deltaTime;
             //float impulse = MathHelper.SmoothStep(MAX_IMPULSE, 0f, Math.Abs(player.Velocity.X) / MAX_VELOCITY) * deltaTime;
             //impulse = (float)Math.Pow(impulse, IMPULSE_POW);
 
-            float slow = SLOWDOWN * deltaTime;
+            float slow = GameData.SLOWDOWN * deltaTime;
             if (!player.CanJump)
             {
-                slow *= AIR_RESIST;
+                slow *= GameData.AIR_RESIST;
             }
 
             if (state.IsKeyDown(right))                    // move right
@@ -492,7 +356,7 @@ namespace Source
             }
             else                            // air resistance and friction
             {
-                if (Math.Abs(player.Velocity.X) < MIN_VELOCITY)
+                if (Math.Abs(player.Velocity.X) < GameData.MIN_VELOCITY)
                     player.Velocity = new Vector2(0f, player.Velocity.Y);
                 else
                 {
@@ -502,7 +366,7 @@ namespace Source
             }
             if (state.IsKeyDown(up) && player.CanJump)     // jump
             {
-                player.Velocity = (new Vector2(player.Velocity.X, -JUMP_IMPULSE));
+                player.Velocity = (new Vector2(player.Velocity.X, -GameData.JUMP_IMPULSE));
             }
 
             if (state.IsKeyDown(down))
@@ -628,7 +492,7 @@ namespace Source
             }
             if (keyboard.IsKeyDown(Keys.LeftControl))               // Save and load level
             {
-				if (ToggleKey (Keys.S)/* && LEVEL >= 0*/)
+                if (ToggleKey(Keys.S) && GameData.LEVEL >= 0)
 				{
 					SaveLevel ();
 				}
@@ -669,12 +533,12 @@ namespace Source
 
             foreach (Player player in players)
             {
-                player.Velocity.X = MathHelper.Clamp(player.Velocity.X, -MAX_VELOCITY, MAX_VELOCITY);
+                player.Velocity.X = MathHelper.Clamp(player.Velocity.X, -GameData.MAX_VELOCITY, GameData.MAX_VELOCITY);
                 if (player.Position.Y > 10f)
                 {
-                    player.MoveToPosition(PLAYER_POSITION);
+                    player.MoveToPosition(GameData.PLAYER_POSITION);
                     player.Velocity = Vector2.Zero;
-                    if (LEVEL < 0)
+                    if (GameData.LEVEL < 0)
                     {
                         levelEnd = 0;
                         currentFloor = null;
@@ -683,7 +547,7 @@ namespace Source
                         floors.Clear();
                     }
                 }
-                else if (player.Position.X > levelEnd - LOAD_NEW && LEVEL < 0)
+                else if (player.Position.X > levelEnd - GameData.LOAD_NEW && GameData.LEVEL < 0)
                     LoadLevel();
 
                 if (player.Position.X > max.Position.X)
@@ -694,14 +558,14 @@ namespace Source
             {
                 if (player.TimeSinceDeath > 0)
                 {
-                    float val = (float)(player.TimeSinceDeath / DEAD_TIME);
+                    float val = (float)(player.TimeSinceDeath / GameData.DEAD_TIME);
                     float newX = MathHelper.Lerp(max.Position.X, player.Position.X, val);
                     float newY = MathHelper.Lerp(max.Position.Y, player.Position.Y, val);
                     player.MoveToPosition(new Vector2(newX, newY));
                 }
-                else if (player.Position.X < averageX - DEAD_DIST)
+                else if (player.Position.X < averageX - GameData.DEAD_DIST)
                 {
-                    player.TimeSinceDeath = DEAD_TIME;
+                    player.TimeSinceDeath = GameData.DEAD_TIME;
                     max.Score++;
                 }
             }
@@ -714,11 +578,11 @@ namespace Source
         {
 			String dir;
 			if (useDir2) {
-				dir = LEVELS_DIR2;
+                dir = GameData.LEVELS_DIR2;
 			} else {
-				dir = LEVELS_DIR;
+                dir = GameData.LEVELS_DIR;
 			}
-            using (BinaryWriter writer = new BinaryWriter(File.Open(dir + "level" + LEVEL + ".lvl", FileMode.Create)))
+            using (BinaryWriter writer = new BinaryWriter(File.Open(dir + "level" + GameData.LEVEL + ".lvl", FileMode.Create)))
             {
                 foreach (Floor floor in floors)
                 {
@@ -737,7 +601,7 @@ namespace Source
         /// </summary>
         private void LoadLevel()
         {
-            levelEnd += levels.LoadLevel(levelEnd) + LEVEL_DIST;
+            levelEnd += levels.LoadLevel(levelEnd) + GameData.LEVEL_DIST;
             Console.WriteLine("LevelEnd: " + levelEnd);
         }
 
@@ -772,7 +636,7 @@ namespace Source
                 item.Draw(spriteBatch);
             foreach (Player player in players)
             {
-                if (player.TimeSinceDeath < PHASE_TIME)
+                if (player.TimeSinceDeath < GameData.PHASE_TIME)
                     player.Draw(spriteBatch);
             }
             if (currentFloor != null)

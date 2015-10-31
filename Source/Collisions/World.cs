@@ -15,6 +15,7 @@ namespace Source.Collisions
     {
         private const float GRAVITY = 26f;
         private const float MAX_SLOPE = MathHelper.PiOver4;
+        private static float SLOPE_JUMP = (float)Math.Atan2(Source.GameData.JUMP_IMPULSE, Source.GameData.MAX_VELOCITY);
         public const float BOTTOM = -0.8f;        // bottom of the level
 
         private List<Player> players;
@@ -60,6 +61,13 @@ namespace Source.Collisions
                                 if (translation.X != 0 && (Math.Abs(floor.Rotation) >= MAX_SLOPE || floor.Rotation == 0))
                                     player.Velocity.X = 0;
 
+                                if (Math.Abs(floor.Rotation) >= SLOPE_JUMP && player.Velocity.Y < 0)        // dealing with speed bost when holding jump on a slope
+                                {
+                                    player.MovePosition(new Vector2(0f, -player.Velocity.Y * deltaTime));
+                                    translation = player.Intersects(floor);                                 // recalculate minimum translation vector
+                                    Console.WriteLine("Moving back");
+                                }
+
                                 totalCollisions++;
 
                                 if (translation.Y != 0)
@@ -70,8 +78,7 @@ namespace Source.Collisions
                                     else
                                         player.CanJump = false;
                                 }
-                                Vector2 newPosition = new Vector2(-1 * translation.X, -1 * translation.Y);
-                                player.MovePosition(newPosition);
+                                player.MovePosition(-translation);
 
                                 //Writing all this to console lags the game
                                 //Console.WriteLine("Colliding with: " + floor.Position + "   Pushing to:   " + newPosition + "   Vector:    "+ new Vector2(-1 * translation.X, -1 * translation.Y));
