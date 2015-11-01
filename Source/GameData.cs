@@ -12,7 +12,7 @@ namespace Source
     internal static class GameData
     {
         public const float LOAD_NEW = 100f;     // the next level will be loaded when the player is this far from the current end
-        public const int LEVEL = 4;            // if this is greater than -1, levels will not be procedurally generated (useful for editing)
+        public const int LEVEL = -1;            // if this is greater than -1, levels will not be procedurally generated (useful for editing)
 
         // LEVEL_FILE should point to "test.lvl" in the root project directory
         public const String LEVELS_DIR = "../../../../";
@@ -27,14 +27,14 @@ namespace Source
         public const int VIEW_WIDTH = 1280;        // width of unscaled screen in pixels
         public const int VIEW_HEIGHT = 720;        // height of unscaled screen in pixels
         public static Vector2 PLAYER_POSITION = new Vector2(2, -20f);   // starting position of player
-        public static Color[] playerColors = { Color.Red, Color.Yellow, Color.Purple };
-        public const int numPlayers = 2;
+        public static Color[] playerColors = { Color.Red, Color.Yellow, Color.Purple };     // colors of each player
+        public const int numPlayers = 2;            // number of players
 
         public const float MIN_VELOCITY = 1f;  // m/s -- what can be considered 0 horizontal velocity
-        public const float MAX_VELOCITY = 30f; // m/s -- approximate Usaine Bolt speed
+        public const float MAX_VELOCITY = 30f; // m/s -- maximum horizontal velocity for player
         public const float MAX_IMPULSE = 40f;   // m/s^2 -- the impulse which is applied when player starts moving after standing still
         public const double IMPULSE_POW = 0.5; //     -- the player's horizontal input impulse is taken to the following power for extra smoothing
-        public const float JUMP_IMPULSE = 14f; // m/s -- the upwards impulse applied when player jumps
+        public const float JUMP_IMPULSE = 14f; // m/s -- the initial upwards velocity when player jumps
         public const float SLOWDOWN = 45f;      // m/s^2 -- impulse applied in opposite direction of travel to simulate friction
         public const float AIR_RESIST = 0.75f; //     -- air resistance on a scale of 0 to 1, where 1 is as if player is on ground
         public const double JUMP_WAIT = 0.5;   // s   -- how long the player needs to wait before jumping again

@@ -15,46 +15,40 @@ namespace Source.Collisions
     {
         public Vector2 Velocity;
 
-        public float Rotation { get { return rotation; } }
-        public Vector2 Size { get { return size; } }
-        public Vector2 Origin { get { return origin; } }
-        public Vector2 Position { get { return position; } }
-
-        private float rotation;
-        private Vector2 size;
-        private Vector2 position;
+        public float Rotation { get; private set; }
+        public Vector2 Size { get; private set; }
+        public Vector2 Origin { get; private set; }
+        public Vector2 Position { get; private set; }
 
         private Vector2[] Points;
         private Vector2[] Edges;
-
-        private Vector2 origin;
 
         protected Color color;
 
         private Texture2D texture;
 
-        public float Left { get { return position.X - size.X / 2; } }
-        public float Right { get { return position.X + size.X / 2; } }
-        public float Top { get { return position.Y - size.Y / 2; } }
-        public float Bottom { get { return position.Y + size.Y / 2; } }
+        public float Left { get { return Position.X - Size.X / 2; } }
+        public float Right { get { return Position.X + Size.X / 2; } }
+        public float Top { get { return Position.Y - Size.Y / 2; } }
+        public float Bottom { get { return Position.Y + Size.Y / 2; } }
 
-        public Body(Texture2D texture, Vector2 pos, Vector2 scale, float rot = 0f)
+        public Body(Texture2D texture, Vector2 position, Vector2 size, float rotation = 0f)
         {
             this.texture = texture;
-            position = pos;
-            size = scale;
-            rotation = MathHelper.WrapAngle(rot);
+            Position = position;
+            Size = size;
+            Rotation = MathHelper.WrapAngle(rotation);
 
             Velocity = Vector2.Zero;
             color = Color.White;
-            origin = new Vector2(texture.Width / 2.0f, texture.Height / 2.0f);
+            Origin = new Vector2(texture.Width / 2.0f, texture.Height / 2.0f);
 
             Points = new Vector2[4];
             Vector2 half = Size / 2;
-            Points[0] = RotatePoint(position, new Vector2(position.X - half.X, position.Y - half.Y), rotation);
-            Points[1] = RotatePoint(position, new Vector2(position.X + half.X, position.Y - half.Y), rotation);
-            Points[2] = RotatePoint(position, new Vector2(position.X + half.X, position.Y + half.Y), rotation);
-            Points[3] = RotatePoint(position, new Vector2(position.X - half.X, position.Y + half.Y), rotation);
+            Points[0] = RotatePoint(Position, new Vector2(Position.X - half.X, Position.Y - half.Y), Rotation);
+            Points[1] = RotatePoint(Position, new Vector2(Position.X + half.X, Position.Y - half.Y), Rotation);
+            Points[2] = RotatePoint(Position, new Vector2(Position.X + half.X, Position.Y + half.Y), Rotation);
+            Points[3] = RotatePoint(Position, new Vector2(Position.X - half.X, Position.Y + half.Y), Rotation);
 
             Edges = new Vector2[4];
             for (int x = 0; x < Edges.Length; x++)
@@ -97,7 +91,7 @@ namespace Source.Collisions
 
         public void MovePosition(Vector2 by)
         {
-            position += by;
+            Position += by;
             for (int i = 0; i < Points.Length; i++)
             {
                 Points[i] += by;
@@ -106,12 +100,12 @@ namespace Source.Collisions
 
         public void MoveToPosition(Vector2 pos)
         {
-            MovePosition(pos - position);
+            MovePosition(pos - Position);
         }
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(position), null, color, rotation, origin, ConvertUnits.ToDisplayUnits(size) / (origin * 2), SpriteEffects.None, 0f);
+            spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(Position), null, color, Rotation, Origin, ConvertUnits.ToDisplayUnits(Size) / (Origin * 2), SpriteEffects.None, 0f);
 
             // testing corners.
             //Vector2 testingSize = new Vector2(10, 10);
@@ -178,7 +172,7 @@ namespace Source.Collisions
                     minIntervalDistance = intervalDistance;
                     translationAxis = axis;
 
-                    Vector2 d = this.position - other.position;
+                    Vector2 d = this.Position - other.Position;
                     if (d.X * translationAxis.X + d.Y * translationAxis.Y < 0)
                         translationAxis = -translationAxis;
                 }
