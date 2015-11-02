@@ -23,7 +23,7 @@ namespace Source.Collisions
         private Vector2[] Points;
         private Vector2[] Edges;
 
-        protected Color color;
+        public Color Color { get; protected set; }
 
         private Texture2D texture;
 
@@ -40,7 +40,7 @@ namespace Source.Collisions
             Rotation = MathHelper.WrapAngle(rotation);
 
             Velocity = Vector2.Zero;
-            color = Color.White;
+            Color = Color.White;
             Origin = new Vector2(texture.Width / 2.0f, texture.Height / 2.0f);
 
             Points = new Vector2[4];
@@ -83,7 +83,7 @@ namespace Source.Collisions
             return Intersects(new Floor(texture, point, Floor.FLOOR_HEIGHT)) != Vector2.Zero;
         }
 
-        public void Move(float deltaTime)
+        public virtual void Move(float deltaTime)
         {
             Vector2 move = Velocity * deltaTime;
             MovePosition(move);
@@ -105,7 +105,7 @@ namespace Source.Collisions
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(Position), null, color, Rotation, Origin, ConvertUnits.ToDisplayUnits(Size) / (Origin * 2), SpriteEffects.None, 0f);
+            spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(Position), null, Color, Rotation, Origin, ConvertUnits.ToDisplayUnits(Size) / (Origin * 2), SpriteEffects.None, 0f);
 
             // testing corners.
             //Vector2 testingSize = new Vector2(10, 10);

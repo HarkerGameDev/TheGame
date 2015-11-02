@@ -11,23 +11,24 @@ namespace Source.Collisions
     /// <summary>
     /// A player uses a rectangle for collisions (for now)
     /// </summary>
-    public class Player : Body
+    public class Projectile : Body
     {
-        public bool CanJump = false;
-        public bool Ghost = false;
-        public Body Ignore = null;
-        public float oldY = 0;
-        public int CollideBottom = 0;
-        public double TimeSinceDeath = 0;
-        public int Score = 0;
-        public List<Projectile> Projectiles;
+        private const float SPEED = 100f;
+        public const float MAX_LIVE = 10f;
+        public float LiveTime;
 
-        public Player(Texture2D texture, Vector2 position, Color color)
-            : base(texture, position, new Vector2(2f, 1.6f))
+        public Projectile(Texture2D texture, Vector2 position, Color color)
+            : base(texture, position, new Vector2(1f, 0.25f))
         {
             this.Color = color;
 
-            Projectiles = new List<Projectile>();
+            Velocity = new Vector2(SPEED * (float)Math.Cos(Rotation), SPEED * (float)Math.Sin(Rotation));
+            LiveTime = 0f;
+        }
+
+        public override void Move(float deltaTime) {
+            base.Move(deltaTime);
+            LiveTime += deltaTime;
         }
 
         //public void setRotation(Body body)

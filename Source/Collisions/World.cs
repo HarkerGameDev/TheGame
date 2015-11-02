@@ -33,6 +33,36 @@ namespace Source.Collisions
             {
                 if (player.TimeSinceDeath <= 0)
                 {
+                    for (int i = player.Projectiles.Count - 1; i >= 0; i--)
+                    {
+                        Projectile proj = player.Projectiles[i];
+                        proj.Move(deltaTime);
+                        if (proj.LiveTime > Projectile.MAX_LIVE)
+                            player.Projectiles.RemoveAt(i);
+                        else
+                        {
+                            foreach (Player target in players)
+                            {
+                                if (proj.Intersects(target) != Vector2.Zero)
+                                {
+                                    target.Velocity.X = 0;
+                                    player.Projectiles.RemoveAt(i);
+                                    proj = null;
+                                    break;
+                                }
+                            }
+
+                            if (proj != null)
+                            {
+                                foreach (Floor floor in floors)
+                                {
+                                    if (proj.Intersects(floor) != Vector2.Zero)
+                                        player.Projectiles.RemoveAt(i);
+                                }
+                            }
+                        }
+                    }
+
                     int totalCollisions = 0;
 
                     player.Velocity.Y += GRAVITY * deltaTime;
@@ -54,7 +84,7 @@ namespace Source.Collisions
                         if (translation != Vector2.Zero)
                         {
                             totalCollisions++;
-                            Console.WriteLine("Rotation: " + floor.Rotation);
+                            //Console.WriteLine("Rotation: " + floor.Rotation);
 
                             if (!player.Ghost || floor.Solid)
                             {
@@ -65,7 +95,7 @@ namespace Source.Collisions
                                 {
                                     player.MovePosition(new Vector2(0f, -player.Velocity.Y * deltaTime));
                                     translation = player.Intersects(floor);                                 // recalculate minimum translation vector
-                                    Console.WriteLine("Moving back");
+                                    //Console.WriteLine("Moving back");
                                 }
 
                                 totalCollisions++;

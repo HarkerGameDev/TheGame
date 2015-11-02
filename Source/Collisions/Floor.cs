@@ -19,7 +19,7 @@ namespace Source.Collisions
 
         public Floor(Texture2D texture, Vector2 position, float width, float rotation = 0f) : base(texture, position, new Vector2(width, FLOOR_HEIGHT), rotation)
         {
-            color = Color.Azure;
+            Color = Color.Azure;
         }
 
         public Floor(Texture2D texture, Vector2 position, Vector2 size, float rotation = 0f)
@@ -28,7 +28,7 @@ namespace Source.Collisions
             Console.WriteLine("New rot: " + rotation % MathHelper.Pi);
             if (rotation % MathHelper.Pi == 0)
                 rotation = 0;
-            color = Color.Azure;
+            Color = Color.Azure;
         }
 
         public Floor(Texture2D texture, Vector2 start, Vector2 end)
@@ -36,7 +36,7 @@ namespace Source.Collisions
             start + (end - start) / 2, 
             new Vector2((end - start).Length(), FLOOR_HEIGHT),
             (float)Math.Atan2(end.Y - start.Y, end.X - start.X) % MathHelper.Pi) {
-            color = Color.Azure;
+            Color = Color.Azure;
         }
     }
 }

@@ -217,7 +217,7 @@ namespace Source
 
             // Toggle edit level
             // TODO much better level editing/ creation
-            if (Keyboard.GetState().IsKeyDown(Keys.E) && !prevKeyState.IsKeyDown(Keys.E))
+            if (ToggleKey(Keys.E))
             {
                 editLevel = !editLevel;
                 if (editLevel)
@@ -268,13 +268,13 @@ namespace Source
                     switch (i)
                     {
                         case 0:
-                            HandlePlayer(deltaTime, player, Keys.Left, Keys.Right, Keys.Up, Keys.Down);
+                            HandlePlayer(deltaTime, player, Keys.Left, Keys.Right, Keys.Up, Keys.Down, Keys.OemSemicolon);
                             break;
                         case 1:
-                            HandlePlayer(deltaTime, player, Keys.A, Keys.D, Keys.W, Keys.S);
+                            HandlePlayer(deltaTime, player, Keys.A, Keys.D, Keys.W, Keys.S, Keys.LeftShift);
                             break;
                         case 2:
-                            HandlePlayer(deltaTime, player, Keys.J, Keys.L, Keys.I, Keys.K);
+                            HandlePlayer(deltaTime, player, Keys.J, Keys.L, Keys.I, Keys.K, Keys.O);
                             break;
                     }
                 }
@@ -326,7 +326,8 @@ namespace Source
         /// <param name="right"></param>
         /// <param name="up"></param>
         /// <param name="down"></param>
-        private void HandlePlayer(float deltaTime, Player player, Keys left, Keys right, Keys up, Keys down)
+        /// <param name="shoot"></param>
+        private void HandlePlayer(float deltaTime, Player player, Keys left, Keys right, Keys up, Keys down, Keys shoot)
         {
             KeyboardState state = Keyboard.GetState();
 
@@ -374,6 +375,11 @@ namespace Source
                 //if (player.Velocity.Y <= PUSH_VEL)
                 //    player.Velocity = (new Vector2(player.Velocity.X, PUSH_POW));
                 player.Ghost = true;
+            }
+            if (ToggleKey(shoot) && player.TimeSinceDeath <= 0)
+            {
+                player.Projectiles.Add(new Projectile(whiteRect, new Vector2(player.Position.X, player.Position.Y), player.Color));
+                //Console.WriteLine("Shooting!");
             }
         }
 
@@ -566,6 +572,7 @@ namespace Source
                 else if (player.Position.X < averageX - GameData.DEAD_DIST)
                 {
                     player.TimeSinceDeath = GameData.DEAD_TIME;
+                    player.Projectiles.Clear();
                     max.Score++;
                 }
             }
@@ -638,6 +645,8 @@ namespace Source
             {
                 if (player.TimeSinceDeath < GameData.PHASE_TIME)
                     player.Draw(spriteBatch);
+                foreach (Projectile proj in player.Projectiles)
+                    proj.Draw(spriteBatch);
             }
             if (currentFloor != null)
                 DrawRect(currentFloor.Position, Color.Green, currentFloor.Rotation, currentFloor.Origin, currentFloor.Size);
