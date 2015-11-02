@@ -58,7 +58,7 @@ namespace Source
 
         private int levelEnd;
         private GameData.FloorData levels;
-        private bool useDir2 = false;
+        private bool onMac = false;
 
         public Game1()
         {
@@ -113,13 +113,18 @@ namespace Source
             font = Content.Load<SpriteFont>("Fonts/Score");
             fontBig = Content.Load<SpriteFont>("Fonts/ScoreBig");
 
+			string[] foo = Directory.GetFiles(GameData.LEVELS_DIR, "level*.lvl");
+			if (foo.Length == 0) {
+				onMac = true;
+			}
+
             // Create objects
             players = new List<Player>();
             for (int i = 0; i < GameData.numPlayers; i++)
             {
                 try
                 {
-                    players.Add(new Player(Content.Load<Texture2D>("pumpkins/001"), GameData.PLAYER_POSITION, GameData.playerColors[i]));
+					players.Add(new Player(Content.Load<Texture2D>("pumpkins/001"), GameData.PLAYER_POSITION, GameData.playerColors[i]));
                 }
                 catch (Exception e)
                 {
@@ -135,7 +140,7 @@ namespace Source
             string[] levelFiles = Directory.GetFiles(GameData.LEVELS_DIR, "level*.lvl");
 			if (levelFiles.Length == 0) {
                 levelFiles = Directory.GetFiles(GameData.LEVELS_DIR2, "level*.lvl");
-                useDir2 = true;
+                onMac = true;
 			}
             levels = new GameData.FloorData(world, whiteRect, floors, levelFiles.Length);
             for (int i = 0; i < levelFiles.Length; i++)
@@ -584,7 +589,7 @@ namespace Source
         private void SaveLevel()
         {
 			String dir;
-			if (useDir2) {
+			if (onMac) {
                 dir = GameData.LEVELS_DIR2;
 			} else {
                 dir = GameData.LEVELS_DIR;
