@@ -28,7 +28,7 @@ namespace Source
         public const int VIEW_HEIGHT = 720;        // height of unscaled screen in pixels
         public static Vector2 PLAYER_POSITION = new Vector2(2, -20f);   // starting position of player
         public static Color[] playerColors = { Color.Red, Color.Yellow, Color.Purple };     // colors of each player
-        public const int numPlayers = 2;            // number of players
+        public const int numPlayers = 1;            // number of players
 
         public const float MIN_VELOCITY = 1f;  // m/s -- what can be considered 0 horizontal velocity
         public const float MAX_VELOCITY = 30f; // m/s -- maximum horizontal velocity for player

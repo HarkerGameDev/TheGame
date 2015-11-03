@@ -43,6 +43,15 @@ namespace Source.Collisions
             Color = Color.White;
             Origin = new Vector2(texture.Width / 2.0f, texture.Height / 2.0f);
 
+            Console.WriteLine("rot: " + Rotation);
+            if (Rotation % MathHelper.Pi == 0)
+                Rotation = 0;
+            else if (Rotation % MathHelper.PiOver2 == 0)
+            {
+                Rotation = 0;
+                Size = new Vector2(Size.Y, Size.X);
+            }
+
             Points = new Vector2[4];
             Vector2 half = Size / 2;
             Points[0] = RotatePoint(Position, new Vector2(Position.X - half.X, Position.Y - half.Y), Rotation);
