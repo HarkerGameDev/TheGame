@@ -11,12 +11,13 @@ namespace Source
 {
     internal static class GameData
     {
-        public const float LOAD_NEW = 100f;     // the next level will be loaded when the player is this far from the current end
         public const int LEVEL = -1;            // if this is greater than -1, levels will not be procedurally generated (useful for editing)
+        public const int numPlayers = 1;            // number of players
 
         // LEVEL_FILE should point to "test.lvl" in the root project directory
         public const String LEVELS_DIR = "../../../../";
         public const String LEVELS_DIR2 = "../../../../../../";
+        public const float LOAD_NEW = 100f;     // the next level will be loaded when the player is this far from the current end
 
         // Farseer user data - basically, just use this as if it were an enum
         public const int PLAYER = 0;
@@ -28,7 +29,6 @@ namespace Source
         public const int VIEW_HEIGHT = 720;        // height of unscaled screen in pixels
         public static Vector2 PLAYER_POSITION = new Vector2(2, -20f);   // starting position of player
         public static Color[] playerColors = { Color.Red, Color.Yellow, Color.Purple };     // colors of each player
-        public const int numPlayers = 1;            // number of players
 
         public const float MIN_VELOCITY = 1f;  // m/s -- what can be considered 0 horizontal velocity
         public const float MAX_VELOCITY = 30f; // m/s -- maximum horizontal velocity for player

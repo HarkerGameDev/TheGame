@@ -598,10 +598,23 @@ namespace Source
             {
                 foreach (Floor floor in floors)
                 {
-                    writer.Write(floor.Size.X);
+                    bool wall = false;
+                    if (floor.Size.Y > floor.Size.X)
+                        wall = true;
+
+                    if (wall)
+                        writer.Write(floor.Size.Y);
+                    else
+                        writer.Write(floor.Size.X);
+
                     writer.Write(floor.Position.X);
                     writer.Write(floor.Position.Y);
-                    writer.Write(floor.Rotation);
+
+                    if (wall)
+                        writer.Write(MathHelper.PiOver2);
+                    else
+                        writer.Write(floor.Rotation);
+
                     writer.Write(floor.Solid);
                 }
             }

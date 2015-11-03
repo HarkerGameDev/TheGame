@@ -57,7 +57,10 @@ namespace Source.Collisions
                                 foreach (Floor floor in floors)
                                 {
                                     if (proj.Intersects(floor) != Vector2.Zero)
+                                    {
                                         player.Projectiles.RemoveAt(i);
+                                        break;
+                                    }
                                 }
                             }
                         }
