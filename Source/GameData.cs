@@ -5,6 +5,7 @@ using System.Text;
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using Source.Collisions;
 
 namespace Source
@@ -12,9 +13,15 @@ namespace Source
     internal static class GameData
     {
         public const int LEVEL = -1;            // if this is greater than -1, levels will not be procedurally generated (useful for editing)
-        public const int numPlayers = 1;            // number of players
+        public const int numPlayers = 2;            // number of players
 
-        // LEVEL_FILE should point to "test.lvl" in the root project directory
+        public static bool[] useController = { false, false, false };    // true means the player at the index will be using a controller.
+        public static Controls[] keyboardControls = {            // defines the keyboard controls which will be used
+                                                       new Controls(Keys.Left, Keys.Right, Keys.Up, Keys.Down, Keys.RightShift),
+                                                       new Controls(Keys.A, Keys.D, Keys.W, Keys.S, Keys.LeftShift),
+                                                       new Controls(Keys.J, Keys.L, Keys.I, Keys.K, Keys.O)};
+
+        // LEVEL_FILE should point to "level*.lvl" in the root project directory
         public const String LEVELS_DIR = "../../../../";
         public const String LEVELS_DIR2 = "../../../../../../";
         public const float LOAD_NEW = 100f;     // the next level will be loaded when the player is this far from the current end
@@ -57,6 +64,18 @@ namespace Source
         public const double DEAD_TIME = 3;             // respawn time when a player gets behind the cutoff
         public const double PHASE_TIME = 1;            // the point at which the player will be visible again after dying to get the player prepared
         
+        public struct Controls {
+            public Keys left, right, up, down, shoot;
+
+            public Controls(Keys left, Keys right, Keys up, Keys down, Keys shoot) {
+                this.left = left;
+                this.right = right;
+                this.up = up;
+                this.down = down;
+                this.shoot = shoot;
+            }
+        }
+
         /// <summary>
         /// Stores data for each level in memory
         /// </summary>

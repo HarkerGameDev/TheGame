@@ -122,14 +122,7 @@ namespace Source
             players = new List<Player>();
             for (int i = 0; i < GameData.numPlayers; i++)
             {
-                try
-                {
-					players.Add(new Player(Content.Load<Texture2D>("pumpkins/001"), GameData.PLAYER_POSITION, GameData.playerColors[i]));
-                }
-                catch (Exception e)
-                {
-                    players.Add(new Player(whiteRect, GameData.PLAYER_POSITION, GameData.playerColors[i]));
-                }
+				players.Add(new Player(Content.Load<Texture2D>("pumpkins/001"), GameData.PLAYER_POSITION, GameData.playerColors[i]));
             }
             GameData.playerColors = null;
             rand = new Random();
@@ -244,7 +237,7 @@ namespace Source
             {
                 float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
                 if (currentFloor == null)
-                    HandleKeyboard(deltaTime);
+                    HandleInput(deltaTime);
 
                 CheckPlayer();
                 //player.Update(gameTime.ElapsedGameTime.TotalSeconds);
@@ -259,30 +252,35 @@ namespace Source
         }
 
         /// <summary>
-        /// Handles all keyboard input for the game. Moves all players and recalculates wobble-screen.
+        /// Handles all keyboard and gamepad input for the game. Moves all players and recalculates wobble-screen.
         /// </summary>
-        private void HandleKeyboard(float deltaTime)
+        private void HandleInput(float deltaTime)
         {
             KeyboardState state = Keyboard.GetState();
 
+            int currentController = 0;
+            int currentKeyboard = 0;
             for (int i = 0; i < players.Count; i++)
             {
                 Player player = players[i];
-                if (player.TimeSinceDeath < GameData.PHASE_TIME)
+
+                if (GameData.useController[i])
                 {
-                    switch (i)
+                    currentController++;
+                    if (player.TimeSinceDeath < GameData.PHASE_TIME)
                     {
-                        case 0:
-                            HandlePlayer(deltaTime, player, Keys.Left, Keys.Right, Keys.Up, Keys.Down, Keys.OemSemicolon);
-                            break;
-                        case 1:
-                            HandlePlayer(deltaTime, player, Keys.A, Keys.D, Keys.W, Keys.S, Keys.LeftShift);
-                            break;
-                        case 2:
-                            HandlePlayer(deltaTime, player, Keys.J, Keys.L, Keys.I, Keys.K, Keys.O);
-                            break;
+                        HandleGamepad(deltaTime, player, currentController - 1);
                     }
                 }
+                else
+                {
+                    currentKeyboard++;
+                    if (player.TimeSinceDeath < GameData.PHASE_TIME)
+                    {
+                        HandleKeyboard(deltaTime, player, currentKeyboard - 1);
+                    }
+                }
+
                 if (player.TimeSinceDeath > 0)
                 {
                     player.TimeSinceDeath -= deltaTime;
@@ -327,14 +325,11 @@ namespace Source
         /// </summary>
         /// <param name="deltaTime"></param>
         /// <param name="player"></param>
-        /// <param name="left"></param>
-        /// <param name="right"></param>
-        /// <param name="up"></param>
-        /// <param name="down"></param>
-        /// <param name="shoot"></param>
-        private void HandlePlayer(float deltaTime, Player player, Keys left, Keys right, Keys up, Keys down, Keys shoot)
+        /// <param name="controller"></param>
+        private void HandleKeyboard(float deltaTime, Player player, int controller)
         {
             KeyboardState state = Keyboard.GetState();
+            GameData.Controls controls = GameData.keyboardControls[controller];
 
             float impulse = GameData.MAX_IMPULSE * deltaTime;
             //float impulse = MathHelper.SmoothStep(MAX_IMPULSE, 0f, Math.Abs(player.Velocity.X) / MAX_VELOCITY) * deltaTime;
@@ -346,13 +341,13 @@ namespace Source
                 slow *= GameData.AIR_RESIST;
             }
 
-            if (state.IsKeyDown(right))                    // move right
+            if (state.IsKeyDown(controls.right))                    // move right
             {
                 player.Velocity += (new Vector2(impulse, 0f));
                 if (player.Velocity.X < 0f && player.CanJump)  // change direction quicker
                     player.Velocity += (new Vector2(slow, 0f));
             }
-            else if (state.IsKeyDown(left))                // move left
+            else if (state.IsKeyDown(controls.left))                // move left
             {
                 player.Velocity += (new Vector2(-impulse, 0f));
                 if (player.Velocity.X > 0f && player.CanJump)  // change direction quickler
@@ -370,18 +365,81 @@ namespace Source
                     player.Velocity += (new Vector2(Math.Sign(player.Velocity.X) * -slow, 0f));
                 }
             }
-            if (state.IsKeyDown(up) && player.CanJump)     // jump
+            if (state.IsKeyDown(controls.up) && player.CanJump)     // jump
             {
                 player.Velocity = (new Vector2(player.Velocity.X, -GameData.JUMP_IMPULSE));
             }
 
-            if (state.IsKeyDown(down))
+            if (state.IsKeyDown(controls.down))
             {                                                   // fall
                 //if (player.Velocity.Y <= PUSH_VEL)
                 //    player.Velocity = (new Vector2(player.Velocity.X, PUSH_POW));
                 player.Ghost = true;
             }
-            if (ToggleKey(shoot) && player.TimeSinceDeath <= 0)
+            if (ToggleKey(controls.shoot) && player.TimeSinceDeath <= 0)
+            {
+                player.Projectiles.Add(new Projectile(whiteRect, new Vector2(player.Position.X, player.Position.Y), player.Color));
+                //Console.WriteLine("Shooting!");
+            }
+        }
+
+        /// <summary>
+        /// Handles input for a single player for given input keys
+        /// </summary>
+        /// <param name="deltaTime"></param>
+        /// <param name="player"></param>
+        /// <param name="controller">Must be from 0 to 3</param>
+        private void HandleGamepad(float deltaTime, Player player, int controller)
+        {
+            GamePadState state = GamePad.GetState((PlayerIndex)controller, GamePadDeadZone.Circular);
+
+            float impulse = GameData.MAX_IMPULSE * deltaTime;
+            //float impulse = MathHelper.SmoothStep(MAX_IMPULSE, 0f, Math.Abs(player.Velocity.X) / MAX_VELOCITY) * deltaTime;
+            //impulse = (float)Math.Pow(impulse, IMPULSE_POW);
+
+            float slow = GameData.SLOWDOWN * deltaTime;
+            if (!player.CanJump)
+            {
+                slow *= GameData.AIR_RESIST;
+            }
+
+            if (state.ThumbSticks.Left.X == 0f)         // air resistance and friction
+            {
+                if (Math.Abs(player.Velocity.X) < GameData.MIN_VELOCITY)
+                    player.Velocity = new Vector2(0f, player.Velocity.Y);
+                else
+                {
+                    int playerVelSign = Math.Sign(player.Velocity.X);
+                    player.Velocity += (new Vector2(Math.Sign(player.Velocity.X) * -slow, 0f));
+                }
+            }
+            else
+            {
+                // move right and left
+                player.Velocity += (new Vector2(impulse * state.ThumbSticks.Left.X, 0f));
+
+                if (player.CanJump) // change direction quicker
+                {
+                    if (player.Velocity.X > 0f && state.ThumbSticks.Left.X > 0f)
+                        player.Velocity += (new Vector2(-slow, 0f));
+                    else if (player.Velocity.X < 0f && state.ThumbSticks.Left.X < 0f)
+                        player.Velocity += (new Vector2(slow, 0f));
+                }
+            }
+
+            if (state.IsButtonDown(Buttons.A) && player.CanJump)     // jump
+            {
+                player.Velocity = (new Vector2(player.Velocity.X, -GameData.JUMP_IMPULSE));
+            }
+
+            if (state.ThumbSticks.Left.Y > 0f)
+            {                                                   // fall
+                //if (player.Velocity.Y <= PUSH_VEL)
+                //    player.Velocity = (new Vector2(player.Velocity.X, PUSH_POW));
+                player.Ghost = true;
+            }
+
+            if (state.IsButtonDown(Buttons.X) && prevPadState.IsButtonUp(Buttons.X) && player.TimeSinceDeath <= 0)
             {
                 player.Projectiles.Add(new Projectile(whiteRect, new Vector2(player.Position.X, player.Position.Y), player.Color));
                 //Console.WriteLine("Shooting!");
