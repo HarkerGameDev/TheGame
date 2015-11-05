@@ -466,6 +466,7 @@ namespace Source
         /// - Ctrl-O to open the level in test.lvl -- NOTE, this will override ANY changes you made, so be careful
         /// - + and - zoom in and out
         /// - Drag mouse with nothing held down to pan camera
+        /// - Press f when a floor is selected to change its solid state
         /// </summary>
         private void HandleEditLevel()
         {
@@ -555,7 +556,13 @@ namespace Source
                 else if (keyboard.IsKeyDown(Keys.Down))
                     currentFloor.MovePosition(Vector2.UnitY);
                 else if (ToggleKey(Keys.F))
+                {
                     currentFloor.Solid = !currentFloor.Solid;
+                    if (currentFloor.Solid)
+                        Console.WriteLine("Floor is now solid");
+                    else
+                        Console.WriteLine("Floor is no longer solid");
+                }
                 else if (keyboard.IsKeyDown(Keys.Enter))
                     currentFloor = null;
             }
