@@ -43,7 +43,7 @@ namespace Source.Collisions
             Color = Color.White;
             Origin = new Vector2(texture.Width / 2.0f, texture.Height / 2.0f);
 
-            Console.WriteLine("rot: " + Rotation);
+            //Console.WriteLine("rot: " + Rotation);
             if (Rotation % MathHelper.Pi == 0)
                 Rotation = 0;
             else if (Rotation % MathHelper.PiOver2 == 0)

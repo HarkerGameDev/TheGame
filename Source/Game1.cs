@@ -557,7 +557,7 @@ namespace Source
                     currentFloor.MovePosition(Vector2.UnitY);
                 else if (ToggleKey(Keys.F))
                 {
-                    currentFloor.Solid = !currentFloor.Solid;
+                    currentFloor.ToggleSolid();
                     if (currentFloor.Solid)
                         Console.WriteLine("Floor is now solid");
                     else

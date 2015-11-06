@@ -12,8 +12,8 @@ namespace Source
 {
     internal static class GameData
     {
-        public const int LEVEL = -1;            // if this is greater than -1, levels will not be procedurally generated (useful for editing)
-        public const int numPlayers = 2;            // number of players
+        public const int LEVEL = 1;            // if this is greater than -1, levels will not be procedurally generated (useful for editing)
+        public const int numPlayers = 1;            // number of players
 
         public static bool[] useController = { false, false, false };    // true means the player at the index will be using a controller.
         public static Controls[] keyboardControls = {            // defines the keyboard controls which will be used
@@ -164,7 +164,8 @@ namespace Source
                 foreach (Data floor in data[i])
                 {
                     Floor item = new Floor(texture, new Vector2(floor.Center.X + levelEnd, floor.Center.Y), new Vector2(floor.Width, Floor.FLOOR_HEIGHT), floor.Rotation);
-                    item.Solid = floor.Solid;
+                    if (floor.Solid)
+                        item.ToggleSolid();
                     floors.Add(item);
                     length++;
                 }
