@@ -39,6 +39,7 @@ namespace Source.Collisions
 
             foreach (Player player in game.players)
             {
+                player.Sprite.Update(deltaTime);
                 if (player.TimeSinceDeath <= 0)
                 {
                     for (int i = player.Projectiles.Count - 1; i >= 0; i--)

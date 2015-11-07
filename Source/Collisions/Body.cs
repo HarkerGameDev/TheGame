@@ -17,7 +17,7 @@ namespace Source.Collisions
 
         public float Rotation { get; private set; }
         public Vector2 Size { get; private set; }
-        public Vector2 Origin { get; private set; }
+        public Vector2 Origin { get; protected set; }
         public Vector2 Position { get; private set; }
 
         private Vector2[] Points;

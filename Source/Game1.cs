@@ -119,7 +119,7 @@ namespace Source
             players = new List<Player>();
             for (int i = 0; i < GameData.numPlayers; i++)
             {
-				players.Add(new Player(Content.Load<Texture2D>("pumpkins/001"), GameData.PLAYER_POSITION, GameData.playerColors[i]));
+				players.Add(new Player(Content.Load<Texture2D>("Art/GreenDude"), GameData.PLAYER_POSITION, GameData.playerColors[i]));
             }
             GameData.playerColors = null;
             rand = new Random();

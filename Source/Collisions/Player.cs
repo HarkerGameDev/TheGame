@@ -6,6 +6,8 @@ using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
+using Source.Graphics;
+
 namespace Source.Collisions
 {
     /// <summary>
@@ -22,20 +24,22 @@ namespace Source.Collisions
         public int Score = 0;
         public List<Projectile> Projectiles;
 
-        private Vector2 textureScale;
+        public AnimatedSprite Sprite;
 
         public Player(Texture2D texture, Vector2 position, Color color)
             : base(texture, position, new Vector2(0.6f, 1.8f))
         {
             this.Color = color;
-            this.textureScale = new Vector2(1.8f / Origin.Y / 2);
+            Sprite = new AnimatedSprite(texture, 4, 1, 1.8f / Origin.Y / 2f);
+            Origin = new Vector2(Origin.X / 4, Origin.Y / 1);
 
             Projectiles = new List<Projectile>();
         }
 
         public override void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(Position), null, Color, Rotation, Origin, ConvertUnits.ToDisplayUnits(textureScale), SpriteEffects.None, 0f);
+            //spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(Position), null, Color, Rotation, Origin, ConvertUnits.ToDisplayUnits(textureScale), SpriteEffects.None, 0f);
+            Sprite.Draw(spriteBatch, this);
         }
 
         //public void setRotation(Body body)
