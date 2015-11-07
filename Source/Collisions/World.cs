@@ -93,6 +93,17 @@ namespace Source.Collisions
                     return;
                 }
             }
+            for (int i = game.walls.Count - 1; i >= 0; i--)
+            {
+                Wall wall = game.walls[i];
+                if (proj.Intersects(wall) != Vector2.Zero)
+                {
+                    game.walls.RemoveAt(i);
+                    game.particles.Add(new Particle(wall.Position, game.font, "BAM!"));
+                    player.Projectiles.RemoveAt(projIndex);
+                    return;
+                }
+            }
         }
 
         private int CheckFloors(Player player)
@@ -136,10 +147,14 @@ namespace Source.Collisions
             for (int i = game.walls.Count - 1; i >= 0; i--)
             {
                 Wall wall = game.walls[i];
-                if (player.Intersects(wall) != Vector2.Zero)
+                Vector2 translation = player.Intersects(wall);
+                if (translation != Vector2.Zero)
                 {
-                    game.walls.RemoveAt(i);
-                    game.particles.Add(new Particle(wall.Position, game.font, "BAM!"));
+                    player.MovePosition(-translation);
+                    if (translation.X != 0)
+                        player.Velocity.X = 0;
+                    else
+                        player.Velocity.Y = 0;
                 }
             }
         }
