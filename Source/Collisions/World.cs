@@ -5,6 +5,8 @@ using System.Text;
 
 using Microsoft.Xna.Framework;
 
+using Source.Graphics;
+
 namespace Source.Collisions
 {
     /// <summary>
@@ -18,20 +20,24 @@ namespace Source.Collisions
         private static float SLOPE_JUMP = (float)Math.Atan2(Source.GameData.JUMP_SPEED, Source.GameData.MAX_VELOCITY);
         public const float BOTTOM = -0.8f;        // bottom of the level
 
-        private List<Player> players;
-        private List<Floor> floors;
-        private List<Wall> walls;
+        private Game1 game;
 
-        public World(List<Player> player, List<Floor> floors, List<Wall> walls)
+        public World(Game1 game)
         {
-            this.players = player;
-            this.floors = floors;
-            this.walls = walls;
+            this.game = game;
         }
 
         public void Step(float deltaTime)
         {
-            foreach (Player player in players)
+            for (int i = game.particles.Count - 1; i >= 0; i--)
+            {
+                Particle part = game.particles[i];
+                part.LiveTime -= deltaTime;
+                if (part.LiveTime < 0)
+                    game.particles.RemoveAt(i);
+            }
+
+            foreach (Player player in game.players)
             {
                 if (player.TimeSinceDeath <= 0)
                 {
@@ -69,7 +75,7 @@ namespace Source.Collisions
                 player.Projectiles.RemoveAt(projIndex);
                 return;
             }
-            foreach (Player target in players)
+            foreach (Player target in game.players)
             {
                 if (proj.Intersects(target) != Vector2.Zero)
                 {
@@ -78,7 +84,7 @@ namespace Source.Collisions
                     return;
                 }
             }
-            foreach (Floor floor in floors)
+            foreach (Floor floor in game.floors)
             {
                 if (proj.Intersects(floor) != Vector2.Zero)
                 {
@@ -92,7 +98,7 @@ namespace Source.Collisions
         {
             int totalCollisions = 0;
             //Console.WriteLine(player.Velocity);
-            foreach (Floor floor in floors)
+            foreach (Floor floor in game.floors)
             {
                 Vector2 translation = player.Intersects(floor);
                 if (translation != Vector2.Zero)
@@ -126,20 +132,20 @@ namespace Source.Collisions
 
         private void CheckWalls(Player player)
         {
-            for (int i = walls.Count - 1; i >= 0; i--)
+            for (int i = game.walls.Count - 1; i >= 0; i--)
             {
-                Wall wall = walls[i];
+                Wall wall = game.walls[i];
                 if (player.Intersects(wall) != Vector2.Zero)
                 {
-                    walls.RemoveAt(i);
-                    // SPAWN PARTICLE EFFECT, or at least some text saying "Particle"
+                    game.walls.RemoveAt(i);
+                    game.particles.Add(new Particle(wall.Position, game.font, "BAM!"));
                 }
             }
         }
 
         public Body TestPoint(Vector2 point)
         {
-            foreach (Body body in floors)
+            foreach (Body body in game.floors)
             {
                 if (body.TestPoint(point))
                 {

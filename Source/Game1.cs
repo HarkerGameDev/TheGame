@@ -9,6 +9,7 @@ using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
 
 using Source.Collisions;
+using Source.Graphics;
 
 namespace Source
 {
@@ -37,7 +38,7 @@ namespace Source
         private GamePadState prevPadState;
         private MouseState prevMouseState;
         private Texture2D whiteRect;
-        private SpriteFont font, fontBig;
+        public SpriteFont font, fontBig;
 
         private Random rand;
         private World world;
@@ -53,9 +54,11 @@ namespace Source
         private Vector2 screenOffset;
 
         private bool paused;
-        private List<Player> players;
-        private List<Floor> floors;
-        private List<Wall> walls;
+
+        public List<Player> players;
+        public List<Floor> floors;
+        public List<Wall> walls;
+        public List<Particle> particles;
 
         private int levelEnd;
 
@@ -122,7 +125,8 @@ namespace Source
             rand = new Random();
             floors = new List<Floor>();
             walls = new List<Wall>();
-            world = new World(players, floors, walls);
+            particles = new List<Particle>();
+            world = new World(this);
 
             // Initialize camera
             int width = graphics.GraphicsDevice.Viewport.Width;
@@ -672,7 +676,15 @@ namespace Source
                 DrawRect(Vector2.Zero, Color.LightGreen, 0f, new Vector2(0.5f, 0.5f), new Vector2(1, 1));
             spriteBatch.End();
 
-            // Show paused screen if game is paused
+
+            // Draw all particles
+            spriteBatch.Begin(transformMatrix: view);
+            foreach (Particle part in particles)
+                part.Draw(spriteBatch);
+            spriteBatch.End();
+
+
+            // Draw all HUD elements
             // TODO display a proper pause menu
             spriteBatch.Begin();
             if (paused)
