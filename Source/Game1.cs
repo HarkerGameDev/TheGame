@@ -55,10 +55,9 @@ namespace Source
         private bool paused;
         private List<Player> players;
         private List<Floor> floors;
+        private List<Wall> walls;
 
         private int levelEnd;
-        private GameData.FloorData levels;
-        private bool onMac = false;
 
         public Game1()
         {
@@ -81,7 +80,7 @@ namespace Source
             IsMouseVisible = true;
             graphics.ApplyChanges();
 
-            // Sets how many pixels is a meter for Farseer
+            // Sets how many pixels is a meter
             ConvertUnits.SetDisplayUnitToSimUnitRatio(GameData.PIXEL_METER);
 
             // Set variables
@@ -113,11 +112,6 @@ namespace Source
             font = Content.Load<SpriteFont>("Fonts/Score");
             fontBig = Content.Load<SpriteFont>("Fonts/ScoreBig");
 
-			string[] foo = Directory.GetFiles(GameData.LEVELS_DIR, "level*.lvl");
-			if (foo.Length == 0) {
-				onMac = true;
-			}
-
             // Create objects
             players = new List<Player>();
             for (int i = 0; i < GameData.numPlayers; i++)
@@ -127,29 +121,8 @@ namespace Source
             GameData.playerColors = null;
             rand = new Random();
             floors = new List<Floor>();
-            world = new World(players, floors);
-
-            // Load the levels into memory
-            string[] levelFiles = Directory.GetFiles(GameData.LEVELS_DIR, "level*.lvl");
-			if (levelFiles.Length == 0) {
-                levelFiles = Directory.GetFiles(GameData.LEVELS_DIR2, "level*.lvl");
-                onMac = true;
-			}
-            levels = new GameData.FloorData(world, whiteRect, floors, levelFiles.Length);
-            for (int i = 0; i < levelFiles.Length; i++)
-            {
-                using (BinaryReader reader = new BinaryReader(File.Open(levelFiles[i], FileMode.Open)))
-                {
-                    while (reader.BaseStream.Position != reader.BaseStream.Length)
-                    {
-                        float floorWidth = reader.ReadSingle();
-                        Vector2 center = new Vector2(reader.ReadSingle() + levelEnd, reader.ReadSingle());
-                        float rotation = reader.ReadSingle();
-                        bool solid = reader.ReadBoolean();
-                        levels.AddFloor(floorWidth, center, rotation, solid, i);
-                    }
-                }
-            }
+            walls = new List<Wall>();
+            world = new World(players, floors, walls);
 
             // Initialize camera
             int width = graphics.GraphicsDevice.Viewport.Width;
@@ -161,7 +134,8 @@ namespace Source
 
             // Load the level stored in LEVEL_FILE
             levelEnd = 0;
-            LoadLevel();
+            //LoadLevel();
+            MakeLevel();
 
             // Load the song
 			try {
@@ -331,7 +305,7 @@ namespace Source
             KeyboardState state = Keyboard.GetState();
             GameData.Controls controls = GameData.keyboardControls[controller];
 
-            float impulse = GameData.MAX_IMPULSE * deltaTime;
+            float impulse = GameData.MAX_ACCEL * deltaTime;
             //float impulse = MathHelper.SmoothStep(MAX_IMPULSE, 0f, Math.Abs(player.Velocity.X) / MAX_VELOCITY) * deltaTime;
             //impulse = (float)Math.Pow(impulse, IMPULSE_POW);
 
@@ -367,7 +341,7 @@ namespace Source
             }
             if (state.IsKeyDown(controls.up) && player.CanJump)     // jump
             {
-                player.Velocity = (new Vector2(player.Velocity.X, -GameData.JUMP_IMPULSE));
+                player.Velocity = (new Vector2(player.Velocity.X, -GameData.JUMP_SPEED));
             }
 
             if (state.IsKeyDown(controls.down))
@@ -393,7 +367,7 @@ namespace Source
         {
             GamePadState state = GamePad.GetState((PlayerIndex)controller, GamePadDeadZone.Circular);
 
-            float impulse = GameData.MAX_IMPULSE * deltaTime;
+            float impulse = GameData.MAX_ACCEL * deltaTime;
             //float impulse = MathHelper.SmoothStep(MAX_IMPULSE, 0f, Math.Abs(player.Velocity.X) / MAX_VELOCITY) * deltaTime;
             //impulse = (float)Math.Pow(impulse, IMPULSE_POW);
 
@@ -429,7 +403,7 @@ namespace Source
 
             if (state.IsButtonDown(Buttons.A) && player.CanJump)     // jump
             {
-                player.Velocity = (new Vector2(player.Velocity.X, -GameData.JUMP_IMPULSE));
+                player.Velocity = (new Vector2(player.Velocity.X, -GameData.JUMP_SPEED));
             }
 
             if (state.ThumbSticks.Left.Y > 0f)
@@ -555,34 +529,10 @@ namespace Source
                     currentFloor.MovePosition(Vector2.UnitX);
                 else if (keyboard.IsKeyDown(Keys.Down))
                     currentFloor.MovePosition(Vector2.UnitY);
-                else if (ToggleKey(Keys.F))
-                {
-                    currentFloor.ToggleSolid();
-                    if (currentFloor.Solid)
-                        Console.WriteLine("Floor is now solid");
-                    else
-                        Console.WriteLine("Floor is no longer solid");
-                }
                 else if (keyboard.IsKeyDown(Keys.Enter))
                     currentFloor = null;
             }
-            if (keyboard.IsKeyDown(Keys.LeftControl))               // Save and load level
-            {
-                if (ToggleKey(Keys.S) && GameData.LEVEL >= 0)
-				{
-					SaveLevel ();
-				}
-				else if (ToggleKey (Keys.O))
-				{
-					LoadLevel ();
-				}
-				else if (ToggleKey (Keys.C))						//Clear the level
-				{
-					floors.Clear ();
-				}
-					
-            }
-            else if (ToggleKey(Keys.OemPlus))                       // Zoom in and out
+            if (ToggleKey(Keys.OemPlus))                       // Zoom in and out
                 ConvertUnits.SetDisplayUnitToSimUnitRatio(ConvertUnits.ToDisplayUnits(1f) * 2);
             else if (ToggleKey(Keys.OemMinus))
                 ConvertUnits.SetDisplayUnitToSimUnitRatio(ConvertUnits.ToDisplayUnits(1f) / 2);
@@ -614,17 +564,14 @@ namespace Source
                 {
                     player.MoveToPosition(GameData.PLAYER_POSITION);
                     player.Velocity = Vector2.Zero;
-                    if (GameData.LEVEL < 0)
-                    {
-                        levelEnd = 0;
-                        currentFloor = null;
-                        //foreach (Floor floor in floors)
-                        //    floor.Body.Dispose();
-                        floors.Clear();
-                    }
+                    levelEnd = 0;
+                    currentFloor = null;
+                    //foreach (Floor floor in floors)
+                    //    floor.Body.Dispose();
+                    floors.Clear();
                 }
-                else if (player.Position.X > levelEnd - GameData.LOAD_NEW && GameData.LEVEL < 0)
-                    LoadLevel();
+                else if (player.Position.X > levelEnd - GameData.LOAD_NEW)
+                    MakeLevel();
 
                 if (player.Position.X > max.Position.X)
                     max = player;
@@ -648,51 +595,29 @@ namespace Source
             }
         }
 
-        /// <summary>
-        /// Saves a level (the floors) to the file in LEVEL_FILE
-        /// </summary>
-        private void SaveLevel()
+        ///// <summary>
+        ///// Load the level specified in level and increments levelEnd
+        ///// </summary>
+        //private void LoadLevel()
+        //{
+        //    levelEnd += levels.LoadLevel(levelEnd) + GameData.LEVEL_DIST;
+        //    Console.WriteLine("LevelEnd: " + levelEnd);
+        //}
+
+        private void MakeLevel()
         {
-			String dir;
-			if (onMac) {
-                dir = GameData.LEVELS_DIR2;
-			} else {
-                dir = GameData.LEVELS_DIR;
-			}
-            using (BinaryWriter writer = new BinaryWriter(File.Open(dir + "level" + GameData.LEVEL + ".lvl", FileMode.Create)))
+            int width = rand.Next(GameData.MIN_LEVEL_WIDTH, GameData.MAX_LEVEL_WIDTH);
+            int step = rand.Next(GameData.MIN_LEVEL_STEP, GameData.MAX_LEVEL_STEP);
+            int numFloors = rand.Next(GameData.MIN_NUM_FLOORS, GameData.MAX_NUM_FLOORS);
+
+            float x = levelEnd + width / 2f;
+            for (int i = 1; i < numFloors; i++)
             {
-                foreach (Floor floor in floors)
-                {
-                    bool wall = false;
-                    if (floor.Size.Y > floor.Size.X)
-                        wall = true;
-
-                    if (wall)
-                        writer.Write(floor.Size.Y);
-                    else
-                        writer.Write(floor.Size.X);
-
-                    writer.Write(floor.Position.X);
-                    writer.Write(floor.Position.Y);
-
-                    if (wall)
-                        writer.Write(MathHelper.PiOver2);
-                    else
-                        writer.Write(floor.Rotation);
-
-                    writer.Write(floor.Solid);
-                }
+                floors.Add(new Floor(whiteRect, new Vector2(x, -i * step), width));
+                walls.Add(new Wall(whiteRect, new Vector2(levelEnd, -(i - 0.5f) * step), step));
+                walls.Add(new Wall(whiteRect, new Vector2(levelEnd + width, -(i - 0.5f) * step), step));
             }
-            Console.WriteLine("Saved");
-        }
-
-        /// <summary>
-        /// Load the level specified in level and increments levelEnd
-        /// </summary>
-        private void LoadLevel()
-        {
-            levelEnd += levels.LoadLevel(levelEnd) + GameData.LEVEL_DIST;
-            Console.WriteLine("LevelEnd: " + levelEnd);
+            levelEnd += width + GameData.LEVEL_DIST;
         }
 
         /// <summary>
@@ -722,8 +647,10 @@ namespace Source
             spriteBatch.Draw(whiteRect, new Rectangle(-(int)view.Translation.X, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height), Color.LightGray);
 
             //DrawRect(player.Body.Position + new Vector2(0f, 0.9f), Color.Gold, 0f, new Vector2(0.5f, 0.5f), new Vector2(0.6f, 0.5f));
-            foreach (Floor item in floors)
-                item.Draw(spriteBatch);
+            foreach (Floor floor in floors)
+                floor.Draw(spriteBatch);
+            foreach (Wall wall in walls)
+                wall.Draw(spriteBatch);
             foreach (Player player in players)
             {
                 if (player.TimeSinceDeath < GameData.PHASE_TIME)

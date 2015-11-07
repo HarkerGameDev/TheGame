@@ -15,44 +15,20 @@ namespace Source.Collisions
     {
         public const float FLOOR_HEIGHT = 0.2f;
         public bool JumpUp = true;
-        public bool Solid { get; private set; }
 
-        public Floor(Texture2D texture, Vector2 position, float width, float rotation = 0f) : base(texture, position, new Vector2(width, FLOOR_HEIGHT), rotation)
+        public Floor(Texture2D texture, Vector2 position, float width, float rotation = 0f)
+            : base(texture, position, new Vector2(width, FLOOR_HEIGHT), rotation)
         {
             Color = Color.Azure;
-            Solid = false;
-        }
-
-        public Floor(Texture2D texture, Vector2 position, Vector2 size, float rotation = 0f)
-            : base(texture, position, size, rotation)
-        {
-            Console.WriteLine("New rot: " + Rotation);
-
-            Color = Color.Azure;
-            Solid = false;
         }
 
         public Floor(Texture2D texture, Vector2 start, Vector2 end)
             : base(texture, 
             start + (end - start) / 2, 
             new Vector2((end - start).Length(), FLOOR_HEIGHT),
-            (float)Math.Atan2(end.Y - start.Y, end.X - start.X) % MathHelper.Pi) {
-
-            Color = Color.Azure;
-            Solid = false;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns>Whether floor is currently solid</returns>
-        public void ToggleSolid()
+            (float)Math.Atan2(end.Y - start.Y, end.X - start.X) % MathHelper.Pi)
         {
-            Solid = !Solid;
-            if (Solid)
-                Color = Color.Beige;
-            else
-                Color = Color.Azure;
+            Color = Color.Azure;
         }
     }
 }

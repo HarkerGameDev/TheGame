@@ -37,9 +37,10 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="AnimatedTexture.cs" />
+    <Compile Include="Graphics\AnimatedTexture.cs" />
     <Compile Include="Collisions\Body.cs" />
     <Compile Include="Collisions\ConvertUnits.cs" />
+    <Compile Include="Collisions\Wall.cs" />
     <Compile Include="Collisions\Floor.cs" />
     <Compile Include="Collisions\Projectile.cs" />
     <Compile Include="Collisions\Player.cs" />
