@@ -318,7 +318,7 @@ namespace Source
 
             if (state.IsKeyDown(controls.right))                    // move right
             {
-                player.Velocity += (Vector2.Add(new Vector2(impulse, 0f),new Vector2(1,0)));
+                player.Velocity += (new Vector2(impulse, 0f));
                 if (player.Velocity.X < 0f && player.CurrentState == Player.State.CanJump)  // change direction quicker
                     player.Velocity += (new Vector2(slow, 0f));
                 else if (player.Velocity.X > GameData.MAX_VELOCITY)
@@ -326,7 +326,7 @@ namespace Source
             }
             else if (state.IsKeyDown(controls.left))                // move left
             {
-                player.Velocity += (Vector2.Add(new Vector2(-impulse, 0f),new Vector2(1,0)));
+                player.Velocity += (new Vector2(-impulse, 0f));
                 if (player.Velocity.X > 0f && player.CurrentState == Player.State.CanJump)  // change direction quickler
                     player.Velocity += (new Vector2(-slow, 0f));
                 else if (player.Velocity.X < -GameData.MAX_VELOCITY)
@@ -335,7 +335,7 @@ namespace Source
             else                            // air resistance and friction
             {
                 if (Math.Abs(player.Velocity.X) < GameData.MIN_VELOCITY)
-                    player.Velocity = new Vector2(15f, player.Velocity.Y);
+                    player.Velocity = new Vector2(0f, player.Velocity.Y);
                 else
                 {
                     int playerVelSign = Math.Sign(player.Velocity.X);
