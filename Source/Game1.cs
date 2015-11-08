@@ -196,11 +196,8 @@ namespace Source
             if (ToggleKey(Keys.E))
             {
                 editLevel = !editLevel;
-                if (editLevel)
-                    ConvertUnits.SetDisplayUnitToSimUnitRatio(GameData.PIXEL_METER_EDIT);
-                else
+                if (!editLevel)
                 {
-                    ConvertUnits.SetDisplayUnitToSimUnitRatio(GameData.PIXEL_METER);
                     screenOffset = Vector2.Zero;
                     currentFloor = null;
                 }
@@ -332,7 +329,7 @@ namespace Source
                 player.Velocity += (new Vector2(-impulse, 0f));
                 if (player.Velocity.X > 0f && player.CurrentState == Player.State.CanJump)  // change direction quickler
                     player.Velocity += (new Vector2(-slow, 0f));
-                else if (player.Velocity.X < GameData.MAX_VELOCITY)
+                else if (player.Velocity.X < -GameData.MAX_VELOCITY)
                     player.Velocity.X = -GameData.MAX_VELOCITY;
             }
             else                            // air resistance and friction
@@ -581,6 +578,8 @@ namespace Source
         private void CheckPlayer()
         {
             Player max = players[0];
+            float minY = max.Position.Y;
+            float maxY = minY;
 
             float averageX = 0;
             foreach (Player player in players)
@@ -604,6 +603,11 @@ namespace Source
 
                 if (player.Position.X > max.Position.X)
                     max = player;
+
+                if (player.Position.Y < minY)
+                    minY = player.Position.Y;
+                else if (player.Position.Y > maxY)
+                    maxY = player.Position.Y;
             }
 
             foreach (Player player in players)
@@ -622,6 +626,13 @@ namespace Source
                     max.Score++;
                 }
             }
+
+            float currentRatio = editLevel ? GameData.PIXEL_METER_EDIT : GameData.PIXEL_METER;
+            float dist = maxY - minY;
+            if (dist * currentRatio * 1.2f > GraphicsDevice.Viewport.Height)
+                ConvertUnits.SetDisplayUnitToSimUnitRatio(GraphicsDevice.Viewport.Height / 1.2f / dist);
+            else
+                ConvertUnits.SetDisplayUnitToSimUnitRatio(currentRatio);
         }
 
         ///// <summary>

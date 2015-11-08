@@ -13,7 +13,7 @@ namespace Source
     internal static class GameData
     {
         //public const int LEVEL = -1;            // if this is greater than -1, levels will not be procedurally generated (useful for editing)
-        public const int numPlayers = 1;            // number of players
+        public const int numPlayers = 2;            // number of players
 
         public static bool[] useController = { false, false, false };    // true means the player at the index will be using a controller.
         public static Controls[] keyboardControls = {            // defines the keyboard controls which will be used
