@@ -61,6 +61,7 @@ namespace Source
         public List<Particle> particles;
 
         private int levelEnd;
+        private float death;
 
         public Game1()
         {
@@ -89,6 +90,7 @@ namespace Source
             // Set variables
             paused = false;
             editLevel = false;
+            death = -GameData.DEAD_MAX;
 
             // Initialize previous keyboard and gamepad states
             prevKeyState = new KeyboardState();
@@ -213,6 +215,8 @@ namespace Source
                 float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
                 if (currentFloor == null)
                     HandleInput(deltaTime);
+
+                death += GameData.DEAD_SPEED * deltaTime;
 
                 CheckPlayer();
                 //player.Update(gameTime.ElapsedGameTime.TotalSeconds);
@@ -586,6 +590,9 @@ namespace Source
                 averageX += player.Position.X;
             averageX /= players.Count;
 
+            if (averageX - death > GameData.DEAD_MAX)
+                death = averageX - GameData.DEAD_MAX;
+
             foreach (Player player in players)
             {
                 if (player.Position.Y > 10f)
@@ -717,6 +724,7 @@ namespace Source
             }
             if (editLevel)
                 DrawRect(Vector2.Zero, Color.LightGreen, 0f, new Vector2(0.5f, 0.5f), new Vector2(1, 1));
+            spriteBatch.Draw(whiteRect, new Rectangle((int)ConvertUnits.ToDisplayUnits(death) - GameData.DEAD_WIDTH, -GameData.DEAD_HEIGHT, GameData.DEAD_WIDTH, GameData.DEAD_HEIGHT), Color.Purple); // please excuse these magic numbers, they are meaningless
             spriteBatch.End();
 
 
