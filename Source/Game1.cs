@@ -282,17 +282,17 @@ namespace Source
             averageVel /= players.Count;
 
             // Calculate wobble-screen
-            float deltaX = ((cameraBounds.Center.X - screenCenter.X) / cameraBounds.Width - averageVel.X / GameData.MAX_VELOCITY) * GameData.CAMERA_SCALE;
+            float deltaX = ((cameraBounds.Center.X - screenCenter.X) / cameraBounds.Width - averageVel.X / GameData.RUN_VELOCITY) * GameData.CAMERA_SCALE;
             deltaX = MathHelper.Clamp(deltaX, -GameData.MAX_CAMERA_SPEED_X, GameData.MAX_CAMERA_SPEED_X);
             screenCenter.X += deltaX / 5;
             screenCenter.X = MathHelper.Clamp(screenCenter.X, cameraBounds.Left, cameraBounds.Right);
 
-            float deltaY = ((cameraBounds.Center.Y - screenCenter.Y) / cameraBounds.Height - averageVel.Y / GameData.MAX_VELOCITY) * GameData.CAMERA_SCALE;
+            float deltaY = ((cameraBounds.Center.Y - screenCenter.Y) / cameraBounds.Height - averageVel.Y / GameData.RUN_VELOCITY) * GameData.CAMERA_SCALE;
             deltaY = MathHelper.Clamp(deltaY, -GameData.MAX_CAMERA_SPEED_Y, GameData.MAX_CAMERA_SPEED_Y);
             screenCenter.Y += deltaY;
             screenCenter.Y = MathHelper.Clamp(screenCenter.Y, cameraBounds.Top, cameraBounds.Bottom);
 
-            float wobbleRatio = GameData.MAX_VELOCITY / (GameData.MAX_VELOCITY - averageVel.X);
+            float wobbleRatio = GameData.RUN_VELOCITY / (GameData.RUN_VELOCITY - averageVel.X);
             if (wobbleRatio >= GameData.MAX_WOBBLE)
                 wobbleScreen(GameData.MAX_WOBBLE);
             else if (wobbleRatio >= GameData.MIN_WOBBLE)
@@ -320,58 +320,42 @@ namespace Source
                 slow *= GameData.AIR_RESIST;
             }
 
-            if (state.IsKeyDown(controls.right))                    // move right
+            if (!player.InAir)
             {
-                player.Velocity += (new Vector2(impulse, 0f));
-                if (player.Velocity.X < 0f && player.CurrentState == Player.State.CanJump)  // change direction quicker
-                    player.Velocity += (new Vector2(slow, 0f));
-                else if (player.Velocity.X > GameData.MAX_VELOCITY)
-                    player.Velocity.X = GameData.MAX_VELOCITY;
-            }
-            else if (state.IsKeyDown(controls.left))                // move left
-            {
-                player.Velocity += (new Vector2(-impulse, 0f));
-                if (player.Velocity.X > 0f && player.CurrentState == Player.State.CanJump)  // change direction quickler
-                    player.Velocity += (new Vector2(-slow, 0f));
-                else if (player.Velocity.X < -GameData.MAX_VELOCITY)
-                    player.Velocity.X = -GameData.MAX_VELOCITY;
-            }
-            else                            // air resistance and friction
-            {
-                if (Math.Abs(player.Velocity.X) < GameData.MIN_VELOCITY)
-                    player.Velocity = new Vector2(0f, player.Velocity.Y);
-                else
+                if (state.IsKeyDown(controls.right))                    // boost
                 {
-                    int playerVelSign = Math.Sign(player.Velocity.X);
-                    player.Velocity += (new Vector2(Math.Sign(player.Velocity.X) * -slow, 0f));
+                    player.Velocity.X = GameData.BOOST_SPEED;
+                    player.CurrentState = Player.State.Boosting;
+                }
+                else if (state.IsKeyDown(controls.left))                // slow slide
+                {
+                    player.CurrentState = Player.State.Sliding;
+                    player.Velocity.X = GameData.SLOW_SPEED;
+                }
+                else                           // normal run
+                {
+                    player.Velocity.X = GameData.RUN_VELOCITY;
+                    player.CurrentState = Player.State.Walking;
+                }
+                if (state.IsKeyDown(controls.up))     // jump
+                {
+                    //Console.WriteLine("Player state: " + player.CurrentState);
+                    player.Velocity = (new Vector2(player.Velocity.X, -GameData.JUMP_SPEED));
+                    player.CurrentState = Player.State.Jumping;
                 }
             }
-            if (state.IsKeyDown(controls.up) && player.CurrentState == Player.State.CanJump)     // jump
+            else
             {
-                player.Velocity = (new Vector2(player.Velocity.X, -GameData.JUMP_SPEED));
-                player.CurrentState = Player.State.Jumping;
-            }
-
-            if (state.IsKeyDown(controls.down))
-            {
-                if (player.CurrentState == Player.State.Jumping)
+                if (state.IsKeyDown(controls.down))
                 {
                     player.CurrentState = Player.State.Slamming;
                     if (player.Velocity.Y < GameData.SLAM_SPEED)
                         player.Velocity.Y = GameData.SLAM_SPEED;
                 }
-                else if (!player.InAir)
+                else
                 {
-                    player.CurrentState = Player.State.Sliding;
-                    player.Velocity.X = Math.Sign(player.Velocity.X) * GameData.SLIDE_SPEED; // a bit of speed can never hurt :P
-                }
-            }
-            else
-            {
-                if (player.CurrentState == Player.State.Slamming)
                     player.CurrentState = Player.State.Jumping;
-                else if (player.CurrentState == Player.State.Sliding)
-                    player.CurrentState = Player.State.CanJump;
+                }
             }
             if (ToggleKey(controls.shoot) && player.TimeSinceDeath <= 0)
             {

@@ -17,7 +17,7 @@ namespace Source.Collisions
     {
         private const float GRAVITY = 26f;
         //private const float MAX_SLOPE = MathHelper.PiOver4;
-        private static float SLOPE_JUMP = (float)Math.Atan2(Source.GameData.JUMP_SPEED, Source.GameData.MAX_VELOCITY);
+        private static float SLOPE_JUMP = (float)Math.Atan2(Source.GameData.JUMP_SPEED, Source.GameData.RUN_VELOCITY);
         public const float BOTTOM = -0.8f;        // bottom of the level
 
         private Game1 game;
@@ -54,14 +54,6 @@ namespace Source.Collisions
                     CheckFloors(player);
 
                     CheckWalls(player);
-
-                    if (player.Position.Y > BOTTOM)  // bottom of the level
-                    {
-                        player.Velocity.Y = 0;
-                        player.MoveToPosition(new Vector2(player.Position.X, BOTTOM));
-                        if (player.InAir)
-                            player.CurrentState = Player.State.CanJump;
-                    }
                 }
             }
         }
@@ -124,7 +116,7 @@ namespace Source.Collisions
                     {
                         player.Velocity.Y = 0;
                         if (translation.Y > 0 && player.InAir)
-                            player.CurrentState = Player.State.CanJump;
+                            player.CurrentState = Player.State.Walking;
                     }
                     player.MovePosition(-translation);
 
@@ -133,8 +125,23 @@ namespace Source.Collisions
                 }
             }
 
-            if (totalCollisions == 0 && player.CurrentState == Player.State.CanJump)
+            if (player.Position.Y > BOTTOM)  // bottom of the level
+            {
+                player.Velocity.Y = 0;
+                player.MoveToPosition(new Vector2(player.Position.X, BOTTOM));
+                if (player.InAir)
+                {
+                    player.CurrentState = Player.State.Walking;
+                    //Console.WriteLine("Start walking");
+                }
+                totalCollisions++;
+            }
+
+            if (totalCollisions == 0 && !player.InAir)
+            {
                 player.CurrentState = Player.State.Jumping;
+                //Console.WriteLine("Touching nothing");
+            }
         }
 
         private void CheckWalls(Player player)
