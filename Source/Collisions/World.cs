@@ -39,7 +39,6 @@ namespace Source.Collisions
 
             foreach (Player player in game.players)
             {
-                player.Sprite.Update(deltaTime);
                 if (player.TimeSinceDeath <= 0)
                 {
                     for (int i = player.Projectiles.Count - 1; i >= 0; i--)
@@ -48,21 +47,21 @@ namespace Source.Collisions
                     }
 
                     player.Velocity.Y += GRAVITY * deltaTime;
-                    player.CanJump = false;
+                    //player.CanJump = false;
 
                     player.Move(deltaTime);
+
+                    CheckFloors(player);
+
+                    CheckWalls(player);
 
                     if (player.Position.Y > BOTTOM)  // bottom of the level
                     {
                         player.Velocity.Y = 0;
                         player.MoveToPosition(new Vector2(player.Position.X, BOTTOM));
-                        player.CanJump = true;
+                        if (player.InAir)
+                            player.CurrentState = Player.State.CanJump;
                     }
-
-                    if (CheckFloors(player) == 0)
-                        player.Ghost = false;
-
-                    CheckWalls(player);
                 }
             }
         }
@@ -106,7 +105,7 @@ namespace Source.Collisions
             }
         }
 
-        private int CheckFloors(Player player)
+        private void CheckFloors(Player player)
         {
             int totalCollisions = 0;
             //Console.WriteLine(player.Velocity);
@@ -118,28 +117,24 @@ namespace Source.Collisions
                     totalCollisions++;
                     //Console.WriteLine("Rotation: " + floor.Rotation);
 
-                    if (!player.Ghost)
+                    if (translation.X != 0 && (/*Math.Abs(floor.Rotation) >= MAX_SLOPE || */floor.Rotation == 0))
+                        player.Velocity.X = 0;
+
+                    if (translation.Y != 0)
                     {
-                        if (translation.X != 0 && (/*Math.Abs(floor.Rotation) >= MAX_SLOPE || */floor.Rotation == 0))
-                            player.Velocity.X = 0;
-
-                        if (translation.Y != 0)
-                        {
-                            player.Velocity.Y = 0;
-                            if (translation.Y > 0)
-                                player.CanJump = true;
-                            else
-                                player.CanJump = false;
-                        }
-                        player.MovePosition(-translation);
-
-                        //Writing all this to console lags the game
-                        //Console.WriteLine("Colliding with: " + floor.Position + "   Pushing to:   " + newPosition + "   Vector:    "+ new Vector2(-1 * translation.X, -1 * translation.Y));
+                        player.Velocity.Y = 0;
+                        if (translation.Y > 0 && player.InAir)
+                            player.CurrentState = Player.State.CanJump;
                     }
+                    player.MovePosition(-translation);
+
+                    //Writing all this to console lags the game
+                    //Console.WriteLine("Colliding with: " + floor.Position + "   Pushing to:   " + newPosition + "   Vector:    "+ new Vector2(-1 * translation.X, -1 * translation.Y));
                 }
             }
 
-            return totalCollisions;
+            if (totalCollisions == 0 && player.CurrentState == Player.State.CanJump)
+                player.CurrentState = Player.State.Jumping;
         }
 
         private void CheckWalls(Player player)

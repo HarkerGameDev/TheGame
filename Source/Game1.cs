@@ -245,10 +245,10 @@ namespace Source
                 if (GameData.useController[i])
                 {
                     currentController++;
-                    if (player.TimeSinceDeath < GameData.PHASE_TIME)
-                    {
-                        HandleGamepad(deltaTime, player, currentController - 1);
-                    }
+                    //if (player.TimeSinceDeath < GameData.PHASE_TIME)
+                    //{
+                    //    HandleGamepad(deltaTime, player, currentController - 1);
+                    //}
                 }
                 else
                 {
@@ -314,7 +314,7 @@ namespace Source
             //impulse = (float)Math.Pow(impulse, IMPULSE_POW);
 
             float slow = GameData.SLOWDOWN * deltaTime;
-            if (!player.CanJump)
+            if (player.CurrentState == Player.State.Jumping)
             {
                 slow *= GameData.AIR_RESIST;
             }
@@ -322,16 +322,18 @@ namespace Source
             if (state.IsKeyDown(controls.right))                    // move right
             {
                 player.Velocity += (new Vector2(impulse, 0f));
-                if (player.Velocity.X < 0f && player.CanJump)  // change direction quicker
+                if (player.Velocity.X < 0f && player.CurrentState == Player.State.CanJump)  // change direction quicker
                     player.Velocity += (new Vector2(slow, 0f));
+                else if (player.Velocity.X > GameData.MAX_VELOCITY)
+                    player.Velocity.X = GameData.MAX_VELOCITY;
             }
             else if (state.IsKeyDown(controls.left))                // move left
             {
                 player.Velocity += (new Vector2(-impulse, 0f));
-                if (player.Velocity.X > 0f && player.CanJump)  // change direction quickler
-                {
+                if (player.Velocity.X > 0f && player.CurrentState == Player.State.CanJump)  // change direction quickler
                     player.Velocity += (new Vector2(-slow, 0f));
-                }
+                else if (player.Velocity.X < GameData.MAX_VELOCITY)
+                    player.Velocity.X = -GameData.MAX_VELOCITY;
             }
             else                            // air resistance and friction
             {
@@ -343,16 +345,32 @@ namespace Source
                     player.Velocity += (new Vector2(Math.Sign(player.Velocity.X) * -slow, 0f));
                 }
             }
-            if (state.IsKeyDown(controls.up) && player.CanJump)     // jump
+            if (state.IsKeyDown(controls.up) && player.CurrentState == Player.State.CanJump)     // jump
             {
                 player.Velocity = (new Vector2(player.Velocity.X, -GameData.JUMP_SPEED));
+                player.CurrentState = Player.State.Jumping;
             }
 
             if (state.IsKeyDown(controls.down))
-            {                                                   // fall
-                //if (player.Velocity.Y <= PUSH_VEL)
-                //    player.Velocity = (new Vector2(player.Velocity.X, PUSH_POW));
-                player.Ghost = true;
+            {
+                if (player.CurrentState == Player.State.Jumping)
+                {
+                    player.CurrentState = Player.State.Slamming;
+                    if (player.Velocity.Y < GameData.SLAM_SPEED)
+                        player.Velocity.Y = GameData.SLAM_SPEED;
+                }
+                else if (!player.InAir)
+                {
+                    player.CurrentState = Player.State.Sliding;
+                    player.Velocity.X = Math.Sign(player.Velocity.X) * GameData.SLIDE_SPEED; // a bit of speed can never hurt :P
+                }
+            }
+            else
+            {
+                if (player.CurrentState == Player.State.Slamming)
+                    player.CurrentState = Player.State.Jumping;
+                else if (player.CurrentState == Player.State.Sliding)
+                    player.CurrentState = Player.State.CanJump;
             }
             if (ToggleKey(controls.shoot) && player.TimeSinceDeath <= 0)
             {
@@ -361,68 +379,76 @@ namespace Source
             }
         }
 
-        /// <summary>
-        /// Handles input for a single player for given input keys
-        /// </summary>
-        /// <param name="deltaTime"></param>
-        /// <param name="player"></param>
-        /// <param name="controller">Must be from 0 to 3</param>
-        private void HandleGamepad(float deltaTime, Player player, int controller)
-        {
-            GamePadState state = GamePad.GetState((PlayerIndex)controller, GamePadDeadZone.Circular);
+        ///// <summary>
+        ///// Handles input for a single player for given input keys
+        ///// </summary>
+        ///// <param name="deltaTime"></param>
+        ///// <param name="player"></param>
+        ///// <param name="controller">Must be from 0 to 3</param>
+        //private void HandleGamepad(float deltaTime, Player player, int controller)
+        //{
+        //    GamePadState state = GamePad.GetState((PlayerIndex)controller, GamePadDeadZone.Circular);
 
-            float impulse = GameData.MAX_ACCEL * deltaTime;
-            //float impulse = MathHelper.SmoothStep(MAX_IMPULSE, 0f, Math.Abs(player.Velocity.X) / MAX_VELOCITY) * deltaTime;
-            //impulse = (float)Math.Pow(impulse, IMPULSE_POW);
+        //    float impulse = GameData.MAX_ACCEL * deltaTime;
+        //    //float impulse = MathHelper.SmoothStep(MAX_IMPULSE, 0f, Math.Abs(player.Velocity.X) / MAX_VELOCITY) * deltaTime;
+        //    //impulse = (float)Math.Pow(impulse, IMPULSE_POW);
 
-            float slow = GameData.SLOWDOWN * deltaTime;
-            if (!player.CanJump)
-            {
-                slow *= GameData.AIR_RESIST;
-            }
+        //    float slow = GameData.SLOWDOWN * deltaTime;
+        //    if (player.CurrentState == Player.State.Jumping)
+        //    {
+        //        slow *= GameData.AIR_RESIST;
+        //    }
 
-            if (state.ThumbSticks.Left.X == 0f)         // air resistance and friction
-            {
-                if (Math.Abs(player.Velocity.X) < GameData.MIN_VELOCITY)
-                    player.Velocity = new Vector2(0f, player.Velocity.Y);
-                else
-                {
-                    int playerVelSign = Math.Sign(player.Velocity.X);
-                    player.Velocity += (new Vector2(Math.Sign(player.Velocity.X) * -slow, 0f));
-                }
-            }
-            else
-            {
-                // move right and left
-                player.Velocity += (new Vector2(impulse * state.ThumbSticks.Left.X, 0f));
+        //    if (state.ThumbSticks.Left.X == 0f)         // air resistance and friction
+        //    {
+        //        if (Math.Abs(player.Velocity.X) < GameData.MIN_VELOCITY)
+        //            player.Velocity = new Vector2(0f, player.Velocity.Y);
+        //        else
+        //        {
+        //            int playerVelSign = Math.Sign(player.Velocity.X);
+        //            player.Velocity += (new Vector2(Math.Sign(player.Velocity.X) * -slow, 0f));
+        //        }
+        //    }
+        //    else
+        //    {
+        //        // move right and left
+        //        player.Velocity += (new Vector2(impulse * state.ThumbSticks.Left.X, 0f));
 
-                if (player.CanJump) // change direction quicker
-                {
-                    if (player.Velocity.X > 0f && state.ThumbSticks.Left.X > 0f)
-                        player.Velocity += (new Vector2(-slow, 0f));
-                    else if (player.Velocity.X < 0f && state.ThumbSticks.Left.X < 0f)
-                        player.Velocity += (new Vector2(slow, 0f));
-                }
-            }
+        //        if (player.CurrentState == Player.State.CanJump) // change direction quicker
+        //        {
+        //            if (player.Velocity.X > 0f && state.ThumbSticks.Left.X > 0f)
+        //                player.Velocity += (new Vector2(-slow, 0f));
+        //            else if (player.Velocity.X < 0f && state.ThumbSticks.Left.X < 0f)
+        //                player.Velocity += (new Vector2(slow, 0f));
+        //        }
+        //    }
 
-            if (state.IsButtonDown(Buttons.A) && player.CanJump)     // jump
-            {
-                player.Velocity = (new Vector2(player.Velocity.X, -GameData.JUMP_SPEED));
-            }
+        //    if (state.IsButtonDown(Buttons.A) && player.CurrentState == Player.State.CanJump)     // jump
+        //    {
+        //        player.Velocity = (new Vector2(player.Velocity.X, -GameData.JUMP_SPEED));
+        //    }
 
-            if (state.ThumbSticks.Left.Y > 0f)
-            {                                                   // fall
-                //if (player.Velocity.Y <= PUSH_VEL)
-                //    player.Velocity = (new Vector2(player.Velocity.X, PUSH_POW));
-                player.Ghost = true;
-            }
+        //    if (state.ThumbSticks.Left.Y > 0f)
+        //    {                                                   // fall
+        //        if (player.CurrentState == Player.State.Jumping)
+        //            player.CurrentState = Player.State.Slamming;
+        //        else if (player.CurrentState == Player.State.CanJump)
+        //            player.CurrentState = Player.State.Sliding;
+        //    }
+        //    else
+        //    {
+        //        if (player.CurrentState == Player.State.Slamming)
+        //            player.CurrentState = Player.State.Jumping;
+        //        else if (player.CurrentState == Player.State.Sliding)
+        //            player.CurrentState = Player.State.CanJump;
+        //    }
 
-            if (state.IsButtonDown(Buttons.X) && prevPadState.IsButtonUp(Buttons.X) && player.TimeSinceDeath <= 0)
-            {
-                player.Projectiles.Add(new Projectile(whiteRect, new Vector2(player.Position.X, player.Position.Y), player.Color));
-                //Console.WriteLine("Shooting!");
-            }
-        }
+        //    if (state.IsButtonDown(Buttons.X) && prevPadState.IsButtonUp(Buttons.X) && player.TimeSinceDeath <= 0)
+        //    {
+        //        player.Projectiles.Add(new Projectile(whiteRect, new Vector2(player.Position.X, player.Position.Y), player.Color));
+        //        //Console.WriteLine("Shooting!");
+        //    }
+        //}
 
         private void wobbleScreen(float amplifier)
         {
@@ -563,7 +589,6 @@ namespace Source
 
             foreach (Player player in players)
             {
-                player.Velocity.X = MathHelper.Clamp(player.Velocity.X, -GameData.MAX_VELOCITY, GameData.MAX_VELOCITY);
                 if (player.Position.Y > 10f)
                 {
                     player.MoveToPosition(GameData.PLAYER_POSITION);
@@ -630,6 +655,7 @@ namespace Source
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
+            double deltaTime = (double)gameTime.ElapsedGameTime.TotalSeconds;
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
             // Find average position across all players
@@ -645,23 +671,29 @@ namespace Source
             else
                 view = Matrix.CreateTranslation(new Vector3(screenOffset + screenCenter - ConvertUnits.ToDisplayUnits(averagePos), 0f));
 
-            // Draw player and floors
-            spriteBatch.Begin(transformMatrix: view);
-            
-            spriteBatch.Draw(whiteRect, new Rectangle(-(int)view.Translation.X, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height), Color.LightGray);
 
-            //DrawRect(player.Body.Position + new Vector2(0f, 0.9f), Color.Gold, 0f, new Vector2(0.5f, 0.5f), new Vector2(0.6f, 0.5f));
+            // Draw players
+            spriteBatch.Begin(transformMatrix: view);
+            foreach (Player player in players)
+            {
+                if (player.TimeSinceDeath < GameData.PHASE_TIME)
+                {
+                    player.Sprite.Update(deltaTime);
+                    player.Draw(spriteBatch);
+                    foreach (Projectile proj in player.Projectiles)
+                        proj.Draw(spriteBatch);
+                }
+            }
+            spriteBatch.End();
+
+
+            // Draw all objects
+            spriteBatch.Begin(transformMatrix: view);
+            spriteBatch.Draw(whiteRect, new Rectangle(-(int)view.Translation.X, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height), Color.LightGray);
             foreach (Floor floor in floors)
                 floor.Draw(spriteBatch);
             foreach (Wall wall in walls)
                 wall.Draw(spriteBatch);
-            foreach (Player player in players)
-            {
-                if (player.TimeSinceDeath < GameData.PHASE_TIME)
-                    player.Draw(spriteBatch);
-                foreach (Projectile proj in player.Projectiles)
-                    proj.Draw(spriteBatch);
-            }
             if (currentFloor != null)
                 DrawRect(currentFloor.Position, Color.Green, currentFloor.Rotation, currentFloor.Origin, currentFloor.Size);
             if (editingFloor)

@@ -15,46 +15,57 @@ namespace Source.Graphics
         private const float FRAME_TIME = 0.2f;
 
         public Texture2D Texture;
-        public int Rows;
-        public int Columns;
+        public Vector2 Size;
 
         private int currentFrame;
-        private int totalFrames;
-        private float frameLength;
+        private int[] totalFrames;
+        private int currentState;
+        private double frameLength;
         private float scale;
+        private Player player;
 
-        public AnimatedSprite(Texture2D texture, int columns, int rows, float scale = 1f)
+        public AnimatedSprite(Texture2D texture, Player player, int[] frames, float scale = 1f)
         {
             Texture = texture;
-            Rows = rows;
-            Columns = columns;
             this.scale = scale;
+            totalFrames = frames;
+            this.player = player;
 
             currentFrame = 0;
-            totalFrames = Rows * Columns;
             frameLength = FRAME_TIME;
+            currentState = 0;
+            Size = new Vector2(Texture.Width / frames.Max(), Texture.Height / frames.Length);
         }
 
-        public void Update(float deltaTime)
+        public void Update(double deltaTime)
         {
-            frameLength -= deltaTime;
-            if (frameLength < 0)
+            if (currentState != (int)player.CurrentState)
             {
-                currentFrame = ++currentFrame % totalFrames;
+                currentState = (int)player.CurrentState;
                 frameLength = FRAME_TIME;
+                currentFrame = 0;
+            }
+            else
+            {
+                frameLength -= deltaTime;
+                if (frameLength < 0)
+                {
+                    currentFrame = ++currentFrame % totalFrames[currentState];
+                    frameLength = FRAME_TIME;
+                }
             }
         }
 
-        public void Draw(SpriteBatch spriteBatch, Player player)
+        public void Draw(SpriteBatch spriteBatch)
         {
-            int width = Texture.Width / Columns;
-            int height = Texture.Height / Rows;
-            int row = currentFrame / Columns;
-            int column = currentFrame % Columns;
+            int width = (int)Size.X;
+            int height = (int)Size.Y;
+            int row = currentState;
+            int column = currentFrame;
 
             Rectangle sourceRectangle = new Rectangle(width * column, height * row, width, height);
-            Vector2 size = new Vector2(width, height) * scale;
-            Rectangle destinationRectangle = new Rectangle(ConvertUnits.ToDisplayUnits(player.Position).ToPoint(), ConvertUnits.ToDisplayUnits(size).ToPoint());
+            Vector2 displaySize = new Vector2(width, height) * scale;
+            Rectangle destinationRectangle = new Rectangle(ConvertUnits.ToDisplayUnits(player.Position).ToPoint(), ConvertUnits.ToDisplayUnits(displaySize).ToPoint());
 
             //spriteBatch.Draw(Texture, destinationRectangle, sourceRectangle, Color.White);
             //spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(Position), null, Color, Rotation, Origin, ConvertUnits.ToDisplayUnits(textureScale), SpriteEffects.None, 0f);

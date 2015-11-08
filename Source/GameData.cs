@@ -23,12 +23,12 @@ namespace Source
 
         public const float LOAD_NEW = 100f;     // the next level will be loaded when the player is this far from the current end
 
-        public const int MIN_LEVEL_WIDTH = 8;
-        public const int MAX_LEVEL_WIDTH = 30;
-        public const int MIN_LEVEL_STEP = 3;
-        public const int MAX_LEVEL_STEP = 5;
+        public const int MIN_LEVEL_WIDTH = 20;
+        public const int MAX_LEVEL_WIDTH = 50;
+        public const int MIN_LEVEL_STEP = 4;
+        public const int MAX_LEVEL_STEP = 6;
         public const int MIN_NUM_FLOORS = 4;
-        public const int MAX_NUM_FLOORS = 9;
+        public const int MAX_NUM_FLOORS = 11;
 
         public const int MAX_LEVELS_LOADED = 4;    // how many levels to keep loaded at a given time
         public const float PIXEL_METER = 32f;      // pixels per meter for normal game
@@ -40,8 +40,10 @@ namespace Source
 
         public const float MIN_VELOCITY = 1f;  // m/s -- what can be considered 0 horizontal velocity
         public const float MAX_VELOCITY = 20f; // m/s -- maximum horizontal velocity for player
+        public const float SLIDE_SPEED = 24f; // m/s -- horizontal velocity when sliding
         public const float MAX_ACCEL = 40f;   // m/s^2 -- the impulse which is applied when player starts moving after standing still
-        public const float JUMP_SPEED = 17f; // m/s -- the initial upwards velocity when player jumps
+        public const float JUMP_SPEED = 18f; // m/s -- the initial upwards velocity when player jumps
+        public const float SLAM_SPEED = 17f; // m/s -- the speed at which the player goes down when slamming
         public const float SLOWDOWN = 45f;      // m/s^2 -- impulse applied in opposite direction of travel to simulate friction
         public const float AIR_RESIST = 0.75f; //     -- air resistance on a scale of 0 to 1, where 1 is as if player is on ground
         //public const double JUMP_WAIT = 0.5;   // s   -- how long the player needs to wait before jumping again
