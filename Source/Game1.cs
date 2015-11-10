@@ -356,6 +356,8 @@ namespace Source
                 {
                     player.CurrentState = Player.State.Jumping;
                 }
+                if (player.Velocity.X == 0)
+                    player.Velocity.X = GameData.RUN_VELOCITY;
             }
             if (ToggleKey(controls.shoot) && player.TimeSinceDeath <= 0)
             {

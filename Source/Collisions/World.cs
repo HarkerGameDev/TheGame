@@ -51,9 +51,9 @@ namespace Source.Collisions
 
                     player.Move(deltaTime);
 
-                    CheckFloors(player);
-
                     CheckWalls(player);
+
+                    CheckFloors(player);
                 }
             }
         }
@@ -109,9 +109,9 @@ namespace Source.Collisions
                     totalCollisions++;
                     //Console.WriteLine("Rotation: " + floor.Rotation);
 
-                    if (translation.X != 0 && (/*Math.Abs(floor.Rotation) >= MAX_SLOPE || */floor.Rotation == 0))
-                        player.Velocity.X = 0;
-
+                    //if (translation.X != 0 && (/*Math.Abs(floor.Rotation) >= MAX_SLOPE || */floor.Rotation == 0))
+                    //    player.Velocity.X = 0;
+                    translation.X = 0;
                     if (translation.Y != 0)
                     {
                         player.Velocity.Y = 0;
@@ -152,11 +152,12 @@ namespace Source.Collisions
                 Vector2 translation = player.Intersects(wall);
                 if (translation != Vector2.Zero)
                 {
+                    translation.Y = 0;
                     player.MovePosition(-translation);
                     if (translation.X != 0)
                         player.Velocity.X = 0;
-                    else
-                        player.Velocity.Y = 0;
+                    //else
+                    //    player.Velocity.Y = 0;
                 }
             }
         }
