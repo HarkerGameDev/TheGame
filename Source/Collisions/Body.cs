@@ -17,7 +17,7 @@ namespace Source.Collisions
 
         public float Rotation { get; private set; }
         public Vector2 Size { get; private set; }
-        public Vector2 Origin { get; private set; }
+        public Vector2 Origin { get; protected set; }
         public Vector2 Position { get; private set; }
 
         private Vector2[] Points;
@@ -25,7 +25,7 @@ namespace Source.Collisions
 
         public Color Color { get; protected set; }
 
-        private Texture2D texture;
+        protected Texture2D texture;
 
         public float Left { get { return Position.X - Size.X / 2; } }
         public float Right { get { return Position.X + Size.X / 2; } }
@@ -44,13 +44,18 @@ namespace Source.Collisions
             Origin = new Vector2(texture.Width / 2.0f, texture.Height / 2.0f);
 
             //Console.WriteLine("rot: " + Rotation);
-            if (Rotation % MathHelper.Pi == 0)
-                Rotation = 0;
-            else if (Rotation % MathHelper.PiOver2 == 0)
-            {
-                Rotation = 0;
-                Size = new Vector2(Size.Y, Size.X);
-            }
+            //if (Rotation % MathHelper.Pi == 0)
+            //    Rotation = 0;
+            //else if (Rotation % MathHelper.PiOver2 == 0)
+            //{
+            //    Rotation = 0;
+            //    Size = new Vector2(Size.Y, Size.X);
+            //}
+
+            //if (Rotation > MathHelper.PiOver2)
+            //    Rotation -= MathHelper.Pi;
+            //else if (Rotation < -MathHelper.PiOver2)
+            //    Rotation += MathHelper.Pi;
 
             Points = new Vector2[4];
             Vector2 half = Size / 2;
@@ -112,21 +117,9 @@ namespace Source.Collisions
             MovePosition(pos - Position);
         }
 
-        public void Draw(SpriteBatch spriteBatch)
+        public virtual void Draw(SpriteBatch spriteBatch)
         {
             spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(Position), null, Color, Rotation, Origin, ConvertUnits.ToDisplayUnits(Size) / (Origin * 2), SpriteEffects.None, 0f);
-
-            // testing corners.
-            //Vector2 testingSize = new Vector2(10, 10);
-            //spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(Points[0]), null, Color.Purple, 0f, origin, testingSize, SpriteEffects.None, 0f);
-            //spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(Points[1]), null, Color.Orange, 0f, origin, testingSize, SpriteEffects.None, 0f);
-            //spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(Points[2]), null, Color.Yellow, 0f, origin, testingSize, SpriteEffects.None, 0f);
-            //spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(Points[3]), null, Color.Black, 0f, origin, testingSize, SpriteEffects.None, 0f);
-
-            //Vector2 dist = tL - bL;
-            //float x = bL.X + 1f;
-            //Vector2 pos = new Vector2(x, (dist.Y / dist.X) * (x - bL.X) + bL.Y);
-            //spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(pos), null, Color.Pink, 0f, origin, testingSize, SpriteEffects.None, 0f);
         }
 
         /// <summary>

@@ -9,6 +9,7 @@ using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
 
 using Source.Collisions;
+using Source.Graphics;
 
 namespace Source
 {
@@ -37,7 +38,7 @@ namespace Source
         private GamePadState prevPadState;
         private MouseState prevMouseState;
         private Texture2D whiteRect;
-        private SpriteFont font, fontBig;
+        public SpriteFont font, fontBig;
 
         private Random rand;
         private World world;
@@ -53,12 +54,14 @@ namespace Source
         private Vector2 screenOffset;
 
         private bool paused;
-        private List<Player> players;
-        private List<Floor> floors;
+
+        public List<Player> players;
+        public List<Floor> floors;
+        public List<Wall> walls;
+        public List<Particle> particles;
 
         private int levelEnd;
-        private GameData.FloorData levels;
-        private bool onMac = false;
+        private float death;
 
         public Game1()
         {
@@ -81,12 +84,13 @@ namespace Source
             IsMouseVisible = true;
             graphics.ApplyChanges();
 
-            // Sets how many pixels is a meter for Farseer
+            // Sets how many pixels is a meter
             ConvertUnits.SetDisplayUnitToSimUnitRatio(GameData.PIXEL_METER);
 
             // Set variables
             paused = false;
             editLevel = false;
+            death = -GameData.DEAD_MAX;
 
             // Initialize previous keyboard and gamepad states
             prevKeyState = new KeyboardState();
@@ -113,43 +117,18 @@ namespace Source
             font = Content.Load<SpriteFont>("Fonts/Score");
             fontBig = Content.Load<SpriteFont>("Fonts/ScoreBig");
 
-			string[] foo = Directory.GetFiles(GameData.LEVELS_DIR, "level*.lvl");
-			if (foo.Length == 0) {
-				onMac = true;
-			}
-
             // Create objects
             players = new List<Player>();
             for (int i = 0; i < GameData.numPlayers; i++)
             {
-				players.Add(new Player(Content.Load<Texture2D>("pumpkins/001"), GameData.PLAYER_POSITION, GameData.playerColors[i]));
+				players.Add(new Player(Content.Load<Texture2D>("Art/GreenDude"), GameData.PLAYER_POSITION, GameData.playerColors[i]));
             }
             GameData.playerColors = null;
             rand = new Random();
             floors = new List<Floor>();
-            world = new World(players, floors);
-
-            // Load the levels into memory
-            string[] levelFiles = Directory.GetFiles(GameData.LEVELS_DIR, "level*.lvl");
-			if (levelFiles.Length == 0) {
-                levelFiles = Directory.GetFiles(GameData.LEVELS_DIR2, "level*.lvl");
-                onMac = true;
-			}
-            levels = new GameData.FloorData(world, whiteRect, floors, levelFiles.Length);
-            for (int i = 0; i < levelFiles.Length; i++)
-            {
-                using (BinaryReader reader = new BinaryReader(File.Open(levelFiles[i], FileMode.Open)))
-                {
-                    while (reader.BaseStream.Position != reader.BaseStream.Length)
-                    {
-                        float floorWidth = reader.ReadSingle();
-                        Vector2 center = new Vector2(reader.ReadSingle() + levelEnd, reader.ReadSingle());
-                        float rotation = reader.ReadSingle();
-                        bool solid = reader.ReadBoolean();
-                        levels.AddFloor(floorWidth, center, rotation, solid, i);
-                    }
-                }
-            }
+            walls = new List<Wall>();
+            particles = new List<Particle>();
+            world = new World(this);
 
             // Initialize camera
             int width = graphics.GraphicsDevice.Viewport.Width;
@@ -161,7 +140,8 @@ namespace Source
 
             // Load the level stored in LEVEL_FILE
             levelEnd = 0;
-            LoadLevel();
+            //LoadLevel();
+            MakeLevel();
 
             // Load the song
 			try {
@@ -218,11 +198,8 @@ namespace Source
             if (ToggleKey(Keys.E))
             {
                 editLevel = !editLevel;
-                if (editLevel)
-                    ConvertUnits.SetDisplayUnitToSimUnitRatio(GameData.PIXEL_METER_EDIT);
-                else
+                if (!editLevel)
                 {
-                    ConvertUnits.SetDisplayUnitToSimUnitRatio(GameData.PIXEL_METER);
                     screenOffset = Vector2.Zero;
                     currentFloor = null;
                 }
@@ -238,6 +215,8 @@ namespace Source
                 float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
                 if (currentFloor == null)
                     HandleInput(deltaTime);
+
+                death += GameData.DEAD_SPEED * deltaTime;
 
                 CheckPlayer();
                 //player.Update(gameTime.ElapsedGameTime.TotalSeconds);
@@ -267,10 +246,10 @@ namespace Source
                 if (GameData.useController[i])
                 {
                     currentController++;
-                    if (player.TimeSinceDeath < GameData.PHASE_TIME)
-                    {
-                        HandleGamepad(deltaTime, player, currentController - 1);
-                    }
+                    //if (player.TimeSinceDeath < GameData.PHASE_TIME)
+                    //{
+                    //    HandleGamepad(deltaTime, player, currentController - 1);
+                    //}
                 }
                 else
                 {
@@ -303,17 +282,17 @@ namespace Source
             averageVel /= players.Count;
 
             // Calculate wobble-screen
-            float deltaX = ((cameraBounds.Center.X - screenCenter.X) / cameraBounds.Width - averageVel.X / GameData.MAX_VELOCITY) * GameData.CAMERA_SCALE;
+            float deltaX = ((cameraBounds.Center.X - screenCenter.X) / cameraBounds.Width - averageVel.X / GameData.RUN_VELOCITY) * GameData.CAMERA_SCALE;
             deltaX = MathHelper.Clamp(deltaX, -GameData.MAX_CAMERA_SPEED_X, GameData.MAX_CAMERA_SPEED_X);
             screenCenter.X += deltaX / 5;
             screenCenter.X = MathHelper.Clamp(screenCenter.X, cameraBounds.Left, cameraBounds.Right);
 
-            float deltaY = ((cameraBounds.Center.Y - screenCenter.Y) / cameraBounds.Height - averageVel.Y / GameData.MAX_VELOCITY) * GameData.CAMERA_SCALE;
+            float deltaY = ((cameraBounds.Center.Y - screenCenter.Y) / cameraBounds.Height - averageVel.Y / GameData.RUN_VELOCITY) * GameData.CAMERA_SCALE;
             deltaY = MathHelper.Clamp(deltaY, -GameData.MAX_CAMERA_SPEED_Y, GameData.MAX_CAMERA_SPEED_Y);
             screenCenter.Y += deltaY;
             screenCenter.Y = MathHelper.Clamp(screenCenter.Y, cameraBounds.Top, cameraBounds.Bottom);
 
-            float wobbleRatio = GameData.MAX_VELOCITY / (GameData.MAX_VELOCITY - averageVel.X);
+            float wobbleRatio = GameData.RUN_VELOCITY / (GameData.RUN_VELOCITY - averageVel.X);
             if (wobbleRatio >= GameData.MAX_WOBBLE)
                 wobbleScreen(GameData.MAX_WOBBLE);
             else if (wobbleRatio >= GameData.MIN_WOBBLE)
@@ -331,50 +310,54 @@ namespace Source
             KeyboardState state = Keyboard.GetState();
             GameData.Controls controls = GameData.keyboardControls[controller];
 
-            float impulse = GameData.MAX_IMPULSE * deltaTime;
+            float impulse = GameData.MAX_ACCEL * deltaTime;
             //float impulse = MathHelper.SmoothStep(MAX_IMPULSE, 0f, Math.Abs(player.Velocity.X) / MAX_VELOCITY) * deltaTime;
             //impulse = (float)Math.Pow(impulse, IMPULSE_POW);
 
             float slow = GameData.SLOWDOWN * deltaTime;
-            if (!player.CanJump)
+            if (player.CurrentState == Player.State.Jumping)
             {
                 slow *= GameData.AIR_RESIST;
             }
 
-            if (state.IsKeyDown(controls.right))                    // move right
+            if (!player.InAir)
             {
-                player.Velocity += (new Vector2(impulse, 0f));
-                if (player.Velocity.X < 0f && player.CanJump)  // change direction quicker
-                    player.Velocity += (new Vector2(slow, 0f));
-            }
-            else if (state.IsKeyDown(controls.left))                // move left
-            {
-                player.Velocity += (new Vector2(-impulse, 0f));
-                if (player.Velocity.X > 0f && player.CanJump)  // change direction quickler
+                if (state.IsKeyDown(controls.right) && player.BoostTime > Player.BOOST_LENGTH / 2)                    // boost
                 {
-                    player.Velocity += (new Vector2(-slow, 0f));
+                    player.Velocity.X = GameData.BOOST_SPEED;
+                    player.CurrentState = Player.State.Boosting;
+                }
+                else if (state.IsKeyDown(controls.left))                // slow slide
+                {
+                    player.CurrentState = Player.State.Sliding;
+                    player.Velocity.X = GameData.SLOW_SPEED;
+                }
+                else                           // normal run
+                {
+                    player.Velocity.X = GameData.RUN_VELOCITY;
+                    player.CurrentState = Player.State.Walking;
+                }
+                if (state.IsKeyDown(controls.up))     // jump
+                {
+                    //Console.WriteLine("Player state: " + player.CurrentState);
+                    player.Velocity = (new Vector2(player.Velocity.X, -GameData.JUMP_SPEED));
+                    player.CurrentState = Player.State.Jumping;
                 }
             }
-            else                            // air resistance and friction
+            else
             {
-                if (Math.Abs(player.Velocity.X) < GameData.MIN_VELOCITY)
-                    player.Velocity = new Vector2(0f, player.Velocity.Y);
+                if (state.IsKeyDown(controls.down))
+                {
+                    player.CurrentState = Player.State.Slamming;
+                    if (player.Velocity.Y < GameData.SLAM_SPEED)
+                        player.Velocity.Y = GameData.SLAM_SPEED;
+                }
                 else
                 {
-                    int playerVelSign = Math.Sign(player.Velocity.X);
-                    player.Velocity += (new Vector2(Math.Sign(player.Velocity.X) * -slow, 0f));
+                    player.CurrentState = Player.State.Jumping;
                 }
-            }
-            if (state.IsKeyDown(controls.up) && player.CanJump)     // jump
-            {
-                player.Velocity = (new Vector2(player.Velocity.X, -GameData.JUMP_IMPULSE));
-            }
-
-            if (state.IsKeyDown(controls.down))
-            {                                                   // fall
-                //if (player.Velocity.Y <= PUSH_VEL)
-                //    player.Velocity = (new Vector2(player.Velocity.X, PUSH_POW));
-                player.Ghost = true;
+                if (player.Velocity.X == 0)
+                    player.Velocity.X = GameData.RUN_VELOCITY;
             }
             if (ToggleKey(controls.shoot) && player.TimeSinceDeath <= 0)
             {
@@ -383,68 +366,76 @@ namespace Source
             }
         }
 
-        /// <summary>
-        /// Handles input for a single player for given input keys
-        /// </summary>
-        /// <param name="deltaTime"></param>
-        /// <param name="player"></param>
-        /// <param name="controller">Must be from 0 to 3</param>
-        private void HandleGamepad(float deltaTime, Player player, int controller)
-        {
-            GamePadState state = GamePad.GetState((PlayerIndex)controller, GamePadDeadZone.Circular);
+        ///// <summary>
+        ///// Handles input for a single player for given input keys
+        ///// </summary>
+        ///// <param name="deltaTime"></param>
+        ///// <param name="player"></param>
+        ///// <param name="controller">Must be from 0 to 3</param>
+        //private void HandleGamepad(float deltaTime, Player player, int controller)
+        //{
+        //    GamePadState state = GamePad.GetState((PlayerIndex)controller, GamePadDeadZone.Circular);
 
-            float impulse = GameData.MAX_IMPULSE * deltaTime;
-            //float impulse = MathHelper.SmoothStep(MAX_IMPULSE, 0f, Math.Abs(player.Velocity.X) / MAX_VELOCITY) * deltaTime;
-            //impulse = (float)Math.Pow(impulse, IMPULSE_POW);
+        //    float impulse = GameData.MAX_ACCEL * deltaTime;
+        //    //float impulse = MathHelper.SmoothStep(MAX_IMPULSE, 0f, Math.Abs(player.Velocity.X) / MAX_VELOCITY) * deltaTime;
+        //    //impulse = (float)Math.Pow(impulse, IMPULSE_POW);
 
-            float slow = GameData.SLOWDOWN * deltaTime;
-            if (!player.CanJump)
-            {
-                slow *= GameData.AIR_RESIST;
-            }
+        //    float slow = GameData.SLOWDOWN * deltaTime;
+        //    if (player.CurrentState == Player.State.Jumping)
+        //    {
+        //        slow *= GameData.AIR_RESIST;
+        //    }
 
-            if (state.ThumbSticks.Left.X == 0f)         // air resistance and friction
-            {
-                if (Math.Abs(player.Velocity.X) < GameData.MIN_VELOCITY)
-                    player.Velocity = new Vector2(0f, player.Velocity.Y);
-                else
-                {
-                    int playerVelSign = Math.Sign(player.Velocity.X);
-                    player.Velocity += (new Vector2(Math.Sign(player.Velocity.X) * -slow, 0f));
-                }
-            }
-            else
-            {
-                // move right and left
-                player.Velocity += (new Vector2(impulse * state.ThumbSticks.Left.X, 0f));
+        //    if (state.ThumbSticks.Left.X == 0f)         // air resistance and friction
+        //    {
+        //        if (Math.Abs(player.Velocity.X) < GameData.MIN_VELOCITY)
+        //            player.Velocity = new Vector2(0f, player.Velocity.Y);
+        //        else
+        //        {
+        //            int playerVelSign = Math.Sign(player.Velocity.X);
+        //            player.Velocity += (new Vector2(Math.Sign(player.Velocity.X) * -slow, 0f));
+        //        }
+        //    }
+        //    else
+        //    {
+        //        // move right and left
+        //        player.Velocity += (new Vector2(impulse * state.ThumbSticks.Left.X, 0f));
 
-                if (player.CanJump) // change direction quicker
-                {
-                    if (player.Velocity.X > 0f && state.ThumbSticks.Left.X > 0f)
-                        player.Velocity += (new Vector2(-slow, 0f));
-                    else if (player.Velocity.X < 0f && state.ThumbSticks.Left.X < 0f)
-                        player.Velocity += (new Vector2(slow, 0f));
-                }
-            }
+        //        if (player.CurrentState == Player.State.CanJump) // change direction quicker
+        //        {
+        //            if (player.Velocity.X > 0f && state.ThumbSticks.Left.X > 0f)
+        //                player.Velocity += (new Vector2(-slow, 0f));
+        //            else if (player.Velocity.X < 0f && state.ThumbSticks.Left.X < 0f)
+        //                player.Velocity += (new Vector2(slow, 0f));
+        //        }
+        //    }
 
-            if (state.IsButtonDown(Buttons.A) && player.CanJump)     // jump
-            {
-                player.Velocity = (new Vector2(player.Velocity.X, -GameData.JUMP_IMPULSE));
-            }
+        //    if (state.IsButtonDown(Buttons.A) && player.CurrentState == Player.State.CanJump)     // jump
+        //    {
+        //        player.Velocity = (new Vector2(player.Velocity.X, -GameData.JUMP_SPEED));
+        //    }
 
-            if (state.ThumbSticks.Left.Y > 0f)
-            {                                                   // fall
-                //if (player.Velocity.Y <= PUSH_VEL)
-                //    player.Velocity = (new Vector2(player.Velocity.X, PUSH_POW));
-                player.Ghost = true;
-            }
+        //    if (state.ThumbSticks.Left.Y > 0f)
+        //    {                                                   // fall
+        //        if (player.CurrentState == Player.State.Jumping)
+        //            player.CurrentState = Player.State.Slamming;
+        //        else if (player.CurrentState == Player.State.CanJump)
+        //            player.CurrentState = Player.State.Sliding;
+        //    }
+        //    else
+        //    {
+        //        if (player.CurrentState == Player.State.Slamming)
+        //            player.CurrentState = Player.State.Jumping;
+        //        else if (player.CurrentState == Player.State.Sliding)
+        //            player.CurrentState = Player.State.CanJump;
+        //    }
 
-            if (state.IsButtonDown(Buttons.X) && prevPadState.IsButtonUp(Buttons.X) && player.TimeSinceDeath <= 0)
-            {
-                player.Projectiles.Add(new Projectile(whiteRect, new Vector2(player.Position.X, player.Position.Y), player.Color));
-                //Console.WriteLine("Shooting!");
-            }
-        }
+        //    if (state.IsButtonDown(Buttons.X) && prevPadState.IsButtonUp(Buttons.X) && player.TimeSinceDeath <= 0)
+        //    {
+        //        player.Projectiles.Add(new Projectile(whiteRect, new Vector2(player.Position.X, player.Position.Y), player.Color));
+        //        //Console.WriteLine("Shooting!");
+        //    }
+        //}
 
         private void wobbleScreen(float amplifier)
         {
@@ -555,34 +546,10 @@ namespace Source
                     currentFloor.MovePosition(Vector2.UnitX);
                 else if (keyboard.IsKeyDown(Keys.Down))
                     currentFloor.MovePosition(Vector2.UnitY);
-                else if (ToggleKey(Keys.F))
-                {
-                    currentFloor.ToggleSolid();
-                    if (currentFloor.Solid)
-                        Console.WriteLine("Floor is now solid");
-                    else
-                        Console.WriteLine("Floor is no longer solid");
-                }
                 else if (keyboard.IsKeyDown(Keys.Enter))
                     currentFloor = null;
             }
-            if (keyboard.IsKeyDown(Keys.LeftControl))               // Save and load level
-            {
-                if (ToggleKey(Keys.S) && GameData.LEVEL >= 0)
-				{
-					SaveLevel ();
-				}
-				else if (ToggleKey (Keys.O))
-				{
-					LoadLevel ();
-				}
-				else if (ToggleKey (Keys.C))						//Clear the level
-				{
-					floors.Clear ();
-				}
-					
-            }
-            else if (ToggleKey(Keys.OemPlus))                       // Zoom in and out
+            if (ToggleKey(Keys.OemPlus))                       // Zoom in and out
                 ConvertUnits.SetDisplayUnitToSimUnitRatio(ConvertUnits.ToDisplayUnits(1f) * 2);
             else if (ToggleKey(Keys.OemMinus))
                 ConvertUnits.SetDisplayUnitToSimUnitRatio(ConvertUnits.ToDisplayUnits(1f) / 2);
@@ -601,33 +568,39 @@ namespace Source
         private void CheckPlayer()
         {
             Player max = players[0];
+            float minY = max.Position.Y;
+            float maxY = minY;
 
             float averageX = 0;
             foreach (Player player in players)
                 averageX += player.Position.X;
             averageX /= players.Count;
 
+            if (averageX - death > GameData.DEAD_MAX)
+                death = averageX - GameData.DEAD_MAX;
+
             foreach (Player player in players)
             {
-                player.Velocity.X = MathHelper.Clamp(player.Velocity.X, -GameData.MAX_VELOCITY, GameData.MAX_VELOCITY);
                 if (player.Position.Y > 10f)
                 {
                     player.MoveToPosition(GameData.PLAYER_POSITION);
                     player.Velocity = Vector2.Zero;
-                    if (GameData.LEVEL < 0)
-                    {
-                        levelEnd = 0;
-                        currentFloor = null;
-                        //foreach (Floor floor in floors)
-                        //    floor.Body.Dispose();
-                        floors.Clear();
-                    }
+                    levelEnd = 0;
+                    currentFloor = null;
+                    //foreach (Floor floor in floors)
+                    //    floor.Body.Dispose();
+                    floors.Clear();
                 }
-                else if (player.Position.X > levelEnd - GameData.LOAD_NEW && GameData.LEVEL < 0)
-                    LoadLevel();
+                else if (player.Position.X > levelEnd - GameData.LOAD_NEW)
+                    MakeLevel();
 
                 if (player.Position.X > max.Position.X)
                     max = player;
+
+                if (player.Position.Y < minY)
+                    minY = player.Position.Y;
+                else if (player.Position.Y > maxY)
+                    maxY = player.Position.Y;
             }
 
             foreach (Player player in players)
@@ -646,53 +619,38 @@ namespace Source
                     max.Score++;
                 }
             }
+
+            float currentRatio = editLevel ? GameData.PIXEL_METER_EDIT : GameData.PIXEL_METER;
+            float dist = maxY - minY;
+            if (dist * currentRatio * 1.2f > GraphicsDevice.Viewport.Height)
+                ConvertUnits.SetDisplayUnitToSimUnitRatio(GraphicsDevice.Viewport.Height / 1.2f / dist);
+            else
+                ConvertUnits.SetDisplayUnitToSimUnitRatio(currentRatio);
         }
 
-        /// <summary>
-        /// Saves a level (the floors) to the file in LEVEL_FILE
-        /// </summary>
-        private void SaveLevel()
+        ///// <summary>
+        ///// Load the level specified in level and increments levelEnd
+        ///// </summary>
+        //private void LoadLevel()
+        //{
+        //    levelEnd += levels.LoadLevel(levelEnd) + GameData.LEVEL_DIST;
+        //    Console.WriteLine("LevelEnd: " + levelEnd);
+        //}
+
+        private void MakeLevel()
         {
-			String dir;
-			if (onMac) {
-                dir = GameData.LEVELS_DIR2;
-			} else {
-                dir = GameData.LEVELS_DIR;
-			}
-            using (BinaryWriter writer = new BinaryWriter(File.Open(dir + "level" + GameData.LEVEL + ".lvl", FileMode.Create)))
+            int width = rand.Next(GameData.MIN_LEVEL_WIDTH, GameData.MAX_LEVEL_WIDTH);
+            int step = rand.Next(GameData.MIN_LEVEL_STEP, GameData.MAX_LEVEL_STEP);
+            int numFloors = rand.Next(GameData.MIN_NUM_FLOORS, GameData.MAX_NUM_FLOORS);
+
+            float x = levelEnd + width / 2f;
+            for (int i = 1; i < numFloors; i++)
             {
-                foreach (Floor floor in floors)
-                {
-                    bool wall = false;
-                    if (floor.Size.Y > floor.Size.X)
-                        wall = true;
-
-                    if (wall)
-                        writer.Write(floor.Size.Y);
-                    else
-                        writer.Write(floor.Size.X);
-
-                    writer.Write(floor.Position.X);
-                    writer.Write(floor.Position.Y);
-
-                    if (wall)
-                        writer.Write(MathHelper.PiOver2);
-                    else
-                        writer.Write(floor.Rotation);
-
-                    writer.Write(floor.Solid);
-                }
+                floors.Add(new Floor(whiteRect, new Vector2(x, -i * step), width));
+                walls.Add(new Wall(whiteRect, new Vector2(levelEnd, -(i - 0.5f) * step), step));
+                walls.Add(new Wall(whiteRect, new Vector2(levelEnd + width, -(i - 0.5f) * step), step));
             }
-            Console.WriteLine("Saved");
-        }
-
-        /// <summary>
-        /// Load the level specified in level and increments levelEnd
-        /// </summary>
-        private void LoadLevel()
-        {
-            levelEnd += levels.LoadLevel(levelEnd) + GameData.LEVEL_DIST;
-            Console.WriteLine("LevelEnd: " + levelEnd);
+            levelEnd += width + GameData.LEVEL_DIST;
         }
 
         /// <summary>
@@ -701,6 +659,7 @@ namespace Source
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
+            double deltaTime = (double)gameTime.ElapsedGameTime.TotalSeconds;
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
             // Find average position across all players
@@ -716,21 +675,29 @@ namespace Source
             else
                 view = Matrix.CreateTranslation(new Vector3(screenOffset + screenCenter - ConvertUnits.ToDisplayUnits(averagePos), 0f));
 
-            // Draw player and floors
-            spriteBatch.Begin(transformMatrix: view);
-            
-            spriteBatch.Draw(whiteRect, new Rectangle(-(int)view.Translation.X, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height), Color.LightGray);
 
-            //DrawRect(player.Body.Position + new Vector2(0f, 0.9f), Color.Gold, 0f, new Vector2(0.5f, 0.5f), new Vector2(0.6f, 0.5f));
-            foreach (Floor item in floors)
-                item.Draw(spriteBatch);
+            // Draw players
+            spriteBatch.Begin(transformMatrix: view);
             foreach (Player player in players)
             {
                 if (player.TimeSinceDeath < GameData.PHASE_TIME)
+                {
+                    player.Sprite.Update(deltaTime);
                     player.Draw(spriteBatch);
-                foreach (Projectile proj in player.Projectiles)
-                    proj.Draw(spriteBatch);
+                    foreach (Projectile proj in player.Projectiles)
+                        proj.Draw(spriteBatch);
+                }
             }
+            spriteBatch.End();
+
+
+            // Draw all objects
+            spriteBatch.Begin(transformMatrix: view);
+            spriteBatch.Draw(whiteRect, new Rectangle(-(int)view.Translation.X, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height), Color.LightGray);
+            foreach (Floor floor in floors)
+                floor.Draw(spriteBatch);
+            foreach (Wall wall in walls)
+                wall.Draw(spriteBatch);
             if (currentFloor != null)
                 DrawRect(currentFloor.Position, Color.Green, currentFloor.Rotation, currentFloor.Origin, currentFloor.Size);
             if (editingFloor)
@@ -743,9 +710,18 @@ namespace Source
             }
             if (editLevel)
                 DrawRect(Vector2.Zero, Color.LightGreen, 0f, new Vector2(0.5f, 0.5f), new Vector2(1, 1));
+            spriteBatch.Draw(whiteRect, new Rectangle((int)ConvertUnits.ToDisplayUnits(death) - GameData.DEAD_WIDTH, -GameData.DEAD_HEIGHT, GameData.DEAD_WIDTH, GameData.DEAD_HEIGHT), Color.Purple); // please excuse these magic numbers, they are meaningless
             spriteBatch.End();
 
-            // Show paused screen if game is paused
+
+            // Draw all particles
+            spriteBatch.Begin(transformMatrix: view);
+            foreach (Particle part in particles)
+                part.Draw(spriteBatch);
+            spriteBatch.End();
+
+
+            // Draw all HUD elements
             // TODO display a proper pause menu
             spriteBatch.Begin();
             if (paused)

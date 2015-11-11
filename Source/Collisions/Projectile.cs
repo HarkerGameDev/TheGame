@@ -13,8 +13,8 @@ namespace Source.Collisions
     /// </summary>
     public class Projectile : Body
     {
-        private const float SPEED = 100f;
-        public const float MAX_LIVE = 10f;
+        private const float SPEED = 60f;
+        public const float MAX_LIVE = 0.7f;
         public float LiveTime;
 
         public Projectile(Texture2D texture, Vector2 position, Color color)

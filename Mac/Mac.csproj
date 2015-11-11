@@ -78,4 +78,17 @@
       <Name>Source</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Content\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="..\Source\Content\Fonts\Score.xnb">
+      <Link>Content\Fonts\Score.xnb</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Source\Content\Fonts\ScoreBig.xnb">
+      <Link>Content\Fonts\ScoreBig.xnb</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 </Project>

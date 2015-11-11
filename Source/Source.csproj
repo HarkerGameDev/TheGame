@@ -37,15 +37,17 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="AnimatedTexture.cs" />
     <Compile Include="Collisions\Body.cs" />
     <Compile Include="Collisions\ConvertUnits.cs" />
+    <Compile Include="Collisions\Wall.cs" />
     <Compile Include="Collisions\Floor.cs" />
     <Compile Include="Collisions\Projectile.cs" />
     <Compile Include="Collisions\Player.cs" />
     <Compile Include="Collisions\World.cs" />
     <Compile Include="Game1.cs" />
     <Compile Include="GameData.cs" />
+    <Compile Include="Graphics\AnimatedSprite.cs" />
+    <Compile Include="Graphics\Particle.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -80,167 +82,5 @@
   <Target Name="AfterBuild">
   </Target>
   -->
-  <ItemGroup>
-    <Content Include="Content\bin\MacOSX\Fonts\Score.xnb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Content\bin\MacOSX\Fonts\ScoreBig.xnb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Content\Music\Chiptune dash.mp3">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Content\bin\MacOSX\Music\Chiptune dash.xnb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Content\bin\MacOSX\Music\Chiptune dash.m4a">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Content\pumpkins\002.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Content\pumpkins\000.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Content\bin\MacOSX\pumpkins\002.xnb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Content\bin\MacOSX\pumpkins\001.xnb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Content\bin\MacOSX\pumpkins\000.xnb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Content\pumpkins\001.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Content\bin\Linux\pumpkins\001.xnb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Content\bin\Windows\pumpkins\001.xnb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Content\bin\WindowsGL\pumpkins\001.xnb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Content\obj\MacOSX\.mgcontent">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
   <ItemGroup />
-  <ItemGroup>
-    <None Include="Content\.DS_Store" />
-    <None Include="Content\Fonts\.DS_Store" />
-    <None Include="Content\Fonts\Kootenay.ttf" />
-    <None Include="Content\Fonts\Score.spritefont" />
-    <None Include="Content\Fonts\ScoreBig.spritefont" />
-    <None Include="Content\Music\Classic dash.mp3" />
-    <None Include="Content\Music\Hot potato.mp3" />
-    <None Include="Content\bin\.DS_Store" />
-    <None Include="Content\bin\Linux\.DS_Store" />
-    <None Include="Content\bin\Linux\Fonts\Score.xnb" />
-    <None Include="Content\bin\Linux\Fonts\ScoreBig.xnb" />
-    <None Include="Content\bin\Linux\Music\Chiptune dash.ogg" />
-    <None Include="Content\bin\Linux\Music\Chiptune dash.xnb" />
-    <None Include="Content\bin\Linux\Music\Classic dash.ogg" />
-    <None Include="Content\bin\Linux\Music\Classic dash.xnb" />
-    <None Include="Content\bin\Linux\Music\Hot potato.ogg" />
-    <None Include="Content\bin\Linux\Music\Hot potato.xnb" />
-    <None Include="Content\bin\MacOSX\.DS_Store" />
-    <None Include="Content\bin\MacOSX\Music\Classic dash.m4a" />
-    <None Include="Content\bin\MacOSX\Music\Classic dash.xnb" />
-    <None Include="Content\bin\MacOSX\Music\Hot potato.m4a" />
-    <None Include="Content\bin\MacOSX\Music\Hot potato.xnb" />
-    <None Include="Content\bin\Windows\.DS_Store" />
-    <None Include="Content\bin\Windows\Fonts\Score.xnb" />
-    <None Include="Content\bin\Windows\Fonts\ScoreBig.xnb" />
-    <None Include="Content\bin\Windows\Music\Chiptune dash.wma" />
-    <None Include="Content\bin\Windows\Music\Chiptune dash.xnb" />
-    <None Include="Content\bin\Windows\Music\Classic dash.wma" />
-    <None Include="Content\bin\Windows\Music\Classic dash.xnb" />
-    <None Include="Content\bin\Windows\Music\Hot potato.wma" />
-    <None Include="Content\bin\Windows\Music\Hot potato.xnb" />
-    <None Include="Content\bin\WindowsGL\.DS_Store" />
-    <None Include="Content\bin\WindowsGL\Fonts\Score.xnb" />
-    <None Include="Content\bin\WindowsGL\Fonts\ScoreBig.xnb" />
-    <None Include="Content\bin\WindowsGL\Music\Chiptune dash.m4a" />
-    <None Include="Content\bin\WindowsGL\Music\Chiptune dash.xnb" />
-    <None Include="Content\bin\WindowsGL\Music\Classic dash.m4a" />
-    <None Include="Content\bin\WindowsGL\Music\Classic dash.xnb" />
-    <None Include="Content\bin\WindowsGL\Music\Hot potato.m4a" />
-    <None Include="Content\bin\WindowsGL\Music\Hot potato.xnb" />
-    <None Include="Content\obj\.DS_Store" />
-    <None Include="Content\obj\Linux\.mgcontent" />
-    <None Include="Content\obj\MacOSX\.DS_Store" />
-    <None Include="Content\obj\MacOSX\Fonts\Score.mgcontent" />
-    <None Include="Content\obj\MacOSX\Fonts\ScoreBig.mgcontent" />
-    <None Include="Content\obj\Windows\.DS_Store" />
-    <None Include="Content\obj\Windows\.mgcontent" />
-    <None Include="Content\obj\Windows\Fonts\Score.mgcontent" />
-    <None Include="Content\obj\Windows\Fonts\ScoreBig.mgcontent" />
-    <None Include="Content\obj\WindowsGL\.mgcontent" />
-    <None Include="Content\Content\.DS_Store" />
-    <None Include="Content\Content\Content.mgcb" />
-    <None Include="Content\Content\Fonts\.DS_Store" />
-    <None Include="Content\Content\Fonts\Kootenay.ttf" />
-    <None Include="Content\Content\Fonts\Score.spritefont" />
-    <None Include="Content\Content\Fonts\ScoreBig.spritefont" />
-    <None Include="Content\Content\Music\Chiptune dash.mp3" />
-    <None Include="Content\Content\Music\Classic dash.mp3" />
-    <None Include="Content\Content\Music\Hot potato.mp3" />
-    <None Include="Content\Content\bin\.DS_Store" />
-    <None Include="Content\Content\bin\Linux\.DS_Store" />
-    <None Include="Content\Content\bin\Linux\Fonts\Score.xnb" />
-    <None Include="Content\Content\bin\Linux\Fonts\ScoreBig.xnb" />
-    <None Include="Content\Content\bin\Linux\Music\Chiptune dash.ogg" />
-    <None Include="Content\Content\bin\Linux\Music\Chiptune dash.xnb" />
-    <None Include="Content\Content\bin\Linux\Music\Classic dash.ogg" />
-    <None Include="Content\Content\bin\Linux\Music\Classic dash.xnb" />
-    <None Include="Content\Content\bin\Linux\Music\Hot potato.ogg" />
-    <None Include="Content\Content\bin\Linux\Music\Hot potato.xnb" />
-    <None Include="Content\Content\bin\MacOSX\.DS_Store" />
-    <None Include="Content\Content\bin\MacOSX\Fonts\Score.xnb" />
-    <None Include="Content\Content\bin\MacOSX\Fonts\ScoreBig.xnb" />
-    <None Include="Content\Content\bin\MacOSX\Music\Chiptune dash.m4a" />
-    <None Include="Content\Content\bin\MacOSX\Music\Chiptune dash.xnb" />
-    <None Include="Content\Content\bin\MacOSX\Music\Classic dash.m4a" />
-    <None Include="Content\Content\bin\MacOSX\Music\Classic dash.xnb" />
-    <None Include="Content\Content\bin\MacOSX\Music\Hot potato.m4a" />
-    <None Include="Content\Content\bin\MacOSX\Music\Hot potato.xnb" />
-    <None Include="Content\Content\bin\Windows\.DS_Store" />
-    <None Include="Content\Content\bin\Windows\Fonts\Score.xnb" />
-    <None Include="Content\Content\bin\Windows\Fonts\ScoreBig.xnb" />
-    <None Include="Content\Content\bin\Windows\Music\Chiptune dash.wma" />
-    <None Include="Content\Content\bin\Windows\Music\Chiptune dash.xnb" />
-    <None Include="Content\Content\bin\Windows\Music\Classic dash.wma" />
-    <None Include="Content\Content\bin\Windows\Music\Classic dash.xnb" />
-    <None Include="Content\Content\bin\Windows\Music\Hot potato.wma" />
-    <None Include="Content\Content\bin\Windows\Music\Hot potato.xnb" />
-    <None Include="Content\Content\bin\WindowsGL\.DS_Store" />
-    <None Include="Content\Content\bin\WindowsGL\Fonts\Score.xnb" />
-    <None Include="Content\Content\bin\WindowsGL\Fonts\ScoreBig.xnb" />
-    <None Include="Content\Content\bin\WindowsGL\Music\Chiptune dash.m4a" />
-    <None Include="Content\Content\bin\WindowsGL\Music\Chiptune dash.xnb" />
-    <None Include="Content\Content\bin\WindowsGL\Music\Classic dash.m4a" />
-    <None Include="Content\Content\bin\WindowsGL\Music\Classic dash.xnb" />
-    <None Include="Content\Content\bin\WindowsGL\Music\Hot potato.m4a" />
-    <None Include="Content\Content\bin\WindowsGL\Music\Hot potato.xnb" />
-    <None Include="Content\Content\obj\.DS_Store" />
-    <None Include="Content\Content\obj\Linux\.mgcontent" />
-    <None Include="Content\Content\obj\MacOSX\.DS_Store" />
-    <None Include="Content\Content\obj\MacOSX\.mgcontent" />
-    <None Include="Content\Content\obj\MacOSX\Fonts\Score.mgcontent" />
-    <None Include="Content\Content\obj\MacOSX\Fonts\ScoreBig.mgcontent" />
-    <None Include="Content\Content\obj\Windows\.DS_Store" />
-    <None Include="Content\Content\obj\Windows\.mgcontent" />
-    <None Include="Content\Content\obj\Windows\Fonts\Score.mgcontent" />
-    <None Include="Content\Content\obj\Windows\Fonts\ScoreBig.mgcontent" />
-    <None Include="Content\Content\obj\WindowsGL\.mgcontent" />
-    <None Include="Content\bin\Linux\pumpkins\000.xnb" />
-    <None Include="Content\bin\Linux\pumpkins\002.xnb" />
-    <None Include="Content\bin\Windows\pumpkins\000.xnb" />
-    <None Include="Content\bin\Windows\pumpkins\002.xnb" />
-    <None Include="Content\bin\WindowsGL\pumpkins\000.xnb" />
-    <None Include="Content\bin\WindowsGL\pumpkins\002.xnb" />
-  </ItemGroup>
 </Project>
