@@ -1,4 +1,4 @@
-# ClubFair
+# Relo
 Read about it on the [google doc](https://docs.google.com/document/d/1ofddsIU92CeK2RtJ5eg3PWEG8U2o49VdmNxmAJwwMMg/edit?usp=sharing)
 
 Ask friends to email harkergamedev@gmail.com with their github account to join
