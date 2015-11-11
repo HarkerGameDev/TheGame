@@ -17,14 +17,6 @@ git reset --hard
 git checkout game2
 ```
 * If you run now, you should see the new version
-* Notes on running:
-* at the current state you want to make sure you are syncing with game2, not master
-* if you are on a mac follow these steps to get it working
-* 1. Clone from branch game2
-* 2. Open and attempt to run the game, it will error
-* 3. paste: cd ~/Projects/TheGame/Mac/bin/Debug/Game.app/Contents/Resources into terminal, ~ gives Users/(currentuser), adjust according to where TheGame folder is located
-* 4. paste: ln -s ~/Projects/TheGame/Source/Content/ into terminal, same as last step update folder location
-* 5. Run, it should now be working correctly
 
 ### Troubleshooting
 * *No reported issues yet. Contact harkergamedev@gmail.com to report an issue*
