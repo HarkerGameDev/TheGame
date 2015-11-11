@@ -13,7 +13,7 @@ namespace Source
     internal static class GameData
     {
         //public const int LEVEL = -1;            // if this is greater than -1, levels will not be procedurally generated (useful for editing)
-        public const int numPlayers = 1;            // number of players
+        public const int numPlayers = 2;            // number of players
 
         public static bool[] useController = { false, false, false };    // true means the player at the index will be using a controller.
         public static Controls[] keyboardControls = {            // defines the keyboard controls which will be used
@@ -40,7 +40,7 @@ namespace Source
 
         public const float DEAD_SPEED = 20f; // m/s -- the speed at which the dead 'wave' on the left moves
         public const float DEAD_MAX = 30f; // m -- maximum distance between player and death if player is doing well
-        public const int DEAD_WIDTH = 2000;
+        public const int DEAD_WIDTH = 200;
         public const int DEAD_HEIGHT = 2000;
 
         //public const float MIN_VELOCITY = 1f;  // m/s -- what can be considered 0 horizontal velocity

@@ -71,7 +71,7 @@ namespace Source.Collisions
             {
                 if (proj.Intersects(target) != Vector2.Zero)
                 {
-                    target.Velocity.X = 0;
+                    target.StunTime = Player.STUN_LENGTH;
                     player.Projectiles.RemoveAt(projIndex);
                     return;
                 }
@@ -128,13 +128,20 @@ namespace Source.Collisions
             if (player.Position.Y > BOTTOM)  // bottom of the level
             {
                 player.Velocity.Y = 0;
-                player.MoveToPosition(new Vector2(player.Position.X, BOTTOM));
-                if (player.InAir)
-                {
-                    player.CurrentState = Player.State.Walking;
-                    //Console.WriteLine("Start walking");
-                }
-                totalCollisions++;
+
+                // Kill the player
+                player.TimeSinceDeath = GameData.DEAD_TIME;
+                player.Projectiles.Clear();
+                player.MovePosition(new Vector2(0f, -10f));
+                player.Score--;
+
+                //player.MoveToPosition(new Vector2(player.Position.X, BOTTOM));
+                //if (player.InAir)
+                //{
+                //    player.CurrentState = Player.State.Walking;
+                //    //Console.WriteLine("Start walking");
+                //}
+                //totalCollisions++;
             }
 
             if (totalCollisions == 0 && !player.InAir)

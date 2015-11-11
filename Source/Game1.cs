@@ -322,7 +322,7 @@ namespace Source
 
             if (!player.InAir)
             {
-                if (state.IsKeyDown(controls.right))                    // boost
+                if (state.IsKeyDown(controls.right) && player.BoostTime > Player.BOOST_LENGTH / 2)                    // boost
                 {
                     player.Velocity.X = GameData.BOOST_SPEED;
                     player.CurrentState = Player.State.Boosting;
