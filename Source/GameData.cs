@@ -13,7 +13,7 @@ namespace Source
     internal static class GameData
     {
         //public const int LEVEL = -1;            // if this is greater than -1, levels will not be procedurally generated (useful for editing)
-        public const int numPlayers = 2;            // number of players
+        public const int numPlayers = 1;            // number of players
 
         public static bool[] useController = { false, false, false };    // true means the player at the index will be using a controller.
         public static Controls[] keyboardControls = {            // defines the keyboard controls which will be used
@@ -46,7 +46,7 @@ namespace Source
         //public const float MIN_VELOCITY = 1f;  // m/s -- what can be considered 0 horizontal velocity
         public const float SLOW_SPEED = 15f; // m/s -- speed player is going at when slowing down
         public const float RUN_VELOCITY = 20f; // m/s -- maximum horizontal velocity for player
-        public const float BOOST_SPEED = 24f; // m/s -- horizontal velocity when boosting
+        public const float BOOST_SPEED = 25f; // m/s -- horizontal velocity when boosting
         public const float MAX_ACCEL = 40f;   // m/s^2 -- the impulse which is applied when player starts moving after standing still
         public const float JUMP_SPEED = 18f; // m/s -- the initial upwards velocity when player jumps
         public const float SLAM_SPEED = 17f; // m/s -- the speed at which the player goes down when slamming

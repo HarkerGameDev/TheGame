@@ -15,10 +15,13 @@ namespace Source.Collisions
     /// </summary>
     public class Player : Body
     {
-        public const float BOOST_LENGTH = 1.5f;  // how long a player can boost for
-        public const float BOOST_REGEN = 8f; // boost will be refilled in this time (from 0)
+        public const float BOOST_LENGTH = 2.8f;  // how long a player can boost for
+        public const float BOOST_REGEN = 7.6f; // boost will be refilled in this time (from 0)
         public const float STUN_LENGTH = 0.5f; // the player is stunned for this long
         public const float STUN_SCALE = 0.6f; // the player speed is scaled by this when stunned
+
+        private const float BAR_WIDTH = 1f; // length of bar in meters
+        private const float BAR_HEIGHT = 0.25f;
 
         //public bool CanJump = false;
         //public bool Ghost = false;
@@ -75,8 +78,6 @@ namespace Source.Collisions
             else if (BoostTime < BOOST_LENGTH)
                 BoostTime += deltaTime * BOOST_LENGTH / BOOST_REGEN;
 
-            Console.WriteLine("Boost: " + BoostTime);
-
             if (BoostTime < 0)
             {
                 Velocity.X = GameData.RUN_VELOCITY;
@@ -88,6 +89,10 @@ namespace Source.Collisions
         {
             //spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(Position), null, Color, Rotation, Origin, ConvertUnits.ToDisplayUnits(textureScale), SpriteEffects.None, 0f);
             Sprite.Draw(spriteBatch);
+
+            Vector2 pos = new Vector2(Position.X - BAR_WIDTH / 2, Position.Y - Size.Y * 0.7f);
+            Game1.DrawRectangle(spriteBatch, pos, Color.LightSalmon, new Vector2(BAR_WIDTH, BAR_HEIGHT));
+            Game1.DrawRectangle(spriteBatch, pos, Color.Crimson, new Vector2(BAR_WIDTH * BoostTime / BOOST_LENGTH, BAR_HEIGHT));
         }
 
         //public void setRotation(Body body)

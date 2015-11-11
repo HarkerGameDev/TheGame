@@ -37,7 +37,7 @@ namespace Source
         private KeyboardState prevKeyState;
         private GamePadState prevPadState;
         private MouseState prevMouseState;
-        private Texture2D whiteRect;
+        private static Texture2D whiteRect;
         public SpriteFont font, fontBig;
 
         private Random rand;
@@ -322,10 +322,13 @@ namespace Source
 
             if (!player.InAir)
             {
-                if (state.IsKeyDown(controls.right) && player.BoostTime > Player.BOOST_LENGTH / 2)                    // boost
+                if (state.IsKeyDown(controls.right))                    // boost
                 {
-                    player.Velocity.X = GameData.BOOST_SPEED;
-                    player.CurrentState = Player.State.Boosting;
+                    if (player.BoostTime > Player.BOOST_LENGTH / 2)
+                    {
+                        player.Velocity.X = GameData.BOOST_SPEED;
+                        player.CurrentState = Player.State.Boosting;
+                    }
                 }
                 else if (state.IsKeyDown(controls.left))                // slow slide
                 {
@@ -773,6 +776,18 @@ namespace Source
         private void DrawRect(Body body, Color color, Vector2 origin, Vector2 scale)
         {
             spriteBatch.Draw(whiteRect, ConvertUnits.ToDisplayUnits(body.Position), null, color, body.Rotation, origin, ConvertUnits.ToDisplayUnits(scale), SpriteEffects.None, 0f);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="spriteBatch"></param>
+        /// <param name="position">Bottom left of rectangle</param>
+        /// <param name="color"></param>
+        /// <param name="scale">Rectangle will be scaled from the bottom left</param>
+        public static void DrawRectangle(SpriteBatch spriteBatch, Vector2 position, Color color, Vector2 scale)
+        {
+            spriteBatch.Draw(whiteRect, ConvertUnits.ToDisplayUnits(position), null, color, 0f, Vector2.Zero, ConvertUnits.ToDisplayUnits(scale), SpriteEffects.None, 0f);
         }
     }
 }
