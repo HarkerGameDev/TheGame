@@ -1,4 +1,4 @@
-# ClubFair
+# Relo
 Read about it on the [google doc](https://docs.google.com/document/d/1ofddsIU92CeK2RtJ5eg3PWEG8U2o49VdmNxmAJwwMMg/edit?usp=sharing)
 
 Ask friends to email harkergamedev@gmail.com with their github account to join
@@ -7,16 +7,15 @@ Ask friends to email harkergamedev@gmail.com with their github account to join
 ## How to run
 * Install monogame. Instructions for [windows](http://www.gamefromscratch.com/post/2015/06/10/Getting-Started-with-MonoGame-on-Windows.aspx) and [mac](http://www.gamefromscratch.com/post/2015/06/09/Getting-Started-with-MonoGame-on-MacOS.aspx).
 * Install [git](https://git-scm.com/downloads)
-* Open git bash or terminal, and type in the following: `git clone https://github.com/HarkerGameDev/TheGame.git`
+* Open git bash or terminal, and type in the following:
+```
+git clone https://github.com/HarkerGameDev/TheGame.git
+```
 * Open "TheGame.sln" from the TheGame folder you just downloaded -- check your current directory from shell with `pwd`
-* Hit the run button in your IDE (Xamarin or Visual Studio)
+* Hit the run button in the top toolbar of your IDE (Xamarin or Visual Studio)
 * Play the game with the arrow keys and Right Shift, or check the troubleshooting section if it did not work
-* If you would now like to try out a different version of the game, open a shell session in the project folder and type in the following
-```
-git reset --hard
-git checkout game2
-```
-* If you run now, you should see the new version
+* More controls and multiplayer can be seen and configured inside `Source/GameData.cs`
+
 
 ### Troubleshooting
 * *No reported issues yet. Contact harkergamedev@gmail.com to report an issue*
