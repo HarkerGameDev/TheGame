@@ -40,7 +40,7 @@ namespace Source
         private static Texture2D whiteRect;
         public SpriteFont font, fontBig;
 
-        private Random rand;
+        public Random rand;
         private World world;
 
         private Rectangle cameraBounds;

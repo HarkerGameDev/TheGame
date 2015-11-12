@@ -35,6 +35,11 @@ namespace Source.Collisions
                 part.LiveTime -= deltaTime;
                 if (part.LiveTime < 0)
                     game.particles.RemoveAt(i);
+                else if(part.type.Equals(Particle.Type.Texture))
+                {
+                    part.angle += part.angularVelocity * deltaTime;
+                    part.Position += part.velocity * deltaTime;
+                }
             }
 
             foreach (Player player in game.players)
@@ -124,13 +129,14 @@ namespace Source.Collisions
                     //Console.WriteLine("Colliding with: " + floor.Position + "   Pushing to:   " + newPosition + "   Vector:    "+ new Vector2(-1 * translation.X, -1 * translation.Y));
                 }else if(translation != Vector2.Zero && player.CurrentState == Player.State.Slamming)
                 {
+                    game.particles.Add(new Particle(player.Position, new Vector2(player.Size.X/4, player.Size.X/4), floor.texture, 0f, new Vector2((float)game.rand.NextDouble()*6-3, -3f), 0f, 0.5f));
                     game.floors.Add(new Floor(floor.texture, new Vector2((floor.Position.X - floor.Size.X / 2 + player.Position.X - player.Size.X / 2) / 2, floor.Position.Y), player.Position.X - player.Size.X / 2 - floor.Position.X + floor.Size.X / 2));
                     game.floors.Add(new Floor(floor.texture, new Vector2((floor.Position.X + floor.Size.X / 2 + player.Position.X + player.Size.X / 2) / 2, floor.Position.Y), floor.Position.X + floor.Size.X / 2 - player.Position.X - player.Size.X / 2));
                     game.floors.Remove(floor);
                     break;
                 }
             }
-
+            
             if (player.Position.Y > BOTTOM)  // bottom of the level
             {
                 player.Velocity.Y = 0;

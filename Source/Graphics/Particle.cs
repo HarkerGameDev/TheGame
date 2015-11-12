@@ -18,17 +18,23 @@ namespace Source.Graphics
         private const float LIFETIME = 0.17f;
         public enum Type
         {
-            Text
+            Text, Texture
         }
 
-        public Vector2 Position { get; private set; }
+        public Vector2 Position { get; set; }
 
         public float LiveTime;
 
-        private Type type;
+        public Type type;
 
         private SpriteFont font;
         private string text;
+
+        private Texture2D texture;
+        public float angle;
+        public Vector2 velocity;
+        public float angularVelocity;
+        public Vector2 Size;
 
         public Particle(Vector2 position, Type type)
         {
@@ -47,12 +53,30 @@ namespace Source.Graphics
             type = Type.Text;
         }
 
+        public Particle(Vector2 position, Vector2 size, Texture2D texture, float angle, Vector2 velocity, float angularVelocity, float lifeTime)
+        {
+            this.texture = texture;
+            this.angle = angle;
+            this.velocity = velocity;
+            this.angularVelocity = angularVelocity;
+            Size = size;
+            LiveTime = lifeTime;
+            Position = position;
+            type = Type.Texture;
+        }
+        
+
+
         public void Draw(SpriteBatch spriteBatch)
         {
             switch (type)
             {
                 case Type.Text:
                     spriteBatch.DrawString(font, text, ConvertUnits.ToDisplayUnits(Position), Color.YellowGreen);
+                    break;
+
+                case Type.Texture:
+                    spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(Position), null, Color.Azure, angle, new Vector2(texture.Width / 2.0f, texture.Height / 2.0f), ConvertUnits.ToDisplayUnits(Size) / new Vector2(texture.Width / 2.0f, texture.Height / 2.0f), SpriteEffects.None, 0f);
                     break;
             }
         }
