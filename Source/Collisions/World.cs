@@ -104,7 +104,7 @@ namespace Source.Collisions
             foreach (Floor floor in game.floors)
             {
                 Vector2 translation = player.Intersects(floor);
-                if (translation != Vector2.Zero)
+                if (translation != Vector2.Zero && player.CurrentState != Player.State.Slamming)
                 {
                     totalCollisions++;
                     //Console.WriteLine("Rotation: " + floor.Rotation);
@@ -122,6 +122,12 @@ namespace Source.Collisions
 
                     //Writing all this to console lags the game
                     //Console.WriteLine("Colliding with: " + floor.Position + "   Pushing to:   " + newPosition + "   Vector:    "+ new Vector2(-1 * translation.X, -1 * translation.Y));
+                }else if(translation != Vector2.Zero && player.CurrentState == Player.State.Slamming)
+                {
+                    game.floors.Add(new Floor(floor.texture, new Vector2((floor.Position.X - floor.Size.X / 2 + player.Position.X - player.Size.X / 2) / 2, floor.Position.Y), player.Position.X - player.Size.X / 2 - floor.Position.X + floor.Size.X / 2));
+                    game.floors.Add(new Floor(floor.texture, new Vector2((floor.Position.X + floor.Size.X / 2 + player.Position.X + player.Size.X / 2) / 2, floor.Position.Y), floor.Position.X + floor.Size.X / 2 - player.Position.X - player.Size.X / 2));
+                    game.floors.Remove(floor);
+                    break;
                 }
             }
 

@@ -25,7 +25,7 @@ namespace Source.Collisions
 
         public Color Color { get; protected set; }
 
-        protected Texture2D texture;
+        public Texture2D texture;
 
         public float Left { get { return Position.X - Size.X / 2; } }
         public float Right { get { return Position.X + Size.X / 2; } }
