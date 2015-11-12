@@ -77,6 +77,7 @@ namespace Source.Collisions
                 if (proj.Intersects(target) != Vector2.Zero)
                 {
                     target.StunTime = Player.STUN_LENGTH;
+                    
                     player.Projectiles.RemoveAt(projIndex);
                     return;
                 }
@@ -95,6 +96,8 @@ namespace Source.Collisions
                 if (proj.Intersects(wall) != Vector2.Zero)
                 {
                     game.walls.RemoveAt(i);
+                    for(int x = 0; x < 10; x ++)
+                        game.particles.Add(new Particle(wall.Position, new Vector2(player.Size.X/4, player.Size.X / 4), wall.texture, 0f, new Vector2((float)game.rand.NextDouble()*4, (float)game.rand.NextDouble()*8-4), 0f, 0.5f, wall.Color));
                     game.particles.Add(new Particle(wall.Position, game.font, "BAM!"));
                     player.Projectiles.RemoveAt(projIndex);
                     return;
@@ -124,7 +127,7 @@ namespace Source.Collisions
                             player.CurrentState = Player.State.Walking;
                     }
                     player.MovePosition(-translation);
-                    game.particles.Add(new Particle(player.Position+new Vector2(0f, player.Size.Y/2), new Vector2(player.Size.X / 4, player.Size.X / 4), floor.texture, 0f, new Vector2((float)game.rand.NextDouble() * 6 - 3, -3f), 0f, 1f, Color.Azure));
+                    game.particles.Add(new Particle(player.Position+new Vector2(0f, player.Size.Y/2), new Vector2(player.Size.X / 4, player.Size.X / 4), floor.texture, 0f, new Vector2((float)game.rand.NextDouble() * 6 - 3, (float)game.rand.NextDouble() - 4), (float)game.rand.NextDouble()*10, 1f, Color.Azure));
                     //Writing all this to console lags the game
                     //Console.WriteLine("Colliding with: " + floor.Position + "   Pushing to:   " + newPosition + "   Vector:    "+ new Vector2(-1 * translation.X, -1 * translation.Y));
                 }
