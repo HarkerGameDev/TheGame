@@ -124,12 +124,13 @@ namespace Source.Collisions
                             player.CurrentState = Player.State.Walking;
                     }
                     player.MovePosition(-translation);
-
+                    game.particles.Add(new Particle(player.Position+new Vector2(0f, player.Size.Y/2), new Vector2(player.Size.X / 4, player.Size.X / 4), floor.texture, 0f, new Vector2((float)game.rand.NextDouble() * 6 - 3, -3f), 0f, 1f, Color.Azure));
                     //Writing all this to console lags the game
                     //Console.WriteLine("Colliding with: " + floor.Position + "   Pushing to:   " + newPosition + "   Vector:    "+ new Vector2(-1 * translation.X, -1 * translation.Y));
-                }else if(translation != Vector2.Zero && player.CurrentState == Player.State.Slamming)
+                }
+                else if(translation != Vector2.Zero && player.CurrentState == Player.State.Slamming)
                 {
-                    game.particles.Add(new Particle(player.Position, new Vector2(player.Size.X/4, player.Size.X/4), floor.texture, 0f, new Vector2((float)game.rand.NextDouble()*6-3, -3f), 0f, 0.5f));
+                    game.particles.Add(new Particle(player.Position, new Vector2(player.Size.X/4, player.Size.X/4), floor.texture, 0f, new Vector2((float)game.rand.NextDouble()*6-3, 0f)+player.Velocity/3, 0f, 1f, Color.Azure));
                     game.floors.Add(new Floor(floor.texture, new Vector2((floor.Position.X - floor.Size.X / 2 + player.Position.X - player.Size.X / 2) / 2, floor.Position.Y), player.Position.X - player.Size.X / 2 - floor.Position.X + floor.Size.X / 2));
                     game.floors.Add(new Floor(floor.texture, new Vector2((floor.Position.X + floor.Size.X / 2 + player.Position.X + player.Size.X / 2) / 2, floor.Position.Y), floor.Position.X + floor.Size.X / 2 - player.Position.X - player.Size.X / 2));
                     game.floors.Remove(floor);

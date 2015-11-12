@@ -35,6 +35,7 @@ namespace Source.Graphics
         public Vector2 velocity;
         public float angularVelocity;
         public Vector2 Size;
+        public Color color;
 
         public Particle(Vector2 position, Type type)
         {
@@ -48,17 +49,18 @@ namespace Source.Graphics
             this.font = font;
             this.text = text;
             LiveTime = LIFETIME;
-
+            
             Position = new Vector2(position.X - ConvertUnits.ToSimUnits(font.MeasureString(text).X / 2f), position.Y);
             type = Type.Text;
         }
 
-        public Particle(Vector2 position, Vector2 size, Texture2D texture, float angle, Vector2 velocity, float angularVelocity, float lifeTime)
+        public Particle(Vector2 position, Vector2 size, Texture2D texture, float angle, Vector2 velocity, float angularVelocity, float lifeTime, Color color)
         {
             this.texture = texture;
             this.angle = angle;
             this.velocity = velocity;
             this.angularVelocity = angularVelocity;
+            this.color = color;
             Size = size;
             LiveTime = lifeTime;
             Position = position;
@@ -76,7 +78,7 @@ namespace Source.Graphics
                     break;
 
                 case Type.Texture:
-                    spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(Position), null, Color.Azure, angle, new Vector2(texture.Width / 2.0f, texture.Height / 2.0f), ConvertUnits.ToDisplayUnits(Size) / new Vector2(texture.Width / 2.0f, texture.Height / 2.0f), SpriteEffects.None, 0f);
+                    spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(Position), null, color, angle, new Vector2(texture.Width / 2.0f, texture.Height / 2.0f), ConvertUnits.ToDisplayUnits(Size) / new Vector2(texture.Width / 2.0f, texture.Height / 2.0f), SpriteEffects.None, 0f);
                     break;
             }
         }
