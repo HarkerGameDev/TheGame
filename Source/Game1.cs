@@ -570,9 +570,9 @@ namespace Source
         /// </summary>
         private void CheckPlayer()
         {
-            Player max = players[0];
-            float minY = max.Position.Y;
-            float maxY = minY;
+            Player max = null;
+            float minY = 0;
+            float maxY = -90000000; // a very small number
 
             float averageX = 0;
             foreach (Player player in players)
@@ -597,7 +597,7 @@ namespace Source
                 else if (player.Position.X > levelEnd - GameData.LOAD_NEW)
                     MakeLevel();
 
-                if (player.Position.X > max.Position.X)
+                if ((max == null || player.Position.X > max.Position.X) && player.TimeSinceDeath <= 0)
                     max = player;
 
                 if (player.Position.Y < minY)
@@ -610,23 +610,33 @@ namespace Source
             {
                 if (player.TimeSinceDeath > 0)
                 {
+                    bool allDead = max == null;
+
                     float val = (float)(player.TimeSinceDeath / GameData.DEAD_TIME);
-                    float newX = MathHelper.Lerp(max.Position.X, player.Position.X, val);
-                    float newY = MathHelper.Lerp(max.Position.Y, player.Position.Y, val);
+                    float targetX = allDead ? averageX : max.Position.X;
+                    float targetY = allDead ? -GameData.RESPAWN_DIST : max.Position.Y;
+                    float newX = MathHelper.Lerp(targetX, player.Position.X, val);
+                    float newY = MathHelper.Lerp(targetY, allDead ? 0 : player.Position.Y, val);
+
                     player.MoveToPosition(new Vector2(newX, newY));
+                    //player.Velocity = new Vector2(newX - player.Position.X, newY - player.Position.Y) * val;
+                    //Console.WriteLine("Player moving to " + new Vector2(newX, newY));
+                    //Console.WriteLine("Target " + new Vector2(targetX, targetY));
+                    //Console.WriteLine("Max: " + max == null);
                 }
                 else if (player.Position.X < averageX - GameData.DEAD_DIST)
                 {
                     player.TimeSinceDeath = GameData.DEAD_TIME;
                     player.Projectiles.Clear();
-                    max.Score++;
+                    if (max != null)
+                        max.Score++;
                 }
             }
 
             float currentRatio = editLevel ? GameData.PIXEL_METER_EDIT : GameData.PIXEL_METER;
             float dist = maxY - minY;
-            if (dist * currentRatio * 1.2f > GraphicsDevice.Viewport.Height)
-                ConvertUnits.SetDisplayUnitToSimUnitRatio(GraphicsDevice.Viewport.Height / 1.2f / dist);
+            if (dist * currentRatio / GameData.SCREEN_SPACE > GraphicsDevice.Viewport.Height)
+                ConvertUnits.SetDisplayUnitToSimUnitRatio(GraphicsDevice.Viewport.Height * GameData.SCREEN_SPACE / dist);
             else
                 ConvertUnits.SetDisplayUnitToSimUnitRatio(currentRatio);
         }
@@ -653,7 +663,7 @@ namespace Source
                 walls.Add(new Wall(whiteRect, new Vector2(levelEnd, -(i - 0.5f) * step), step));
                 walls.Add(new Wall(whiteRect, new Vector2(levelEnd + width, -(i - 0.5f) * step), step));
             }
-            levelEnd += width + GameData.LEVEL_DIST;
+            levelEnd += width + rand.Next(GameData.LEVEL_DIST_MIN, GameData.LEVEL_DIST_MAX);
         }
 
         /// <summary>

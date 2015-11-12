@@ -132,7 +132,7 @@ namespace Source.Collisions
                 // Kill the player
                 player.TimeSinceDeath = GameData.DEAD_TIME;
                 player.Projectiles.Clear();
-                player.MovePosition(new Vector2(0f, -10f));
+                //player.MovePosition(new Vector2(0f, -10f));
                 player.Score--;
 
                 //player.MoveToPosition(new Vector2(player.Position.X, BOTTOM));
