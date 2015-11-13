@@ -11,7 +11,7 @@ using Source.Collisions;
 namespace Source.Graphics
 {
     /// <summary>
-    /// Displays a particle effect. Currently, just displays text
+    /// Displays a particle effect.
     /// </summary>
     public class Particle
     {
@@ -30,11 +30,11 @@ namespace Source.Graphics
         private string text;
 
         private Texture2D texture;
-        public float angle;
-        public Vector2 velocity;
-        public float angularVelocity;
+        public float Angle;
+        public Vector2 Velocity;
+        public float AngularVelocity;
         public Vector2 Size;
-        public Color color;
+        public Color Color;
 
         public Particle(Vector2 position, Type type)
         {
@@ -56,10 +56,10 @@ namespace Source.Graphics
         public Particle(Vector2 position, Vector2 size, Texture2D texture, float angle, Vector2 velocity, float angularVelocity, float lifeTime, Color color)
         {
             this.texture = texture;
-            this.angle = angle;
-            this.velocity = velocity;
-            this.angularVelocity = angularVelocity;
-            this.color = color;
+            this.Angle = angle;
+            this.Velocity = velocity;
+            this.AngularVelocity = angularVelocity;
+            this.Color = color;
             Size = size;
             LiveTime = lifeTime;
             Position = position;
@@ -77,7 +77,7 @@ namespace Source.Graphics
                     break;
 
                 case Type.Texture:
-                    spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(Position), null, color, angle, new Vector2(texture.Width / 2.0f, texture.Height / 2.0f), ConvertUnits.ToDisplayUnits(Size) / new Vector2(texture.Width / 2.0f, texture.Height / 2.0f), SpriteEffects.None, 0f);
+                    spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(Position), null, Color, Angle, new Vector2(texture.Width / 2.0f, texture.Height / 2.0f), ConvertUnits.ToDisplayUnits(Size) / new Vector2(texture.Width / 2.0f, texture.Height / 2.0f), SpriteEffects.None, 0f);
                     break;
             }
         }

@@ -15,7 +15,6 @@ namespace Source.Collisions
     /// </summary>
     public class World
     {
-        private const float GRAVITY = 26f;
         //private const float MAX_SLOPE = MathHelper.PiOver4;
         private static float SLOPE_JUMP = (float)Math.Atan2(Source.GameData.JUMP_SPEED, Source.GameData.RUN_VELOCITY);
         public const float BOTTOM = -0.8f;        // bottom of the level
@@ -37,8 +36,12 @@ namespace Source.Collisions
                     game.particles.RemoveAt(i);
                 else if(part.type.Equals(Particle.Type.Texture))
                 {
-                    part.angle += part.angularVelocity * deltaTime;
-                    part.Position += part.velocity * deltaTime;
+                    if (TestPoint(part.Position) == null)
+                    {
+                        part.Velocity.Y += GameData.GRAVITY_PART * deltaTime;
+                        part.Angle += part.AngularVelocity * deltaTime;
+                        part.Position += part.Velocity * deltaTime;
+                    }
                 }
             }
 
@@ -51,7 +54,7 @@ namespace Source.Collisions
                         CalculateProjectile(player, deltaTime, i);
                     }
 
-                    player.Velocity.Y += GRAVITY * deltaTime;
+                    player.Velocity.Y += GameData.GRAVITY * deltaTime;
                     //player.CanJump = false;
 
                     player.Move(deltaTime);
@@ -96,8 +99,9 @@ namespace Source.Collisions
                 if (proj.Intersects(wall) != Vector2.Zero)
                 {
                     game.walls.RemoveAt(i);
-					for(int x = 0; x < 10; x ++)
-                        game.particles.Add(new Particle(wall.Position, new Vector2(GameData.PARTICLE_WIDTH, GameData.PARTICLE_WIDTH), wall.texture, 0f, rand(0, 0, new Vector2(GameData.PARTICLE_Y, GameData.PARTICLE_Y)), 0f, GameData.PARTICLE_LIFETIME/2, wall.Color));
+					for(int x = 0; x < GameData.NUM_PART_WALL; x ++)
+                        game.particles.Add(new Particle(wall.Position, new Vector2(GameData.PARTICLE_WIDTH, GameData.PARTICLE_WIDTH),
+                            wall.texture, 0f, rand(0, 0, new Vector2(GameData.PARTICLE_Y, GameData.PARTICLE_Y)), 0f, GameData.PARTICLE_LIFETIME/2, wall.Color));
 					game.particles.Add(new Particle(wall.Position, game.font, "BAM!"));
 					game.wallLengths [0]--;
                     player.Projectiles.RemoveAt(projIndex);
@@ -130,14 +134,18 @@ namespace Source.Collisions
                         }
                         player.MovePosition(-translation);
 
-                        game.particles.Add(new Particle(player.Position + new Vector2(0f, player.Size.Y / 2), new Vector2(GameData.PARTICLE_WIDTH, GameData.PARTICLE_WIDTH), floor.texture, 0f, rand(0, -1, new Vector2(GameData.PARTICLE_X, GameData.PARTICLE_Y)), (float)game.rand.NextDouble() * GameData.PARTICLE_MAX_SPIN, GameData.PARTICLE_LIFETIME, Color.Azure));
+                        game.particles.Add(new Particle(player.Position + new Vector2(0f, player.Size.Y / 2 - GameData.PARTICLE_WIDTH * 2),
+                            new Vector2(GameData.PARTICLE_WIDTH, GameData.PARTICLE_WIDTH), floor.texture, 0f,
+                            rand(0, -1, new Vector2(GameData.PARTICLE_X, GameData.PARTICLE_Y)),
+                            (float)game.rand.NextDouble() * GameData.PARTICLE_MAX_SPIN, GameData.PARTICLE_LIFETIME, Color.Azure));
                     }
                     else
                     {
                         // two things wrong with this and the one above it. Everything here is a magic number, and the line is about 150 columns long.
                         // please make the code readable (for this past commit and all future ones)
                         for(int i = 0; i < 5; i ++)
-                            game.particles.Add(new Particle(player.Position, new Vector2(GameData.PARTICLE_WIDTH, GameData.PARTICLE_WIDTH), floor.texture, 0f, rand(0, 1, new Vector2(GameData.PARTICLE_X, GameData.PARTICLE_Y)), 0f, GameData.PARTICLE_LIFETIME, Color.Azure));
+                            game.particles.Add(new Particle(player.Position, new Vector2(GameData.PARTICLE_WIDTH, GameData.PARTICLE_WIDTH),
+                                floor.texture, 0f, rand(0, 1, new Vector2(GameData.PARTICLE_X, GameData.PARTICLE_Y)), 0f, GameData.PARTICLE_LIFETIME, Color.Azure));
                         
                         float newFloorX = floor.Position.X + player.Position.X;
                         float sizeDiff = floor.Size.X / 2 + GameData.FLOOR_HOLE / 2;

@@ -46,6 +46,8 @@ namespace Source
         public const int DEAD_WIDTH = 200;
         public const int DEAD_HEIGHT = 2000;
 
+        public const float GRAVITY = 26f;   // m/s^2 -- gravity for players
+        public const float GRAVITY_PART = 10f; // m/s^2 -- gravity for particles
         //public const float MIN_VELOCITY = 1f;  // m/s -- what can be considered 0 horizontal velocity
         public const float SLOW_SPEED = 13f; // m/s -- speed player is going at when slowing down
         public const float RUN_VELOCITY = 20f; // m/s -- maximum horizontal velocity for player
@@ -79,11 +81,12 @@ namespace Source
         public const double PHASE_TIME = 1;            // the point at which the player will be visible again after dying to get the player prepared
 
         public const float PARTICLE_WIDTH = .125f;  // width of a particle (as a square)
-        public const float PARTICLE_LIFETIME = 1f;  // how long a particle lasts for (in s)
+        public const float PARTICLE_LIFETIME = 1.2f;  // how long a particle lasts for (in s)
         public const float PARTICLE_LIFETIME_TEXT = 0.3f; // lifetime of a text particle
         public const float PARTICLE_MAX_SPIN = 10f; // maximum angular velocity (in rad/s)
-        public const float PARTICLE_X = 3f;         // maximum x velocity of a particle when randomly generating in either direction
-        public const float PARTICLE_Y = 4f;         // maximum y velocity of a particle in either direction
+        public const float PARTICLE_X = 4f;         // maximum x velocity of a particle when randomly generating in either direction
+        public const float PARTICLE_Y = 5f;         // maximum y velocity of a particle in either direction
+        public const int NUM_PART_WALL = 10;        // number of particles to spawn when a wall is exploded
 
         public struct Controls {
             public Keys left, right, up, down, shoot;
