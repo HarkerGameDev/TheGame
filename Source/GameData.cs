@@ -31,7 +31,7 @@ namespace Source
         public const int MIN_NUM_FLOORS = 4;
         public const int MAX_NUM_FLOORS = 11;
 
-        public const int MAX_LEVELS_LOADED = 4;    // how many levels to keep loaded at a given time
+        public const int MAX_LEVELS_LOADED = 6;    // how many levels to keep loaded at a given time
         public const float PIXEL_METER = 32f;      // pixels per meter for normal game
         public const float PIXEL_METER_EDIT = 8f;  // pixels per meter when in edit mode for level
         public const int VIEW_WIDTH = 1280;        // width of unscaled screen in pixels
@@ -75,7 +75,7 @@ namespace Source
         public const float DEAD_DIST = 10f;            // players this distance or more behind the average x will move to the maximum player
         public const double DEAD_TIME = 3;             // respawn time when a player gets behind the cutoff
         public const double PHASE_TIME = 1;            // the point at which the player will be visible again after dying to get the player prepared
-        
+
         public struct Controls {
             public Keys left, right, up, down, shoot;
 

@@ -96,9 +96,9 @@ namespace Source.Collisions
                 if (proj.Intersects(wall) != Vector2.Zero)
                 {
                     game.walls.RemoveAt(i);
-                    for(int x = 0; x < 10; x ++)
+					for(int x = 0; x < 10; x ++)
                         game.particles.Add(new Particle(wall.Position, new Vector2(player.Size.X/4, player.Size.X / 4), wall.texture, 0f, new Vector2((float)game.rand.NextDouble()*4, (float)game.rand.NextDouble()*8-4), 0f, 0.5f, wall.Color));
-                    game.particles.Add(new Particle(wall.Position, game.font, "BAM!"));
+					game.wallLengths [0]--;
                     player.Projectiles.RemoveAt(projIndex);
                     return;
                 }
@@ -141,16 +141,19 @@ namespace Source.Collisions
                 }
             }
             
-            if (player.Position.Y > BOTTOM)  // bottom of the level
-            {
-                player.Velocity.Y = 0;
+			if (player.Position.Y > BOTTOM) {  // bottom of the level
+				player.Velocity.Y = 0;
 
-                // Kill the player
-                player.TimeSinceDeath = GameData.DEAD_TIME;
-                player.Projectiles.Clear();
-                //player.MovePosition(new Vector2(0f, -10f));
-                player.Score--;
-
+				// Kill the player
+				player.TimeSinceDeath = GameData.DEAD_TIME;
+				player.Projectiles.Clear ();
+				//player.MovePosition(new Vector2(0f, -10f));
+				if (player.Score == 0) {
+					for (int i = 0; i < game.players.Count; i++) {
+						game.players [i].Score++;
+					}
+				}
+					player.Score--;
                 //player.MoveToPosition(new Vector2(player.Position.X, BOTTOM));
                 //if (player.InAir)
                 //{
