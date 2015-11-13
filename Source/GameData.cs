@@ -14,7 +14,7 @@ namespace Source
     {
         // TODO stuff some of the user-configurable stuff into a main menu screen (like controls and # of players)
         //public const int LEVEL = -1;            // if this is greater than -1, levels will not be procedurally generated (useful for editing)
-        public const int numPlayers = 2;            // number of players
+        public const int numPlayers = 1;            // number of players
 
         public static bool[] useController = { false, false, false };    // true means the player at the index will be using a controller.
         public static Controls[] keyboardControls = {            // defines the keyboard controls which will be used
@@ -24,12 +24,14 @@ namespace Source
 
         public const float LOAD_NEW = 100f;     // the next level will be loaded when the player is this far from the current end
 
-        public const int MIN_LEVEL_WIDTH = 20;
+        public const int MIN_LEVEL_WIDTH = 20;  // width of levels
         public const int MAX_LEVEL_WIDTH = 50;
-        public const int MIN_LEVEL_STEP = 4;
-        public const int MAX_LEVEL_STEP = 6;
-        public const int MIN_NUM_FLOORS = 4;
+        public const int MIN_LEVEL_STEP = 4;    // size of each floor in building
+        public const int MAX_LEVEL_STEP = 8;
+        public const int MIN_NUM_FLOORS = 4;    // number of floors per building
         public const int MAX_NUM_FLOORS = 11;
+
+        public const float FLOOR_HOLE = 3.5f;   // size in m of hole to make when slamming
 
         public const int MAX_LEVELS_LOADED = 6;    // how many levels to keep loaded at a given time
         public const float PIXEL_METER = 32f;      // pixels per meter for normal game

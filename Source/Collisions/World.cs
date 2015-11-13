@@ -113,32 +113,41 @@ namespace Source.Collisions
             foreach (Floor floor in game.floors)
             {
                 Vector2 translation = player.Intersects(floor);
-                if (translation != Vector2.Zero && player.CurrentState != Player.State.Slamming)
+                if (translation != Vector2.Zero)
                 {
-                    totalCollisions++;
-                    //Console.WriteLine("Rotation: " + floor.Rotation);
-
-                    //if (translation.X != 0 && (/*Math.Abs(floor.Rotation) >= MAX_SLOPE || */floor.Rotation == 0))
-                    //    player.Velocity.X = 0;
-                    translation.X = 0;
-                    if (translation.Y != 0)
+                    if (player.CurrentState != Player.State.Slamming)
                     {
-                        player.Velocity.Y = 0;
-                        if (translation.Y > 0 && player.InAir)
-                            player.CurrentState = Player.State.Walking;
+                        totalCollisions++;
+
+                        //if (translation.X != 0 && (/*Math.Abs(floor.Rotation) >= MAX_SLOPE || */floor.Rotation == 0))
+                        //    player.Velocity.X = 0;
+                        translation.X = 0;
+                        if (translation.Y != 0)
+                        {
+                            player.Velocity.Y = 0;
+                            if (translation.Y > 0 && player.InAir)
+                                player.CurrentState = Player.State.Walking;
+                        }
+                        player.MovePosition(-translation);
+
+                        game.particles.Add(new Particle(player.Position + new Vector2(0f, player.Size.Y / 2), new Vector2(player.Size.X / 4, player.Size.X / 4), floor.texture, 0f, new Vector2((float)game.rand.NextDouble() * 6 - 3, (float)game.rand.NextDouble() - 4), (float)game.rand.NextDouble() * 10, 1f, Color.Azure));
                     }
-                    player.MovePosition(-translation);
-                    game.particles.Add(new Particle(player.Position+new Vector2(0f, player.Size.Y/2), new Vector2(player.Size.X / 4, player.Size.X / 4), floor.texture, 0f, new Vector2((float)game.rand.NextDouble() * 6 - 3, (float)game.rand.NextDouble() - 4), (float)game.rand.NextDouble()*10, 1f, Color.Azure));
-                    //Writing all this to console lags the game
-                    //Console.WriteLine("Colliding with: " + floor.Position + "   Pushing to:   " + newPosition + "   Vector:    "+ new Vector2(-1 * translation.X, -1 * translation.Y));
-                }
-                else if(translation != Vector2.Zero && player.CurrentState == Player.State.Slamming)
-                {
-                    game.particles.Add(new Particle(player.Position, new Vector2(player.Size.X/4, player.Size.X/4), floor.texture, 0f, new Vector2((float)game.rand.NextDouble()*6-3, 0f)+player.Velocity/3, 0f, 1f, Color.Azure));
-                    game.floors.Add(new Floor(floor.texture, new Vector2((floor.Position.X - floor.Size.X / 2 + player.Position.X - player.Size.X / 2) / 2, floor.Position.Y), player.Position.X - player.Size.X / 2 - floor.Position.X + floor.Size.X / 2));
-                    game.floors.Add(new Floor(floor.texture, new Vector2((floor.Position.X + floor.Size.X / 2 + player.Position.X + player.Size.X / 2) / 2, floor.Position.Y), floor.Position.X + floor.Size.X / 2 - player.Position.X - player.Size.X / 2));
-                    game.floors.Remove(floor);
-                    break;
+                    else
+                    {
+                        // two things wrong with this and the one above it. Everything here is a magic number, and the line is about 150 columns long.
+                        // please make the code readable (for this past commit and all future ones)
+                        game.particles.Add(new Particle(player.Position, new Vector2(player.Size.X / 4, player.Size.X / 4), floor.texture, 0f, new Vector2((float)game.rand.NextDouble() * 6 - 3, 0f) + player.Velocity / 3, 0f, 1f, Color.Azure));
+                        
+                        float newFloorX = floor.Position.X + player.Position.X;
+                        float sizeDiff = floor.Size.X / 2 + GameData.FLOOR_HOLE / 2;
+                        float halfWidth = floor.Size.X / 2 - GameData.FLOOR_HOLE / 2;
+                        float playerDist = player.Position.X - floor.Position.X;
+                        game.floors.Add(new Floor(floor.texture, new Vector2((newFloorX - sizeDiff) / 2, floor.Position.Y), halfWidth + playerDist));
+                        game.floors.Add(new Floor(floor.texture, new Vector2((newFloorX + sizeDiff) / 2, floor.Position.Y), halfWidth - playerDist));
+
+                        game.floors.Remove(floor);
+                        break;
+                    }
                 }
             }
             

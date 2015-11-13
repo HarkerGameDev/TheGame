@@ -587,17 +587,7 @@ namespace Source
 
             foreach (Player player in players)
             {
-                if (player.Position.Y > 10f)
-                {
-                    player.MoveToPosition(GameData.PLAYER_POSITION);
-                    player.Velocity = Vector2.Zero;
-                    levelEnd = 0;
-                    currentFloor = null;
-                    //foreach (Floor floor in floors)
-                    //    floor.Body.Dispose();
-                    floors.Clear();
-                }
-                else if (player.Position.X > levelEnd - GameData.LOAD_NEW)
+                if (player.Position.X > levelEnd - GameData.LOAD_NEW)
                     MakeLevel();
 
                 if ((max == null || player.Position.X > max.Position.X) && player.TimeSinceDeath <= 0)
