@@ -97,7 +97,7 @@ namespace Source.Collisions
                 {
                     game.walls.RemoveAt(i);
 					for(int x = 0; x < 10; x ++)
-                        game.particles.Add(new Particle(wall.Position, new Vector2(player.Size.X/4, player.Size.X / 4), wall.texture, 0f, new Vector2((float)game.rand.NextDouble()*4, (float)game.rand.NextDouble()*8-4), 0f, 0.5f, wall.Color));
+                        game.particles.Add(new Particle(wall.Position, new Vector2(GameData.PARTICLE_WIDTH, GameData.PARTICLE_WIDTH), wall.texture, 0f, rand(0, 0, new Vector2(GameData.PARTICLE_Y, GameData.PARTICLE_Y)), 0f, GameData.PARTICLE_LIFETIME/2, wall.Color));
 					game.particles.Add(new Particle(wall.Position, game.font, "BAM!"));
 					game.wallLengths [0]--;
                     player.Projectiles.RemoveAt(projIndex);
@@ -130,13 +130,14 @@ namespace Source.Collisions
                         }
                         player.MovePosition(-translation);
 
-                        game.particles.Add(new Particle(player.Position + new Vector2(0f, player.Size.Y / 2), new Vector2(player.Size.X / 4, player.Size.X / 4), floor.texture, 0f, new Vector2((float)game.rand.NextDouble() * 6 - 3, (float)game.rand.NextDouble() - 4), (float)game.rand.NextDouble() * 10, 1f, Color.Azure));
+                        game.particles.Add(new Particle(player.Position + new Vector2(0f, player.Size.Y / 2), new Vector2(GameData.PARTICLE_WIDTH, GameData.PARTICLE_WIDTH), floor.texture, 0f, rand(0, -1, new Vector2(GameData.PARTICLE_X, GameData.PARTICLE_Y)), (float)game.rand.NextDouble() * GameData.PARTICLE_MAX_SPIN, GameData.PARTICLE_LIFETIME, Color.Azure));
                     }
                     else
                     {
                         // two things wrong with this and the one above it. Everything here is a magic number, and the line is about 150 columns long.
                         // please make the code readable (for this past commit and all future ones)
-                        game.particles.Add(new Particle(player.Position, new Vector2(player.Size.X / 4, player.Size.X / 4), floor.texture, 0f, new Vector2((float)game.rand.NextDouble() * 6 - 3, 0f) + player.Velocity / 3, 0f, 1f, Color.Azure));
+                        for(int i = 0; i < 5; i ++)
+                            game.particles.Add(new Particle(player.Position, new Vector2(GameData.PARTICLE_WIDTH, GameData.PARTICLE_WIDTH), floor.texture, 0f, rand(0, 1, new Vector2(GameData.PARTICLE_X, GameData.PARTICLE_Y)), 0f, GameData.PARTICLE_LIFETIME, Color.Azure));
                         
                         float newFloorX = floor.Position.X + player.Position.X;
                         float sizeDiff = floor.Size.X / 2 + GameData.FLOOR_HOLE / 2;
@@ -178,6 +179,28 @@ namespace Source.Collisions
                 player.CurrentState = Player.State.Jumping;
                 //Console.WriteLine("Touching nothing");
             }
+        }
+
+        private Vector2 rand(int x, int y, Vector2 amplifier)
+        {
+            float randX = 0;
+            float randY = 0;
+
+            if (x == 0) // Left & Right
+                randX = ((float)game.rand.NextDouble() * 2 - 1) * amplifier.X;
+            else if (x == 1) // Right
+                randX = (float)game.rand.NextDouble() * amplifier.X;
+            else if (x == -1) // Left
+                randX = (float)game.rand.NextDouble() * -1 * amplifier.X;
+
+            if (y == 0) // Up & Down
+                randY = ((float)game.rand.NextDouble() * 2 - 1) * amplifier.Y;
+            else if (y == 1) // Down
+                randY = (float)game.rand.NextDouble() * amplifier.Y;
+            else if (y == -1) // Up
+                randY = (float)game.rand.NextDouble() * -1 * amplifier.Y;
+
+            return new Vector2(randX, randY);
         }
 
         private void CheckWalls(Player player)

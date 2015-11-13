@@ -14,7 +14,7 @@ namespace Source
     {
         // TODO stuff some of the user-configurable stuff into a main menu screen (like controls and # of players)
         //public const int LEVEL = -1;            // if this is greater than -1, levels will not be procedurally generated (useful for editing)
-        public const int numPlayers = 1;            // number of players
+        public const int numPlayers = 2;            // number of players
 
         public static bool[] useController = { false, false, false };    // true means the player at the index will be using a controller.
         public static Controls[] keyboardControls = {            // defines the keyboard controls which will be used
@@ -77,6 +77,12 @@ namespace Source
         public const float DEAD_DIST = 10f;            // players this distance or more behind the average x will move to the maximum player
         public const double DEAD_TIME = 3;             // respawn time when a player gets behind the cutoff
         public const double PHASE_TIME = 1;            // the point at which the player will be visible again after dying to get the player prepared
+
+        public const float PARTICLE_WIDTH = 0.125f;
+        public const float PARTICLE_LIFETIME = 1f;
+        public const float PARTICLE_MAX_SPIN = 10f;
+        public const float PARTICLE_X = 3f;
+        public const float PARTICLE_Y = 4f;
 
         public struct Controls {
             public Keys left, right, up, down, shoot;
