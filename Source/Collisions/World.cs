@@ -98,6 +98,7 @@ namespace Source.Collisions
                     game.walls.RemoveAt(i);
 					for(int x = 0; x < 10; x ++)
                         game.particles.Add(new Particle(wall.Position, new Vector2(player.Size.X/4, player.Size.X / 4), wall.texture, 0f, new Vector2((float)game.rand.NextDouble()*4, (float)game.rand.NextDouble()*8-4), 0f, 0.5f, wall.Color));
+					game.particles.Add(new Particle(wall.Position, game.font, "BAM!"));
 					game.wallLengths [0]--;
                     player.Projectiles.RemoveAt(projIndex);
                     return;
