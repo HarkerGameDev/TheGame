@@ -78,6 +78,10 @@ namespace Source.Graphics
                     break;
 
                 case Type.Texture:
+                    Random rand = new Random();
+                    Vector3 v = new Vector3((float)rand.NextDouble() * 256, (float)rand.NextDouble() * 256, (float)rand.NextDouble() * 256);
+                    v.Normalize();
+                    color = new Color(v);
                     spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(Position), null, color, angle, new Vector2(texture.Width / 2.0f, texture.Height / 2.0f), ConvertUnits.ToDisplayUnits(Size) / new Vector2(texture.Width / 2.0f, texture.Height / 2.0f), SpriteEffects.None, 0f);
                     break;
             }
