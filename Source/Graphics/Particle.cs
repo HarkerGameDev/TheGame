@@ -15,7 +15,6 @@ namespace Source.Graphics
     /// </summary>
     public class Particle
     {
-        private const float LIFETIME = 0.17f;
         public enum Type
         {
             Text, Texture
@@ -41,14 +40,14 @@ namespace Source.Graphics
         {
             this.Position = position;
             this.type = type;
-            LiveTime = LIFETIME;
+            LiveTime = GameData.PARTICLE_LIFETIME_TEXT;
         }
 
         public Particle(Vector2 position, SpriteFont font, string text)
         {
             this.font = font;
             this.text = text;
-            LiveTime = LIFETIME;
+            LiveTime = GameData.PARTICLE_LIFETIME_TEXT;
             
             Position = new Vector2(position.X - ConvertUnits.ToSimUnits(font.MeasureString(text).X / 2f), position.Y);
             type = Type.Text;
@@ -78,10 +77,6 @@ namespace Source.Graphics
                     break;
 
                 case Type.Texture:
-                    Random rand = new Random();
-                    Vector3 v = new Vector3((float)rand.NextDouble() * 256, (float)rand.NextDouble() * 256, (float)rand.NextDouble() * 256);
-                    v.Normalize();
-                    color = new Color(v);
                     spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(Position), null, color, angle, new Vector2(texture.Width / 2.0f, texture.Height / 2.0f), ConvertUnits.ToDisplayUnits(Size) / new Vector2(texture.Width / 2.0f, texture.Height / 2.0f), SpriteEffects.None, 0f);
                     break;
             }

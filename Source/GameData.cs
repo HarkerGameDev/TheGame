@@ -78,11 +78,12 @@ namespace Source
         public const double DEAD_TIME = 3;             // respawn time when a player gets behind the cutoff
         public const double PHASE_TIME = 1;            // the point at which the player will be visible again after dying to get the player prepared
 
-        public const float PARTICLE_WIDTH = 0.125f;
-        public const float PARTICLE_LIFETIME = 1f;
-        public const float PARTICLE_MAX_SPIN = 10f;
-        public const float PARTICLE_X = 3f;
-        public const float PARTICLE_Y = 4f;
+        public const float PARTICLE_WIDTH = .125f;  // width of a particle (as a square)
+        public const float PARTICLE_LIFETIME = 1f;  // how long a particle lasts for (in s)
+        public const float PARTICLE_LIFETIME_TEXT = 0.3f; // lifetime of a text particle
+        public const float PARTICLE_MAX_SPIN = 10f; // maximum angular velocity (in rad/s)
+        public const float PARTICLE_X = 3f;         // maximum x velocity of a particle when randomly generating in either direction
+        public const float PARTICLE_Y = 4f;         // maximum y velocity of a particle in either direction
 
         public struct Controls {
             public Keys left, right, up, down, shoot;
