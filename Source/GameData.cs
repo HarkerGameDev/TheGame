@@ -23,17 +23,20 @@ namespace Source
                                                        new Controls(Keys.J, Keys.L, Keys.I, Keys.K, Keys.O)};
 
         public const float LOAD_NEW = 100f;     // the next level will be loaded when the player is this far from the current end
+        public const int MAX_LEVELS_LOADED = 6;    // how many levels to keep loaded at a given time
 
         public const int MIN_LEVEL_WIDTH = 20;  // width of levels
         public const int MAX_LEVEL_WIDTH = 50;
+        public const int MAX_WALL_DIST = 70;    // maximum distance between walls inside rooms (make this bigger than width to have some rooms without walls)
         public const int MIN_LEVEL_STEP = 4;    // size of each floor in building
         public const int MAX_LEVEL_STEP = 8;
         public const int MIN_NUM_FLOORS = 4;    // number of floors per building
         public const int MAX_NUM_FLOORS = 11;
 
         public const float FLOOR_HOLE = 3.5f;   // size in m of hole to make when slamming
+        public const int WINDOW_HEALTH = 1;     // windows are on the side of buildings
+        public const int WALL_HEALTH = 3;       // walls are inside the buildings themselves
 
-        public const int MAX_LEVELS_LOADED = 6;    // how many levels to keep loaded at a given time
         public const float PIXEL_METER = 32f;      // pixels per meter for normal game
         public const float PIXEL_METER_EDIT = 8f;  // pixels per meter when in edit mode for level
         public const int VIEW_WIDTH = 1280;        // width of unscaled screen in pixels
@@ -47,7 +50,7 @@ namespace Source
         public const int DEAD_HEIGHT = 2000;
 
         public const float GRAVITY = 26f;   // m/s^2 -- gravity for players
-        public const float GRAVITY_PART = 10f; // m/s^2 -- gravity for particles
+        public const float GRAVITY_PART = 15f; // m/s^2 -- gravity for particles
         //public const float MIN_VELOCITY = 1f;  // m/s -- what can be considered 0 horizontal velocity
         public const float SLOW_SPEED = 13f; // m/s -- speed player is going at when slowing down
         public const float RUN_VELOCITY = 20f; // m/s -- maximum horizontal velocity for player
@@ -65,6 +68,12 @@ namespace Source
         public const int LEVEL_DIST_MIN = 3;   // the min space between levels
         public const int LEVEL_DIST_MAX = 15;   // max space between levels
         public const float RESPAWN_DIST = 10;
+
+        public const float BOOST_LENGTH = 2.8f;  // how long a player can boost for
+        public const float BOOST_REGEN = 5.6f; // boost will be refilled in this time (from 0)
+        public const float STUN_LENGTH = 0.5f; // the player is stunned for this long
+        public const float STUN_SCALE = 0.6f; // the player speed is scaled by this when stunned
+        public const float SHOOT_COST = BOOST_LENGTH / 14f; // boost bar cost of a shot
 
         public const string SONG = "Chiptune dash";    // the song to play, over, and over, and over again. NEVER STOP THE PARTY!
         public const float VOLUME = 0f;                // volume for song

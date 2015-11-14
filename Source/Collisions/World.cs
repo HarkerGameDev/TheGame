@@ -79,7 +79,7 @@ namespace Source.Collisions
             {
                 if (proj.Intersects(target) != Vector2.Zero)
                 {
-                    target.StunTime = Player.STUN_LENGTH;
+                    target.StunTime = GameData.STUN_LENGTH;
                     
                     player.Projectiles.RemoveAt(projIndex);
                     return;
@@ -98,12 +98,15 @@ namespace Source.Collisions
                 Wall wall = game.walls[i];
                 if (proj.Intersects(wall) != Vector2.Zero)
                 {
-                    game.walls.RemoveAt(i);
-					for(int x = 0; x < GameData.NUM_PART_WALL; x ++)
-                        game.particles.Add(new Particle(wall.Position, new Vector2(GameData.PARTICLE_WIDTH, GameData.PARTICLE_WIDTH),
-                            wall.texture, 0f, rand(0, 0, new Vector2(GameData.PARTICLE_Y, GameData.PARTICLE_Y)), 0f, GameData.PARTICLE_LIFETIME/2, wall.Color));
-					game.particles.Add(new Particle(wall.Position, game.font, "BAM!"));
-					game.wallLengths [0]--;
+                    if (--wall.Health <= 0)
+                    {
+                        game.walls.RemoveAt(i);
+                        for (int x = 0; x < GameData.NUM_PART_WALL; x++)
+                            game.particles.Add(new Particle(wall.Position, new Vector2(GameData.PARTICLE_WIDTH, GameData.PARTICLE_WIDTH),
+                                wall.texture, 0f, rand(0, 0, new Vector2(GameData.PARTICLE_Y, GameData.PARTICLE_Y)), 0f, GameData.PARTICLE_LIFETIME / 2, wall.Color));
+                        game.particles.Add(new Particle(wall.Position, game.font, "BAM!"));
+                        game.wallLengths[0]--;
+                    }
                     player.Projectiles.RemoveAt(projIndex);
                     return;
                 }
@@ -134,10 +137,10 @@ namespace Source.Collisions
                         }
                         player.MovePosition(-translation);
 
-                        game.particles.Add(new Particle(player.Position + new Vector2(0f, player.Size.Y / 2 - GameData.PARTICLE_WIDTH * 2),
-                            new Vector2(GameData.PARTICLE_WIDTH, GameData.PARTICLE_WIDTH), floor.texture, 0f,
-                            rand(0, -1, new Vector2(GameData.PARTICLE_X, GameData.PARTICLE_Y)),
-                            (float)game.rand.NextDouble() * GameData.PARTICLE_MAX_SPIN, GameData.PARTICLE_LIFETIME, Color.Azure));
+                        //game.particles.Add(new Particle(player.Position + new Vector2(0f, player.Size.Y / 2 - GameData.PARTICLE_WIDTH * 2),
+                        //    new Vector2(GameData.PARTICLE_WIDTH, GameData.PARTICLE_WIDTH), floor.texture, 0f,
+                        //    rand(0, -1, new Vector2(GameData.PARTICLE_X, GameData.PARTICLE_Y)),
+                        //    (float)game.rand.NextDouble() * GameData.PARTICLE_MAX_SPIN, GameData.PARTICLE_LIFETIME, Color.Azure));
                     }
                     else
                     {
@@ -221,8 +224,8 @@ namespace Source.Collisions
                 {
                     translation.Y = 0;
                     player.MovePosition(-translation);
-                    if (translation.X != 0)
-                        player.Velocity.X = 0;
+                    //if (translation.X != 0)
+                    //    player.Velocity.X = 0;
                     //else
                     //    player.Velocity.Y = 0;
                 }

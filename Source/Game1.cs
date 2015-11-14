@@ -327,7 +327,7 @@ namespace Source
             {
                 if (state.IsKeyDown(controls.right))                    // boost
                 {
-                    if (player.BoostTime > Player.BOOST_LENGTH / 2)
+                    if (player.BoostTime > GameData.BOOST_LENGTH / 2)
                     {
                         player.Velocity.X = GameData.BOOST_SPEED;
                         player.CurrentState = Player.State.Boosting;
@@ -365,9 +365,10 @@ namespace Source
                 if (player.Velocity.X == 0)
                     player.Velocity.X = GameData.RUN_VELOCITY;
             }
-            if (ToggleKey(controls.shoot) && player.TimeSinceDeath <= 0)
+            if (ToggleKey(controls.shoot) && player.TimeSinceDeath <= 0 && player.BoostTime > GameData.SHOOT_COST)
             {
                 player.Projectiles.Add(new Projectile(whiteRect, new Vector2(player.Position.X, player.Position.Y), player.Color));
+                player.BoostTime -= GameData.SHOOT_COST;
                 //Console.WriteLine("Shooting!");
             }
         }
@@ -646,15 +647,37 @@ namespace Source
         private void MakeLevel()
         {
             int width = rand.Next(GameData.MIN_LEVEL_WIDTH, GameData.MAX_LEVEL_WIDTH);
-            int step = rand.Next(GameData.MIN_LEVEL_STEP, GameData.MAX_LEVEL_STEP);
             int numFloors = rand.Next(GameData.MIN_NUM_FLOORS, GameData.MAX_NUM_FLOORS);
 
-            float x = levelEnd + width / 2f;
-            for (int i = 1; i < numFloors; i++)
+            int minStep = rand.Next(GameData.MIN_LEVEL_STEP, GameData.MAX_LEVEL_STEP);
+            int maxStep = rand.Next(GameData.MIN_LEVEL_STEP, GameData.MAX_LEVEL_STEP);
+            //int minStep = GameData.MIN_LEVEL_STEP;
+            //int maxStep = GameData.MAX_LEVEL_STEP;
+            if (maxStep < minStep)
             {
-                floors.Add(new Floor(whiteRect, new Vector2(x, -i * step), width));
-                walls.Add(new Wall(whiteRect, new Vector2(levelEnd, -(i - 0.5f) * step), step));
-                walls.Add(new Wall(whiteRect, new Vector2(levelEnd + width, -(i - 0.5f) * step), step));
+                int temp = maxStep;
+                maxStep = minStep;
+                minStep = temp;
+            }
+
+            float x = levelEnd + width / 2f;
+            float step = rand.Next(minStep, maxStep);
+            float y = -step;
+            for (int i = 0; i < numFloors; i++)
+            {
+                walls.Add(new Wall(whiteRect, new Vector2(levelEnd, y + step / 2), step, GameData.WINDOW_HEALTH));
+                walls.Add(new Wall(whiteRect, new Vector2(levelEnd + width, y + step / 2), step, GameData.WINDOW_HEALTH));
+                floors.Add(new Floor(whiteRect, new Vector2(x, y), width));
+
+                int wallDist = rand.Next(GameData.MAX_WALL_DIST);
+                while (wallDist < width)
+                {
+                    walls.Add(new Wall(whiteRect, new Vector2(levelEnd + wallDist, y + step / 2), step, GameData.WALL_HEALTH));
+                    wallDist += rand.Next(GameData.MAX_WALL_DIST);
+                }
+
+                step = rand.Next(minStep, maxStep);
+                y -= step;
             }
             levelEnd += width + rand.Next(GameData.LEVEL_DIST_MIN, GameData.LEVEL_DIST_MAX);
 			Unload<Floor> (floorLengths, numFloors - 1, floors);

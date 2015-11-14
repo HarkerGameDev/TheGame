@@ -15,11 +15,6 @@ namespace Source.Collisions
     /// </summary>
     public class Player : Body
     {
-        public const float BOOST_LENGTH = 2.8f;  // how long a player can boost for
-        public const float BOOST_REGEN = 7.6f; // boost will be refilled in this time (from 0)
-        public const float STUN_LENGTH = 0.5f; // the player is stunned for this long
-        public const float STUN_SCALE = 0.6f; // the player speed is scaled by this when stunned
-
         private const float BAR_WIDTH = 1f; // length of bar in meters
         private const float BAR_HEIGHT = 0.25f;
 
@@ -33,8 +28,8 @@ namespace Source.Collisions
         public double TimeSinceDeath = 0;
         public int Score = 0;
         public List<Projectile> Projectiles;
-        public float BoostTime = BOOST_LENGTH;
-        public float StunTime = STUN_LENGTH;
+        public float BoostTime = GameData.BOOST_LENGTH;
+        public float StunTime = GameData.STUN_LENGTH;
 
         public bool InAir { get { return CurrentState == State.Jumping || CurrentState == State.Slamming; } }
         public bool CanJump { get { return CurrentState == State.Walking || CurrentState == State.Boosting; } }
@@ -67,7 +62,7 @@ namespace Source.Collisions
         public override void Move(float deltaTime)
         {
             if (StunTime > 0)
-                base.MovePosition(Velocity * STUN_SCALE * deltaTime); // I know this scales Y velocity too, but that might be interesting
+                base.MovePosition(Velocity * GameData.STUN_SCALE * deltaTime); // I know this scales Y velocity too, but that might be interesting
             else
      	        base.Move(deltaTime);
 
@@ -75,8 +70,8 @@ namespace Source.Collisions
 
             if (CurrentState == State.Boosting)
                 BoostTime -= deltaTime;
-            else if (BoostTime < BOOST_LENGTH)
-                BoostTime += deltaTime * BOOST_LENGTH / BOOST_REGEN;
+            else if (BoostTime < GameData.BOOST_LENGTH)
+                BoostTime += deltaTime * GameData.BOOST_LENGTH / GameData.BOOST_REGEN;
 
             if (BoostTime < 0)
             {
@@ -92,7 +87,7 @@ namespace Source.Collisions
 
             Vector2 pos = new Vector2(Position.X - BAR_WIDTH / 2, Position.Y - Size.Y * 0.7f);
             Game1.DrawRectangle(spriteBatch, pos, Color.LightSalmon, new Vector2(BAR_WIDTH, BAR_HEIGHT));
-            Game1.DrawRectangle(spriteBatch, pos, Color.Crimson, new Vector2(BAR_WIDTH * BoostTime / BOOST_LENGTH, BAR_HEIGHT));
+            Game1.DrawRectangle(spriteBatch, pos, Color.Crimson, new Vector2(BAR_WIDTH * BoostTime / GameData.BOOST_LENGTH, BAR_HEIGHT));
         }
 
         //public void setRotation(Body body)
