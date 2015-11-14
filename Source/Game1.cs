@@ -660,20 +660,33 @@ namespace Source
                 minStep = temp;
             }
 
-            float x = levelEnd + width / 2f;
+            //float x = levelEnd + width / 2f;
             float step = rand.Next(minStep, maxStep);
             float y = -step;
             for (int i = 0; i < numFloors; i++)
             {
                 walls.Add(new Wall(whiteRect, new Vector2(levelEnd, y + step / 2), step, GameData.WINDOW_HEALTH));
                 walls.Add(new Wall(whiteRect, new Vector2(levelEnd + width, y + step / 2), step, GameData.WINDOW_HEALTH));
-                floors.Add(new Floor(whiteRect, new Vector2(x, y), width));
 
-                int wallDist = rand.Next(GameData.MAX_WALL_DIST);
-                while (wallDist < width)
+                float dist = 0;
+                while (dist < width)
                 {
-                    walls.Add(new Wall(whiteRect, new Vector2(levelEnd + wallDist, y + step / 2), step, GameData.WALL_HEALTH));
-                    wallDist += rand.Next(GameData.MAX_WALL_DIST);
+                    float floorSize = (float)rand.NextDouble() * GameData.MAX_FLOOR_DIST + GameData.MIN_FLOOR_DIST;
+                    if (floorSize > width - dist)
+                    {
+                        floorSize = width - dist;
+                        //if (floorSize < GameData.MIN_FLOOR_DIST)
+                        //    break;
+                    }
+                    floors.Add(new Floor(whiteRect, new Vector2(levelEnd + dist + floorSize / 2, y), floorSize));
+                    dist += floorSize + (float)rand.NextDouble() * GameData.MAX_FLOOR_HOLE + GameData.MIN_FLOOR_HOLE;
+                }
+
+                dist = rand.Next(1, GameData.MAX_WALL_DIST);
+                while (dist < width)
+                {
+                    walls.Add(new Wall(whiteRect, new Vector2(levelEnd + dist, y + step / 2), step, GameData.WALL_HEALTH));
+                    dist += rand.Next(1, GameData.MAX_WALL_DIST);
                 }
 
                 step = rand.Next(minStep, maxStep);
