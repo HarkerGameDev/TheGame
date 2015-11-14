@@ -682,11 +682,11 @@ namespace Source
                     dist += floorSize + (float)rand.NextDouble() * GameData.MAX_FLOOR_HOLE + GameData.MIN_FLOOR_HOLE;
                 }
 
-                dist = rand.Next(1, GameData.MAX_WALL_DIST);
+                dist = rand.Next(GameData.MIN_WALL_DIST, GameData.MAX_WALL_DIST);
                 while (dist < width)
                 {
                     walls.Add(new Wall(whiteRect, new Vector2(levelEnd + dist, y + step / 2), step, GameData.WALL_HEALTH));
-                    dist += rand.Next(1, GameData.MAX_WALL_DIST);
+                    dist += rand.Next(GameData.MIN_WALL_DIST, GameData.MAX_WALL_DIST);
                 }
 
                 step = rand.Next(minStep, maxStep);

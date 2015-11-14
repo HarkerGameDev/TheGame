@@ -28,14 +28,15 @@ namespace Source
         public const int MIN_LEVEL_WIDTH = 20;  // width of levels
         public const int MAX_LEVEL_WIDTH = 50;
         public const float MIN_FLOOR_HOLE = 3f; // size of a hole inside a building
-        public const float MAX_FLOOR_HOLE = 10f - MIN_FLOOR_HOLE;
+        public const float MAX_FLOOR_HOLE = 8f - MIN_FLOOR_HOLE;
         public const float MIN_FLOOR_DIST = 15; // width of a floor until a hole is reached
-        public const float MAX_FLOOR_DIST = 60 - MIN_FLOOR_DIST;
+        public const float MAX_FLOOR_DIST = 80 - MIN_FLOOR_DIST;
         public const int MIN_LEVEL_STEP = 4;    // size of each floor in building
         public const int MAX_LEVEL_STEP = 8;
         public const int MIN_NUM_FLOORS = 4;    // number of floors per building
         public const int MAX_NUM_FLOORS = 11;
-        public const int MAX_WALL_DIST = 70;    // maximum distance between walls inside rooms (make this bigger than width to have some rooms without walls)
+        public const int MIN_WALL_DIST = 10;    // distance between walls inside rooms
+        public const int MAX_WALL_DIST = 90;
 
         public const float FLOOR_HOLE = 3.5f;   // size in m of hole to make when slamming
         public const int WINDOW_HEALTH = 1;     // windows are on the side of buildings
