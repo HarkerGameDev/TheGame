@@ -211,6 +211,7 @@ namespace Source
                 }
                 else
                     currentZoom = GameData.PIXEL_METER_EDIT;
+                ConvertUnits.SetDisplayUnitToSimUnitRatio(currentZoom);
             }
 
             if (editLevel)
@@ -568,11 +569,15 @@ namespace Source
                     currentFloor = null;
             }
             if (ToggleKey(Keys.OemPlus))                       // Zoom in and out
-                //ConvertUnits.SetDisplayUnitToSimUnitRatio(ConvertUnits.ToDisplayUnits(1f) * 2);
+            {
                 currentZoom *= GameData.ZOOM_STEP;
+                ConvertUnits.SetDisplayUnitToSimUnitRatio(currentZoom);
+            }
             else if (ToggleKey(Keys.OemMinus))
-                //ConvertUnits.SetDisplayUnitToSimUnitRatio(ConvertUnits.ToDisplayUnits(1f) / 2);
+            {
                 currentZoom /= GameData.ZOOM_STEP;
+                ConvertUnits.SetDisplayUnitToSimUnitRatio(currentZoom);
+            }
 
             prevMouseState = mouse;
         }
