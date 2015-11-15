@@ -42,6 +42,7 @@ namespace Source
         public const int WINDOW_HEALTH = 1;     // windows are on the side of buildings
         public const int WALL_HEALTH = 3;       // walls are inside the buildings themselves
 
+        public const float ZOOM_STEP = 1.5f;       // scale by which zoom is changed with + and -
         public const float PIXEL_METER = 32f;      // pixels per meter for normal game
         public const float PIXEL_METER_EDIT = 8f;  // pixels per meter when in edit mode for level
         public const int VIEW_WIDTH = 1280;        // width of unscaled screen in pixels

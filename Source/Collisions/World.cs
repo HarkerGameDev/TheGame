@@ -41,7 +41,10 @@ namespace Source.Collisions
                         part.Velocity.Y += GameData.GRAVITY_PART * deltaTime;
                         part.Angle += part.AngularVelocity * deltaTime;
                         part.Position += part.Velocity * deltaTime;
+                        //part.Color = Color.Green;
                     }
+                    //else
+                    //    part.Color = Color.Red;
                 }
             }
 
@@ -75,16 +78,16 @@ namespace Source.Collisions
                 player.Projectiles.RemoveAt(projIndex);
                 return;
             }
-            foreach (Player target in game.players)
-            {
-                if (proj.Intersects(target) != Vector2.Zero)
-                {
-                    target.StunTime = GameData.STUN_LENGTH;
+            //foreach (Player target in game.players)
+            //{
+            //    if (proj.Intersects(target) != Vector2.Zero)
+            //    {
+            //        target.StunTime = GameData.STUN_LENGTH;
                     
-                    player.Projectiles.RemoveAt(projIndex);
-                    return;
-                }
-            }
+            //        player.Projectiles.RemoveAt(projIndex);
+            //        return;
+            //    }
+            //}
             foreach (Floor floor in game.floors)
             {
                 if (proj.Intersects(floor) != Vector2.Zero)
@@ -103,7 +106,7 @@ namespace Source.Collisions
                         game.walls.RemoveAt(i);
                         for (int x = 0; x < GameData.NUM_PART_WALL; x++)
                             game.particles.Add(new Particle(wall.Position, new Vector2(GameData.PARTICLE_WIDTH, GameData.PARTICLE_WIDTH),
-                                wall.texture, 0f, rand(0, 0, new Vector2(GameData.PARTICLE_Y, GameData.PARTICLE_Y)), 0f, GameData.PARTICLE_LIFETIME / 2, wall.Color));
+                                wall.texture, 0f, rand(0, 0, new Vector2(GameData.PARTICLE_Y, GameData.PARTICLE_Y)), 0f, GameData.PARTICLE_LIFETIME, wall.Color));
                         game.particles.Add(new Particle(wall.Position, game.font, "BAM!"));
                         game.wallLengths[0]--;
                     }

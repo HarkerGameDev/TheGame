@@ -45,6 +45,7 @@ namespace Source
 
         private Rectangle cameraBounds;
         private Vector2 screenCenter;
+        private float currentZoom;
 
         private bool editLevel;
         public Floor currentFloor;
@@ -88,7 +89,8 @@ namespace Source
             graphics.ApplyChanges();
 
             // Sets how many pixels is a meter
-            ConvertUnits.SetDisplayUnitToSimUnitRatio(GameData.PIXEL_METER);
+            currentZoom = GameData.PIXEL_METER;
+            ConvertUnits.SetDisplayUnitToSimUnitRatio(currentZoom);
 
             // Set variables
             paused = false;
@@ -205,7 +207,10 @@ namespace Source
                 {
                     screenOffset = Vector2.Zero;
                     currentFloor = null;
+                    currentZoom = GameData.PIXEL_METER;
                 }
+                else
+                    currentZoom = GameData.PIXEL_METER_EDIT;
             }
 
             if (editLevel)
@@ -348,6 +353,12 @@ namespace Source
                     //Console.WriteLine("Player state: " + player.CurrentState);
                     player.Velocity = (new Vector2(player.Velocity.X, -GameData.JUMP_SPEED));
                     player.CurrentState = Player.State.Jumping;
+                }
+                else if (state.IsKeyDown(controls.down))
+                {
+                    player.CurrentState = Player.State.Slamming;
+                    if (player.Velocity.Y < GameData.SLAM_SPEED)
+                        player.Velocity.Y = GameData.SLAM_SPEED;
                 }
             }
             else
@@ -557,9 +568,11 @@ namespace Source
                     currentFloor = null;
             }
             if (ToggleKey(Keys.OemPlus))                       // Zoom in and out
-                ConvertUnits.SetDisplayUnitToSimUnitRatio(ConvertUnits.ToDisplayUnits(1f) * 2);
+                //ConvertUnits.SetDisplayUnitToSimUnitRatio(ConvertUnits.ToDisplayUnits(1f) * 2);
+                currentZoom *= GameData.ZOOM_STEP;
             else if (ToggleKey(Keys.OemMinus))
-                ConvertUnits.SetDisplayUnitToSimUnitRatio(ConvertUnits.ToDisplayUnits(1f) / 2);
+                //ConvertUnits.SetDisplayUnitToSimUnitRatio(ConvertUnits.ToDisplayUnits(1f) / 2);
+                currentZoom /= GameData.ZOOM_STEP;
 
             prevMouseState = mouse;
         }
@@ -627,12 +640,12 @@ namespace Source
                 }
             }
 
-            float currentRatio = editLevel ? GameData.PIXEL_METER_EDIT : GameData.PIXEL_METER;
+            //float currentRatio = editLevel ? GameData.PIXEL_METER_EDIT : GameData.PIXEL_METER;
             float dist = maxY - minY;
-            if (dist * currentRatio / GameData.SCREEN_SPACE > GraphicsDevice.Viewport.Height)
+            if (dist * currentZoom / GameData.SCREEN_SPACE > GraphicsDevice.Viewport.Height)
                 ConvertUnits.SetDisplayUnitToSimUnitRatio(GraphicsDevice.Viewport.Height * GameData.SCREEN_SPACE / dist);
             else
-                ConvertUnits.SetDisplayUnitToSimUnitRatio(currentRatio);
+                ConvertUnits.SetDisplayUnitToSimUnitRatio(currentZoom);
         }
 
         ///// <summary>
