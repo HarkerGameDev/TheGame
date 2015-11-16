@@ -60,7 +60,7 @@ namespace Source
         public const float GRAVITY = 26f;   // m/s^2 -- gravity for players
         public const float GRAVITY_PART = 15f; // m/s^2 -- gravity for particles
         //public const float MIN_VELOCITY = 1f;  // m/s -- what can be considered 0 horizontal velocity
-        public const float SLOW_SPEED = -13f; // m/s -- speed player is going at when slowing down
+        public const float SLOW_SPEED = 13f; // m/s -- speed player is going at when slowing down
         public const float RUN_VELOCITY = 20f; // m/s -- maximum horizontal velocity for player
         public const float BOOST_SPEED = 27f; // m/s -- horizontal velocity when boosting
         public const float MAX_ACCEL = 40f;   // m/s^2 -- the impulse which is applied when player starts moving after standing still

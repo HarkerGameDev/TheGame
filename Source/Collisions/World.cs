@@ -140,6 +140,8 @@ namespace Source.Collisions
                             player.CurrentState = Player.State.Climbing;
                             player.Velocity.Y = -GameData.CLIMB_SPEED;
                         }
+                        else if (player.CurrentState == Player.State.Climbing)
+                            player.CurrentState = Player.State.Walking;
 
                         if (translation.Y != 0)
                         {
