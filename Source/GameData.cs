@@ -22,8 +22,8 @@ namespace Source
                                                        new Controls(Keys.A, Keys.D, Keys.W, Keys.S, Keys.LeftShift),
                                                        new Controls(Keys.J, Keys.L, Keys.I, Keys.K, Keys.O)};
 
-        public const float LOAD_NEW = 100f;     // the next level will be loaded when the player is this far from the current end
-        public const int MAX_LEVELS_LOADED = 6;    // how many levels to keep loaded at a given time
+        public const float LOAD_NEW = 50f;     // the next level will be loaded when the player is this far from the current end
+        public const int MAX_BODIES = 50;    // maximum number of floors or walls at any given time
 
         public const int MIN_LEVEL_WIDTH = 20;  // width of levels
         public const int MAX_LEVEL_WIDTH = 50;

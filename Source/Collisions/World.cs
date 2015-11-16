@@ -109,7 +109,6 @@ namespace Source.Collisions
                             game.particles.Add(new Particle(wall.Position, new Vector2(GameData.PARTICLE_WIDTH, GameData.PARTICLE_WIDTH),
                                 wall.texture, 0f, rand(0, 0, new Vector2(GameData.PARTICLE_Y, GameData.PARTICLE_Y)), 0f, GameData.PARTICLE_LIFETIME, wall.Color));
                         game.particles.Add(new Particle(wall.Position, game.font, "BAM!"));
-                        game.wallLengths[0]--;
                     }
                     else
                         wall.SetColor();

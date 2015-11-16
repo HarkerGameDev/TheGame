@@ -61,9 +61,6 @@ namespace Source
         public List<Wall> walls;
         public List<Particle> particles;
 
-		public int[] floorLengths = new int[GameData.MAX_LEVELS_LOADED];
-		public int[] wallLengths = new int[GameData.MAX_LEVELS_LOADED];
-
         private int levelEnd;
         private float death;
 
@@ -711,21 +708,13 @@ namespace Source
                 y -= step;
             }
             levelEnd += width + rand.Next(GameData.LEVEL_DIST_MIN, GameData.LEVEL_DIST_MAX);
-			Unload<Floor> (floorLengths, numFloors - 1, floors);
-			Unload<Wall> (wallLengths, (numFloors - 1) * 2, walls);
+
+            if (floors.Count > GameData.MAX_BODIES)
+                floors.RemoveRange(0, floors.Count - GameData.MAX_BODIES);
+            if (walls.Count > GameData.MAX_BODIES)
+                walls.RemoveRange(0, walls.Count - GameData.MAX_BODIES);
         }
-		private void Unload<T>(int[] lengths, int newLength, List<T> l){
-			if (lengths [0] < 0) {
-				lengths [1] += lengths [0];
-			}
-			for (int i = 0; i < lengths [0]; i++) {
-				l.RemoveAt (0);
-			}
-			for (int i = 0; i < lengths.Length - 1; i++) {
-				lengths [i] = lengths [i + 1];
-			}
-			lengths [lengths.Length - 1] = newLength;
-		}
+
         /// <summary>
         /// This is called when the game should draw itself.
         /// </summary>
