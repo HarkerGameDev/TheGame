@@ -83,6 +83,7 @@ namespace Source
         public const float STUN_LENGTH = 0.5f; // the player is stunned for this long
         public const float STUN_SCALE = 0.6f; // the player speed is scaled by this when stunned
         public const float SHOOT_COST = BOOST_LENGTH / 14f; // boost bar cost of a shot
+        public const float JUMP_COST = 2 * JUMP_SPEED / GRAVITY / (BOOST_REGEN / BOOST_LENGTH); // use five equations to see time it takes to land on equal surface (v = v0 + at)
 
         public const string SONG = "Chiptune dash";    // the song to play, over, and over, and over again. NEVER STOP THE PARTY!
         public const float VOLUME = 0f;                // volume for song

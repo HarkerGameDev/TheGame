@@ -351,6 +351,9 @@ namespace Source
                     //Console.WriteLine("Player state: " + player.CurrentState);
                     player.Velocity = (new Vector2(player.Velocity.X, -GameData.JUMP_SPEED));
                     player.CurrentState = Player.State.Jumping;
+                    player.BoostTime -= GameData.JUMP_COST;
+                    if (player.BoostTime < 0)
+                        player.BoostTime = 0;
                 }
                 else if (state.IsKeyDown(controls.down))
                 {
