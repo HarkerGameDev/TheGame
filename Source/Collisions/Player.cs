@@ -74,8 +74,8 @@ namespace Source.Collisions
             else if (BoostTime < GameData.BOOST_LENGTH)
                 BoostTime += deltaTime * GameData.BOOST_LENGTH / GameData.BOOST_REGEN;
 
-            if (CurrentState == State.Climbing)
-                Console.WriteLine("Climbing");
+            //if (CurrentState == State.Climbing)
+            //    Console.WriteLine("Climbing");
 
             if (BoostTime < 0)
             {

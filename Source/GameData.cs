@@ -76,7 +76,7 @@ namespace Source
         public const int LEVEL_DIST_MIN = 3;   // the min space between levels
         public const int LEVEL_DIST_MAX = 15;   // max space between levels
         public const float RESPAWN_DIST = 10;
-        public const float CLIMB_SPEED = 4.5f;     // m/s -- speed of climbing onto a ledge
+        public const float CLIMB_SPEED = 8f;     // m/s -- speed of climbing onto a ledge
 
         public const float BOOST_LENGTH = 2.8f;  // how long a player can boost for
         public const float BOOST_REGEN = 5.6f; // boost will be refilled in this time (from 0)
