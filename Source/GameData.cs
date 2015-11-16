@@ -14,7 +14,7 @@ namespace Source
     {
         // TODO stuff some of the user-configurable stuff into a main menu screen (like controls and # of players)
         //public const int LEVEL = -1;            // if this is greater than -1, levels will not be procedurally generated (useful for editing)
-        public const int numPlayers = 2;            // number of players
+        public const int numPlayers = 1;            // number of players
 
         public static bool[] useController = { false, false, false };    // true means the player at the index will be using a controller.
         public static Controls[] keyboardControls = {            // defines the keyboard controls which will be used
@@ -23,7 +23,8 @@ namespace Source
                                                        new Controls(Keys.J, Keys.L, Keys.I, Keys.K, Keys.O)};
 
         public const float LOAD_NEW = 50f;     // the next level will be loaded when the player is this far from the current end
-        public const int MAX_BODIES = 50;    // maximum number of floors or walls at any given time
+        public const int MAX_FLOORS = 50;    // maximum number of floors at any given time
+        public const int MAX_WALLS = 90;    // maximum number of walls
 
         public const int MIN_LEVEL_WIDTH = 20;  // width of levels
         public const int MAX_LEVEL_WIDTH = 50;
@@ -41,6 +42,7 @@ namespace Source
         public const float FLOOR_HOLE = 3.5f;   // size in m of hole to make when slamming
         public const int WINDOW_HEALTH = 1;     // windows are on the side of buildings
         public const int WALL_HEALTH = 3;       // walls are inside the buildings themselves
+        public const float MIN_FLOOR_WIDTH = 2f;  // floors cannot be smaller than this (by random generation or slamming)
 
         public const float ZOOM_STEP = 1.5f;       // scale by which zoom is changed with + and -
         public const float PIXEL_METER = 24f;      // pixels per meter for normal game
@@ -58,7 +60,7 @@ namespace Source
         public const float GRAVITY = 26f;   // m/s^2 -- gravity for players
         public const float GRAVITY_PART = 15f; // m/s^2 -- gravity for particles
         //public const float MIN_VELOCITY = 1f;  // m/s -- what can be considered 0 horizontal velocity
-        public const float SLOW_SPEED = 13f; // m/s -- speed player is going at when slowing down
+        public const float SLOW_SPEED = -13f; // m/s -- speed player is going at when slowing down
         public const float RUN_VELOCITY = 20f; // m/s -- maximum horizontal velocity for player
         public const float BOOST_SPEED = 27f; // m/s -- horizontal velocity when boosting
         public const float MAX_ACCEL = 40f;   // m/s^2 -- the impulse which is applied when player starts moving after standing still
@@ -74,6 +76,7 @@ namespace Source
         public const int LEVEL_DIST_MIN = 3;   // the min space between levels
         public const int LEVEL_DIST_MAX = 15;   // max space between levels
         public const float RESPAWN_DIST = 10;
+        public const float CLIMB_SPEED = 4.5f;     // m/s -- speed of climbing onto a ledge
 
         public const float BOOST_LENGTH = 2.8f;  // how long a player can boost for
         public const float BOOST_REGEN = 5.6f; // boost will be refilled in this time (from 0)

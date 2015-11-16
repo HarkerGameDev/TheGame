@@ -680,8 +680,8 @@ namespace Source
             float y = -step;
             for (int i = 0; i < numFloors; i++)
             {
-                walls.Add(new Wall(whiteRect, new Vector2(levelEnd, y + step / 2), step, GameData.WINDOW_HEALTH));
-                walls.Add(new Wall(whiteRect, new Vector2(levelEnd + width, y + step / 2), step, GameData.WINDOW_HEALTH));
+                walls.Add(new Wall(whiteRect, new Vector2(levelEnd + Wall.WALL_WIDTH / 2, y + step / 2 + Floor.FLOOR_HEIGHT / 2), step, GameData.WINDOW_HEALTH));
+                walls.Add(new Wall(whiteRect, new Vector2(levelEnd + width - Wall.WALL_WIDTH / 2, y + step / 2 + Floor.FLOOR_HEIGHT / 2), step, GameData.WINDOW_HEALTH));
 
                 float dist = 0;
                 while (dist < width)
@@ -690,8 +690,8 @@ namespace Source
                     if (floorSize > width - dist)
                     {
                         floorSize = width - dist;
-                        //if (floorSize < GameData.MIN_FLOOR_DIST)
-                        //    break;
+                        if (floorSize < GameData.MIN_FLOOR_WIDTH)
+                            break;
                     }
                     floors.Add(new Floor(whiteRect, new Vector2(levelEnd + dist + floorSize / 2, y), floorSize));
                     dist += floorSize + (float)rand.NextDouble() * GameData.MAX_FLOOR_HOLE + GameData.MIN_FLOOR_HOLE;
@@ -709,10 +709,10 @@ namespace Source
             }
             levelEnd += width + rand.Next(GameData.LEVEL_DIST_MIN, GameData.LEVEL_DIST_MAX);
 
-            if (floors.Count > GameData.MAX_BODIES)
-                floors.RemoveRange(0, floors.Count - GameData.MAX_BODIES);
-            if (walls.Count > GameData.MAX_BODIES)
-                walls.RemoveRange(0, walls.Count - GameData.MAX_BODIES);
+            if (floors.Count > GameData.MAX_FLOORS)
+                floors.RemoveRange(0, floors.Count - GameData.MAX_FLOORS);
+            if (walls.Count > GameData.MAX_WALLS)
+                walls.RemoveRange(0, walls.Count - GameData.MAX_WALLS);
         }
 
         /// <summary>
@@ -757,7 +757,10 @@ namespace Source
             spriteBatch.Begin(transformMatrix: view);
             spriteBatch.Draw(whiteRect, new Rectangle(-(int)view.Translation.X, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height), Color.LightGray);
             foreach (Floor floor in floors)
+            {
                 floor.Draw(spriteBatch);
+                //DrawRect(floor, Color.Green, Vector2.Zero, new Vector2(0.6f));
+            }
             foreach (Wall wall in walls)
                 wall.Draw(spriteBatch);
             if (currentFloor != null)

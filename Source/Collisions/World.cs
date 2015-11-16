@@ -44,7 +44,7 @@ namespace Source.Collisions
                         //part.Color = Color.Green;
                     }
                     //else
-                    //    part.Color = Color.Red;
+                        //TestPoint(part.Position).Color = Color.Purple;
                 }
             }
 
@@ -88,14 +88,6 @@ namespace Source.Collisions
             //        return;
             //    }
             //}
-            foreach (Floor floor in game.floors)
-            {
-                if (proj.Intersects(floor) != Vector2.Zero)
-                {
-                    player.Projectiles.RemoveAt(projIndex);
-                    return;
-                }
-            }
             for (int i = game.walls.Count - 1; i >= 0; i--)
             {
                 Wall wall = game.walls[i];
@@ -117,6 +109,14 @@ namespace Source.Collisions
                     return;
                 }
             }
+            foreach (Floor floor in game.floors)
+            {
+                if (proj.Intersects(floor) != Vector2.Zero)
+                {
+                    player.Projectiles.RemoveAt(projIndex);
+                    return;
+                }
+            }
         }
 
         private void CheckFloors(Player player)
@@ -134,7 +134,13 @@ namespace Source.Collisions
 
                         //if (translation.X != 0 && (/*Math.Abs(floor.Rotation) >= MAX_SLOPE || */floor.Rotation == 0))
                         //    player.Velocity.X = 0;
-                        translation.X = 0;
+
+                        if (Math.Abs(translation.X) > Math.Abs(translation.Y) && !player.WallAbove)
+                        {
+                            player.CurrentState = Player.State.Climbing;
+                            player.Velocity.Y = -GameData.CLIMB_SPEED;
+                        }
+
                         if (translation.Y != 0)
                         {
                             player.Velocity.Y = 0;
@@ -160,8 +166,11 @@ namespace Source.Collisions
                         float sizeDiff = floor.Size.X / 2 + GameData.FLOOR_HOLE / 2;
                         float halfWidth = floor.Size.X / 2 - GameData.FLOOR_HOLE / 2;
                         float playerDist = player.Position.X - floor.Position.X;
-                        game.floors.Add(new Floor(floor.texture, new Vector2((newFloorX - sizeDiff) / 2, floor.Position.Y), halfWidth + playerDist));
-                        game.floors.Add(new Floor(floor.texture, new Vector2((newFloorX + sizeDiff) / 2, floor.Position.Y), halfWidth - playerDist));
+
+                        if (halfWidth + playerDist > GameData.MIN_FLOOR_WIDTH)
+                            game.floors.Add(new Floor(floor.texture, new Vector2((newFloorX - sizeDiff) / 2, floor.Position.Y), halfWidth + playerDist));
+                        if (halfWidth - playerDist > GameData.MIN_FLOOR_WIDTH)
+                            game.floors.Add(new Floor(floor.texture, new Vector2((newFloorX + sizeDiff) / 2, floor.Position.Y), halfWidth - playerDist));
 
                         game.floors.Remove(floor);
                         break;
@@ -223,6 +232,8 @@ namespace Source.Collisions
 
         private void CheckWalls(Player player)
         {
+            player.WallAbove = false;
+
             for (int i = game.walls.Count - 1; i >= 0; i--)
             {
                 Wall wall = game.walls[i];
@@ -231,12 +242,22 @@ namespace Source.Collisions
                 {
                     translation.Y = 0;
                     player.MovePosition(-translation);
+
+                    if (wall.Position.Y < player.Position.Y)
+                    {
+                        player.WallAbove = true;
+                        //Console.WriteLine("Wall at " + wall.Position);
+                        //Console.WriteLine("Player at " + player.Position);
+                    }
+
                     //if (translation.X != 0)
                     //    player.Velocity.X = 0;
                     //else
                     //    player.Velocity.Y = 0;
                 }
             }
+
+            player.MovePosition(new Vector2(0.0001f, 0)); // an extremely small amount to still render floor climbing
         }
 
         public Body TestPoint(Vector2 point)

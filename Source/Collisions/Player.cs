@@ -30,13 +30,14 @@ namespace Source.Collisions
         public List<Projectile> Projectiles;
         public float BoostTime = GameData.BOOST_LENGTH;
         public float StunTime = GameData.STUN_LENGTH;
+        public bool WallAbove = false;
 
         public bool InAir { get { return CurrentState == State.Jumping || CurrentState == State.Slamming; } }
         public bool CanJump { get { return CurrentState == State.Walking || CurrentState == State.Boosting; } }
 
         public enum State
         {
-            Jumping=0, Walking=1, Slamming=2, Sliding=3, Boosting=4
+            Jumping=0, Walking=1, Slamming=2, Sliding=3, Boosting=4, Climbing=5
         }
 
         public AnimatedSprite Sprite;
@@ -49,7 +50,7 @@ namespace Source.Collisions
             Projectiles = new List<Projectile>();
             Velocity.X = GameData.RUN_VELOCITY;
 
-            int[] animationFrames = { 4, 4, 2, 2, 4 };
+            int[] animationFrames = { 4, 4, 2, 2, 4, 2 };
             Origin = new Vector2(Origin.X / animationFrames.Max(), Origin.Y / animationFrames.Length);
             float textureScale = 1.8f / Origin.Y / 2f * (20f / 18f);
             Sprite = new AnimatedSprite(texture, this, animationFrames, textureScale);
@@ -73,6 +74,9 @@ namespace Source.Collisions
             else if (BoostTime < GameData.BOOST_LENGTH)
                 BoostTime += deltaTime * GameData.BOOST_LENGTH / GameData.BOOST_REGEN;
 
+            if (CurrentState == State.Climbing)
+                Console.WriteLine("Climbing");
+
             if (BoostTime < 0)
             {
                 Velocity.X = GameData.RUN_VELOCITY;
@@ -84,6 +88,8 @@ namespace Source.Collisions
         {
             //spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(Position), null, Color, Rotation, Origin, ConvertUnits.ToDisplayUnits(textureScale), SpriteEffects.None, 0f);
             Sprite.Draw(spriteBatch);
+
+            //Color = WallAbove ? Color.Green : Color.Red;
 
             Vector2 pos = new Vector2(Position.X - BAR_WIDTH / 2, Position.Y - Size.Y * 0.7f);
             Game1.DrawRectangle(spriteBatch, pos, Color.LightSalmon, new Vector2(BAR_WIDTH, BAR_HEIGHT));
