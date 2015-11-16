@@ -593,8 +593,8 @@ namespace Source
         private void CheckPlayer()
         {
             Player max = null;
-            float minY = 0;
-            float maxY = -90000000; // a very small number
+            float minY = players[0].Position.Y;
+            float maxY = minY;
 
             float averageX = 0;
             foreach (Player player in players)

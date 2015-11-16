@@ -73,7 +73,7 @@ namespace Source.Collisions
         {
             Projectile proj = player.Projectiles[projIndex];
             proj.Move(deltaTime);
-            if (proj.LiveTime > Projectile.MAX_LIVE)
+            if (proj.LiveTime > GameData.PROJ_LIVE)
             {
                 player.Projectiles.RemoveAt(projIndex);
                 return;
@@ -103,6 +103,7 @@ namespace Source.Collisions
                 {
                     if (--wall.Health <= 0)
                     {
+                        wall.Color = Color.Azure;
                         game.walls.RemoveAt(i);
                         for (int x = 0; x < GameData.NUM_PART_WALL; x++)
                             game.particles.Add(new Particle(wall.Position, new Vector2(GameData.PARTICLE_WIDTH, GameData.PARTICLE_WIDTH),
@@ -110,6 +111,9 @@ namespace Source.Collisions
                         game.particles.Add(new Particle(wall.Position, game.font, "BAM!"));
                         game.wallLengths[0]--;
                     }
+                    else
+                        wall.SetColor();
+
                     player.Projectiles.RemoveAt(projIndex);
                     return;
                 }
@@ -178,7 +182,8 @@ namespace Source.Collisions
 						game.players [i].Score++;
 					}
 				}
-					player.Score--;
+				player.Score--;
+                player.Velocity = Vector2.Zero;
                 //player.MoveToPosition(new Vector2(player.Position.X, BOTTOM));
                 //if (player.InAir)
                 //{

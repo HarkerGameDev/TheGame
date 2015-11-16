@@ -13,8 +13,6 @@ namespace Source.Collisions
     /// </summary>
     public class Projectile : Body
     {
-        private const float SPEED = 60f;
-        public const float MAX_LIVE = 0.7f;
         public float LiveTime;
 
         public Projectile(Texture2D texture, Vector2 position, Color color)
@@ -22,7 +20,7 @@ namespace Source.Collisions
         {
             this.Color = color;
 
-            Velocity = new Vector2(SPEED * (float)Math.Cos(Rotation), SPEED * (float)Math.Sin(Rotation));
+            Velocity = new Vector2(GameData.PROJ_SPEED * (float)Math.Cos(Rotation), GameData.PROJ_SPEED * (float)Math.Sin(Rotation));
             LiveTime = 0f;
         }
 

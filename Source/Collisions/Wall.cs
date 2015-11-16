@@ -28,14 +28,13 @@ namespace Source.Collisions
         public Wall(Texture2D texture, Vector2 position, float height, int health, float rotation = 0f)
             : base(texture, position, new Vector2(WALL_WIDTH, height), rotation)
         {
-            Color = Color.AliceBlue;
             Health = health < 0 ? 90000 : health;   // a very large number is just infinite health
+            SetColor();
         }
 
-        public override void Draw(SpriteBatch spriteBatch)
+        public void SetColor()
         {
-            Color = new Color(Color, (float)Health / (float)GameData.WALL_HEALTH);
-            base.Draw(spriteBatch);
+            Color = new Color(Color.AliceBlue.ToVector3() * (1f - ((float)Health - 1f) / (GameData.WALL_HEALTH)));
         }
     }
 }

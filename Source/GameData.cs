@@ -31,8 +31,8 @@ namespace Source
         public const float MAX_FLOOR_HOLE = 8f - MIN_FLOOR_HOLE;
         public const float MIN_FLOOR_DIST = 15; // width of a floor until a hole is reached
         public const float MAX_FLOOR_DIST = 80 - MIN_FLOOR_DIST;
-        public const int MIN_LEVEL_STEP = 4;    // size of each floor in building
-        public const int MAX_LEVEL_STEP = 8;
+        public const int MIN_LEVEL_STEP = 5;    // size of each floor in building
+        public const int MAX_LEVEL_STEP = 10;
         public const int MIN_NUM_FLOORS = 4;    // number of floors per building
         public const int MAX_NUM_FLOORS = 11;
         public const int MIN_WALL_DIST = 10;    // distance between walls inside rooms
@@ -43,7 +43,7 @@ namespace Source
         public const int WALL_HEALTH = 3;       // walls are inside the buildings themselves
 
         public const float ZOOM_STEP = 1.5f;       // scale by which zoom is changed with + and -
-        public const float PIXEL_METER = 32f;      // pixels per meter for normal game
+        public const float PIXEL_METER = 24f;      // pixels per meter for normal game
         public const float PIXEL_METER_EDIT = 8f;  // pixels per meter when in edit mode for level
         public const int VIEW_WIDTH = 1280;        // width of unscaled screen in pixels
         public const int VIEW_HEIGHT = 720;        // height of unscaled screen in pixels
@@ -89,7 +89,7 @@ namespace Source
         public const float MAX_CAMERA_SPEED_Y = 3f;    // maximum y speed of camera
         public const float SCREEN_LEFT = 0.2f;         // defines how far left the player can be on wobble-screen
         public const float SCREEN_RIGHT = 0.35f;       // defines the right limit of the player on wobble-screen
-        public const float SCREEN_SPACE = 0.65f;        // camera will begin zooming out when the player are SCREEN_SPACE % of the screen apart from each other
+        public const float SCREEN_SPACE = 0.45f;        // camera will begin zooming out when the player are SCREEN_SPACE % of the screen apart from each other
         public const float SCREEN_TOP = 0.3f;          // defines the distance from the top or bottom of the screen for the player in wobble-screen
         public const float DEAD_DIST = 10f;            // players this distance or more behind the average x will move to the maximum player
         public const double DEAD_TIME = 3;             // respawn time when a player gets behind the cutoff
@@ -102,6 +102,9 @@ namespace Source
         public const float PARTICLE_X = 4f;         // maximum x velocity of a particle when randomly generating in either direction
         public const float PARTICLE_Y = 5f;         // maximum y velocity of a particle in either direction
         public const int NUM_PART_WALL = 10;        // number of particles to spawn when a wall is exploded
+
+        public const float PROJ_SPEED = 60f;    // speed of a projectile
+        public const float PROJ_LIVE = 1.0f;     // lifetime of a projectile in s
 
         public struct Controls {
             public Keys left, right, up, down, shoot;

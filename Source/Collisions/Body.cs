@@ -23,7 +23,7 @@ namespace Source.Collisions
         private Vector2[] Points;
         private Vector2[] Edges;
 
-        public Color Color { get; protected set; }
+        public Color Color;
 
         public Texture2D texture { get; private set; }
 
