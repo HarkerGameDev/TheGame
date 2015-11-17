@@ -120,13 +120,14 @@ namespace Source
             fontBig = Content.Load<SpriteFont>("Fonts/ScoreBig");
 
             // Create objects
+            rand = new Random();
             players = new List<Player>();
             for (int i = 0; i < GameData.numPlayers; i++)
             {
-				players.Add(new Player(Content.Load<Texture2D>("Art/GreenDude"), GameData.PLAYER_POSITION, GameData.playerColors[i]));
+                Vector2 spawnLoc = new Vector2(GameData.PLAYER_START, -rand.Next(GameData.MIN_SPAWN, GameData.MAX_SPAWN));
+				players.Add(new Player(Content.Load<Texture2D>("Art/GreenDude"), spawnLoc, GameData.playerColors[i]));
             }
             GameData.playerColors = null;
-            rand = new Random();
             floors = new List<Floor>();
             walls = new List<Wall>();
             particles = new List<Particle>();
@@ -276,8 +277,11 @@ namespace Source
             {
                 foreach (Player player in players)
                 {
-                    player.MoveToPosition(GameData.PLAYER_POSITION);
+                    player.MoveToPosition(new Vector2(GameData.PLAYER_START, -rand.Next(GameData.MIN_SPAWN, GameData.MAX_SPAWN)));
                     player.Velocity = Vector2.Zero;
+                    floors.Clear();
+                    walls.Clear();
+                    levelEnd = 0;
                 }
             }
 
@@ -567,6 +571,12 @@ namespace Source
                     currentFloor.MovePosition(Vector2.UnitY);
                 else if (keyboard.IsKeyDown(Keys.Enter))
                     currentFloor = null;
+                else if (ToggleKey(Keys.F))
+                {
+                    currentFloor.Breakable = !currentFloor.Breakable;
+                    //Console.WriteLine("Made floor" + (currentFloor.Breakable ? "" : " not") + " breakable");
+                    currentFloor.Color = currentFloor.Breakable ? Color.LightGoldenrodYellow : Color.Azure;
+                }
             }
             if (ToggleKey(Keys.OemPlus))                       // Zoom in and out
             {
@@ -698,12 +708,60 @@ namespace Source
                     }
                     floors.Add(new Floor(whiteRect, new Vector2(levelEnd + dist + floorSize / 2, y), floorSize));
                     dist += floorSize + (float)rand.NextDouble() * GameData.MAX_FLOOR_HOLE + GameData.MIN_FLOOR_HOLE;
+
+                    if (dist < width && rand.NextDouble() > GameData.STAIR_CHANCE)
+                    {
+                        Floor stair = new Floor(whiteRect, new Vector2(levelEnd + dist - GameData.STAIR_WIDTH, y + step), new Vector2(levelEnd + dist, y));
+
+                        int numCollisions = 0;
+                        foreach (Floor floor in floors)
+                        {
+                            if (stair.Intersects(floor) != Vector2.Zero)
+                            {
+                                //floor.Color = Color.Green;
+                                if (++numCollisions > 0)
+                                    break;
+                            }
+                        }
+
+                        if (numCollisions > 0)
+                        {
+                            stair.Breakable = true;
+                            stair.Color = Color.LightGoldenrodYellow;
+                            floors.Add(stair);
+                        }
+                    }
                 }
 
                 dist = rand.Next(GameData.MIN_WALL_DIST, GameData.MAX_WALL_DIST);
                 while (dist < width)
                 {
-                    walls.Add(new Wall(whiteRect, new Vector2(levelEnd + dist, y + step / 2), step, GameData.WALL_HEALTH));
+                    Wall wall = new Wall(whiteRect, new Vector2(levelEnd + dist, y + step / 2), step, GameData.WALL_HEALTH);
+
+                    bool validStair = true;
+                    int numCollisions = 0;
+                    foreach (Floor floor in floors)
+                    {
+                        if (wall.Intersects(floor) != Vector2.Zero)
+                        {
+                            //floor.Color = Color.Plum;
+                            if (floor.Breakable)
+                            {
+                                wall = null;
+                                validStair = false;
+                                //Console.WriteLine("Floor is colliding with wall " + floor.Position);
+                                break;
+                            }
+                            else
+                            {
+                                if (++numCollisions > 1 && !validStair)
+                                    break;
+                            }
+                        }
+                    }
+
+                    if (validStair && numCollisions > 1)
+                       walls.Add(wall);
                     dist += rand.Next(GameData.MIN_WALL_DIST, GameData.MAX_WALL_DIST);
                 }
 

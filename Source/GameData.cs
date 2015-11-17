@@ -34,7 +34,7 @@ namespace Source
         public const float MAX_FLOOR_DIST = 80 - MIN_FLOOR_DIST;
         public const int MIN_LEVEL_STEP = 5;    // size of each floor in building
         public const int MAX_LEVEL_STEP = 10;
-        public const int MIN_NUM_FLOORS = 4;    // number of floors per building
+        public const int MIN_NUM_FLOORS = 5;    // number of floors per building
         public const int MAX_NUM_FLOORS = 11;
         public const int MIN_WALL_DIST = 10;    // distance between walls inside rooms
         public const int MAX_WALL_DIST = 90;
@@ -43,13 +43,18 @@ namespace Source
         public const int WINDOW_HEALTH = 1;     // windows are on the side of buildings
         public const int WALL_HEALTH = 3;       // walls are inside the buildings themselves
         public const float MIN_FLOOR_WIDTH = 2f;  // floors cannot be smaller than this (by random generation or slamming)
+        public const double STAIR_CHANCE = 0.6; // chance a hole will have a stair to it (from 0 to 1)
+        public const float STAIR_WIDTH = MIN_FLOOR_DIST;   // horizontal distance of a stair
+
+        public const float PLAYER_START = 2f;   // starting x position of player
+        public const int MIN_SPAWN = MAX_LEVEL_STEP + 1;  // minimum spawning position (vertically)
+        public const int MAX_SPAWN = MIN_LEVEL_STEP * MIN_NUM_FLOORS + 10;  // maximum spawning position (vertically)
 
         public const float ZOOM_STEP = 1.5f;       // scale by which zoom is changed with + and -
         public const float PIXEL_METER = 24f;      // pixels per meter for normal game
         public const float PIXEL_METER_EDIT = 8f;  // pixels per meter when in edit mode for level
         public const int VIEW_WIDTH = 1280;        // width of unscaled screen in pixels
         public const int VIEW_HEIGHT = 720;        // height of unscaled screen in pixels
-        public static Vector2 PLAYER_POSITION = new Vector2(2, -20f);   // starting position of player
         public static Color[] playerColors = { Color.Red, Color.Yellow, Color.Purple };     // colors of each player
 
         public const float DEAD_SPEED = 20f; // m/s -- the speed at which the dead 'wave' on the left moves
@@ -78,11 +83,11 @@ namespace Source
         public const float RESPAWN_DIST = 10;
         public const float CLIMB_SPEED = 8f;     // m/s -- speed of climbing onto a ledge
 
-        public const float BOOST_LENGTH = 2.8f;  // how long a player can boost for
+        public const float BOOST_LENGTH = 4.8f;  // how long a player can boost for
         public const float BOOST_REGEN = 5.6f; // boost will be refilled in this time (from 0)
         public const float STUN_LENGTH = 0.5f; // the player is stunned for this long
         public const float STUN_SCALE = 0.6f; // the player speed is scaled by this when stunned
-        public const float SHOOT_COST = BOOST_LENGTH / 14f; // boost bar cost of a shot
+        public const float SHOOT_COST = 0.2f; // boost bar cost of a shot
         public const float JUMP_COST = 2 * JUMP_SPEED / GRAVITY / (BOOST_REGEN / BOOST_LENGTH); // use five equations to see time it takes to land on equal surface (v = v0 + at)
 
         public const string SONG = "Chiptune dash";    // the song to play, over, and over, and over again. NEVER STOP THE PARTY!
@@ -106,6 +111,7 @@ namespace Source
         public const float PARTICLE_X = 4f;         // maximum x velocity of a particle when randomly generating in either direction
         public const float PARTICLE_Y = 5f;         // maximum y velocity of a particle in either direction
         public const int NUM_PART_WALL = 10;        // number of particles to spawn when a wall is exploded
+        public const int NUM_PART_FLOOR = 5;        // number of particles to spawn when slamming and a hole is made
 
         public const float PROJ_SPEED = 60f;    // speed of a projectile
         public const float PROJ_LIVE = 1.0f;     // lifetime of a projectile in s

@@ -97,9 +97,7 @@ namespace Source.Collisions
                     {
                         wall.Color = Color.Azure;
                         game.walls.RemoveAt(i);
-                        for (int x = 0; x < GameData.NUM_PART_WALL; x++)
-                            game.particles.Add(new Particle(wall.Position, new Vector2(GameData.PARTICLE_WIDTH, GameData.PARTICLE_WIDTH),
-                                wall.texture, 0f, rand(0, 0, new Vector2(GameData.PARTICLE_Y, GameData.PARTICLE_Y)), 0f, GameData.PARTICLE_LIFETIME, wall.Color));
+                        MakeParticles(proj.Position, wall, GameData.NUM_PART_WALL, 0, 0);
                         game.particles.Add(new Particle(wall.Position, game.font, "BAM!"));
                     }
                     else
@@ -114,9 +112,21 @@ namespace Source.Collisions
                 if (proj.Intersects(floor) != Vector2.Zero)
                 {
                     player.Projectiles.RemoveAt(projIndex);
+                    if (floor.Breakable)
+                    {
+                        game.floors.Remove(floor);
+                        MakeParticles(proj.Position, floor, GameData.NUM_PART_WALL, 1, 0);
+                    }
                     return;
                 }
             }
+        }
+
+        private void MakeParticles(Vector2 pos, Body source, int amount, int x, int y)
+        {
+            for (int i = 0; i < amount; i++)
+                game.particles.Add(new Particle(pos, new Vector2(GameData.PARTICLE_WIDTH),
+                    source.texture, 0f, rand(x, y, new Vector2(GameData.PARTICLE_X, GameData.PARTICLE_Y)), 0f, GameData.PARTICLE_LIFETIME, source.Color));
         }
 
         private void CheckFloors(Player player)
@@ -156,30 +166,33 @@ namespace Source.Collisions
                         //    rand(0, -1, new Vector2(GameData.PARTICLE_X, GameData.PARTICLE_Y)),
                         //    (float)game.rand.NextDouble() * GameData.PARTICLE_MAX_SPIN, GameData.PARTICLE_LIFETIME, Color.Azure));
                     }
-                    else
+                    else        // player is Slamming
                     {
-                        // two things wrong with this and the one above it. Everything here is a magic number, and the line is about 150 columns long.
-                        // please make the code readable (for this past commit and all future ones)
-                        for(int i = 0; i < 5; i ++)
-                            game.particles.Add(new Particle(player.Position, new Vector2(GameData.PARTICLE_WIDTH, GameData.PARTICLE_WIDTH),
-                                floor.texture, 0f, rand(0, 1, new Vector2(GameData.PARTICLE_X, GameData.PARTICLE_Y)), 0f, GameData.PARTICLE_LIFETIME, Color.Azure));
-                        
-                        float newFloorX = floor.Position.X + player.Position.X;
-                        float sizeDiff = floor.Size.X / 2 + GameData.FLOOR_HOLE / 2;
-                        float halfWidth = floor.Size.X / 2 - GameData.FLOOR_HOLE / 2;
-                        float playerDist = player.Position.X - floor.Position.X;
+                        if (floor.Breakable)
+                        {
+                            MakeParticles(player.Position, floor, GameData.NUM_PART_WALL, 0, 1);
+                        }
+                        else
+                        {
+                            MakeParticles(player.Position, floor, GameData.NUM_PART_FLOOR, 0, 1);
 
-                        if (halfWidth + playerDist > GameData.MIN_FLOOR_WIDTH)
-                            game.floors.Add(new Floor(floor.texture, new Vector2((newFloorX - sizeDiff) / 2, floor.Position.Y), halfWidth + playerDist));
-                        if (halfWidth - playerDist > GameData.MIN_FLOOR_WIDTH)
-                            game.floors.Add(new Floor(floor.texture, new Vector2((newFloorX + sizeDiff) / 2, floor.Position.Y), halfWidth - playerDist));
+                            float newFloorX = floor.Position.X + player.Position.X;
+                            float sizeDiff = floor.Size.X / 2 + GameData.FLOOR_HOLE / 2;
+                            float halfWidth = floor.Size.X / 2 - GameData.FLOOR_HOLE / 2;
+                            float playerDist = player.Position.X - floor.Position.X;
+
+                            if (halfWidth + playerDist > GameData.MIN_FLOOR_WIDTH)
+                                game.floors.Add(new Floor(floor.texture, new Vector2((newFloorX - sizeDiff) / 2, floor.Position.Y), halfWidth + playerDist));
+                            if (halfWidth - playerDist > GameData.MIN_FLOOR_WIDTH)
+                                game.floors.Add(new Floor(floor.texture, new Vector2((newFloorX + sizeDiff) / 2, floor.Position.Y), halfWidth - playerDist));
+                        }
 
                         game.floors.Remove(floor);
                         break;
                     }
                 }
             }
-            
+
 			if (player.Position.Y > BOTTOM) {  // bottom of the level
 				player.Velocity.Y = 0;
 
@@ -210,6 +223,13 @@ namespace Source.Collisions
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="x">0 is left and right, 1 is right, -1 is left</param>
+        /// <param name="y">0 is up and down, 1 is down, -1 is up</param>
+        /// <param name="amplifier"></param>
+        /// <returns></returns>
         private Vector2 rand(int x, int y, Vector2 amplifier)
         {
             float randX = 0;
