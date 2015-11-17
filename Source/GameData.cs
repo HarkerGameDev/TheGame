@@ -57,7 +57,7 @@ namespace Source
         public const int VIEW_HEIGHT = 720;        // height of unscaled screen in pixels
         public static Color[] playerColors = { Color.Red, Color.Yellow, Color.Purple };     // colors of each player
 
-        public const float DEAD_SPEED = 21.2f; // m/s -- the speed at which the dead 'wave' on the left moves
+        public const float DEAD_SPEED = RUN_VELOCITY * 1.1f; // m/s -- the speed at which the dead 'wave' on the left moves
         public const float DEAD_MAX = 40f; // m -- maximum distance between player and death if player is doing well
         public const int DEAD_WIDTH = 600;
         public const int DEAD_HEIGHT = 2000;
@@ -66,7 +66,7 @@ namespace Source
         public const float GRAVITY_PART = 15f; // m/s^2 -- gravity for particles
         //public const float MIN_VELOCITY = 1f;  // m/s -- what can be considered 0 horizontal velocity
         public const float SLOW_SPEED = 13f; // m/s -- speed player is going at when slowing down
-        public const float RUN_VELOCITY = 20f; // m/s -- maximum horizontal velocity for player
+        public const float RUN_VELOCITY = 22f; // m/s -- maximum horizontal velocity for player
         public const float BOOST_SPEED = 27f; // m/s -- horizontal velocity when boosting
         public const float MAX_ACCEL = 40f;   // m/s^2 -- the impulse which is applied when player starts moving after standing still
         public const float JUMP_SPEED = 18f; // m/s -- the initial upwards velocity when player jumps
@@ -87,7 +87,7 @@ namespace Source
         public const float BOOST_REGEN = 5.6f; // boost will be refilled in this time (from 0)
         public const float STUN_LENGTH = 0.5f; // the player is stunned for this long
         public const float STUN_SCALE = 0.6f; // the player speed is scaled by this when stunned
-        public const float SHOOT_COST = 0.27f; // boost bar cost of a shot
+        public const float SHOOT_COST = 0.3f; // boost bar cost of a shot
         public const float JUMP_COST = 2 * JUMP_SPEED / GRAVITY / (BOOST_REGEN / BOOST_LENGTH); // use five equations to see time it takes to land on equal surface (v = v0 + at)
 
         public const string SONG = "Chiptune dash";    // the song to play, over, and over, and over again. NEVER STOP THE PARTY!
