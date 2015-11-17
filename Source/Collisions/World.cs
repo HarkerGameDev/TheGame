@@ -60,10 +60,13 @@ namespace Source.Collisions
                     player.Velocity.Y += GameData.GRAVITY * deltaTime;
                     //player.CanJump = false;
 
-                    player.Move(deltaTime);
-
-                    CheckWalls(player);
-
+                    //int steps = game.IsFixedTimeStep ? GameData.PLAYER_STEP : 1;
+                    int steps = 2;
+                    for (int i = 0; i < steps; i++)
+                    {
+                        player.Move(deltaTime / steps);
+                        CheckWalls(player);
+                    }
                     CheckFloors(player);
                 }
             }
@@ -122,6 +125,14 @@ namespace Source.Collisions
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="pos"></param>
+        /// <param name="source"></param>
+        /// <param name="amount"></param>
+        /// <param name="x">0 is left and right, 1 is right, -1 is left</param>
+        /// <param name="y">0 is up and down, 1 is down, -1 is up</param>
         private void MakeParticles(Vector2 pos, Body source, int amount, int x, int y)
         {
             for (int i = 0; i < amount; i++)
@@ -262,6 +273,11 @@ namespace Source.Collisions
                 Vector2 translation = player.Intersects(wall);
                 if (translation != Vector2.Zero)
                 {
+                    if (player.CurrentState == Player.State.Slamming && wall.Health == 1)
+                    {
+                        game.walls.RemoveAt(i);
+                        MakeParticles(player.Position, wall, GameData.NUM_PART_WALL, 0, 1);
+                    }
                     translation.Y = 0;
                     player.MovePosition(-translation);
 

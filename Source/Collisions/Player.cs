@@ -31,6 +31,7 @@ namespace Source.Collisions
         public float BoostTime = GameData.BOOST_LENGTH;
         public float StunTime = GameData.STUN_LENGTH;
         public bool WallAbove = false;
+        public float TargetVelocity = GameData.RUN_VELOCITY;
 
         public bool InAir { get { return CurrentState == State.Jumping || CurrentState == State.Slamming; } }
         public bool CanJump { get { return CurrentState == State.Walking || CurrentState == State.Boosting; } }
@@ -48,7 +49,7 @@ namespace Source.Collisions
             this.Color = color;
 
             Projectiles = new List<Projectile>();
-            Velocity.X = GameData.RUN_VELOCITY;
+            Velocity.X = 0f;
 
             int[] animationFrames = { 4, 4, 2, 2, 4, 2 };
             Origin = new Vector2(Origin.X / animationFrames.Max(), Origin.Y / animationFrames.Length);
@@ -62,6 +63,12 @@ namespace Source.Collisions
         /// <param name="deltaTime"></param>
         public override void Move(float deltaTime)
         {
+            float diff = Velocity.X - TargetVelocity;
+            if (diff < GameData.MIN_VELOCITY)
+                Velocity.X = TargetVelocity;
+            else
+                Velocity.X -= Math.Sign(diff) * deltaTime * GameData.MAX_ACCEL;
+
             if (StunTime > 0)
                 base.MovePosition(Velocity * GameData.STUN_SCALE * deltaTime); // I know this scales Y velocity too, but that might be interesting
             else

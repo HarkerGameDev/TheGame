@@ -357,7 +357,7 @@ namespace Source
             KeyboardState state = Keyboard.GetState();
             GameData.Controls controls = GameData.keyboardControls[controller];
 
-            float impulse = GameData.MAX_ACCEL * deltaTime;
+            //float impulse = GameData.MAX_ACCEL * deltaTime;
             //float impulse = MathHelper.SmoothStep(MAX_IMPULSE, 0f, Math.Abs(player.Velocity.X) / MAX_VELOCITY) * deltaTime;
             //impulse = (float)Math.Pow(impulse, IMPULSE_POW);
 
@@ -373,20 +373,20 @@ namespace Source
                 {
                     if (player.BoostTime > GameData.BOOST_LENGTH / 2)
                     {
-                        player.Velocity.X = GameData.BOOST_SPEED;
+                        player.TargetVelocity = GameData.BOOST_SPEED;
                         player.CurrentState = Player.State.Boosting;
                     }
                     else if (player.CurrentState != Player.State.Boosting)
-                        player.Velocity.X = GameData.RUN_VELOCITY;
+                        player.TargetVelocity = GameData.RUN_VELOCITY;
                 }
                 else if (state.IsKeyDown(controls.left))                // slow slide
                 {
                     player.CurrentState = Player.State.Sliding;
-                    player.Velocity.X = GameData.SLOW_SPEED;
+                    player.TargetVelocity = GameData.SLOW_SPEED;
                 }
                 else                           // normal run
                 {
-                    player.Velocity.X = GameData.RUN_VELOCITY;
+                    player.TargetVelocity = GameData.RUN_VELOCITY;
                     player.CurrentState = Player.State.Walking;
                 }
                 if (state.IsKeyDown(controls.up))     // jump
@@ -422,12 +422,12 @@ namespace Source
                 {
                     player.CurrentState = Player.State.Jumping;
                 }
-                if (player.Velocity.X == 0)
-                    player.Velocity.X = GameData.RUN_VELOCITY;
+                //if (player.Velocity.X == 0)
+                //    player.Velocity.X = GameData.RUN_VELOCITY;
             }
             if (ToggleKey(controls.shoot) && player.TimeSinceDeath <= 0 && player.BoostTime > GameData.SHOOT_COST)
             {
-                player.Projectiles.Add(new Projectile(whiteRect, new Vector2(player.Position.X, player.Position.Y), player.Color));
+                player.Projectiles.Add(new Projectile(whiteRect, new Vector2(player.Position.X - player.Size.X / 2f, player.Position.Y), player.Color));
                 player.BoostTime -= GameData.SHOOT_COST;
                 //Console.WriteLine("Shooting!");
             }

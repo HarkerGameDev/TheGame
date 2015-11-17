@@ -50,6 +50,7 @@ namespace Source
         public const float PLAYER_START = 2f;   // starting x position of player
         public const int MIN_SPAWN = MAX_LEVEL_STEP + 1;  // minimum spawning position (vertically)
         public const int MAX_SPAWN = MIN_LEVEL_STEP * MIN_NUM_FLOORS + 10;  // maximum spawning position (vertically)
+        public const int PLAYER_STEP = 2;       // player collisions will be calculated this many times per tick to avoid  (only if fixed time step)
 
         public const float ZOOM_STEP = 1.5f;       // scale by which zoom is changed with + and -
         public const float PIXEL_METER = 24f;      // pixels per meter for normal game
@@ -70,7 +71,7 @@ namespace Source
 
         public const float GRAVITY = 26f;   // m/s^2 -- gravity for players
         public const float GRAVITY_PART = 15f; // m/s^2 -- gravity for particles
-        //public const float MIN_VELOCITY = 1f;  // m/s -- what can be considered 0 horizontal velocity
+        public const float MIN_VELOCITY = 1f;  // m/s -- what can be considered target velocity
         public const float SLOW_SPEED = 13f; // m/s -- speed player is going at when slowing down
         public const float RUN_VELOCITY = 22f; // m/s -- maximum horizontal velocity for player
         public const float BOOST_SPEED = 27f; // m/s -- horizontal velocity when boosting
