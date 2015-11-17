@@ -14,7 +14,7 @@ namespace Source
     {
         // TODO stuff some of the user-configurable stuff into a main menu screen (like controls and # of players)
         //public const int LEVEL = -1;            // if this is greater than -1, levels will not be procedurally generated (useful for editing)
-        public const int numPlayers = 1;            // number of players
+        public const int numPlayers = 2;            // number of players
 
         public static bool[] useController = { false, false, false };    // true means the player at the index will be using a controller.
         public static Controls[] keyboardControls = {            // defines the keyboard controls which will be used
@@ -64,6 +64,9 @@ namespace Source
         public const int DEAD_WIDTH = 600;
         public const int DEAD_HEIGHT = 2000;
         public const float WIN_TIME = 60f;  // s -- survive for this long to win
+        public const float MAX_SPEED_SCALE = 1.4f; // game is this much faster by the end of win
+        public const int WIN_SCORE = 10;    // score to get when winning
+        public const int LOSE_SCORE = 5;    // score to lose when hit by purple
 
         public const float GRAVITY = 26f;   // m/s^2 -- gravity for players
         public const float GRAVITY_PART = 15f; // m/s^2 -- gravity for particles
@@ -96,8 +99,9 @@ namespace Source
         public const string SONG = "afln_s_gdc-1";    // the song to play, over, and over, and over again. NEVER STOP THE PARTY!
         public const float VOLUME = 0.5f;                // volume for song
 
-        public const float CAMERA_SCALE = 20f;         // how fast the camera moves
-        public const float MAX_CAMERA_SPEED_X = 5f;    // maximum x speed of camera
+        public const float CAMERA_SCALE_X = 4f;         // how fast the camera moves
+        public const float CAMERA_SCALE_Y = 20f;        // vertical speed of camera
+        public const float MAX_CAMERA_SPEED_X = 1f;    // maximum x speed of camera
         public const float MAX_CAMERA_SPEED_Y = 3f;    // maximum y speed of camera
         public const float SCREEN_LEFT = 0.2f;         // defines how far left the player can be on wobble-screen
         public const float SCREEN_RIGHT = 0.35f;       // defines the right limit of the player on wobble-screen

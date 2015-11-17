@@ -54,7 +54,8 @@ namespace Source
         private Vector2 endDraw;
         private Vector2 screenOffset;
 
-        private bool paused;
+        //private bool paused;
+        private State state;
         private float totalTime;
 
         public List<Player> players;
@@ -65,9 +66,16 @@ namespace Source
         private int levelEnd;
         private float death;
 
+        public enum State
+        {
+            Playing, Paused, MainMenu, Controls
+        }
+
         public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
+            IsFixedTimeStep = true;
+            graphics.SynchronizeWithVerticalRetrace = true;
         }
 
         /// <summary>
@@ -91,7 +99,8 @@ namespace Source
             ConvertUnits.SetDisplayUnitToSimUnitRatio(currentZoom);
 
             // Set variables
-            paused = false;
+            //paused = false;
+            state = State.MainMenu;
             editLevel = false;
             death = -GameData.DEAD_MAX;
             totalTime = 0;
@@ -99,6 +108,7 @@ namespace Source
             // Initialize previous keyboard and gamepad states
             prevKeyState = new KeyboardState();
             prevPadState = new GamePadState();
+
             prevMouseState = new MouseState();
 
             base.Initialize();      // This calls LoadContent()
@@ -196,46 +206,61 @@ namespace Source
             // Handle toggle pause
             // TODO open pause menu
             if (Keyboard.GetState().IsKeyDown(Keys.Space) && !prevKeyState.IsKeyDown(Keys.Space))
-                paused = !paused;
+                state = state == State.Paused ? State.Playing : State.Paused;
 
             // Toggle edit level
             // TODO much better level editing/ creation
-            if (ToggleKey(Keys.E))
-            {
-                editLevel = !editLevel;
-                if (!editLevel)
-                {
-                    screenOffset = Vector2.Zero;
-                    currentFloor = null;
-                    currentZoom = GameData.PIXEL_METER;
-                }
-                else
-                    currentZoom = GameData.PIXEL_METER_EDIT;
-                ConvertUnits.SetDisplayUnitToSimUnitRatio(currentZoom);
-            }
+            switch (state) {
+                case State.Playing:
+                case State.Paused:
+                    if (ToggleKey(Keys.E))
+                    {
+                        editLevel = !editLevel;
+                        if (!editLevel)
+                        {
+                            screenOffset = Vector2.Zero;
+                            currentFloor = null;
+                            currentZoom = GameData.PIXEL_METER;
+                        }
+                        else
+                            currentZoom = GameData.PIXEL_METER_EDIT;
+                        ConvertUnits.SetDisplayUnitToSimUnitRatio(currentZoom);
+                    }
 
-            if (editLevel)
-            {
-                HandleEditLevel();
-            }
+                    if (editLevel)
+                    {
+                        HandleEditLevel();
+                    }
 
-            if (!paused)
-            {
-                float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
-                if (currentFloor == null)
-                    HandleInput(deltaTime);
+                    if (state == State.Playing)
+                    {
+                        float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
+                        if (currentFloor == null)
+                            HandleInput(deltaTime);
 
-                totalTime += deltaTime;
-                death += MathHelper.SmoothStep(GameData.DEAD_START, GameData.DEAD_SPEED, totalTime / GameData.WIN_TIME) * deltaTime;
+                        totalTime += deltaTime;
+                        float remaining = totalTime / GameData.WIN_TIME;
+                        deltaTime = deltaTime * MathHelper.Lerp(1f, GameData.MAX_SPEED_SCALE, remaining);
+                        death += MathHelper.SmoothStep(GameData.DEAD_START, GameData.DEAD_SPEED, remaining) * deltaTime;
 
-                CheckPlayer();
-                //player.Update(gameTime.ElapsedGameTime.TotalSeconds);
+                        CheckPlayer();
+                        //player.Update(gameTime.ElapsedGameTime.TotalSeconds);
 
-                world.Step(deltaTime);
+                        world.Step(deltaTime);
+                    }
+                    break;
+                case State.MainMenu:
+                    // TODO recognize buttons
+                    state = State.Playing;
+                    break;
+                case State.Controls:
+                    // don't do any updates
+                    break;
             }
 
             prevKeyState = Keyboard.GetState();
             prevPadState = GamePad.GetState(0);
+            prevMouseState = Mouse.GetState();
 
             base.Update(gameTime);
         }
@@ -288,14 +313,14 @@ namespace Source
             averageVel /= players.Count;
 
             // Calculate wobble-screen
-            float deltaX = ((cameraBounds.Center.X - screenCenter.X) / cameraBounds.Width - averageVel.X / GameData.RUN_VELOCITY) * GameData.CAMERA_SCALE;
+            float deltaX = ((cameraBounds.Center.X - screenCenter.X) / cameraBounds.Width - averageVel.X / GameData.RUN_VELOCITY) * GameData.CAMERA_SCALE_X;
             deltaX = MathHelper.Clamp(deltaX, -GameData.MAX_CAMERA_SPEED_X, GameData.MAX_CAMERA_SPEED_X);
-            screenCenter.X += deltaX / 5;
+            screenCenter.X += deltaX * deltaTime;
             screenCenter.X = MathHelper.Clamp(screenCenter.X, cameraBounds.Left, cameraBounds.Right);
 
-            float deltaY = ((cameraBounds.Center.Y - screenCenter.Y) / cameraBounds.Height - averageVel.Y / GameData.RUN_VELOCITY) * GameData.CAMERA_SCALE;
+            float deltaY = ((cameraBounds.Center.Y - screenCenter.Y) / cameraBounds.Height - averageVel.Y / GameData.RUN_VELOCITY) * GameData.CAMERA_SCALE_Y;
             deltaY = MathHelper.Clamp(deltaY, -GameData.MAX_CAMERA_SPEED_Y, GameData.MAX_CAMERA_SPEED_Y);
-            screenCenter.Y += deltaY;
+            screenCenter.Y += deltaY * deltaTime;
             screenCenter.Y = MathHelper.Clamp(screenCenter.Y, cameraBounds.Top, cameraBounds.Bottom);
 
             float wobbleRatio = GameData.RUN_VELOCITY / (GameData.RUN_VELOCITY - averageVel.X);
@@ -607,8 +632,6 @@ namespace Source
                 currentZoom /= GameData.ZOOM_STEP;
                 ConvertUnits.SetDisplayUnitToSimUnitRatio(currentZoom);
             }
-
-            prevMouseState = mouse;
         }
 
         private bool ToggleKey(Keys key)
@@ -645,9 +668,6 @@ namespace Source
                     minY = player.Position.Y;
                 else if (player.Position.Y > maxY)
                     maxY = player.Position.Y;
-
-                if (player.Position.X < death)
-                    player.TimeSinceDeath = GameData.DEAD_TIME;
             }
 
             foreach (Player player in players)
@@ -668,21 +688,43 @@ namespace Source
                     //Console.WriteLine("Target " + new Vector2(targetX, targetY));
                     //Console.WriteLine("Max: " + max == null);
                 }
-                else if (player.Position.X < averageX - GameData.DEAD_DIST)
+                else if (player.Position.X < averageX - GameData.DEAD_DIST || player.Position.X < death)
                 {
                     player.TimeSinceDeath = GameData.DEAD_TIME;
                     player.Projectiles.Clear();
                     if (max != null)
                         max.Score++;
+                    if (--player.Score < 0)
+                        player.Score = 0;
                 }
+                //else if (player.Position.X < death)
+                //{
+                //    player.TimeSinceDeath = GameData.DEAD_TIME;
+                //    player.Projectiles.Clear();
+                //    player.Score -= GameData.LOSE_SCORE;
+                //    if (player.Score < 0)
+                //        player.Score = 0;
+                //}
             }
 
             float currentX = max == null ? averageX : max.Position.X;
             if (currentX < death)   // lose
+            {
                 Reset();
+                foreach (Player player in players)
+                {
+                    player.Score -= GameData.LOSE_SCORE;
+                    if (player.Score < 0)
+                        player.Score = 0;
+                }
+            }
 
             if (totalTime > GameData.WIN_TIME)  // win. TODO -- do more than reset
+            {
                 Reset();
+                if (max != null)
+                    max.Score += GameData.WIN_SCORE;
+            }
 
             //float currentRatio = editLevel ? GameData.PIXEL_METER_EDIT : GameData.PIXEL_METER;
             float dist = maxY - minY;
@@ -815,103 +857,116 @@ namespace Source
             double deltaTime = (double)gameTime.ElapsedGameTime.TotalSeconds;
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
-            // Find average position across all players
-            Vector2 averagePos = Vector2.Zero;
-            foreach (Player player in players)
-                averagePos += player.Position;
-            averagePos /= players.Count;
+            switch (state) {
+                case State.Playing:
+                    // Find average position across all players
+                    Vector2 averagePos = Vector2.Zero;
+                    foreach (Player player in players)
+                        averagePos += player.Position;
+                    averagePos /= players.Count;
 
-            // Calculate camera location matrix
-            Matrix view;
-            if (editLevel)
-                view = Matrix.CreateTranslation(new Vector3(screenOffset + cameraBounds.Center.ToVector2() - ConvertUnits.ToDisplayUnits(averagePos), 0f));
-            else
-                view = Matrix.CreateTranslation(new Vector3(screenOffset + screenCenter - ConvertUnits.ToDisplayUnits(averagePos), 0f));
-
-
-            // Draw players
-            spriteBatch.Begin(transformMatrix: view);
-            foreach (Player player in players)
-            {
-                if (player.TimeSinceDeath < GameData.PHASE_TIME)
-                {
-                    player.Sprite.Update(deltaTime);
-                    player.Draw(spriteBatch);
-                    foreach (Projectile proj in player.Projectiles)
-                        proj.Draw(spriteBatch);
-                }
-            }
-            spriteBatch.End();
+                    // Calculate camera location matrix
+                    Matrix view;
+                    if (editLevel)
+                        view = Matrix.CreateTranslation(new Vector3(screenOffset + cameraBounds.Center.ToVector2() - ConvertUnits.ToDisplayUnits(averagePos), 0f));
+                    else
+                        view = Matrix.CreateTranslation(new Vector3(screenOffset + screenCenter - ConvertUnits.ToDisplayUnits(averagePos), 0f));
 
 
-            // Draw all objects
-            spriteBatch.Begin(transformMatrix: view);
-            spriteBatch.Draw(whiteRect, new Rectangle(-(int)view.Translation.X, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height), Color.LightGray);
-            foreach (Floor floor in floors)
-            {
-                floor.Draw(spriteBatch);
-                //DrawRect(floor, Color.Green, Vector2.Zero, new Vector2(0.6f));
-            }
-            foreach (Wall wall in walls)
-                wall.Draw(spriteBatch);
-            if (currentFloor != null)
-                DrawRect(currentFloor.Position, Color.Green, currentFloor.Rotation, currentFloor.Origin, currentFloor.Size);
-            if (editingFloor)
-            {
-                Vector2 dist = endDraw - startDraw;
-                float rotation = (float)Math.Atan2(dist.Y, dist.X);
-                Vector2 scale = new Vector2(dist.Length(), Floor.FLOOR_HEIGHT);
-                Vector2 origin = new Vector2(0.5f, 0.5f);
-                DrawRect(startDraw + dist / 2, Color.Azure, rotation, origin, scale);
-            }
-            if (editLevel)
-                DrawRect(Vector2.Zero, Color.LightGreen, 0f, new Vector2(0.5f, 0.5f), new Vector2(1, 1));
-            spriteBatch.Draw(whiteRect, new Rectangle((int)ConvertUnits.ToDisplayUnits(death) - GameData.DEAD_WIDTH, -GameData.DEAD_HEIGHT, GameData.DEAD_WIDTH, GameData.DEAD_HEIGHT), Color.Purple); // please excuse these magic numbers, they are meaningless
-            spriteBatch.End();
+                    // Draw players
+                    spriteBatch.Begin(transformMatrix: view);
+                    foreach (Player player in players)
+                    {
+                        if (player.TimeSinceDeath < GameData.PHASE_TIME)
+                        {
+                            player.Sprite.Update(deltaTime);
+                            player.Draw(spriteBatch);
+                            foreach (Projectile proj in player.Projectiles)
+                                proj.Draw(spriteBatch);
+                        }
+                    }
+                    spriteBatch.End();
 
 
-            // Draw all particles
-            spriteBatch.Begin(transformMatrix: view);
-            foreach (Particle part in particles)
-                part.Draw(spriteBatch);
-            spriteBatch.End();
+                    // Draw all objects
+                    spriteBatch.Begin(transformMatrix: view);
+                    spriteBatch.Draw(whiteRect, new Rectangle(-(int)view.Translation.X, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height), Color.LightGray);
+                    foreach (Floor floor in floors)
+                    {
+                        floor.Draw(spriteBatch);
+                        //DrawRect(floor, Color.Green, Vector2.Zero, new Vector2(0.6f));
+                    }
+                    foreach (Wall wall in walls)
+                        wall.Draw(spriteBatch);
+                    if (currentFloor != null)
+                        DrawRect(currentFloor.Position, Color.Green, currentFloor.Rotation, currentFloor.Origin, currentFloor.Size);
+                    if (editingFloor)
+                    {
+                        Vector2 dist = endDraw - startDraw;
+                        float rotation = (float)Math.Atan2(dist.Y, dist.X);
+                        Vector2 scale = new Vector2(dist.Length(), Floor.FLOOR_HEIGHT);
+                        Vector2 origin = new Vector2(0.5f, 0.5f);
+                        DrawRect(startDraw + dist / 2, Color.Azure, rotation, origin, scale);
+                    }
+                    if (editLevel)
+                        DrawRect(Vector2.Zero, Color.LightGreen, 0f, new Vector2(0.5f, 0.5f), new Vector2(1, 1));
+                    spriteBatch.Draw(whiteRect, new Rectangle((int)ConvertUnits.ToDisplayUnits(death) - GameData.DEAD_WIDTH, -GameData.DEAD_HEIGHT, GameData.DEAD_WIDTH, GameData.DEAD_HEIGHT), Color.Purple); // please excuse these magic numbers, they are meaningless
+                    spriteBatch.End();
 
 
-            // Draw all HUD elements
-            // TODO display a proper pause menu
-            spriteBatch.Begin();
-            if (paused)
-            {
-                float centerX = GraphicsDevice.Viewport.Width / 2.0f - fontBig.MeasureString("Paused").X / 2.0f;
-                spriteBatch.DrawString(fontBig, "Paused", new Vector2(centerX, GraphicsDevice.Viewport.Height * 0.1f), Color.Yellow);
-            }
+                    // Draw all particles
+                    spriteBatch.Begin(transformMatrix: view);
+                    foreach (Particle part in particles)
+                        part.Draw(spriteBatch);
+                    spriteBatch.End();
 
-            // Display scores in the top left
-            System.Text.StringBuilder text = new System.Text.StringBuilder();
-            text.AppendLine("Scores");
-            for (int i = 0; i < players.Count; i++)
-            {
-                text.AppendLine(string.Format("Player {0}: {1}", i + 1, players[i].Score));
-            }
-            spriteBatch.DrawString(font, text, new Vector2(10, 10), Color.Green);
 
-            // Display frames per second in the top right
-            string frames = (1f / deltaTime).ToString("n2");
-            float leftX = GraphicsDevice.Viewport.Width - font.MeasureString(frames).X;
-            spriteBatch.DrawString(font, frames, new Vector2(leftX, 0f), Color.LightGray);
+                    // Draw all HUD elements
+                    // TODO display a proper pause menu
+                    spriteBatch.Begin();
+                    //if (paused)
+                    //{
+                    //    float centerX = GraphicsDevice.Viewport.Width / 2.0f - fontBig.MeasureString("Paused").X / 2.0f;
+                    //    spriteBatch.DrawString(fontBig, "Paused", new Vector2(centerX, GraphicsDevice.Viewport.Height * 0.1f), Color.Yellow);
+                    //}
 
-            // Display time until win
-            string time = (GameData.WIN_TIME - totalTime).ToString("n1") + "s until win";
-            leftX = GraphicsDevice.Viewport.Width / 2f - font.MeasureString(time).X / 2f;
-            spriteBatch.DrawString(font, time, new Vector2(leftX, 0f), Color.LightSkyBlue);
+                    // Display scores in the top left
+                    System.Text.StringBuilder text = new System.Text.StringBuilder();
+                    text.AppendLine("Scores");
+                    for (int i = 0; i < players.Count; i++)
+                    {
+                        text.AppendLine(string.Format("Player {0}: {1}", i + 1, players[i].Score));
+                    }
+                    spriteBatch.DrawString(font, text, new Vector2(10, 10), Color.Green);
 
-            //if (levelAnnounceWaitAt > 0)
-            //{
-            //    float centerX = GraphicsDevice.Viewport.Width / 2.0f - fontBig.MeasureString("Level " + currentLevel).X / 2.0f;
-            //    spriteBatch.DrawString(fontBig, "Level " + currentLevel, new Vector2(centerX, GraphicsDevice.Viewport.Height * 0.1f), Color.Aqua);
-            //    levelAnnounceWaitAt -= (float)gameTime.ElapsedGameTime.TotalSeconds;
-            //}
-            spriteBatch.End();
+                    // Display frames per second in the top right
+                    string frames = (1f / deltaTime).ToString("n2");
+                    float leftX = GraphicsDevice.Viewport.Width - font.MeasureString(frames).X;
+                    spriteBatch.DrawString(font, frames, new Vector2(leftX, 0f), Color.LightGray);
+
+                    // Display time until win
+                    string time = (GameData.WIN_TIME - totalTime).ToString("n1") + "s until win";
+                    leftX = GraphicsDevice.Viewport.Width / 2f - font.MeasureString(time).X / 2f;
+                    spriteBatch.DrawString(font, time, new Vector2(leftX, 0f), Color.LightSkyBlue);
+
+                    //if (levelAnnounceWaitAt > 0)
+                    //{
+                    //    float centerX = GraphicsDevice.Viewport.Width / 2.0f - fontBig.MeasureString("Level " + currentLevel).X / 2.0f;
+                    //    spriteBatch.DrawString(fontBig, "Level " + currentLevel, new Vector2(centerX, GraphicsDevice.Viewport.Height * 0.1f), Color.Aqua);
+                    //    levelAnnounceWaitAt -= (float)gameTime.ElapsedGameTime.TotalSeconds;
+                    //}
+                    spriteBatch.End();
+                    break;
+                case State.Paused:
+                    GraphicsDevice.Clear(Color.Yellow);
+                    break;
+                case State.MainMenu:
+                    GraphicsDevice.Clear(Color.Turquoise);
+                    break;
+                case State.Controls:
+                    GraphicsDevice.Clear(Color.Plum);
+                    break;
+        }
 
             base.Draw(gameTime);
         }
