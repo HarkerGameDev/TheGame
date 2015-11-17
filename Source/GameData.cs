@@ -28,8 +28,8 @@ namespace Source
 
         public const int MIN_LEVEL_WIDTH = 20;  // width of levels
         public const int MAX_LEVEL_WIDTH = 50;
-        public const float MIN_FLOOR_HOLE = 3f; // size of a hole inside a building
-        public const float MAX_FLOOR_HOLE = 8f - MIN_FLOOR_HOLE;
+        public const float MIN_FLOOR_HOLE = 5f; // size of a hole inside a building
+        public const float MAX_FLOOR_HOLE = 9f - MIN_FLOOR_HOLE;
         public const float MIN_FLOOR_DIST = 15; // width of a floor until a hole is reached
         public const float MAX_FLOOR_DIST = 80 - MIN_FLOOR_DIST;
         public const int MIN_LEVEL_STEP = 5;    // size of each floor in building
@@ -43,8 +43,9 @@ namespace Source
         public const int WINDOW_HEALTH = 1;     // windows are on the side of buildings
         public const int WALL_HEALTH = 3;       // walls are inside the buildings themselves
         public const float MIN_FLOOR_WIDTH = 2f;  // floors cannot be smaller than this (by random generation or slamming)
-        public const double STAIR_CHANCE = 0.6; // chance a hole will have a stair to it (from 0 to 1)
+        public const double STAIR_CHANCE = 0.8; // chance a hole will have a stair to it (from 0 to 1)
         public const float STAIR_WIDTH = MIN_FLOOR_DIST;   // horizontal distance of a stair
+        public const float MIN_STAIR_DIST = MIN_FLOOR_HOLE + 2f;
 
         public const float PLAYER_START = 2f;   // starting x position of player
         public const int MIN_SPAWN = MAX_LEVEL_STEP + 1;  // minimum spawning position (vertically)
