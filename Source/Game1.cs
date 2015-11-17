@@ -275,14 +275,7 @@ namespace Source
 
             if (state.IsKeyDown(Keys.R))                        // reset
             {
-                foreach (Player player in players)
-                {
-                    player.MoveToPosition(new Vector2(GameData.PLAYER_START, -rand.Next(GameData.MIN_SPAWN, GameData.MAX_SPAWN)));
-                    player.Velocity = Vector2.Zero;
-                    floors.Clear();
-                    walls.Clear();
-                    levelEnd = 0;
-                }
+                Reset();
             }
 
             // Find average velocity across the players
@@ -307,6 +300,21 @@ namespace Source
                 wobbleScreen(GameData.MAX_WOBBLE);
             else if (wobbleRatio >= GameData.MIN_WOBBLE)
                 wobbleScreen(wobbleRatio);
+        }
+
+        private void Reset()
+        {
+            foreach (Player player in players)
+            {
+                player.MoveToPosition(new Vector2(GameData.PLAYER_START, -rand.Next(GameData.MIN_SPAWN, GameData.MAX_SPAWN)));
+                player.Velocity = Vector2.Zero;
+                player.TimeSinceDeath = 0;
+                player.BoostTime = GameData.BOOST_LENGTH;
+            }
+            floors.Clear();
+            walls.Clear();
+            levelEnd = 0;
+            death = -GameData.DEAD_MAX;
         }
 
         /// <summary>
@@ -352,12 +360,17 @@ namespace Source
                 }
                 if (state.IsKeyDown(controls.up))     // jump
                 {
+                    if (player.CurrentState == Player.State.Boosting)
+                    {
+                        //Console.WriteLine("Boosting jump");
+                        player.BoostTime -= GameData.JUMP_COST;
+                        if (player.BoostTime < 0)
+                            player.BoostTime = 0;
+                    }
+
                     //Console.WriteLine("Player state: " + player.CurrentState);
                     player.Velocity = (new Vector2(player.Velocity.X, -GameData.JUMP_SPEED));
                     player.CurrentState = Player.State.Jumping;
-                    player.BoostTime -= GameData.JUMP_COST;
-                    if (player.BoostTime < 0)
-                        player.BoostTime = 0;
                 }
                 else if (state.IsKeyDown(controls.down))
                 {
@@ -626,6 +639,9 @@ namespace Source
                     minY = player.Position.Y;
                 else if (player.Position.Y > maxY)
                     maxY = player.Position.Y;
+
+                if (player.Position.X < death)
+                    player.TimeSinceDeath = GameData.DEAD_TIME;
             }
 
             foreach (Player player in players)
@@ -654,6 +670,10 @@ namespace Source
                         max.Score++;
                 }
             }
+
+            float currentX = max == null ? averageX : max.Position.X;
+            if (currentX < death)
+                Reset();
 
             //float currentRatio = editLevel ? GameData.PIXEL_METER_EDIT : GameData.PIXEL_METER;
             float dist = maxY - minY;
