@@ -347,6 +347,8 @@ namespace Source
                         player.Velocity.X = GameData.BOOST_SPEED;
                         player.CurrentState = Player.State.Boosting;
                     }
+                    else if (player.CurrentState != Player.State.Boosting)
+                        player.Velocity.X = GameData.RUN_VELOCITY;
                 }
                 else if (state.IsKeyDown(controls.left))                // slow slide
                 {
@@ -756,7 +758,7 @@ namespace Source
                 dist = rand.Next(GameData.MIN_WALL_DIST, GameData.MAX_WALL_DIST);
                 while (dist < width)
                 {
-                    Wall wall = new Wall(whiteRect, new Vector2(levelEnd + dist, y + step / 2), step, GameData.WALL_HEALTH);
+                    Wall wall = new Wall(whiteRect, new Vector2(levelEnd + dist, y + step / 2), step - Floor.FLOOR_HEIGHT, GameData.WALL_HEALTH);
 
                     bool validStair = true;
                     int numCollisions = 0;

@@ -57,9 +57,9 @@ namespace Source
         public const int VIEW_HEIGHT = 720;        // height of unscaled screen in pixels
         public static Color[] playerColors = { Color.Red, Color.Yellow, Color.Purple };     // colors of each player
 
-        public const float DEAD_SPEED = 20f; // m/s -- the speed at which the dead 'wave' on the left moves
-        public const float DEAD_MAX = 30f; // m -- maximum distance between player and death if player is doing well
-        public const int DEAD_WIDTH = 200;
+        public const float DEAD_SPEED = 21.2f; // m/s -- the speed at which the dead 'wave' on the left moves
+        public const float DEAD_MAX = 40f; // m -- maximum distance between player and death if player is doing well
+        public const int DEAD_WIDTH = 600;
         public const int DEAD_HEIGHT = 2000;
 
         public const float GRAVITY = 26f;   // m/s^2 -- gravity for players
@@ -87,7 +87,7 @@ namespace Source
         public const float BOOST_REGEN = 5.6f; // boost will be refilled in this time (from 0)
         public const float STUN_LENGTH = 0.5f; // the player is stunned for this long
         public const float STUN_SCALE = 0.6f; // the player speed is scaled by this when stunned
-        public const float SHOOT_COST = 0.2f; // boost bar cost of a shot
+        public const float SHOOT_COST = 0.27f; // boost bar cost of a shot
         public const float JUMP_COST = 2 * JUMP_SPEED / GRAVITY / (BOOST_REGEN / BOOST_LENGTH); // use five equations to see time it takes to land on equal surface (v = v0 + at)
 
         public const string SONG = "Chiptune dash";    // the song to play, over, and over, and over again. NEVER STOP THE PARTY!
