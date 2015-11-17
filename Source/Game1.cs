@@ -865,6 +865,11 @@ namespace Source
             }
             spriteBatch.DrawString(font, text, new Vector2(10, 10), Color.Green);
 
+            // Display frames per second in the top right
+            string frames = (1f / deltaTime).ToString("n2");
+            float leftX = GraphicsDevice.Viewport.Width - font.MeasureString(frames).X;
+            spriteBatch.DrawString(font, frames, new Vector2(leftX, 0f), Color.LightGray);
+
             //if (levelAnnounceWaitAt > 0)
             //{
             //    float centerX = GraphicsDevice.Viewport.Width / 2.0f - fontBig.MeasureString("Level " + currentLevel).X / 2.0f;

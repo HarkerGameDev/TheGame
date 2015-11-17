@@ -13,7 +13,7 @@ namespace Source.Collisions
     /// </summary>
     public class Floor : Body
     {
-        public const float FLOOR_HEIGHT = 0.2f;
+        public const float FLOOR_HEIGHT = 0.3f;
         public bool Breakable = false;
 
         public Floor(Texture2D texture, Vector2 position, float width, float rotation = 0f)
