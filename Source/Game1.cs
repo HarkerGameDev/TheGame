@@ -739,7 +739,7 @@ namespace Source
                     float holeSize = (float)rand.NextDouble() * GameData.MAX_FLOOR_HOLE + GameData.MIN_FLOOR_HOLE;
                     dist += floorSize + holeSize;
 
-                    if (dist < width && rand.NextDouble() > GameData.STAIR_CHANCE && holeSize > GameData.MIN_STAIR_DIST)
+                    if (dist < width && rand.NextDouble() < GameData.STAIR_CHANCE && holeSize > GameData.MIN_STAIR_DIST)
                     {
                         Floor stair = new Floor(whiteRect, new Vector2(levelEnd + dist - GameData.STAIR_WIDTH, y + step), new Vector2(levelEnd + dist, y));
 
