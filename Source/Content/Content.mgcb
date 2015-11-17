@@ -25,24 +25,6 @@
 /processorParam:TextureFormat=Compressed
 /build:Fonts/ScoreBig.spritefont
 
-#begin Music/Chiptune dash.mp3
-/importer:Mp3Importer
-/processor:SongProcessor
-/processorParam:Quality=Best
-/build:Music/Chiptune dash.mp3
-
-#begin Music/Classic dash.mp3
-/importer:Mp3Importer
-/processor:SongProcessor
-/processorParam:Quality=Best
-/build:Music/Classic dash.mp3
-
-#begin Music/Hot potato.mp3
-/importer:Mp3Importer
-/processor:SongProcessor
-/processorParam:Quality=Best
-/build:Music/Hot potato.mp3
-
 #begin Art/GreenDude.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -53,4 +35,10 @@
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:TextureFormat=Color
 /build:Art/GreenDude.png
+
+#begin Music/afln_s_gdc-1.wav
+/importer:WavImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Music/afln_s_gdc-1.wav
 

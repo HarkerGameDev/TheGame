@@ -57,10 +57,12 @@ namespace Source
         public const int VIEW_HEIGHT = 720;        // height of unscaled screen in pixels
         public static Color[] playerColors = { Color.Red, Color.Yellow, Color.Purple };     // colors of each player
 
-        public const float DEAD_SPEED = RUN_VELOCITY * 1.1f; // m/s -- the speed at which the dead 'wave' on the left moves
+        public const float DEAD_START = RUN_VELOCITY;   // m/s -- the speed of dead wave at start of game
+        public const float DEAD_SPEED = RUN_VELOCITY * 1.11f; // m/s -- the speed at which the dead 'wave' on the left moves
         public const float DEAD_MAX = 40f; // m -- maximum distance between player and death if player is doing well
         public const int DEAD_WIDTH = 600;
         public const int DEAD_HEIGHT = 2000;
+        public const float WIN_TIME = 60f;  // s -- survive for this long to win
 
         public const float GRAVITY = 26f;   // m/s^2 -- gravity for players
         public const float GRAVITY_PART = 15f; // m/s^2 -- gravity for particles
@@ -90,8 +92,8 @@ namespace Source
         public const float SHOOT_COST = 0.3f; // boost bar cost of a shot
         public const float JUMP_COST = 2 * JUMP_SPEED / GRAVITY / (BOOST_REGEN / BOOST_LENGTH); // use five equations to see time it takes to land on equal surface (v = v0 + at)
 
-        public const string SONG = "Chiptune dash";    // the song to play, over, and over, and over again. NEVER STOP THE PARTY!
-        public const float VOLUME = 0f;                // volume for song
+        public const string SONG = "afln_s_gdc-1";    // the song to play, over, and over, and over again. NEVER STOP THE PARTY!
+        public const float VOLUME = 0.5f;                // volume for song
 
         public const float CAMERA_SCALE = 20f;         // how fast the camera moves
         public const float MAX_CAMERA_SPEED_X = 5f;    // maximum x speed of camera

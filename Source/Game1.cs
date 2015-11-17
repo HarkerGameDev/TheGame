@@ -55,6 +55,7 @@ namespace Source
         private Vector2 screenOffset;
 
         private bool paused;
+        private float totalTime;
 
         public List<Player> players;
         public List<Floor> floors;
@@ -93,6 +94,7 @@ namespace Source
             paused = false;
             editLevel = false;
             death = -GameData.DEAD_MAX;
+            totalTime = 0;
 
             // Initialize previous keyboard and gamepad states
             prevKeyState = new KeyboardState();
@@ -223,7 +225,8 @@ namespace Source
                 if (currentFloor == null)
                     HandleInput(deltaTime);
 
-                death += GameData.DEAD_SPEED * deltaTime;
+                totalTime += deltaTime;
+                death += MathHelper.SmoothStep(GameData.DEAD_START, GameData.DEAD_SPEED, totalTime / GameData.WIN_TIME) * deltaTime;
 
                 CheckPlayer();
                 //player.Update(gameTime.ElapsedGameTime.TotalSeconds);
@@ -314,6 +317,7 @@ namespace Source
             floors.Clear();
             walls.Clear();
             levelEnd = 0;
+            totalTime = 0;
             death = -GameData.DEAD_MAX;
         }
 
@@ -674,7 +678,10 @@ namespace Source
             }
 
             float currentX = max == null ? averageX : max.Position.X;
-            if (currentX < death)
+            if (currentX < death)   // lose
+                Reset();
+
+            if (totalTime > GameData.WIN_TIME)  // win. TODO -- do more than reset
                 Reset();
 
             //float currentRatio = editLevel ? GameData.PIXEL_METER_EDIT : GameData.PIXEL_METER;
@@ -891,6 +898,11 @@ namespace Source
             string frames = (1f / deltaTime).ToString("n2");
             float leftX = GraphicsDevice.Viewport.Width - font.MeasureString(frames).X;
             spriteBatch.DrawString(font, frames, new Vector2(leftX, 0f), Color.LightGray);
+
+            // Display time until win
+            string time = (GameData.WIN_TIME - totalTime).ToString("n1") + "s until win";
+            leftX = GraphicsDevice.Viewport.Width / 2f - font.MeasureString(time).X / 2f;
+            spriteBatch.DrawString(font, time, new Vector2(leftX, 0f), Color.LightSkyBlue);
 
             //if (levelAnnounceWaitAt > 0)
             //{
