@@ -71,7 +71,7 @@ namespace Source
 
         public enum State
         {
-            Playing, Paused, MainMenu, Controls
+            Running, Paused, MainMenu, Controls
         }
 
         public Game1()
@@ -163,7 +163,7 @@ namespace Source
 
             mainMenu = new List<Button>();
             mainMenu.Add(new Button(whiteRect, new Vector2(left, buttonHeight), new Vector2(buttonWidth, buttonHeight),
-                delegate() { state = State.Playing; }, Color.Blue,
+                delegate() { state = State.Running; }, Color.Blue,
                 font, "Play!", Color.Red));
             mainMenu.Add(new Button(whiteRect, new Vector2(left, height - buttonHeight * 2), new Vector2(buttonWidth, buttonHeight),
                 delegate() { Exit(); }, Color.Yellow,
@@ -171,7 +171,7 @@ namespace Source
 
             pauseMenu = new List<Button>();
             pauseMenu.Add(new Button(whiteRect, new Vector2(left, buttonHeight), new Vector2(buttonWidth, buttonHeight),
-                delegate() { state = State.Playing; }, Color.RoyalBlue,
+                delegate() { state = State.Running; }, Color.RoyalBlue,
                 font, "Continue", Color.Red));
             pauseMenu.Add(new Button(whiteRect, new Vector2(left, height - buttonHeight * 2), new Vector2(buttonWidth, buttonHeight),
                 delegate() { Exit(); }, Color.Green,
@@ -230,12 +230,12 @@ namespace Source
             // Handle toggle pause
             // TODO open pause menu
             if (Keyboard.GetState().IsKeyDown(Keys.Space) && !prevKeyState.IsKeyDown(Keys.Space))
-                state = state == State.Paused ? State.Playing : State.Paused;
+                state = state == State.Paused ? State.Running : State.Paused;
 
             // Toggle edit level
             // TODO much better level editing/ creation
             switch (state) {
-                case State.Playing:
+                case State.Running:
                     if (ToggleKey(Keys.E))
                     {
                         editLevel = !editLevel;
@@ -304,6 +304,8 @@ namespace Source
                             }
                         }
                     }
+                    if (Keyboard.GetState().IsKeyDown(Keys.Enter))
+                        state = State.Running;
                     break;
                 case State.Controls:
                     // don't do any updates
@@ -443,17 +445,17 @@ namespace Source
                 }
                 if (state.IsKeyDown(controls.up))     // jump
                 {
-                    if (player.CurrentState == Player.State.Boosting)
-                    {
+                    //if (player.CurrentState == Player.State.Boosting)
+                    //{
                         //Console.WriteLine("Boosting jump");
-                        player.BoostTime -= GameData.JUMP_COST;
-                        if (player.BoostTime < 0)
-                            player.BoostTime = 0;
-                    }
+                        //player.BoostTime -= GameData.JUMP_COST;
+                        //if (player.BoostTime < 0)
+                        //    player.BoostTime = 0;
+                    //}
 
                     //Console.WriteLine("Player state: " + player.CurrentState);
                     player.Velocity.Y = -GameData.JUMP_SPEED;
-                    player.TargetVelocity = player.TargetVelocity * 0.75f;
+                    player.TargetVelocity = player.TargetVelocity * GameData.JUMP_SLOW;
                     player.CurrentState = Player.State.Jumping;
                 }
                 else if (state.IsKeyDown(controls.down))
@@ -911,7 +913,7 @@ namespace Source
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
             switch (state) {
-                case State.Playing:
+                case State.Running:
                     // Find average position across all players
                     Vector2 averagePos = Vector2.Zero;
                     foreach (Player player in players)

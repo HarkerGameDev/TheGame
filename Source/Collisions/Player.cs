@@ -65,9 +65,9 @@ namespace Source.Collisions
         public override void Move(float deltaTime)
         {
             float diff = Velocity.X - TargetVelocity;
-            if (diff < GameData.MIN_VELOCITY)
+            if (Math.Abs(diff) < GameData.MIN_VELOCITY)
                 Velocity.X = TargetVelocity;
-            else
+            else // if (!InAir)
                 Velocity.X -= Math.Sign(diff) * deltaTime * GameData.MAX_ACCEL;
 
             if (StunTime > 0)

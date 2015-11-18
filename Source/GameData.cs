@@ -61,8 +61,8 @@ namespace Source
         public const int VIEW_HEIGHT = 720;        // height of unscaled screen in pixels
         public static Color[] playerColors = { Color.Red, Color.Yellow, Color.Purple };     // colors of each player
 
-        public const float DEAD_START = RUN_VELOCITY;   // m/s -- the speed of dead wave at start of game
-        public const float DEAD_SPEED = RUN_VELOCITY * 1.11f; // m/s -- the speed at which the dead 'wave' on the left moves
+        public const float DEAD_START = RUN_VELOCITY - 2f;   // m/s -- the speed of dead wave at start of game
+        public const float DEAD_SPEED = RUN_VELOCITY + 2f; // m/s -- the speed at which the dead 'wave' on the left moves
         public const float DEAD_MAX = 40f; // m -- maximum distance between player and death if player is doing well
         public const int DEAD_WIDTH = 600;
         public const int DEAD_HEIGHT = 2000;
@@ -76,9 +76,10 @@ namespace Source
         public const float MIN_VELOCITY = 1f;  // m/s -- what can be considered target velocity
         public const float SLOW_SPEED = 13f; // m/s -- speed player is going at when slowing down
         public const float RUN_VELOCITY = 22f; // m/s -- maximum horizontal velocity for player
-        public const float BOOST_SPEED = 27f; // m/s -- horizontal velocity when boosting
-        public const float MAX_ACCEL = 30f;   // m/s^2 -- the impulse which is applied when player starts moving after standing still
+        public const float BOOST_SPEED = 25f; // m/s -- horizontal velocity when boosting
+        public const float MAX_ACCEL = 40f;   // m/s^2 -- the impulse which is applied when player starts moving after standing still
         public const float JUMP_SPEED = 18f; // m/s -- the initial upwards velocity when player jumps
+        public const float JUMP_SLOW = 0.85f;   // -- x velocity is scaled by this when jumping
         public const float SLAM_SPEED = 17f; // m/s -- the speed at which the player goes down when slamming
         public const float SLOWDOWN = 45f;      // m/s^2 -- impulse applied in opposite direction of travel to simulate friction
         public const float AIR_RESIST = 0.75f; //     -- air resistance on a scale of 0 to 1, where 1 is as if player is on ground
@@ -90,12 +91,12 @@ namespace Source
         public const float RESPAWN_DIST = 10;
         public const float CLIMB_SPEED = 8f;     // m/s -- speed of climbing onto a ledge
 
-        public const float BOOST_LENGTH = 4.8f;  // how long a player can boost for
-        public const float BOOST_REGEN = 5.6f; // boost will be refilled in this time (from 0)
+        public const float BOOST_LENGTH = 6f;  // how long a player can boost for
+        public const float BOOST_REGEN = 8.7f; // boost will be refilled in this time (from 0)
         public const float STUN_LENGTH = 0.5f; // the player is stunned for this long
         public const float STUN_SCALE = 0.6f; // the player speed is scaled by this when stunned
         public const float SHOOT_COST = 0.3f; // boost bar cost of a shot
-        public const float JUMP_COST = 2 * JUMP_SPEED / GRAVITY / (BOOST_REGEN / BOOST_LENGTH); // use five equations to see time it takes to land on equal surface (v = v0 + at)
+        //public const float JUMP_COST = 2 * JUMP_SPEED / GRAVITY / (BOOST_REGEN / BOOST_LENGTH); // use five equations to see time it takes to land on equal surface (v = v0 + at)
 
         public const string SONG = "afln_s_gdc-1";    // the song to play, over, and over, and over again. NEVER STOP THE PARTY!
         public const float VOLUME = 0.0f;                // volume for song
