@@ -28,8 +28,8 @@ namespace Source
 
         public const int MIN_LEVEL_WIDTH = 20;  // width of levels
         public const int MAX_LEVEL_WIDTH = 50;
-        public const float MIN_FLOOR_HOLE = 6f; // size of a hole inside a building
-        public const float MAX_FLOOR_HOLE = 9f - MIN_FLOOR_HOLE;
+        public const float MIN_FLOOR_HOLE = 9f; // size of a hole inside a building
+        public const float MAX_FLOOR_HOLE = 12f - MIN_FLOOR_HOLE;
         public const float MIN_FLOOR_DIST = 15; // width of a floor until a hole is reached
         public const float MAX_FLOOR_DIST = 60 - MIN_FLOOR_DIST;
         public const int MIN_LEVEL_STEP = 5;    // size of each floor in building
@@ -71,7 +71,7 @@ namespace Source
         public const int WIN_SCORE = 10;    // score to get when winning
         public const int LOSE_SCORE = 5;    // score to lose when hit by purple
 
-        public const float GRAVITY = 26f;   // m/s^2 -- gravity for players
+        public const float GRAVITY = 36f;   // m/s^2 -- gravity for players
         public const float GRAVITY_PART = 15f; // m/s^2 -- gravity for particles
         public const float MIN_VELOCITY = 1f;  // m/s -- what can be considered target velocity
         public const float SLOW_SPEED = 13f; // m/s -- speed player is going at when slowing down
