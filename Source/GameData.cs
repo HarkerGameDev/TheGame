@@ -71,7 +71,7 @@ namespace Source
         public const int WIN_SCORE = 10;    // score to get when winning
         public const int LOSE_SCORE = 5;    // score to lose when hit by purple
 
-        public const float GRAVITY = 26f;   // m/s^2 -- gravity for players
+        public const float GRAVITY = 36f;   // m/s^2 -- gravity for players
         public const float GRAVITY_PART = 15f; // m/s^2 -- gravity for particles
         public const float MIN_VELOCITY = 1f;  // m/s -- what can be considered target velocity
         public const float SLOW_SPEED = 13f; // m/s -- speed player is going at when slowing down
