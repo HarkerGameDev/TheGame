@@ -32,6 +32,7 @@ namespace Source.Collisions
         public float StunTime = GameData.STUN_LENGTH;
         public bool WallAbove = false;
         public float TargetVelocity = GameData.RUN_VELOCITY;
+        public float SpawnY = 0;
 
         public bool InAir { get { return CurrentState == State.Jumping || CurrentState == State.Slamming; } }
         public bool CanJump { get { return CurrentState == State.Walking || CurrentState == State.Boosting; } }
@@ -86,7 +87,7 @@ namespace Source.Collisions
 
             if (BoostTime < 0)
             {
-                Velocity.X = GameData.RUN_VELOCITY;
+                TargetVelocity = GameData.RUN_VELOCITY;
                 CurrentState = State.Walking;
             }
         }
@@ -101,6 +102,14 @@ namespace Source.Collisions
             Vector2 pos = new Vector2(Position.X - BAR_WIDTH / 2, Position.Y - Size.Y * 0.7f);
             Game1.DrawRectangle(spriteBatch, pos, Color.LightSalmon, new Vector2(BAR_WIDTH, BAR_HEIGHT));
             Game1.DrawRectangle(spriteBatch, pos, Color.Crimson, new Vector2(BAR_WIDTH * BoostTime / GameData.BOOST_LENGTH, BAR_HEIGHT));
+        }
+
+        public void Kill(Random rand)
+        {
+            TimeSinceDeath = GameData.DEAD_TIME;
+            Projectiles.Clear();
+            SpawnY = -rand.Next(GameData.MIN_SPAWN, GameData.MAX_SPAWN);
+            BoostTime = GameData.BOOST_LENGTH;
         }
 
         //public void setRotation(Body body)

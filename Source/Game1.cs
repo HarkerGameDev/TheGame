@@ -212,7 +212,6 @@ namespace Source
             // TODO much better level editing/ creation
             switch (state) {
                 case State.Playing:
-                case State.Paused:
                     if (ToggleKey(Keys.E))
                     {
                         editLevel = !editLevel;
@@ -231,8 +230,7 @@ namespace Source
                     {
                         HandleEditLevel();
                     }
-
-                    if (state == State.Playing)
+                    else
                     {
                         float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
                         if (currentFloor == null)
@@ -248,6 +246,9 @@ namespace Source
 
                         world.Step(deltaTime);
                     }
+                    break;
+                case State.Paused:
+                    // TODO recognize pause menu buttons
                     break;
                 case State.MainMenu:
                     // TODO recognize buttons
@@ -400,7 +401,7 @@ namespace Source
                     }
 
                     //Console.WriteLine("Player state: " + player.CurrentState);
-                    player.Velocity = (new Vector2(player.Velocity.X, -GameData.JUMP_SPEED));
+                    player.Velocity.Y = -GameData.JUMP_SPEED;
                     player.CurrentState = Player.State.Jumping;
                 }
                 else if (state.IsKeyDown(controls.down))
@@ -680,7 +681,8 @@ namespace Source
                     float targetX = allDead ? averageX : max.Position.X;
                     float targetY = allDead ? -GameData.RESPAWN_DIST : max.Position.Y;
                     float newX = MathHelper.Lerp(targetX, player.Position.X, val);
-                    float newY = MathHelper.Lerp(targetY, allDead ? 0 : player.Position.Y, val);
+                    //float newY = MathHelper.Lerp(targetY, allDead ? 0 : player.Position.Y, val);
+                    float newY = MathHelper.Lerp(player.SpawnY, player.Position.Y, val);
 
                     player.MoveToPosition(new Vector2(newX, newY));
                     //player.Velocity = new Vector2(newX - player.Position.X, newY - player.Position.Y) * val;
@@ -688,10 +690,9 @@ namespace Source
                     //Console.WriteLine("Target " + new Vector2(targetX, targetY));
                     //Console.WriteLine("Max: " + max == null);
                 }
-                else if (player.Position.X < averageX - GameData.DEAD_DIST || player.Position.X < death)
+                else if (player.Position.X < averageX - ConvertUnits.ToSimUnits(GameData.DEAD_DIST) || player.Position.X < death)
                 {
-                    player.TimeSinceDeath = GameData.DEAD_TIME;
-                    player.Projectiles.Clear();
+                    player.Kill(rand);
                     if (max != null)
                         max.Score++;
                     if (--player.Score < 0)

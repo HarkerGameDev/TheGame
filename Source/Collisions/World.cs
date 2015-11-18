@@ -208,8 +208,7 @@ namespace Source.Collisions
 				player.Velocity.Y = 0;
 
 				// Kill the player
-				player.TimeSinceDeath = GameData.DEAD_TIME;
-				player.Projectiles.Clear ();
+                player.Kill(game.rand);
 				//player.MovePosition(new Vector2(0f, -10f));
 				if (player.Score == 0) {
 					for (int i = 0; i < game.players.Count; i++) {
@@ -279,6 +278,7 @@ namespace Source.Collisions
                         MakeParticles(player.Position, wall, GameData.NUM_PART_WALL, 0, 1);
                     }
                     translation.Y = 0;
+                    player.Velocity.X = 0;
                     player.MovePosition(-translation);
 
                     if (wall.Position.Y < player.Position.Y)

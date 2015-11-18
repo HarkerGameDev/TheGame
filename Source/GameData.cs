@@ -22,22 +22,24 @@ namespace Source
                                                        new Controls(Keys.A, Keys.D, Keys.W, Keys.S, Keys.LeftShift),
                                                        new Controls(Keys.J, Keys.L, Keys.I, Keys.K, Keys.O)};
 
-        public const float LOAD_NEW = 50f;     // the next level will be loaded when the player is this far from the current end
+        public const float LOAD_NEW = 70f;     // the next level will be loaded when the player is this far from the current end
         public const int MAX_FLOORS = 50;    // maximum number of floors at any given time
         public const int MAX_WALLS = 90;    // maximum number of walls
 
         public const int MIN_LEVEL_WIDTH = 20;  // width of levels
         public const int MAX_LEVEL_WIDTH = 50;
-        public const float MIN_FLOOR_HOLE = 5f; // size of a hole inside a building
+        public const float MIN_FLOOR_HOLE = 6f; // size of a hole inside a building
         public const float MAX_FLOOR_HOLE = 9f - MIN_FLOOR_HOLE;
         public const float MIN_FLOOR_DIST = 15; // width of a floor until a hole is reached
-        public const float MAX_FLOOR_DIST = 80 - MIN_FLOOR_DIST;
+        public const float MAX_FLOOR_DIST = 60 - MIN_FLOOR_DIST;
         public const int MIN_LEVEL_STEP = 5;    // size of each floor in building
-        public const int MAX_LEVEL_STEP = 10;
+        public const int MAX_LEVEL_STEP = 9;
         public const int MIN_NUM_FLOORS = 5;    // number of floors per building
         public const int MAX_NUM_FLOORS = 11;
         public const int MIN_WALL_DIST = 10;    // distance between walls inside rooms
         public const int MAX_WALL_DIST = 90;
+        public const int LEVEL_DIST_MIN = 5;    // the space between different buildings
+        public const int LEVEL_DIST_MAX = 12;
 
         public const float FLOOR_HOLE = 3.5f;   // size in m of hole to make when slamming
         public const int WINDOW_HEALTH = 1;     // windows are on the side of buildings
@@ -48,7 +50,7 @@ namespace Source
         public const float MIN_STAIR_DIST = 6.3f;    // minimum size of a hole for a stair to be created
 
         public const float PLAYER_START = 2f;   // starting x position of player
-        public const int MIN_SPAWN = MAX_LEVEL_STEP + 1;  // minimum spawning position (vertically)
+        public const int MIN_SPAWN = MAX_LEVEL_STEP * 2 + 1;  // minimum spawning position (vertically)
         public const int MAX_SPAWN = MIN_LEVEL_STEP * MIN_NUM_FLOORS + 10;  // maximum spawning position (vertically)
         public const int PLAYER_STEP = 2;       // player collisions will be calculated this many times per tick to avoid  (only if fixed time step)
 
@@ -75,7 +77,7 @@ namespace Source
         public const float SLOW_SPEED = 13f; // m/s -- speed player is going at when slowing down
         public const float RUN_VELOCITY = 22f; // m/s -- maximum horizontal velocity for player
         public const float BOOST_SPEED = 27f; // m/s -- horizontal velocity when boosting
-        public const float MAX_ACCEL = 40f;   // m/s^2 -- the impulse which is applied when player starts moving after standing still
+        public const float MAX_ACCEL = 30f;   // m/s^2 -- the impulse which is applied when player starts moving after standing still
         public const float JUMP_SPEED = 18f; // m/s -- the initial upwards velocity when player jumps
         public const float SLAM_SPEED = 17f; // m/s -- the speed at which the player goes down when slamming
         public const float SLOWDOWN = 45f;      // m/s^2 -- impulse applied in opposite direction of travel to simulate friction
@@ -85,8 +87,6 @@ namespace Source
         //public const float PUSH_POW = 10f;     // m/s -- the impulse applied to the player to get down a platform
         public const float MIN_WOBBLE = 0f;  //     -- the minimum ratio between max velocity and (max - current velocity) for wobbling
         public const float MAX_WOBBLE = 0f;    //     -- the maximum ratio for wobbling; we don't want wobble amplifier 40x
-        public const int LEVEL_DIST_MIN = 3;   // the min space between levels
-        public const int LEVEL_DIST_MAX = 15;   // max space between levels
         public const float RESPAWN_DIST = 10;
         public const float CLIMB_SPEED = 8f;     // m/s -- speed of climbing onto a ledge
 
@@ -108,7 +108,7 @@ namespace Source
         public const float SCREEN_RIGHT = 0.35f;       // defines the right limit of the player on wobble-screen
         public const float SCREEN_SPACE = 0.45f;        // camera will begin zooming out when the player are SCREEN_SPACE % of the screen apart from each other
         public const float SCREEN_TOP = 0.3f;          // defines the distance from the top or bottom of the screen for the player in wobble-screen
-        public const float DEAD_DIST = 10f;            // players this distance or more behind the average x will move to the maximum player
+        public const float DEAD_DIST = 240f;            // players this distance or more behind the average x will move to the maximum player (in pixels)
         public const double DEAD_TIME = 3;             // respawn time when a player gets behind the cutoff
         public const double PHASE_TIME = 1;            // the point at which the player will be visible again after dying to get the player prepared
 
