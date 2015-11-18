@@ -402,7 +402,7 @@ namespace Source
 
                     //Console.WriteLine("Player state: " + player.CurrentState);
                     player.Velocity.Y = -GameData.JUMP_SPEED;
-                    player.TargetVelocity = ( float )(player.TargetVelocity * 0.75);
+                    player.TargetVelocity = player.TargetVelocity * 0.75f;
                     player.CurrentState = Player.State.Jumping;
                 }
                 else if (state.IsKeyDown(controls.down))
