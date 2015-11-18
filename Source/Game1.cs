@@ -63,6 +63,9 @@ namespace Source
         public List<Wall> walls;
         public List<Particle> particles;
 
+        private List<Button> pauseMenu;
+        private List<Button> mainMenu;
+
         private int levelEnd;
         private float death;
 
@@ -152,6 +155,27 @@ namespace Source
                 (int)(width * (GameData.SCREEN_RIGHT - GameData.SCREEN_LEFT)), (int)(height * (1 - 2 * GameData.SCREEN_TOP)));
             screenCenter = cameraBounds.Center.ToVector2();
             screenOffset = Vector2.Zero;
+
+            // Make menus
+            float buttonWidth = width * GameData.BUTTON_WIDTH;
+            float buttonHeight = height * GameData.BUTTON_HEIGHT;
+            float left = (width - buttonWidth) / 2f;
+
+            mainMenu = new List<Button>();
+            mainMenu.Add(new Button(whiteRect, new Vector2(left, buttonHeight), new Vector2(buttonWidth, buttonHeight),
+                delegate() { state = State.Playing; }, Color.Blue,
+                font, "Play!", Color.Red));
+            mainMenu.Add(new Button(whiteRect, new Vector2(left, height - buttonHeight * 2), new Vector2(buttonWidth, buttonHeight),
+                delegate() { Exit(); }, Color.Yellow,
+                font, "Exit", Color.Red));
+
+            pauseMenu = new List<Button>();
+            pauseMenu.Add(new Button(whiteRect, new Vector2(left, buttonHeight), new Vector2(buttonWidth, buttonHeight),
+                delegate() { state = State.Playing; }, Color.RoyalBlue,
+                font, "Continue", Color.Red));
+            pauseMenu.Add(new Button(whiteRect, new Vector2(left, height - buttonHeight * 2), new Vector2(buttonWidth, buttonHeight),
+                delegate() { Exit(); }, Color.Green,
+                font, "Exit", Color.Red));
 
             // Load the level stored in LEVEL_FILE
             levelEnd = 0;
@@ -248,11 +272,38 @@ namespace Source
                     }
                     break;
                 case State.Paused:
-                    // TODO recognize pause menu buttons
+                    foreach (Button button in mainMenu)
+                    {
+                        MouseState mouse = Mouse.GetState();
+                        if (button.TestPoint(mouse.Position))
+                        {
+                            if (mouse.LeftButton == ButtonState.Pressed)
+                            {
+                                button.OnClick();
+                            }
+                            else
+                            {
+                                // TODO some hover over display
+                            }
+                        }
+                    }
                     break;
                 case State.MainMenu:
-                    // TODO recognize buttons
-                    state = State.Playing;
+                    foreach (Button button in mainMenu)
+                    {
+                        MouseState mouse = Mouse.GetState();
+                        if (button.TestPoint(mouse.Position))
+                        {
+                            if (mouse.LeftButton == ButtonState.Pressed)
+                            {
+                                button.OnClick();
+                            }
+                            else
+                            {
+                                // TODO some hover over display
+                            }
+                        }
+                    }
                     break;
                 case State.Controls:
                     // don't do any updates
@@ -960,9 +1011,21 @@ namespace Source
                     break;
                 case State.Paused:
                     GraphicsDevice.Clear(Color.Yellow);
+
+                    spriteBatch.Begin();
+                    foreach (Button button in pauseMenu)
+                        button.Draw(spriteBatch);
+                    spriteBatch.End();
+
                     break;
                 case State.MainMenu:
                     GraphicsDevice.Clear(Color.Turquoise);
+
+                    spriteBatch.Begin();
+                    foreach (Button button in mainMenu)
+                        button.Draw(spriteBatch);
+                    spriteBatch.End();
+
                     break;
                 case State.Controls:
                     GraphicsDevice.Clear(Color.Plum);

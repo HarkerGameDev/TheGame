@@ -98,7 +98,7 @@ namespace Source
         public const float JUMP_COST = 2 * JUMP_SPEED / GRAVITY / (BOOST_REGEN / BOOST_LENGTH); // use five equations to see time it takes to land on equal surface (v = v0 + at)
 
         public const string SONG = "afln_s_gdc-1";    // the song to play, over, and over, and over again. NEVER STOP THE PARTY!
-        public const float VOLUME = 0.5f;                // volume for song
+        public const float VOLUME = 0.0f;                // volume for song
 
         public const float CAMERA_SCALE_X = 4f;         // how fast the camera moves
         public const float CAMERA_SCALE_Y = 20f;        // vertical speed of camera
@@ -123,6 +123,9 @@ namespace Source
 
         public const float PROJ_SPEED = 60f;    // speed of a projectile
         public const float PROJ_LIVE = 1.0f;     // lifetime of a projectile in s
+
+        public const float BUTTON_WIDTH = 0.4f;  // width of a button in proportion of screen
+        public const float BUTTON_HEIGHT = 0.1f;    // height of button in proportion
 
         public struct Controls {
             public Keys left, right, up, down, shoot;
