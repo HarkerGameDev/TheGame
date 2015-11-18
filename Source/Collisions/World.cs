@@ -68,6 +68,7 @@ namespace Source.Collisions
                         CheckWalls(player);
                     }
                     CheckFloors(player);
+                    CheckObstacles(player);
                 }
             }
         }
@@ -120,6 +121,14 @@ namespace Source.Collisions
                         game.floors.Remove(floor);
                         MakeParticles(proj.Position, floor, GameData.NUM_PART_WALL, 1, 0);
                     }
+                    return;
+                }
+            }
+            foreach (Obstacle obstacle in game.obstacles)
+            {
+                if (proj.Intersects(obstacle) != Vector2.Zero)
+                {
+                    player.Projectiles.RemoveAt(projIndex);
                     return;
                 }
             }
@@ -292,6 +301,32 @@ namespace Source.Collisions
                     //    player.Velocity.X = 0;
                     //else
                     //    player.Velocity.Y = 0;
+                }
+            }
+
+            player.MovePosition(new Vector2(0.0001f, 0)); // an extremely small amount to still render floor climbing
+        }
+
+        private void CheckObstacles(Player player)
+        {
+            for (int i = game.obstacles.Count - 1; i >= 0; i--)
+            {
+                Obstacle obstacle = game.obstacles[i];
+                Vector2 translation = player.Intersects(obstacle);
+                if (translation != Vector2.Zero)
+                {
+                    if (player.CurrentState == Player.State.Slamming)
+                    {
+                        game.walls.RemoveAt(i);
+                        MakeParticles(player.Position, obstacle, GameData.NUM_PART_FLOOR, 0, 0);
+                    }
+
+                    if (translation.X != 0)
+                        player.Velocity.X = 0;
+                    else
+                        player.Velocity.Y = 0;
+
+                    player.MovePosition(-translation);
                 }
             }
 

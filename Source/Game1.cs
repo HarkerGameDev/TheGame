@@ -62,6 +62,7 @@ namespace Source
         public List<Floor> floors;
         public List<Wall> walls;
         public List<Particle> particles;
+        public List<Obstacle> obstacles;
 
         private List<Button> pauseMenu;
         private List<Button> mainMenu;
@@ -146,6 +147,7 @@ namespace Source
             floors = new List<Floor>();
             walls = new List<Wall>();
             particles = new List<Particle>();
+            obstacles = new List<Obstacle>();
             world = new World(this);
 
             // Initialize camera
@@ -352,6 +354,17 @@ namespace Source
                 if (player.TimeSinceDeath > 0)
                 {
                     player.TimeSinceDeath -= deltaTime;
+                    if (player.TimeSinceDeath < 0)
+                    {
+                        Body spawnProtect = new Floor(whiteRect,
+                            new Vector2(player.Position.X + GameData.SPAWN_PROTECT / 2f - player.Size.X, player.Position.Y), GameData.SPAWN_PROTECT);
+                        for (int x = walls.Count - 1; x >= 0; x--)
+                        {
+                            Wall wall = walls[x];
+                            if (spawnProtect.Intersects(wall) != Vector2.Zero)
+                                walls.RemoveAt(x);
+                        }
+                    }
                 }
             }
 
@@ -395,6 +408,7 @@ namespace Source
             }
             floors.Clear();
             walls.Clear();
+            obstacles.Clear();
             levelEnd = 0;
             totalTime = 0;
             death = -GameData.DEAD_MAX;
@@ -901,6 +915,8 @@ namespace Source
                 floors.RemoveRange(0, floors.Count - GameData.MAX_FLOORS);
             if (walls.Count > GameData.MAX_WALLS)
                 walls.RemoveRange(0, walls.Count - GameData.MAX_WALLS);
+            if (obstacles.Count > GameData.MAX_OBSTACLES)
+                obstacles.RemoveRange(0, obstacles.Count - GameData.MAX_OBSTACLES);
         }
 
         /// <summary>
@@ -953,6 +969,8 @@ namespace Source
                     }
                     foreach (Wall wall in walls)
                         wall.Draw(spriteBatch);
+                    foreach (Obstacle obstacle in obstacles)
+                        obstacle.Draw(spriteBatch);
                     if (currentFloor != null)
                         DrawRect(currentFloor.Position, Color.Green, currentFloor.Rotation, currentFloor.Origin, currentFloor.Size);
                     if (editingFloor)

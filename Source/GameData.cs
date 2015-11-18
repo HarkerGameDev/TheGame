@@ -25,6 +25,7 @@ namespace Source
         public const float LOAD_NEW = 70f;     // the next level will be loaded when the player is this far from the current end
         public const int MAX_FLOORS = 50;    // maximum number of floors at any given time
         public const int MAX_WALLS = 90;    // maximum number of walls
+        public const int MAX_OBSTACLES = 40;    // maximum obstacles
 
         public const int MIN_LEVEL_WIDTH = 20;  // width of levels
         public const int MAX_LEVEL_WIDTH = 50;
@@ -53,6 +54,7 @@ namespace Source
         public const int MIN_SPAWN = MAX_LEVEL_STEP * 2 + 1;  // minimum spawning position (vertically)
         public const int MAX_SPAWN = MIN_LEVEL_STEP * MIN_NUM_FLOORS + 10;  // maximum spawning position (vertically)
         public const int PLAYER_STEP = 2;       // player collisions will be calculated this many times per tick to avoid  (only if fixed time step)
+        public const float SPAWN_PROTECT = 5f;  // stuff this far apart from the player will be destroyed when the player is spawned
 
         public const float ZOOM_STEP = 1.5f;       // scale by which zoom is changed with + and -
         public const float PIXEL_METER = 24f;      // pixels per meter for normal game
@@ -62,7 +64,7 @@ namespace Source
         public static Color[] playerColors = { Color.Red, Color.Yellow, Color.Purple };     // colors of each player
 
         public const float DEAD_START = RUN_VELOCITY - 2f;   // m/s -- the speed of dead wave at start of game
-        public const float DEAD_SPEED = RUN_VELOCITY + 2f; // m/s -- the speed at which the dead 'wave' on the left moves
+        public const float DEAD_SPEED = RUN_VELOCITY + 1f; // m/s -- the speed at which the dead 'wave' on the left moves
         public const float DEAD_MAX = 40f; // m -- maximum distance between player and death if player is doing well
         public const int DEAD_WIDTH = 600;
         public const int DEAD_HEIGHT = 2000;
