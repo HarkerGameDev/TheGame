@@ -686,9 +686,9 @@ namespace Source
                     currentFloor = null;
                 else if (ToggleKey(Keys.F))
                 {
-                    currentFloor.Breakable = !currentFloor.Breakable;
+                    currentFloor.Health = currentFloor.Health == 0 ? GameData.STAIR_HEALTH : 0;
                     //Console.WriteLine("Made floor" + (currentFloor.Breakable ? "" : " not") + " breakable");
-                    currentFloor.Color = currentFloor.Breakable ? Color.LightGoldenrodYellow : Color.Azure;
+                    currentFloor.Color = currentFloor.Health != 0 ? Color.LightGoldenrodYellow : Color.Azure;
                 }
             }
             if (ToggleKey(Keys.OemPlus))                       // Zoom in and out
@@ -867,7 +867,7 @@ namespace Source
 
                         if (numCollisions > 0)
                         {
-                            stair.Breakable = true;
+                            stair.Health = GameData.STAIR_HEALTH;
                             stair.Color = Color.LightGoldenrodYellow;
                             floors.Add(stair);
                         }
@@ -886,7 +886,7 @@ namespace Source
                         if (wall.Intersects(floor) != Vector2.Zero)
                         {
                             //floor.Color = Color.Plum;
-                            if (floor.Breakable)
+                            if (floor.Health > 0)
                             {
                                 wall = null;
                                 validStair = false;

@@ -116,7 +116,7 @@ namespace Source.Collisions
                 if (proj.Intersects(floor) != Vector2.Zero)
                 {
                     player.Projectiles.RemoveAt(projIndex);
-                    if (floor.Breakable)
+                    if (--floor.Health == 0)
                     {
                         game.floors.Remove(floor);
                         MakeParticles(proj.Position, floor, GameData.NUM_PART_WALL, 1, 0);
@@ -188,7 +188,7 @@ namespace Source.Collisions
                     }
                     else        // player is Slamming
                     {
-                        if (floor.Breakable)
+                        if (floor.Health > 0)
                         {
                             MakeParticles(player.Position, floor, GameData.NUM_PART_WALL, 0, 1);
                         }
@@ -286,15 +286,18 @@ namespace Source.Collisions
                         game.walls.RemoveAt(i);
                         MakeParticles(player.Position, wall, GameData.NUM_PART_WALL, 0, 1);
                     }
-                    translation.Y = 0;
-                    player.Velocity.X = 0;
-                    player.MovePosition(-translation);
-
-                    if (wall.Position.Y < player.Position.Y)
+                    else
                     {
-                        player.WallAbove = true;
-                        //Console.WriteLine("Wall at " + wall.Position);
-                        //Console.WriteLine("Player at " + player.Position);
+                        translation.Y = 0;
+                        player.Velocity.X = 0;
+                        player.MovePosition(-translation);
+
+                        if (wall.Position.Y < player.Position.Y)
+                        {
+                            player.WallAbove = true;
+                            //Console.WriteLine("Wall at " + wall.Position);
+                            //Console.WriteLine("Player at " + player.Position);
+                        }
                     }
 
                     //if (translation.X != 0)

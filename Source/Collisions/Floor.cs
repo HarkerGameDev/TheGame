@@ -14,7 +14,7 @@ namespace Source.Collisions
     public class Floor : Body
     {
         public const float FLOOR_HEIGHT = 0.3f;
-        public bool Breakable = false;
+        public int Health = 0;
 
         public Floor(Texture2D texture, Vector2 position, float width, float rotation = 0f)
             : base(texture, position, new Vector2(width, FLOOR_HEIGHT), rotation)
