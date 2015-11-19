@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-	<Product Id="*" Name="Game" Language="1033" Version="1.0.0.0" Manufacturer="Game Dev" UpgradeCode="b0cd9e0b-9b48-40e9-a4bb-260b0db5a919">
+	<Product Id="*" Name="Game" Language="1033" Version="0.2.0" Manufacturer="Game Dev" UpgradeCode="b0cd9e0b-9b48-40e9-a4bb-260b0db5a919">
 		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" Comments="Windows Installer Package" />
 
 		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
@@ -9,6 +9,7 @@
     <Feature Id="ProductFeature" Title="GameFeature" Level="1">
       <!--<ComponentGroupRef Id="ProductComponents" />-->
       <ComponentGroupRef Id="GameFiles" />
+      <ComponentRef Id="ApplicationShortcut" />
     </Feature>
 	</Product>
 
@@ -17,7 +18,23 @@
 			<Directory Id="ProgramFilesFolder">
 				<Directory Id="INSTALLFOLDER" Name="Game" />
 			</Directory>
+      
+      <Directory Id="ProgramMenuFolder">
+        <Directory Id="ApplicationProgramsFolder" Name="Game" />
+      </Directory>
 		</Directory>
+  
+    <DirectoryRef Id="ApplicationProgramsFolder">
+      <Component Id="ApplicationShortcut" Guid="*">
+        <Shortcut Id="ApplicationStartMenuShortcut" 
+              Name="Game"
+            Description="The Game"
+            Target="[INSTALLFOLDER]Game.exe"
+                  WorkingDirectory="INSTALLFOLDER"/>
+        <RemoveFolder Id="ApplicationProgramsFolder" On="uninstall"/>
+        <RegistryValue Root="HKCU" Key="Software\Game Dev\Game" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+      </Component>
+    </DirectoryRef>
 	</Fragment>
 
 	<Fragment>

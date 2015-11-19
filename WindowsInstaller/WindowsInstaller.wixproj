@@ -27,6 +27,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Product.wxs" />
+    <Compile Include="SourceFiles.wxs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Windows\Windows.csproj">
