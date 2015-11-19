@@ -2,82 +2,82 @@
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
     <Fragment>
         <DirectoryRef Id="INSTALLFOLDER">
-            <Component Id="cmp233DA87865D8E1F7A008246AF09C57F9" Guid="{DAA61CB0-CBD0-4B0A-BCAA-F8A7189BACDA}">
+            <Component Id="cmp233DA87865D8E1F7A008246AF09C57F9" Guid="{183EACDA-C942-427C-B1E4-6BADFB60D1E7}">
                 <File Id="fil234291F19DE2AB90D754479E42496D39" KeyPath="yes" Source="$(var.SourceFilesDir)\Game.exe" />
             </Component>
-            <Component Id="cmp0AA1C1C90F45EFC08D32CED7665EAF02" Guid="{F71924B9-19A5-4A8E-9071-E8AEA518BB01}">
+            <Component Id="cmp0AA1C1C90F45EFC08D32CED7665EAF02" Guid="{D138EB90-189C-4BB8-9240-E585B94E2E2D}">
                 <File Id="filD9434C05B21EDDA1A4CD39921E7DBFB0" KeyPath="yes" Source="$(var.SourceFilesDir)\Game.exe.config" />
             </Component>
-            <Component Id="cmpBA5AAEA92B046CBA64A19E7D8E52FBBA" Guid="{2A1A9A4A-9FA3-4603-97E1-02B2D0D3B263}">
+            <Component Id="cmpBA5AAEA92B046CBA64A19E7D8E52FBBA" Guid="{10EA3B5B-EF0B-4B26-A6A5-858E07D62378}">
                 <File Id="fil3B1A9C731D3C9EC86C38D83EEF643740" KeyPath="yes" Source="$(var.SourceFilesDir)\Game.pdb" />
             </Component>
-            <Component Id="cmp27932FA8FBD2A970E57245EC2B80887A" Guid="{4F1F57AC-E9EC-413C-AB77-B4991E0D30ED}">
+            <Component Id="cmp27932FA8FBD2A970E57245EC2B80887A" Guid="{11EA3445-E51B-4146-A86C-932CB90E1BBA}">
                 <File Id="fil3A7F875B371B535A80D9CB4B7FD57754" KeyPath="yes" Source="$(var.SourceFilesDir)\Game.vshost.exe" />
             </Component>
-            <Component Id="cmpFF79E7518878015DA438655B27553550" Guid="{9F26CE77-9BC7-45B7-9A74-7889EF764C6A}">
+            <Component Id="cmpFF79E7518878015DA438655B27553550" Guid="{836E9460-49AF-449F-A136-319E7412C75B}">
                 <File Id="fil7F472AADF1B1CE9319E18BF27B14F948" KeyPath="yes" Source="$(var.SourceFilesDir)\Game.vshost.exe.config" />
             </Component>
-            <Component Id="cmpE50089E9F29ECEEF7EA744D485142053" Guid="{2ADB8CB4-2697-43F5-94D3-9C202A590B22}">
+            <Component Id="cmpE50089E9F29ECEEF7EA744D485142053" Guid="{3529CF3E-0577-4355-B95D-2C8EFD7488BC}">
                 <File Id="fil14B3AE65A0E6F4D4F6B09C10842E9610" KeyPath="yes" Source="$(var.SourceFilesDir)\Game.vshost.exe.manifest" />
             </Component>
-            <Component Id="cmp1AD5254898425E055E548D7D512F93BE" Guid="{3780052E-180A-4D89-8C33-674081631B3B}">
+            <Component Id="cmp1AD5254898425E055E548D7D512F93BE" Guid="{72B6D471-7767-42D5-91F0-EBC2C1381BE7}">
                 <File Id="filC137A9B8593F426C438C49134D7766F5" KeyPath="yes" Source="$(var.SourceFilesDir)\MonoGame.Framework.dll" />
             </Component>
-            <Component Id="cmpA4F383A5696932710BD89D91417FC737" Guid="{CF526D22-0F79-418D-90A1-434AE7549BA7}">
+            <Component Id="cmpA4F383A5696932710BD89D91417FC737" Guid="{9EFDC7E1-E637-468E-B29B-BCFC1EFCEA08}">
                 <File Id="fil4F70D9258C1725EC6D7A38B059173277" KeyPath="yes" Source="$(var.SourceFilesDir)\MonoGame.Framework.xml" />
             </Component>
-            <Component Id="cmpF79562B8D935E93E73AB94C78A5F52AD" Guid="{AC9D7F02-A494-4F67-B49D-10C9F4F91880}">
+            <Component Id="cmpF79562B8D935E93E73AB94C78A5F52AD" Guid="{B99E9367-6F0B-45C5-9ABF-442462EA91E6}">
                 <File Id="filD288EFBC69A5E275EAB4F50C7BB109A3" KeyPath="yes" Source="$(var.SourceFilesDir)\SharpDX.Direct2D1.dll" />
             </Component>
-            <Component Id="cmp0320A630A0EB3081EE50B8E83E5E78CB" Guid="{D34C17B0-A677-4F98-A7EF-6AB89CD0B143}">
+            <Component Id="cmp0320A630A0EB3081EE50B8E83E5E78CB" Guid="{E44C3689-392C-4430-9A7B-12F9414127BF}">
                 <File Id="filA5881046D6EA465DB34B8DBABB43FE3D" KeyPath="yes" Source="$(var.SourceFilesDir)\SharpDX.Direct3D11.dll" />
             </Component>
-            <Component Id="cmp5628FD27631E522C3D67C498667BC8A5" Guid="{BAA05006-0D7B-4942-BC24-5F54DA52E854}">
+            <Component Id="cmp5628FD27631E522C3D67C498667BC8A5" Guid="{41D31096-B437-4273-95E1-DF81A0E5A9DF}">
                 <File Id="fil9AF927B04C176B9DDB9785FEBFB421F9" KeyPath="yes" Source="$(var.SourceFilesDir)\SharpDX.Direct3D9.dll" />
             </Component>
-            <Component Id="cmp9607F152871CB9C2659ED14722E13E44" Guid="{57E7599A-0106-4E11-92A0-F619E194A112}">
+            <Component Id="cmp9607F152871CB9C2659ED14722E13E44" Guid="{5EFD1396-6B2B-4C29-8A18-6432D24C1F67}">
                 <File Id="filF5517F7734A13514A2CDF5F069816EE5" KeyPath="yes" Source="$(var.SourceFilesDir)\SharpDX.dll" />
             </Component>
-            <Component Id="cmpC12E0E231E2E8E7FE864B56E6323063E" Guid="{CD36D9BE-87F5-4641-8761-3BF7F96D8FD1}">
+            <Component Id="cmpC12E0E231E2E8E7FE864B56E6323063E" Guid="{E325A198-6E02-4102-8D99-1AF3CB2FDBEC}">
                 <File Id="filEA19CC1C8ED8FB958DF7853CFD91383F" KeyPath="yes" Source="$(var.SourceFilesDir)\SharpDX.DXGI.dll" />
             </Component>
-            <Component Id="cmp12B33F4EF3373348DA256013C8AD2D8D" Guid="{0A82BB05-9828-4D62-9961-B50398012AD0}">
+            <Component Id="cmp12B33F4EF3373348DA256013C8AD2D8D" Guid="{BDBD6089-9D34-433B-9C52-596E144C011E}">
                 <File Id="filD9EE962D84CB515B6C4EC80D1E5B836F" KeyPath="yes" Source="$(var.SourceFilesDir)\SharpDX.MediaFoundation.dll" />
             </Component>
-            <Component Id="cmp76D3CAEA74AD828D869AD68CA8D96031" Guid="{62316CDB-4E7A-47ED-9F9E-9A86EA5818C8}">
+            <Component Id="cmp76D3CAEA74AD828D869AD68CA8D96031" Guid="{1EFF4ACE-63D0-42A5-89E2-77AB80B11641}">
                 <File Id="fil112B0CFED2DE833B1B2552E842B8D609" KeyPath="yes" Source="$(var.SourceFilesDir)\SharpDX.RawInput.dll" />
             </Component>
-            <Component Id="cmp39709B147FEA9A9BCB271BDEF203792D" Guid="{ED68FCD7-449F-4B24-8BCC-B4C0138336F6}">
+            <Component Id="cmp39709B147FEA9A9BCB271BDEF203792D" Guid="{C89F3CE6-28E0-4827-A692-166D184FEE5E}">
                 <File Id="fil418121CCB1ADFDCCE302460AEEC657ED" KeyPath="yes" Source="$(var.SourceFilesDir)\SharpDX.XAudio2.dll" />
             </Component>
-            <Component Id="cmp5C9318FE90730AC17FB8833818272B62" Guid="{FD27545C-25B0-46D9-ABB1-4E2DE8A2AB74}">
+            <Component Id="cmp5C9318FE90730AC17FB8833818272B62" Guid="{22E052CF-FE43-4537-9680-C3F8CC97EF42}">
                 <File Id="filF44BAE5BA7BEAA14E819A77A832E3B99" KeyPath="yes" Source="$(var.SourceFilesDir)\SharpDX.XInput.dll" />
             </Component>
-            <Component Id="cmp8AEB7CB013A171EDC5F72BE79D56B5A1" Guid="{566AA90A-8D49-4512-9C79-301A9510451E}">
+            <Component Id="cmp8AEB7CB013A171EDC5F72BE79D56B5A1" Guid="{EBF11346-B179-4181-BA9E-D0CBAF0A5BE5}">
                 <File Id="fil5E0FD616258C1185D08BE789FCBCB020" KeyPath="yes" Source="$(var.SourceFilesDir)\Source.dll" />
             </Component>
-            <Component Id="cmpB702EE798CB3FB6382F8D02C72514011" Guid="{15414F45-18B2-45F0-A0E9-6AC336AF1AEE}">
+            <Component Id="cmpB702EE798CB3FB6382F8D02C72514011" Guid="{3016A670-FAD9-47A0-8B80-8757E4E39FC7}">
                 <File Id="filF5C770EACCB2D8F579624D50F5A2403C" KeyPath="yes" Source="$(var.SourceFilesDir)\Source.pdb" />
             </Component>
             <Directory Id="dir530CC0BB7768701C9C7496ACE976A217" Name="Content">
                 <Directory Id="dir84228B25E32B716CCB378673DD52EF47" Name="Art">
-                    <Component Id="cmpB1D19EF6311A70A6E7603EC8D9589A46" Guid="{8AD4DE24-77EA-4941-A117-E4BDF81B0B65}">
+                    <Component Id="cmpB1D19EF6311A70A6E7603EC8D9589A46" Guid="{EE0DCC28-33A2-4632-9627-F650DA0636FE}">
                         <File Id="fil12C7BA703077FA2A9ACF3471B38A37DF" KeyPath="yes" Source="$(var.SourceFilesDir)\Content\Art\GreenDude.xnb" />
                     </Component>
                 </Directory>
                 <Directory Id="dir0DE145494F21DACED2420E2AA9BFAC01" Name="Fonts">
-                    <Component Id="cmp1799E5CD7D8615EA920A1DC85B2E7299" Guid="{76875741-4025-4D51-B628-7C6FF8DC7696}">
+                    <Component Id="cmp1799E5CD7D8615EA920A1DC85B2E7299" Guid="{800E5CF3-DCA2-4424-9EB5-3CF0F7258747}">
                         <File Id="fil4B801C09C64EA29482A93C29DD36E9A1" KeyPath="yes" Source="$(var.SourceFilesDir)\Content\Fonts\Score.xnb" />
                     </Component>
-                    <Component Id="cmp4FF6202BA0A80F1BB960C29B16DAA6D4" Guid="{64F3F8AE-CEA0-4666-9D55-695690A15EA0}">
+                    <Component Id="cmp4FF6202BA0A80F1BB960C29B16DAA6D4" Guid="{7E1784D8-1BEA-4B7A-B5B1-1589A0D9086B}">
                         <File Id="fil939363481541104D65BE2B2B186728F6" KeyPath="yes" Source="$(var.SourceFilesDir)\Content\Fonts\ScoreBig.xnb" />
                     </Component>
                 </Directory>
                 <Directory Id="dir540FDDCDC1AD3D05BDD4F8980EF37810" Name="Music">
-                    <Component Id="cmp24F03D6CB9F4A12092665C5E41F84E76" Guid="{39D86DFD-9D45-443B-84A7-8ABDA3ED0A22}">
+                    <Component Id="cmp24F03D6CB9F4A12092665C5E41F84E76" Guid="{523F7063-46C1-4097-9C33-D097E1237783}">
                         <File Id="filA15AC1645BDE2D33E29568AA687B2E16" KeyPath="yes" Source="$(var.SourceFilesDir)\Content\Music\afln_s_gdc-1.wma" />
                     </Component>
-                    <Component Id="cmp154BC81A69A6DA87B421FE01CD511C45" Guid="{C67653F7-029F-496A-89C6-083D5F352099}">
+                    <Component Id="cmp154BC81A69A6DA87B421FE01CD511C45" Guid="{1795C1B5-83A9-4EC5-B3B8-DE1939541C93}">
                         <File Id="fil1F16597ADAE829A1A01E117B21785636" KeyPath="yes" Source="$(var.SourceFilesDir)\Content\Music\afln_s_gdc-1.xnb" />
                     </Component>
                 </Directory>
