@@ -45,7 +45,7 @@ namespace Source
         public const float FLOOR_HOLE = 3.5f;   // size in m of hole to make when slamming
         public const int WINDOW_HEALTH = 1;     // windows are on the side of buildings
         public const int WALL_HEALTH = 3;       // walls are inside the buildings themselves
-        public const int STAIR_HEALTH = 3;  // hits until a stair is broken
+        public const int STAIR_HEALTH = 2;  // hits until a stair is broken
         public const float MIN_FLOOR_WIDTH = 2f;  // floors cannot be smaller than this (by random generation or slamming)
         public const double STAIR_CHANCE = 0.6; // chance a hole will have a stair to it (from 0 to 1)
         public const float STAIR_WIDTH = MIN_FLOOR_DIST;   // horizontal distance of a stair
