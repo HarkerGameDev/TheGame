@@ -14,13 +14,16 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <OutputPath>..\install\$(Configuration)\</OutputPath>
     <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
-    <DefineConstants>Debug</DefineConstants>
+    <DefineConstants>Debug;</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
-    <OutputPath>..\install\$(Configuration)\</OutputPath>
+    <OutputPath>Packages\</OutputPath>
     <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
     <SuppressPdbOutput>False</SuppressPdbOutput>
     <LeaveTemporaryFiles>False</LeaveTemporaryFiles>
+    <DefineConstants>SourceFilesDir="$(SolutionDir)Windows\bin\Windows\$(Configuration)"</DefineConstants>
+    <WixVariables>
+    </WixVariables>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Product.wxs" />
@@ -37,7 +40,10 @@
   </ItemGroup>
   <Import Project="$(WixTargetsPath)" />
   <PropertyGroup>
-    <PreBuildEvent />
+    <PostBuildEvent>$(SolutionDir)BootstrapperBuild.bat $(TargetDir) $(TargetFileName) $(SolutionDir)</PostBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PreBuildEvent>"$(WIX)bin\heat.exe" dir "$(SourceFilesDir)" -cg GameFiles -gg -scom -sreg -sfrag -srd -dr INSTALLLOCATION -var env.SourceFilesDir -out "$(ProjectDir)SourceFiles.wxs"</PreBuildEvent>
   </PropertyGroup>
   <!--
 	To modify your build process, add your task inside one of the targets below and uncomment it.
