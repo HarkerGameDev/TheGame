@@ -119,6 +119,7 @@ namespace Source.Collisions
             Projectiles.Clear();
             SpawnY = -rand.Next(GameData.MIN_SPAWN, GameData.MAX_SPAWN);
             BoostTime = GameData.BOOST_LENGTH;
+            AbilityActive = false;
         }
 
         //public void setRotation(Body body)
