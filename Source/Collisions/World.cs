@@ -356,7 +356,7 @@ namespace Source.Collisions
                     }
                     foreach (Player body in game.players)
                     {
-                        if (body != player)
+                        if (body != player && body.TimeSinceDeath <= 0)
                         {
                             Vector2 dist = body.Position - player.Position;
                             float length = dist.Length();

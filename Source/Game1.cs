@@ -985,14 +985,14 @@ namespace Source
                     }
                     if (editLevel)
                         DrawRect(Vector2.Zero, Color.LightGreen, 0f, new Vector2(0.5f, 0.5f), new Vector2(1, 1));
-                    spriteBatch.Draw(whiteRect, new Rectangle((int)ConvertUnits.ToDisplayUnits(death) - GameData.DEAD_WIDTH, -GameData.DEAD_HEIGHT, GameData.DEAD_WIDTH, GameData.DEAD_HEIGHT), Color.Purple); // please excuse these magic numbers, they are meaningless
                     spriteBatch.End();
 
 
-                    // Draw all particles
+                    // Draw all particles and dead wall
                     spriteBatch.Begin(transformMatrix: view);
                     foreach (Particle part in particles)
                         part.Draw(spriteBatch);
+                    spriteBatch.Draw(whiteRect, new Rectangle((int)ConvertUnits.ToDisplayUnits(death) - GameData.DEAD_WIDTH, -GameData.DEAD_HEIGHT, GameData.DEAD_WIDTH, GameData.DEAD_HEIGHT), Color.Purple); // please excuse these magic numbers, they are meaningless
                     spriteBatch.End();
 
 
