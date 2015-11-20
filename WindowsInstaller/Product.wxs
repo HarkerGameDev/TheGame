@@ -1,14 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+     xmlns:netfx="http://schemas.microsoft.com/wix/NetFxExtension">
 	<Product Id="*" Name="Game" Language="1033" Version="!(bind.FileVersion.fil234291F19DE2AB90D754479E42496D39)" Manufacturer="Game Dev" UpgradeCode="b0cd9e0b-9b48-40e9-a4bb-260b0db5a919">
 		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" Comments="Windows Installer Package" />
-
+    <PropertyRef Id="WIX_IS_NETFRAMEWORK_40_OR_LATER_INSTALLED"/>
+    
 		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
 		<MediaTemplate EmbedCab="yes"/>
 
+    <Condition Message="This application requires .NET Framework 4.0. Please install the .NET Framework then run this installer again.">
+      <![CDATA[Installed OR WIX_IS_NETFRAMEWORK_40_OR_LATER_INSTALLED]]>
+    </Condition>
+
     <Feature Id="ProductFeature" Title="GameFeature" Level="1">
-      <!--<ComponentGroupRef Id="ProductComponents" />-->
       <ComponentGroupRef Id="GameFiles" />
+      <ComponentRef Id="ApplicationUninstall" />
       <ComponentRef Id="ApplicationShortcut" />
       <ComponentRef Id="ApplicationShortcutDesktop" />
     </Feature>
@@ -19,7 +25,6 @@
 			<Directory Id="ProgramFilesFolder">
 				<Directory Id="INSTALLFOLDER" Name="Game" />
 			</Directory>
-      
       <Directory Id="ProgramMenuFolder">
         <Directory Id="ApplicationProgramsFolder" Name="Game" />
       </Directory>
@@ -28,10 +33,20 @@
   </Fragment>
 
   <Fragment>
+    <DirectoryRef Id="INSTALLFOLDER">
+      <Component Id="ApplicationUninstall" Guid="14f48a48-db62-4e8d-8a22-c330487ab9e1">
+        <Shortcut Id="ApplicationUninstallShortcut" Name="Uninstall" Description="Uninstalls The Game"
+                  Target="[SystemFolder]msiexec.exe" Arguments="/x [ProductCode]" />
+        <RemoveFolder Id="RemoveInstallFolder" Directory="INSTALLFOLDER" On="uninstall"/>
+        <RegistryValue Root="HKCU" Key="Software\Game Dev\Game" Name="installed" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
     <DirectoryRef Id="ApplicationProgramsFolder">
       <Component Id="ApplicationShortcut" Guid="330b7a4b-9265-4dd1-86ac-849d22cac37c">
         <Shortcut Id="ApplicationStartMenuShortcut" Name="Game" Description="The Game"
                   Target="[INSTALLFOLDER]Game.exe" WorkingDirectory="INSTALLFOLDER" />
+        <Shortcut Id="UninstallProduct" Name="Uninstall Game" Description="Uninstalls The Game"
+                  Target="[SystemFolder]msiexec.exe" Arguments="/x [ProductCode]" />
         <RemoveFolder Id="RemoveApplicationProgramsFolder" Directory="ApplicationProgramsFolder" On="uninstall"/>
         <RegistryValue Root="HKCU" Key="Software\Game Dev\Game" Name="installed" Type="integer" Value="1" KeyPath="yes" />
       </Component>
@@ -45,13 +60,4 @@
       </Component>
     </DirectoryRef>
   </Fragment>
-
-	<Fragment>
-		<ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
-			<!-- TODO: Remove the comments around this Component element and the ComponentRef below in order to add resources to this installer. -->
-      <Component Id="ProductComponent">
-        <File Source="$(var.Windows.TargetPath)" />
-      </Component>
-		</ComponentGroup>
-	</Fragment>
 </Wix>

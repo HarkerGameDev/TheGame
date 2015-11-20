@@ -131,7 +131,7 @@ namespace Source
         public const float PROJ_LIVE = 1.0f;     // lifetime of a projectile in s
 
         public const float BUTTON_WIDTH = 0.4f;  // width of a button in proportion of screen
-        public const float BUTTON_HEIGHT = 0.1f;    // height of button in proportion
+        public const float BUTTON_HEIGHT = 0.12f;    // height of button in proportion
 
         public static string Version
         {
