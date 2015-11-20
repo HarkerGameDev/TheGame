@@ -22,13 +22,18 @@
 
     <Property Id="WIXUI_INSTALLDIR" Value="INSTALLDIR" />
     <UIRef Id="MyWixUI_InstallDir" />
+    
     <Property Id="INSTALLSTARTMENUSHORTCUT" Value="1" />
-    <Property Id="INSTALLDESKTOPSHORTCUT" />
 
     <CustomAction Id="LaunchApplication" FileKey="filF247318FDF4D94A3E8F97465F6757FC1" ExeCommand="" Execute="immediate" Impersonate="yes" Return="asyncNoWait" />
     <UI>
       <Publish Dialog="MyExitDialog" Control="Finish" Order="1" Event="DoAction" Value="LaunchApplication">LAUNCHAPPONEXIT</Publish>
     </UI>
+
+    <WixVariable Id="WixUILicenseRtf" Value="License.rtf" />
+
+    <Icon Id="icon.ico" SourceFile="..\Windows\Icon.ico" />
+    <Property Id="ARPPRODUCTICON" Value="icon.ico" />
 	</Product>
 
 	<Fragment>
