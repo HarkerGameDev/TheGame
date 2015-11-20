@@ -114,6 +114,7 @@ namespace Source.Collisions
 
         public void Kill(Random rand)
         {
+            Velocity = new Vector2(GameData.RUN_VELOCITY, 0f);
             TimeSinceDeath = GameData.DEAD_TIME;
             Projectiles.Clear();
             SpawnY = -rand.Next(GameData.MIN_SPAWN, GameData.MAX_SPAWN);
