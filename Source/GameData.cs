@@ -22,7 +22,12 @@ namespace Source
         public static Controls[] keyboardControls = {            // defines the keyboard controls which will be used
                                                        new Controls(Keys.Left, Keys.Right, Keys.Up, Keys.Down, Keys.RightShift),
                                                        new Controls(Keys.A, Keys.D, Keys.W, Keys.S, Keys.LeftShift),
-                                                       new Controls(Keys.J, Keys.L, Keys.I, Keys.K, Keys.O)};
+                                                       new Controls(Keys.J, Keys.L, Keys.I, Keys.K, Keys.O)
+                                                    };
+        public static Player.Ability[] playerAbilities = {       // defines player abilities, for each ability in this array corresponding to a player
+                                                            Player.Ability.GravityPull,
+                                                            Player.Ability.GravityPush
+                                                        };
 
         public const float LOAD_NEW = 70f;     // the next level will be loaded when the player is this far from the current end
         public const int MAX_FLOORS = 50;    // maximum number of floors at any given time
@@ -43,6 +48,8 @@ namespace Source
         public const int MAX_WALL_DIST = 90;
         public const int LEVEL_DIST_MIN = 5;    // the space between different buildings
         public const int LEVEL_DIST_MAX = 12;
+
+        public const float GRAVITY_FORCE = 150f;  // G (in physics) in essence
 
         public const float FLOOR_HOLE = 4.4f;   // size in m of hole to make when slamming
         public const int WINDOW_HEALTH = 1;     // windows are on the side of buildings
@@ -67,7 +74,7 @@ namespace Source
         public static Color[] playerColors = { Color.Red, Color.Yellow, Color.Purple };     // colors of each player
 
         public const float DEAD_START = RUN_VELOCITY - 2f;   // m/s -- the speed of dead wave at start of game
-        public const float DEAD_SPEED = RUN_VELOCITY; // m/s -- the speed at which the dead 'wave' on the left moves
+        public const float DEAD_END = RUN_VELOCITY; // m/s -- the speed at which the dead 'wave' on the left moves by the end of the game
         public const float DEAD_MAX = 40f; // m -- maximum distance between player and death if player is doing well
         public const int DEAD_WIDTH = 600;
         public const int DEAD_HEIGHT = 2000;
@@ -75,13 +82,19 @@ namespace Source
         public const float MAX_SPEED_SCALE = 1.4f; // game is this much faster by the end of win
         public const int WIN_SCORE = 10;    // score to get when winning
         public const int LOSE_SCORE = 5;    // score to lose when hit by purple
+        public const int DEATH_LOSS = 2;    // score to lose when the purple only catches 1 player
+
+#if DEBUG
+        public const float BOOST_SPEED = -RUN_VELOCITY; // m/s -- horizontal velocity when boosting
+#else
+        public const float BOOST_SPEED = 25f; // m/s -- horizontal velocity when boosting
+#endif
 
         public const float GRAVITY = 36f;   // m/s^2 -- gravity for players
         public const float GRAVITY_PART = 15f; // m/s^2 -- gravity for particles
         public const float MIN_VELOCITY = 1f;  // m/s -- what can be considered target velocity
         public const float SLOW_SPEED = 13f; // m/s -- speed player is going at when slowing down
         public const float RUN_VELOCITY = 22f; // m/s -- maximum horizontal velocity for player
-        public const float BOOST_SPEED = 25f; // m/s -- horizontal velocity when boosting
         public const float MAX_ACCEL = 40f;   // m/s^2 -- the impulse which is applied when player starts moving after standing still
         public const float JUMP_SPEED = 18f; // m/s -- the initial upwards velocity when player jumps
         public const float JUMP_SLOW = 0.85f;   // -- x velocity is scaled by this when jumping
@@ -147,10 +160,10 @@ namespace Source
         }
 
         public struct Controls {
-            public Keys left, right, up, down, shoot;
+            public Keys special, right, up, down, shoot;
 
-            public Controls(Keys left, Keys right, Keys up, Keys down, Keys shoot) {
-                this.left = left;
+            public Controls(Keys special, Keys right, Keys up, Keys down, Keys shoot) {
+                this.special = special;
                 this.right = right;
                 this.up = up;
                 this.down = down;

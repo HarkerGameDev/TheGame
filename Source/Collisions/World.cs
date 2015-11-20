@@ -69,6 +69,9 @@ namespace Source.Collisions
                     }
                     CheckFloors(player);
                     CheckObstacles(player);
+
+                    if (player.AbilityActive)
+                        PerformSpecial(player, deltaTime);
                 }
             }
         }
@@ -334,6 +337,33 @@ namespace Source.Collisions
             }
 
             player.MovePosition(new Vector2(0.0001f, 0)); // an extremely small amount to still render floor climbing
+        }
+
+        private void PerformSpecial(Player player, float deltaTime)
+        {
+            switch (player.CurrentAbility)
+            {
+                case Player.Ability.GravityPull:
+                case Player.Ability.GravityPush:
+                    float scale = GameData.GRAVITY_FORCE * (player.CurrentAbility == Player.Ability.GravityPull ? -1 : 1);
+
+                    foreach (Particle part in game.particles)
+                    {
+                        Vector2 dist = part.Position - player.Position;
+                        float length = dist.Length();
+                        part.Velocity += deltaTime * scale * dist / (length * length);
+                    }
+                    foreach (Player body in game.players)
+                    {
+                        if (body != player)
+                        {
+                            Vector2 dist = body.Position - player.Position;
+                            float length = dist.Length();
+                            body.Velocity += deltaTime * scale * dist / (length * length);
+                        }
+                    }
+                    break;
+            }
         }
 
         public Body TestPoint(Vector2 point)

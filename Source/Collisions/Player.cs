@@ -33,21 +33,29 @@ namespace Source.Collisions
         public bool WallAbove = false;
         public float TargetVelocity = GameData.RUN_VELOCITY;
         public float SpawnY = 0;
+        public bool AbilityActive = false;
+        public Ability CurrentAbility = Ability.GravityPull;
 
         public bool InAir { get { return CurrentState == State.Jumping || CurrentState == State.Slamming; } }
         public bool CanJump { get { return CurrentState == State.Walking || CurrentState == State.Boosting; } }
 
-        public enum State
+        public enum State   // Note: sliding is currently unused
         {
             Jumping=0, Walking=1, Slamming=2, Sliding=3, Boosting=4, Climbing=5
         }
 
+        public enum Ability
+        {
+            GravityPull, GravityPush
+        }
+
         public AnimatedSprite Sprite;
 
-        public Player(Texture2D texture, Vector2 position, Color color)
+        public Player(Texture2D texture, Vector2 position, Color color, Ability ability)
             : base(texture, position, new Vector2(0.6f, 1.8f))
         {
             this.Color = color;
+            CurrentAbility = ability;
 
             Projectiles = new List<Projectile>();
             Velocity.X = 0f;

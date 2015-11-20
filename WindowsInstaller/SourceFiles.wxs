@@ -17,9 +17,6 @@
             <Component Id="cmpFF79E7518878015DA438655B27553550" Guid="*">
                 <File Id="fil7F472AADF1B1CE9319E18BF27B14F948" KeyPath="yes" Source="$(var.SourceFilesDir)\Game.vshost.exe.config" />
             </Component>
-            <Component Id="cmpE50089E9F29ECEEF7EA744D485142053" Guid="*">
-                <File Id="fil14B3AE65A0E6F4D4F6B09C10842E9610" KeyPath="yes" Source="$(var.SourceFilesDir)\Game.vshost.exe.manifest" />
-            </Component>
             <Component Id="cmp1AD5254898425E055E548D7D512F93BE" Guid="*">
                 <File Id="filC137A9B8593F426C438C49134D7766F5" KeyPath="yes" Source="$(var.SourceFilesDir)\MonoGame.Framework.dll" />
             </Component>
@@ -91,7 +88,6 @@
             <ComponentRef Id="cmpBA5AAEA92B046CBA64A19E7D8E52FBBA" />
             <ComponentRef Id="cmp27932FA8FBD2A970E57245EC2B80887A" />
             <ComponentRef Id="cmpFF79E7518878015DA438655B27553550" />
-            <ComponentRef Id="cmpE50089E9F29ECEEF7EA744D485142053" />
             <ComponentRef Id="cmp1AD5254898425E055E548D7D512F93BE" />
             <ComponentRef Id="cmpA4F383A5696932710BD89D91417FC737" />
             <ComponentRef Id="cmpF79562B8D935E93E73AB94C78A5F52AD" />

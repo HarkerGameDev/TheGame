@@ -141,7 +141,7 @@ namespace Source
             for (int i = 0; i < GameData.numPlayers; i++)
             {
                 Vector2 spawnLoc = new Vector2(GameData.PLAYER_START, -rand.Next(GameData.MIN_SPAWN, GameData.MAX_SPAWN));
-				players.Add(new Player(Content.Load<Texture2D>("Art/GreenDude"), spawnLoc, GameData.playerColors[i]));
+				players.Add(new Player(Content.Load<Texture2D>("Art/GreenDude"), spawnLoc, GameData.playerColors[i], GameData.playerAbilities[i]));
             }
             GameData.playerColors = null;
             floors = new List<Floor>();
@@ -265,7 +265,7 @@ namespace Source
                         totalTime += deltaTime;
                         float remaining = totalTime / GameData.WIN_TIME;
                         deltaTime = deltaTime * MathHelper.Lerp(1f, GameData.MAX_SPEED_SCALE, remaining);
-                        death += MathHelper.SmoothStep(GameData.DEAD_START, GameData.DEAD_SPEED, remaining) * deltaTime;
+                        death += MathHelper.SmoothStep(GameData.DEAD_START, GameData.DEAD_END, remaining) * deltaTime;
 
                         CheckPlayer();
                         //player.Update(gameTime.ElapsedGameTime.TotalSeconds);
@@ -447,11 +447,6 @@ namespace Source
                     else if (player.CurrentState != Player.State.Boosting)
                         player.TargetVelocity = GameData.RUN_VELOCITY;
                 }
-                else if (state.IsKeyDown(controls.left))                // slow slide
-                {
-                    player.CurrentState = Player.State.Sliding;
-                    player.TargetVelocity = GameData.SLOW_SPEED;
-                }
                 else                           // normal run
                 {
                     player.TargetVelocity = GameData.RUN_VELOCITY;
@@ -499,6 +494,10 @@ namespace Source
                 player.Projectiles.Add(new Projectile(whiteRect, new Vector2(player.Position.X - player.Size.X / 2f, player.Position.Y), player.Color));
                 player.BoostTime -= GameData.SHOOT_COST;
                 //Console.WriteLine("Shooting!");
+            }
+            if (ToggleKey(controls.special))                // activate (or toggle) special
+            {
+                player.AbilityActive = !player.AbilityActive;
             }
         }
 
@@ -758,7 +757,7 @@ namespace Source
                     //Console.WriteLine("Target " + new Vector2(targetX, targetY));
                     //Console.WriteLine("Max: " + max == null);
                 }
-                else if (player.Position.X < averageX - ConvertUnits.ToSimUnits(GameData.DEAD_DIST) || player.Position.X < death)
+                else if (player.Position.X < averageX - ConvertUnits.ToSimUnits(GameData.DEAD_DIST))
                 {
                     player.Kill(rand);
                     if (max != null)
@@ -766,17 +765,19 @@ namespace Source
                     if (--player.Score < 0)
                         player.Score = 0;
                 }
-                //else if (player.Position.X < death)
-                //{
-                //    player.TimeSinceDeath = GameData.DEAD_TIME;
-                //    player.Projectiles.Clear();
-                //    player.Score -= GameData.LOSE_SCORE;
-                //    if (player.Score < 0)
-                //        player.Score = 0;
-                //}
+#if !DEBUG
+                else if (player.Position.X < death)
+                {
+                    player.Kill(rand);
+                    player.Score -= GameData.DEATH_LOSS;
+                    if (player.Score < 0)
+                        player.Score = 0;
+                }
+#endif
             }
 
             float currentX = max == null ? averageX : max.Position.X;
+#if !DEBUG
             if (currentX < death)   // lose
             {
                 Reset();
@@ -787,6 +788,7 @@ namespace Source
                         player.Score = 0;
                 }
             }
+#endif
 
             if (totalTime > GameData.WIN_TIME)  // win. TODO -- do more than reset
             {
