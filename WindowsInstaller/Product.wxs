@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-	<Product Id="*" Name="Game" Language="1033" Version="0.2.0" Manufacturer="Game Dev" UpgradeCode="b0cd9e0b-9b48-40e9-a4bb-260b0db5a919">
+	<Product Id="*" Name="Game" Language="1033" Version="!(bind.FileVersion.fil234291F19DE2AB90D754479E42496D39)" Manufacturer="Game Dev" UpgradeCode="b0cd9e0b-9b48-40e9-a4bb-260b0db5a919">
 		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" Comments="Windows Installer Package" />
 
 		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />

@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Reflection;
+using System.Diagnostics;
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -42,7 +44,7 @@ namespace Source
         public const int LEVEL_DIST_MIN = 5;    // the space between different buildings
         public const int LEVEL_DIST_MAX = 12;
 
-        public const float FLOOR_HOLE = 3.5f;   // size in m of hole to make when slamming
+        public const float FLOOR_HOLE = 4.4f;   // size in m of hole to make when slamming
         public const int WINDOW_HEALTH = 1;     // windows are on the side of buildings
         public const int WALL_HEALTH = 3;       // walls are inside the buildings themselves
         public const int STAIR_HEALTH = 2;  // hits until a stair is broken
@@ -130,6 +132,19 @@ namespace Source
 
         public const float BUTTON_WIDTH = 0.4f;  // width of a button in proportion of screen
         public const float BUTTON_HEIGHT = 0.1f;    // height of button in proportion
+
+        public static string Version
+        {
+            get
+            {
+                Assembly asm = Assembly.GetEntryAssembly();
+                FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(asm.Location);
+                return String.Format("{0}.{1}.{2}", fvi.ProductMajorPart, fvi.ProductMinorPart, fvi.ProductBuildPart);
+
+                //Version ver = AssemblyName.GetAssemblyName("Game.exe").Version;
+                //return String.Format("{0}.{1}.{2}", ver.Major, ver.Minor, ver.Build);
+            }
+        }
 
         public struct Controls {
             public Keys left, right, up, down, shoot;

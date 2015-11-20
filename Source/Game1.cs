@@ -1022,6 +1022,10 @@ namespace Source
                     leftX = GraphicsDevice.Viewport.Width / 2f - font.MeasureString(time).X / 2f;
                     spriteBatch.DrawString(font, time, new Vector2(leftX, 0f), Color.LightSkyBlue);
 
+                    // Display version number
+                    Vector2 pos = new Vector2(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height) - font.MeasureString(GameData.Version);
+                    spriteBatch.DrawString(font, GameData.Version, pos, Color.LightSalmon);
+
                     //if (levelAnnounceWaitAt > 0)
                     //{
                     //    float centerX = GraphicsDevice.Viewport.Width / 2.0f - fontBig.MeasureString("Level " + currentLevel).X / 2.0f;
@@ -1051,7 +1055,7 @@ namespace Source
                 case State.Controls:
                     GraphicsDevice.Clear(Color.Plum);
                     break;
-        }
+            }
 
             base.Draw(gameTime);
         }
