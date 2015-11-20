@@ -351,10 +351,8 @@ namespace Source.Collisions
                     {
                         Vector2 dist = part.Position - player.Position;
                         float length = dist.Length();
-                        if (length != 0)
-                        {
+                        if (length > GameData.GRAVITY_CUTOFF)
                             part.Velocity += deltaTime * scale * dist / (length * length); //the vectored form of the gravitational formula
-                        }
                     }
                     foreach (Player body in game.players)
                     {
@@ -362,10 +360,8 @@ namespace Source.Collisions
                         {
                             Vector2 dist = body.Position - player.Position;
                             float length = dist.Length();
-                            if (length != 0)
-                            {
+                            if (length > GameData.GRAVITY_CUTOFF)
                                 body.Velocity += deltaTime * scale * dist / (length * length); //the vectored form of the gravitational formula
-                            }
                         }
                     }
                     break;

@@ -50,6 +50,7 @@ namespace Source
         public const int LEVEL_DIST_MAX = 12;
 
         public const float GRAVITY_FORCE = 150f;  // G (in physics) in essence
+        public const float GRAVITY_CUTOFF = 0.5f;    // minimum distance where gravity applies (to avoid super speed)
 
         public const float FLOOR_HOLE = 4.4f;   // size in m of hole to make when slamming
         public const int WINDOW_HEALTH = 1;     // windows are on the side of buildings
