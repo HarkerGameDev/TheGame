@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
      xmlns:netfx="http://schemas.microsoft.com/wix/NetFxExtension">
-	<Product Id="*" Name="Game" Language="1033" Version="!(bind.FileVersion.fil234291F19DE2AB90D754479E42496D39)" Manufacturer="Game Dev" UpgradeCode="b0cd9e0b-9b48-40e9-a4bb-260b0db5a919">
+	<Product Id="*" Name="Game" Language="1033" Version="!(bind.FileVersion.filF247318FDF4D94A3E8F97465F6757FC1)" Manufacturer="Game Dev" UpgradeCode="b0cd9e0b-9b48-40e9-a4bb-260b0db5a919">
 		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" Comments="Windows Installer Package" />
     <PropertyRef Id="WIX_IS_NETFRAMEWORK_40_OR_LATER_INSTALLED"/>
     
@@ -12,18 +12,29 @@
       <![CDATA[Installed OR WIX_IS_NETFRAMEWORK_40_OR_LATER_INSTALLED]]>
     </Condition>
 
-    <Feature Id="ProductFeature" Title="GameFeature" Level="1">
+    <Feature Id="Complete" Title="The Game" Description="The complete package"
+             Display="expand" Level="1" ConfigurableDirectory="INSTALLDIR">
       <ComponentGroupRef Id="GameFiles" />
       <ComponentRef Id="ApplicationUninstall" />
       <ComponentRef Id="ApplicationShortcut" />
       <ComponentRef Id="ApplicationShortcutDesktop" />
     </Feature>
+
+    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLDIR" />
+    <UIRef Id="MyWixUI_InstallDir" />
+    <Property Id="INSTALLSTARTMENUSHORTCUT" Value="1" />
+    <Property Id="INSTALLDESKTOPSHORTCUT" />
+
+    <CustomAction Id="LaunchApplication" FileKey="filF247318FDF4D94A3E8F97465F6757FC1" ExeCommand="" Execute="immediate" Impersonate="yes" Return="asyncNoWait" />
+    <UI>
+      <Publish Dialog="MyExitDialog" Control="Finish" Order="1" Event="DoAction" Value="LaunchApplication">LAUNCHAPPONEXIT</Publish>
+    </UI>
 	</Product>
 
 	<Fragment>
 		<Directory Id="TARGETDIR" Name="SourceDir">
 			<Directory Id="ProgramFilesFolder">
-				<Directory Id="INSTALLFOLDER" Name="Game" />
+				<Directory Id="INSTALLDIR" Name="Game" />
 			</Directory>
       <Directory Id="ProgramMenuFolder">
         <Directory Id="ApplicationProgramsFolder" Name="Game" />
@@ -33,18 +44,19 @@
   </Fragment>
 
   <Fragment>
-    <DirectoryRef Id="INSTALLFOLDER">
+    <DirectoryRef Id="INSTALLDIR">
       <Component Id="ApplicationUninstall" Guid="14f48a48-db62-4e8d-8a22-c330487ab9e1">
         <Shortcut Id="ApplicationUninstallShortcut" Name="Uninstall" Description="Uninstalls The Game"
                   Target="[SystemFolder]msiexec.exe" Arguments="/x [ProductCode]" />
-        <RemoveFolder Id="RemoveInstallFolder" Directory="INSTALLFOLDER" On="uninstall"/>
+        <RemoveFolder Id="RemoveInstallFolder" Directory="INSTALLDIR" On="uninstall"/>
         <!--<RegistryValue Root="HKCU" Key="Software\Game Dev\Game" Name="installed" Type="integer" Value="1" KeyPath="yes" />-->
       </Component>
     </DirectoryRef>
     <DirectoryRef Id="ApplicationProgramsFolder">
       <Component Id="ApplicationShortcut" Guid="330b7a4b-9265-4dd1-86ac-849d22cac37c">
+        <Condition>INSTALLSTARTMENUSHORTCUT</Condition>
         <Shortcut Id="ApplicationStartMenuShortcut" Name="Game" Description="The Game"
-                  Target="[INSTALLFOLDER]Game.exe" WorkingDirectory="INSTALLFOLDER" />
+                  Target="[INSTALLDIR]Game.exe" WorkingDirectory="INSTALLDIR" />
         <Shortcut Id="UninstallProduct" Name="Uninstall Game" Description="Uninstalls The Game"
                   Target="[SystemFolder]msiexec.exe" Arguments="/x [ProductCode]" />
         <RemoveFolder Id="RemoveApplicationProgramsFolder" Directory="ApplicationProgramsFolder" On="uninstall"/>
@@ -53,8 +65,9 @@
     </DirectoryRef>
     <DirectoryRef Id="DesktopFolder">
       <Component Id="ApplicationShortcutDesktop" Guid="862d8d9c-fe23-47c8-8f57-59483ef704c1">
+        <Condition>INSTALLDESKTOPSHORTCUT</Condition>
         <Shortcut Id="ApplicationDesktopShortcut" Name="Game" Description="The Game"
-                  Target="[INSTALLFOLDER]Game.exe" WorkingDirectory="INSTALLFOLDER" />
+                  Target="[INSTALLDIR]Game.exe" WorkingDirectory="INSTALLDIR" />
         <RemoveFolder Id="RemoveDesktopFolder" Directory="DesktopFolder" On="uninstall" />
         <RegistryValue Root="HKCU" Key="Software\Game Dev\Game" Name="installed" Type="integer" Value="1" KeyPath="yes" />
       </Component>
