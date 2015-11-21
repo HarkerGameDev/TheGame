@@ -54,17 +54,20 @@ namespace Source.Collisions
                 {
                     for (int i = player.Projectiles.Count - 1; i >= 0; i--)
                     {
-                        CalculateProjectile(player, deltaTime, i);
+                        for (int j = 0; j < GameData.PROJ_STEP; j++)
+                        {
+                            if (!CalculateProjectile(player, deltaTime / GameData.PROJ_STEP, i))
+                                break;
+                        }
                     }
 
                     player.Velocity.Y += GameData.GRAVITY * deltaTime;
                     //player.CanJump = false;
 
                     //int steps = game.IsFixedTimeStep ? GameData.PLAYER_STEP : 1;
-                    int steps = 2;
-                    for (int i = 0; i < steps; i++)
+                    for (int i = 0; i < GameData.PLAYER_STEP; i++)
                     {
-                        player.Move(deltaTime / steps);
+                        player.Move(deltaTime / GameData.PLAYER_STEP);
                         CheckWalls(player);
                     }
                     CheckFloors(player);
@@ -76,14 +79,21 @@ namespace Source.Collisions
             }
         }
 
-        private void CalculateProjectile(Player player, float deltaTime, int projIndex)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="player"></param>
+        /// <param name="deltaTime"></param>
+        /// <param name="projIndex"></param>
+        /// <returns>True if particle exists, false if it was removed</returns>
+        private bool CalculateProjectile(Player player, float deltaTime, int projIndex)
         {
             Projectile proj = player.Projectiles[projIndex];
             proj.Move(deltaTime);
             if (proj.LiveTime > GameData.PROJ_LIVE)
             {
                 player.Projectiles.RemoveAt(projIndex);
-                return;
+                return false;
             }
             //foreach (Player target in game.players)
             //{
@@ -111,7 +121,7 @@ namespace Source.Collisions
                         wall.SetColor();
 
                     player.Projectiles.RemoveAt(projIndex);
-                    return;
+                    return false;
                 }
             }
             foreach (Floor floor in game.floors)
@@ -124,7 +134,7 @@ namespace Source.Collisions
                         game.floors.Remove(floor);
                         MakeParticles(proj.Position, floor, GameData.NUM_PART_WALL, 1, 0);
                     }
-                    return;
+                    return false;
                 }
             }
             foreach (Obstacle obstacle in game.obstacles)
@@ -132,9 +142,10 @@ namespace Source.Collisions
                 if (proj.Intersects(obstacle) != Vector2.Zero)
                 {
                     player.Projectiles.RemoveAt(projIndex);
-                    return;
+                    return false;
                 }
             }
+            return true;
         }
 
         /// <summary>

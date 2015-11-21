@@ -102,6 +102,9 @@ namespace Source
             currentZoom = GameData.PIXEL_METER;
             ConvertUnits.SetDisplayUnitToSimUnitRatio(currentZoom);
 
+            // Set seed for a scheduled random level (minutes since Jan 1, 2015)
+            rand = new Random(GameData.GetSeed);
+
             // Set variables
             //paused = false;
             state = State.MainMenu;
@@ -136,7 +139,6 @@ namespace Source
             fontBig = Content.Load<SpriteFont>("Fonts/ScoreBig");
 
             // Create objects
-            rand = new Random();
             players = new List<Player>();
             for (int i = 0; i < GameData.numPlayers; i++)
             {
@@ -265,7 +267,9 @@ namespace Source
                         totalTime += deltaTime;
                         float remaining = totalTime / GameData.WIN_TIME;
                         deltaTime = deltaTime * MathHelper.Lerp(1f, GameData.MAX_SPEED_SCALE, remaining);
-                        death += MathHelper.SmoothStep(GameData.DEAD_START, GameData.DEAD_END, remaining) * deltaTime;
+                        if (remaining > 1)
+                            remaining = 1;
+                        death += MathHelper.Lerp(GameData.DEAD_START, GameData.DEAD_END, remaining) * deltaTime;
 
                         CheckPlayer();
                         //player.Update(gameTime.ElapsedGameTime.TotalSeconds);
@@ -412,6 +416,7 @@ namespace Source
             levelEnd = 0;
             totalTime = 0;
             death = -GameData.DEAD_MAX;
+            rand = new Random(GameData.GetSeed);
         }
 
         /// <summary>
@@ -762,16 +767,16 @@ namespace Source
                     player.Kill(rand);
                     if (max != null)
                         max.Score++;
-                    if (--player.Score < 0)
-                        player.Score = 0;
+                    //if (--player.Score < 0)
+                    //    player.Score = 0;
                 }
 #if !DEBUG
                 else if (player.Position.X < death)
                 {
                     player.Kill(rand);
                     player.Score -= GameData.DEATH_LOSS;
-                    if (player.Score < 0)
-                        player.Score = 0;
+                    //if (player.Score < 0)
+                    //    player.Score = 0;
                 }
 #endif
             }
@@ -780,22 +785,22 @@ namespace Source
 #if !DEBUG
             if (currentX < death)   // lose
             {
-                Reset();
                 foreach (Player player in players)
                 {
-                    player.Score -= GameData.LOSE_SCORE;
-                    if (player.Score < 0)
-                        player.Score = 0;
+                    player.Score += (int)totalTime / GameData.WIN_SCORE;
+                    //if (player.Score < 0)
+                    //    player.Score = 0;
                 }
+                Reset();
             }
 #endif
 
-            if (totalTime > GameData.WIN_TIME)  // win. TODO -- do more than reset
-            {
-                Reset();
-                if (max != null)
-                    max.Score += GameData.WIN_SCORE;
-            }
+            //if (totalTime > GameData.WIN_TIME)  // win. TODO -- do more than reset
+            //{
+            //    Reset();
+            //    if (max != null)
+            //        max.Score += GameData.WIN_SCORE;
+            //}
 
             //float currentRatio = editLevel ? GameData.PIXEL_METER_EDIT : GameData.PIXEL_METER;
             float dist = maxY - minY;
@@ -1019,8 +1024,8 @@ namespace Source
                     float leftX = GraphicsDevice.Viewport.Width - font.MeasureString(frames).X;
                     spriteBatch.DrawString(font, frames, new Vector2(leftX, 0f), Color.LightGray);
 
-                    // Display time until win
-                    string time = (GameData.WIN_TIME - totalTime).ToString("n1") + "s until win";
+                    // Display current survived time
+                    string time = totalTime.ToString("n1") + "s survived";
                     leftX = GraphicsDevice.Viewport.Width / 2f - font.MeasureString(time).X / 2f;
                     spriteBatch.DrawString(font, time, new Vector2(leftX, 0f), Color.LightSkyBlue);
 

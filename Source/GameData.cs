@@ -29,6 +29,7 @@ namespace Source
                                                             Player.Ability.GravityPush
                                                         };
 
+        public const int NEW_SEED_MINS = 10;     // minutes until a new level seed will be generated
         public const float LOAD_NEW = 70f;     // the next level will be loaded when the player is this far from the current end
         public const int MAX_FLOORS = 50;    // maximum number of floors at any given time
         public const int MAX_WALLS = 90;    // maximum number of walls
@@ -65,6 +66,7 @@ namespace Source
         public const int MIN_SPAWN = MAX_LEVEL_STEP * 2 + 1;  // minimum spawning position (vertically)
         public const int MAX_SPAWN = MIN_LEVEL_STEP * MIN_NUM_FLOORS + 10;  // maximum spawning position (vertically)
         public const int PLAYER_STEP = 2;       // player collisions will be calculated this many times per tick to avoid  (only if fixed time step)
+        public const int PROJ_STEP = 2;         // projectile movement will be split up into this many steps
         public const float SPAWN_PROTECT = 5f;  // stuff this far apart from the player will be destroyed when the player is spawned
 
         public const float ZOOM_STEP = 1.5f;       // scale by which zoom is changed with + and -
@@ -75,13 +77,13 @@ namespace Source
         public static Color[] playerColors = { Color.Red, Color.Yellow, Color.Purple };     // colors of each player
 
         public const float DEAD_START = RUN_VELOCITY - 2f;   // m/s -- the speed of dead wave at start of game
-        public const float DEAD_END = RUN_VELOCITY; // m/s -- the speed at which the dead 'wave' on the left moves by the end of the game
+        public const float DEAD_END = RUN_VELOCITY + 0.5f; // m/s -- the speed at which the dead 'wave' on the left moves by the end of the game
         public const float DEAD_MAX = 40f; // m -- maximum distance between player and death if player is doing well
         public const int DEAD_WIDTH = 600;
         public const int DEAD_HEIGHT = 2000;
         public const float WIN_TIME = 60f;  // s -- survive for this long to win
         public const float MAX_SPEED_SCALE = 1.4f; // game is this much faster by the end of win
-        public const int WIN_SCORE = 10;    // score to get when winning
+        public const int WIN_SCORE = 10;    // player gets 1 point for every WIN_SCORE seconds they survive
         public const int LOSE_SCORE = 5;    // score to lose when hit by purple
         public const int DEATH_LOSS = 2;    // score to lose when the purple only catches 1 player
 
@@ -133,7 +135,7 @@ namespace Source
         public const double PHASE_TIME = 1;            // the point at which the player will be visible again after dying to get the player prepared
 
         public const float PARTICLE_WIDTH = .125f;  // width of a particle (as a square)
-        public const float PARTICLE_LIFETIME = 1.2f;  // how long a particle lasts for (in s)
+        public const float PARTICLE_LIFETIME = 1.4f;  // how long a particle lasts for (in s)
         public const float PARTICLE_LIFETIME_TEXT = 0.3f; // lifetime of a text particle
         public const float PARTICLE_MAX_SPIN = 10f; // maximum angular velocity (in rad/s)
         public const float PARTICLE_X = 4f;         // maximum x velocity of a particle when randomly generating in either direction
@@ -157,6 +159,14 @@ namespace Source
 
                 //Version ver = AssemblyName.GetAssemblyName("Game.exe").Version;
                 //return String.Format("{0}.{1}.{2}", ver.Major, ver.Minor, ver.Build);
+            }
+        }
+
+        public static int GetSeed
+        {
+            get
+            {
+                return (DateTime.Today - new DateTime(2015, 1, 1)).Minutes / GameData.NEW_SEED_MINS;
             }
         }
 
