@@ -44,7 +44,7 @@ namespace Source.Graphics
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(texture, drawRect, Color.White);
+            spriteBatch.Draw(texture, drawRect, color);
             if (font != null)
                 spriteBatch.DrawString(font, text, textDraw, textColor);
         }

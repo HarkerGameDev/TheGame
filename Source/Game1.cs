@@ -66,13 +66,15 @@ namespace Source
 
         private List<Button> pauseMenu;
         private List<Button> mainMenu;
+        private List<Button> optionsMenu;
+        private List<Button> controlsMenu;
 
         private int levelEnd;
         private float death;
 
         public enum State
         {
-            Running, Paused, MainMenu, Controls
+            Running, Paused, MainMenu, Options, Controls
         }
 
         public Game1()
@@ -92,9 +94,9 @@ namespace Source
         {
 
             // Modify screen size
-            graphics.PreferredBackBufferWidth = GameData.VIEW_WIDTH;
-            graphics.PreferredBackBufferHeight = GameData.VIEW_HEIGHT;
-            graphics.IsFullScreen = false;
+            graphics.PreferredBackBufferWidth = GraphicsDevice.DisplayMode.Width;
+            graphics.PreferredBackBufferHeight = GraphicsDevice.DisplayMode.Height;
+            graphics.IsFullScreen = true;
             IsMouseVisible = true;
             graphics.ApplyChanges();
 
@@ -145,7 +147,6 @@ namespace Source
                 Vector2 spawnLoc = new Vector2(GameData.PLAYER_START, -rand.Next(GameData.MIN_SPAWN, GameData.MAX_SPAWN));
 				players.Add(new Player(Content.Load<Texture2D>("Art/GreenDude"), spawnLoc, GameData.playerColors[i], GameData.playerAbilities[i]));
             }
-            GameData.playerColors = null;
             floors = new List<Floor>();
             walls = new List<Wall>();
             particles = new List<Particle>();
@@ -164,22 +165,55 @@ namespace Source
             float buttonWidth = width * GameData.BUTTON_WIDTH;
             float buttonHeight = height * GameData.BUTTON_HEIGHT;
             float left = (width - buttonWidth) / 2f;
+            float centerY = (height - buttonHeight) / 2f;
 
             mainMenu = new List<Button>();
             mainMenu.Add(new Button(whiteRect, new Vector2(left, buttonHeight), new Vector2(buttonWidth, buttonHeight),
-                delegate() { state = State.Running; }, Color.Blue,
-                font, "Play!", Color.Red));
+                delegate() { state = State.Running; }, Color.White,
+                fontBig, "Play!", Color.Red));
+            mainMenu.Add(new Button(whiteRect, new Vector2(left, centerY), new Vector2(buttonWidth, buttonHeight),
+                delegate() { state = State.Options; }, Color.White,
+                fontBig, "Options", Color.Red));
             mainMenu.Add(new Button(whiteRect, new Vector2(left, height - buttonHeight * 2), new Vector2(buttonWidth, buttonHeight),
-                delegate() { Exit(); }, Color.Yellow,
-                font, "Exit", Color.Red));
+                delegate() { Exit(); }, Color.White,
+                fontBig, "Exit", Color.Red));
 
             pauseMenu = new List<Button>();
             pauseMenu.Add(new Button(whiteRect, new Vector2(left, buttonHeight), new Vector2(buttonWidth, buttonHeight),
                 delegate() { state = State.Running; }, Color.RoyalBlue,
                 font, "Continue", Color.Red));
+            pauseMenu.Add(new Button(whiteRect, new Vector2(left, centerY), new Vector2(buttonWidth, buttonHeight),
+                delegate() { state = State.Options; }, Color.RoyalBlue,
+                font, "Options", Color.Red));
             pauseMenu.Add(new Button(whiteRect, new Vector2(left, height - buttonHeight * 2), new Vector2(buttonWidth, buttonHeight),
-                delegate() { Exit(); }, Color.Green,
+                delegate() { Exit(); }, Color.RoyalBlue,
                 font, "Exit", Color.Red));
+
+            optionsMenu = new List<Button>();
+            optionsMenu.Add(new Button(whiteRect, new Vector2(left, buttonHeight), new Vector2(buttonWidth, buttonHeight),
+                delegate() {
+                    graphics.ToggleFullScreen();
+                    //graphics.PreferredBackBufferWidth = graphics.IsFullScreen ? GraphicsDevice.DisplayMode.Width : GameData.VIEW_WIDTH;
+                    //graphics.PreferredBackBufferHeight = graphics.IsFullScreen ? GraphicsDevice.DisplayMode.Height : GameData.VIEW_HEIGHT;
+                    //graphics.ApplyChanges();
+                }, Color.Maroon, font, "Toggle fullscreen", Color.Chartreuse));
+            optionsMenu.Add(new Button(whiteRect, new Vector2(left, centerY), new Vector2(buttonWidth, buttonHeight),
+                delegate() { state = State.Controls; }, Color.Maroon,
+                font, "Controls", Color.Chartreuse));
+            optionsMenu.Add(new Button(whiteRect, new Vector2(left, height - buttonHeight * 2), new Vector2(buttonWidth, buttonHeight),
+                delegate() { state = State.Paused; }, Color.Maroon,
+                font, "Back", Color.Chartreuse));
+
+            controlsMenu = new List<Button>();
+            controlsMenu.Add(new Button(whiteRect, new Vector2(buttonHeight, 0), new Vector2(width / 2f - buttonHeight + 1, height - buttonHeight * 3),
+                delegate() { }, Color.DarkGray,
+                font, "Player 1 controls\n" + GameData.keyboardControls[0], Color.Chartreuse));
+            controlsMenu.Add(new Button(whiteRect, new Vector2(width / 2f, 0), new Vector2(width / 2f - buttonHeight, height - buttonHeight * 3),
+                delegate() { }, Color.DarkGray,
+                font, "Player 2 controls\n" + GameData.keyboardControls[1], Color.Chartreuse));
+            controlsMenu.Add(new Button(whiteRect, new Vector2(left, height - buttonHeight * 2), new Vector2(buttonWidth, buttonHeight),
+                delegate() { state = State.Options; }, Color.DarkGray,
+                font, "Back", Color.Chartreuse));
 
             // Load the level stored in LEVEL_FILE
             levelEnd = 0;
@@ -216,28 +250,6 @@ namespace Source
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-
-            // Handle end game
-            // TODO put this in a pause menu
-            if (Keyboard.GetState().IsKeyDown(Keys.Escape))
-                Exit();
-
-            //if (Keyboard.GetState().IsKeyDown(Keys.I))
-            //{
-            //    for (int x = 0; x < floors.Count; x++)
-            //    {
-            //        Console.WriteLine(floors[x].Intersects(floors[floors.Count-1]));
-            //    }
-            //}
-                
-
-            // Handle toggle pause
-            // TODO open pause menu
-            if (Keyboard.GetState().IsKeyDown(Keys.Space) && !prevKeyState.IsKeyDown(Keys.Space))
-                state = state == State.Paused ? State.Running : State.Paused;
-
-            // Toggle edit level
-            // TODO much better level editing/ creation
             switch (state) {
                 case State.Running:
                     if (ToggleKey(Keys.E))
@@ -276,45 +288,32 @@ namespace Source
 
                         world.Step(deltaTime);
                     }
+                    if (ToggleKey(Keys.Space))
+                        state = State.Paused;
                     break;
                 case State.Paused:
-                    foreach (Button button in mainMenu)
-                    {
-                        MouseState mouse = Mouse.GetState();
-                        if (button.TestPoint(mouse.Position))
-                        {
-                            if (mouse.LeftButton == ButtonState.Pressed)
-                            {
-                                button.OnClick();
-                            }
-                            else
-                            {
-                                // TODO some hover over display
-                            }
-                        }
-                    }
+                    HandleMenu(pauseMenu);
+                    if (ToggleKey(Keys.Space))
+                        state = State.Running;
+                    else if (ToggleKey(Keys.Escape))
+                        Exit();
                     break;
                 case State.MainMenu:
-                    foreach (Button button in mainMenu)
-                    {
-                        MouseState mouse = Mouse.GetState();
-                        if (button.TestPoint(mouse.Position))
-                        {
-                            if (mouse.LeftButton == ButtonState.Pressed)
-                            {
-                                button.OnClick();
-                            }
-                            else
-                            {
-                                // TODO some hover over display
-                            }
-                        }
-                    }
-                    if (Keyboard.GetState().IsKeyDown(Keys.Enter))
+                    HandleMenu(mainMenu);
+                    if (ToggleKey(Keys.Enter))
                         state = State.Running;
+                    else if (ToggleKey(Keys.Escape))
+                        Exit();
+                    break;
+                case State.Options:
+                    HandleMenu(optionsMenu);
+                    if (ToggleKey(Keys.Escape))
+                        state = State.MainMenu;
                     break;
                 case State.Controls:
-                    // don't do any updates
+                    HandleMenu(controlsMenu);
+                    if (ToggleKey(Keys.Escape))
+                        state = State.Options;
                     break;
             }
 
@@ -1043,24 +1042,31 @@ namespace Source
                     break;
                 case State.Paused:
                     GraphicsDevice.Clear(Color.Yellow);
-
                     spriteBatch.Begin();
                     foreach (Button button in pauseMenu)
                         button.Draw(spriteBatch);
                     spriteBatch.End();
-
                     break;
                 case State.MainMenu:
                     GraphicsDevice.Clear(Color.Turquoise);
-
                     spriteBatch.Begin();
                     foreach (Button button in mainMenu)
                         button.Draw(spriteBatch);
                     spriteBatch.End();
-
+                    break;
+                case State.Options:
+                    GraphicsDevice.Clear(Color.Chocolate);
+                    spriteBatch.Begin();
+                    foreach (Button button in optionsMenu)
+                        button.Draw(spriteBatch);
+                    spriteBatch.End();
                     break;
                 case State.Controls:
                     GraphicsDevice.Clear(Color.Plum);
+                    spriteBatch.Begin();
+                    foreach (Button button in controlsMenu)
+                        button.Draw(spriteBatch);
+                    spriteBatch.End();
                     break;
             }
 
@@ -1102,6 +1108,25 @@ namespace Source
         public static void DrawRectangle(SpriteBatch spriteBatch, Vector2 position, Color color, Vector2 scale)
         {
             spriteBatch.Draw(whiteRect, ConvertUnits.ToDisplayUnits(position), null, color, 0f, Vector2.Zero, ConvertUnits.ToDisplayUnits(scale), SpriteEffects.None, 0f);
+        }
+
+        private void HandleMenu(List<Button> menu)
+        {
+            foreach (Button button in menu)
+            {
+                MouseState mouse = Mouse.GetState();
+                if (button.TestPoint(mouse.Position))
+                {
+                    if (mouse.LeftButton == ButtonState.Pressed && prevMouseState.LeftButton == ButtonState.Released)
+                    {
+                        button.OnClick();
+                    }
+                    else
+                    {
+                        // TODO some hover over display
+                    }
+                }
+            }
         }
     }
 }

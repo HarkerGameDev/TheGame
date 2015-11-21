@@ -24,10 +24,9 @@ namespace Source
                                                        new Controls(Keys.A, Keys.D, Keys.W, Keys.S, Keys.LeftShift),
                                                        new Controls(Keys.J, Keys.L, Keys.I, Keys.K, Keys.O)
                                                     };
-        public static Player.Ability[] playerAbilities = {       // defines player abilities, for each ability in this array corresponding to a player
-                                                            Player.Ability.GravityPull,
-                                                            Player.Ability.GravityPush
-                                                        };
+        public static Player.Ability[] playerAbilities = { Player.Ability.GravityPull, Player.Ability.GravityPush };    // abilities for each player
+        public static Color[] playerColors = { Color.Red, Color.Yellow, Color.Purple };     // colors of each player
+
 
         public const int NEW_SEED_MINS = 10;     // minutes until a new level seed will be generated
         public const float LOAD_NEW = 70f;     // the next level will be loaded when the player is this far from the current end
@@ -72,9 +71,8 @@ namespace Source
         public const float ZOOM_STEP = 1.5f;       // scale by which zoom is changed with + and -
         public const float PIXEL_METER = 24f;      // pixels per meter for normal game
         public const float PIXEL_METER_EDIT = 8f;  // pixels per meter when in edit mode for level
-        public const int VIEW_WIDTH = 1280;        // width of unscaled screen in pixels
-        public const int VIEW_HEIGHT = 720;        // height of unscaled screen in pixels
-        public static Color[] playerColors = { Color.Red, Color.Yellow, Color.Purple };     // colors of each player
+        //public const int VIEW_WIDTH = 1280;        // width of unscaled screen in pixels
+        //public const int VIEW_HEIGHT = 720;        // height of unscaled screen in pixels
 
         public const float DEAD_START = RUN_VELOCITY - 2f;   // m/s -- the speed of dead wave at start of game
         public const float DEAD_END = RUN_VELOCITY + 0.5f; // m/s -- the speed at which the dead 'wave' on the left moves by the end of the game
@@ -166,7 +164,7 @@ namespace Source
         {
             get
             {
-                return (DateTime.Today - new DateTime(2015, 1, 1)).Minutes / GameData.NEW_SEED_MINS;
+                return (DateTime.UtcNow - new DateTime(2015, 1, 1)).Minutes / GameData.NEW_SEED_MINS;
             }
         }
 
@@ -179,6 +177,17 @@ namespace Source
                 this.up = up;
                 this.down = down;
                 this.shoot = shoot;
+            }
+
+            public override string ToString()
+            {
+                StringBuilder builder = new StringBuilder();
+                builder.AppendLine("Boost = " + right)
+                    .AppendLine("Jump = " + up)
+                    .AppendLine("Slam = " + down)
+                    .AppendLine("Shoot = " + shoot)
+                    .AppendLine("Special = " + special);
+                return builder.ToString();
             }
         }
     }
