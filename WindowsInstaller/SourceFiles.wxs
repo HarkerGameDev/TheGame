@@ -20,6 +20,12 @@
             <Component Id="cmpD672AC6093B252514879260B93A5A63B" Guid="*">
                 <File Id="fil6B9D8B4A55A053ABE8EA440DBA65873F" KeyPath="yes" Source="$(var.SourceFilesDir)\Game.vshost.exe.manifest" />
             </Component>
+            <Component Id="cmpDF8906FA2FAFCA00EDD43FF484161254" Guid="*">
+                <File Id="fil2B874DD9C41E03DB58ADB612B22613B3" KeyPath="yes" Source="$(var.SourceFilesDir)\Microsoft.Deployment.WindowsInstaller.dll" />
+            </Component>
+            <Component Id="cmpCBC13A32BEA32F0E0E7EC1EDF51D2BC1" Guid="*">
+                <File Id="filBBE6CFAE30C72757914F4AADE0482508" KeyPath="yes" Source="$(var.SourceFilesDir)\Microsoft.Deployment.WindowsInstaller.xml" />
+            </Component>
             <Component Id="cmpA4E2315F34E39171C2343F76EA85A474" Guid="*">
                 <File Id="filB960EE948C8B9C5D31DB635D9727100D" KeyPath="yes" Source="$(var.SourceFilesDir)\MonoGame.Framework.dll" />
             </Component>
@@ -92,6 +98,8 @@
             <ComponentRef Id="cmp092292E169838EB08640D820B53C5FFB" />
             <ComponentRef Id="cmp43B6E20384786FCCC834919101544DDE" />
             <ComponentRef Id="cmpD672AC6093B252514879260B93A5A63B" />
+            <ComponentRef Id="cmpDF8906FA2FAFCA00EDD43FF484161254" />
+            <ComponentRef Id="cmpCBC13A32BEA32F0E0E7EC1EDF51D2BC1" />
             <ComponentRef Id="cmpA4E2315F34E39171C2343F76EA85A474" />
             <ComponentRef Id="cmpE55F2C5E82F9417FFFEE05619AD9AFB4" />
             <ComponentRef Id="cmpF7823522CDD572337F4DA0AE07DA2EE7" />

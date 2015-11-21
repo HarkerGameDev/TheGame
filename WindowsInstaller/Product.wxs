@@ -19,11 +19,29 @@
       <ComponentRef Id="ApplicationShortcut" />
       <ComponentRef Id="ApplicationShortcutDesktop" />
     </Feature>
+    
+    <Property Id="INSTALLDIR">
+      <RegistrySearch Id="InstallRegistry" Type="raw" Root="HKLM" Key="Software\Game Dev\Game" Name="InstallDir" />
+    </Property>
+
+    <Property Id="PREVINSTALLED" >
+      <RegistrySearch Id="PrevInstallRegistry" Type="raw" Root="HKLM" Key="Software\Game Dev\Game" Name="installed" />
+    </Property>
+
+    <Property Id="INSTALLSTARTMENUSHORTCUT" >
+      <RegistrySearch Id="StartMenuRegistry" Type="raw" Root="HKCU" Key="Software\Game Dev\Game" Name="StartMenuShortcut" />
+    </Property>
+
+    <SetProperty Id="INSTALLSTARTMENUSHORTCUT" After="AppSearch" Value="1" Sequence="first">
+      NOT PREVINSTALLED
+    </SetProperty>
+
+    <Property Id="INSTALLDESKTOPSHORTCUT" >
+      <RegistrySearch Id="DesktopRegistry" Type="raw" Root="HKCU" Key="Software\Game Dev\Game" Name="DesktopShortcut" />
+    </Property>
 
     <Property Id="WIXUI_INSTALLDIR" Value="INSTALLDIR" />
     <UIRef Id="MyWixUI_InstallDir" />
-    
-    <Property Id="INSTALLSTARTMENUSHORTCUT" Value="1" />
 
     <CustomAction Id="LaunchApplication" FileKey="filF247318FDF4D94A3E8F97465F6757FC1" ExeCommand="" Execute="immediate" Impersonate="yes" Return="asyncNoWait" />
     <UI>
@@ -50,31 +68,35 @@
 
   <Fragment>
     <DirectoryRef Id="INSTALLDIR">
-      <Component Id="ApplicationUninstall" Guid="14f48a48-db62-4e8d-8a22-c330487ab9e1">
+      <Component Id="ApplicationUninstall" Guid="*">
         <Shortcut Id="ApplicationUninstallShortcut" Name="Uninstall" Description="Uninstalls The Game"
                   Target="[SystemFolder]msiexec.exe" Arguments="/x [ProductCode]" />
         <RemoveFolder Id="RemoveInstallFolder" Directory="INSTALLDIR" On="uninstall"/>
-        <!--<RegistryValue Root="HKCU" Key="Software\Game Dev\Game" Name="installed" Type="integer" Value="1" KeyPath="yes" />-->
+        <RegistryValue Root="HKLM" Key="Software\Game Dev\Game" Type="string" Name="InstallDir" Value="[INSTALLDIR]" />
+        <RegistryValue Root="HKLM" Key="Software\Game Dev\Game" Name="installed" Type="integer" Value="1" KeyPath="yes" />
+        <RemoveRegistryKey Id="RemoveRegistryCU" Root="HKCU" Action="removeOnInstall" Key="Software\Game Dev\Game" />
       </Component>
     </DirectoryRef>
+    
     <DirectoryRef Id="ApplicationProgramsFolder">
-      <Component Id="ApplicationShortcut" Guid="330b7a4b-9265-4dd1-86ac-849d22cac37c">
+      <Component Id="ApplicationShortcut" Guid="*">
         <Condition>INSTALLSTARTMENUSHORTCUT</Condition>
         <Shortcut Id="ApplicationStartMenuShortcut" Name="Game" Description="The Game"
                   Target="[INSTALLDIR]Game.exe" WorkingDirectory="INSTALLDIR" />
         <Shortcut Id="UninstallProduct" Name="Uninstall Game" Description="Uninstalls The Game"
                   Target="[SystemFolder]msiexec.exe" Arguments="/x [ProductCode]" />
         <RemoveFolder Id="RemoveApplicationProgramsFolder" Directory="ApplicationProgramsFolder" On="uninstall"/>
-        <RegistryValue Root="HKCU" Key="Software\Game Dev\Game" Name="installed" Type="integer" Value="1" KeyPath="yes" />
+        <RegistryValue Root="HKCU" Key="Software\Game Dev\Game" Name="StartMenuShortcut" Type="integer" Value="1" KeyPath="yes" />
       </Component>
     </DirectoryRef>
+    
     <DirectoryRef Id="DesktopFolder">
-      <Component Id="ApplicationShortcutDesktop" Guid="862d8d9c-fe23-47c8-8f57-59483ef704c1">
+      <Component Id="ApplicationShortcutDesktop" Guid="*">
         <Condition>INSTALLDESKTOPSHORTCUT</Condition>
         <Shortcut Id="ApplicationDesktopShortcut" Name="Game" Description="The Game"
                   Target="[INSTALLDIR]Game.exe" WorkingDirectory="INSTALLDIR" />
         <RemoveFolder Id="RemoveDesktopFolder" Directory="DesktopFolder" On="uninstall" />
-        <RegistryValue Root="HKCU" Key="Software\Game Dev\Game" Name="installed" Type="integer" Value="1" KeyPath="yes" />
+        <RegistryValue Root="HKCU" Key="Software\Game Dev\Game" Name="DesktopShortcut" Type="integer" Value="1" KeyPath="yes" />
       </Component>
     </DirectoryRef>
   </Fragment>

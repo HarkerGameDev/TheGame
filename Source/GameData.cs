@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Reflection;
-using System.Diagnostics;
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -151,12 +150,12 @@ namespace Source
         {
             get
             {
-                Assembly asm = Assembly.GetEntryAssembly();
-                FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(asm.Location);
-                return String.Format("{0}.{1}.{2}", fvi.ProductMajorPart, fvi.ProductMinorPart, fvi.ProductBuildPart);
+                //Assembly asm = Assembly.GetEntryAssembly();
+                //FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(asm.Location);
+                //return String.Format("{0}.{1}.{2}", fvi.ProductMajorPart, fvi.ProductMinorPart, fvi.ProductBuildPart);
 
-                //Version ver = AssemblyName.GetAssemblyName("Game.exe").Version;
-                //return String.Format("{0}.{1}.{2}", ver.Major, ver.Minor, ver.Build);
+                Version ver = Assembly.GetEntryAssembly().GetName().Version;
+                return String.Format("{0}.{1}.{2}", ver.Major, ver.Minor, ver.Build);
             }
         }
 
