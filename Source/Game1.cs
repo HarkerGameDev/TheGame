@@ -372,7 +372,7 @@ namespace Source
                 }
             }
 
-            if (state.IsKeyDown(Keys.R))                        // reset
+            if (ToggleKey(Keys.R))                        // reset
             {
                 Reset();
             }
