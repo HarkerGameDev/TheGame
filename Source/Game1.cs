@@ -41,6 +41,7 @@ namespace Source
         public SpriteFont font, fontBig;
 
         public Random rand;
+        private Random randLevel;
         private World world;
 
         private Rectangle cameraBounds;
@@ -105,7 +106,8 @@ namespace Source
             ConvertUnits.SetDisplayUnitToSimUnitRatio(currentZoom);
 
             // Set seed for a scheduled random level (minutes since Jan 1, 2015)
-            rand = new Random(GameData.GetSeed);
+            rand = new Random();
+            randLevel = new Random(GameData.GetSeed);
 
             // Set variables
             //paused = false;
@@ -415,7 +417,8 @@ namespace Source
             levelEnd = 0;
             totalTime = 0;
             death = -GameData.DEAD_MAX;
-            rand = new Random(GameData.GetSeed);
+            rand = new Random();
+            randLevel = new Random(GameData.GetSeed);
         }
 
         /// <summary>
@@ -820,11 +823,11 @@ namespace Source
 
         private void MakeLevel()
         {
-            int width = rand.Next(GameData.MIN_LEVEL_WIDTH, GameData.MAX_LEVEL_WIDTH);
-            int numFloors = rand.Next(GameData.MIN_NUM_FLOORS, GameData.MAX_NUM_FLOORS);
+            int width = randLevel.Next(GameData.MIN_LEVEL_WIDTH, GameData.MAX_LEVEL_WIDTH);
+            int numFloors = randLevel.Next(GameData.MIN_NUM_FLOORS, GameData.MAX_NUM_FLOORS);
 
-            int minStep = rand.Next(GameData.MIN_LEVEL_STEP, GameData.MAX_LEVEL_STEP);
-            int maxStep = rand.Next(GameData.MIN_LEVEL_STEP, GameData.MAX_LEVEL_STEP);
+            int minStep = randLevel.Next(GameData.MIN_LEVEL_STEP, GameData.MAX_LEVEL_STEP);
+            int maxStep = randLevel.Next(GameData.MIN_LEVEL_STEP, GameData.MAX_LEVEL_STEP);
             //int minStep = GameData.MIN_LEVEL_STEP;
             //int maxStep = GameData.MAX_LEVEL_STEP;
             if (maxStep < minStep)
@@ -835,7 +838,7 @@ namespace Source
             }
 
             //float x = levelEnd + width / 2f;
-            float step = rand.Next(minStep, maxStep);
+            float step = randLevel.Next(minStep, maxStep);
             float y = -step;
             for (int i = 0; i < numFloors; i++)
             {
@@ -845,7 +848,7 @@ namespace Source
                 float dist = 0;
                 while (dist < width)
                 {
-                    float floorSize = (float)rand.NextDouble() * GameData.MAX_FLOOR_DIST + GameData.MIN_FLOOR_DIST;
+                    float floorSize = (float)randLevel.NextDouble() * GameData.MAX_FLOOR_DIST + GameData.MIN_FLOOR_DIST;
                     if (floorSize > width - dist)
                     {
                         floorSize = width - dist;
@@ -853,10 +856,10 @@ namespace Source
                             break;
                     }
                     floors.Add(new Floor(whiteRect, new Vector2(levelEnd + dist + floorSize / 2, y), floorSize));
-                    float holeSize = (float)rand.NextDouble() * GameData.MAX_FLOOR_HOLE + GameData.MIN_FLOOR_HOLE;
+                    float holeSize = (float)randLevel.NextDouble() * GameData.MAX_FLOOR_HOLE + GameData.MIN_FLOOR_HOLE;
                     dist += floorSize + holeSize;
 
-                    if (dist < width && rand.NextDouble() < GameData.STAIR_CHANCE && holeSize > GameData.MIN_STAIR_DIST)
+                    if (dist < width && randLevel.NextDouble() < GameData.STAIR_CHANCE && holeSize > GameData.MIN_STAIR_DIST)
                     {
                         Floor stair = new Floor(whiteRect, new Vector2(levelEnd + dist - GameData.STAIR_WIDTH, y + step), new Vector2(levelEnd + dist, y));
 
@@ -880,7 +883,7 @@ namespace Source
                     }
                 }
 
-                dist = rand.Next(GameData.MIN_WALL_DIST, GameData.MAX_WALL_DIST);
+                dist = randLevel.Next(GameData.MIN_WALL_DIST, GameData.MAX_WALL_DIST);
                 while (dist < width)
                 {
                     Wall wall = new Wall(whiteRect, new Vector2(levelEnd + dist, y + step / 2), step - Floor.FLOOR_HEIGHT, GameData.WALL_HEALTH);
@@ -909,13 +912,13 @@ namespace Source
 
                     if (validStair && numCollisions > 1)
                        walls.Add(wall);
-                    dist += rand.Next(GameData.MIN_WALL_DIST, GameData.MAX_WALL_DIST);
+                    dist += randLevel.Next(GameData.MIN_WALL_DIST, GameData.MAX_WALL_DIST);
                 }
 
-                step = rand.Next(minStep, maxStep);
+                step = randLevel.Next(minStep, maxStep);
                 y -= step;
             }
-            levelEnd += width + rand.Next(GameData.LEVEL_DIST_MIN, GameData.LEVEL_DIST_MAX);
+            levelEnd += width + randLevel.Next(GameData.LEVEL_DIST_MIN, GameData.LEVEL_DIST_MAX);
 
             if (floors.Count > GameData.MAX_FLOORS)
                 floors.RemoveRange(0, floors.Count - GameData.MAX_FLOORS);
