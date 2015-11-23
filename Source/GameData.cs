@@ -70,8 +70,8 @@ namespace Source
         public const float ZOOM_STEP = 1.5f;       // scale by which zoom is changed with + and -
         public const float PIXEL_METER = 24f;      // pixels per meter for normal game
         public const float PIXEL_METER_EDIT = 8f;  // pixels per meter when in edit mode for level
-        //public const int VIEW_WIDTH = 1280;        // width of unscaled screen in pixels
-        //public const int VIEW_HEIGHT = 720;        // height of unscaled screen in pixels
+        public const int VIEW_WIDTH = 1280;        // width of unscaled screen in pixels
+        public const int VIEW_HEIGHT = 720;        // height of unscaled screen in pixels
 
         public const float DEAD_START = RUN_VELOCITY - 2f;   // m/s -- the speed of dead wave at start of game
         public const float DEAD_END = RUN_VELOCITY + 0.5f; // m/s -- the speed at which the dead 'wave' on the left moves by the end of the game

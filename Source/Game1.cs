@@ -11,6 +11,9 @@ using Microsoft.Xna.Framework.Media;
 using Source.Collisions;
 using Source.Graphics;
 
+using EmptyKeys.UserInterface;
+using EmptyKeys.UserInterface.Generated;
+
 namespace Source
 {
     /// <summary>
@@ -34,11 +37,13 @@ namespace Source
     {
         private GraphicsDeviceManager graphics;
         private SpriteBatch spriteBatch;
+
         private KeyboardState prevKeyState;
         private GamePadState prevPadState;
         private MouseState prevMouseState;
+
         private static Texture2D whiteRect;
-        public SpriteFont font, fontBig;
+        public SpriteFont fontSmall, fontBig;
 
         public Random rand;
         private Random randLevel;
@@ -53,6 +58,7 @@ namespace Source
         private bool editingFloor;
         private Vector2 startDraw;
         private Vector2 endDraw;
+
         private Vector2 screenOffset;
 
         //private bool paused;
@@ -73,6 +79,11 @@ namespace Source
         private int levelEnd;
         private float death;
 
+        private Root root;
+
+        private int nativeScreenWidth;
+        private int nativeScreenHeight;
+
         public enum State
         {
             Running, Paused, MainMenu, Options, Controls
@@ -81,8 +92,28 @@ namespace Source
         public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
-            IsFixedTimeStep = true;
+            graphics.DeviceCreated += graphics_DeviceCreated;
+            graphics.PreparingDeviceSettings += graphics_PreparingDeviceSettings;
+            IsMouseVisible = true;
+        }
+
+        private void graphics_DeviceCreated(object sender, EventArgs e)
+        {
+            Engine engine = new MonoGameEngine(GraphicsDevice, nativeScreenWidth, nativeScreenHeight);
+        }
+
+        private void graphics_PreparingDeviceSettings(object sender, PreparingDeviceSettingsEventArgs e)
+        {
+            nativeScreenWidth = graphics.PreferredBackBufferWidth;
+            nativeScreenHeight = graphics.PreferredBackBufferHeight;
+
+            graphics.PreferredBackBufferWidth = GameData.VIEW_WIDTH;
+            graphics.PreferredBackBufferHeight = GameData.VIEW_HEIGHT;
+            graphics.PreferMultiSampling = true;
+            graphics.GraphicsProfile = GraphicsProfile.HiDef;
             graphics.SynchronizeWithVerticalRetrace = true;
+            graphics.PreferredDepthStencilFormat = DepthFormat.Depth24Stencil8;
+            e.GraphicsDeviceInformation.PresentationParameters.MultiSampleCount = 16;
         }
 
         /// <summary>
@@ -93,14 +124,6 @@ namespace Source
         /// </summary>
         protected override void Initialize()
         {
-
-            // Modify screen size
-            graphics.PreferredBackBufferWidth = GraphicsDevice.DisplayMode.Width;
-            graphics.PreferredBackBufferHeight = GraphicsDevice.DisplayMode.Height;
-            graphics.IsFullScreen = true;
-            IsMouseVisible = true;
-            graphics.ApplyChanges();
-
             // Sets how many pixels is a meter
             currentZoom = GameData.PIXEL_METER;
             ConvertUnits.SetDisplayUnitToSimUnitRatio(currentZoom);
@@ -134,12 +157,18 @@ namespace Source
             Content.RootDirectory = "Content";
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
+            // Load menus
+            SpriteFont font = Content.Load<SpriteFont>("Fonts/Segoe_UI_15_Bold");
+            FontManager.DefaultFont = Engine.Instance.Renderer.CreateFont(font);
+            root = new Root();
+            FontManager.Instance.LoadFonts(Content, "Fonts");
+
             // Use this to draw any rectangles
             whiteRect = new Texture2D(GraphicsDevice, 1, 1);
             whiteRect.SetData(new[] { Color.White });
 
             // Load assets in the Content Manager
-            font = Content.Load<SpriteFont>("Fonts/Score");
+            fontSmall = Content.Load<SpriteFont>("Fonts/Score");
             fontBig = Content.Load<SpriteFont>("Fonts/ScoreBig");
 
             // Create objects
@@ -183,13 +212,13 @@ namespace Source
             pauseMenu = new List<Button>();
             pauseMenu.Add(new Button(whiteRect, new Vector2(left, buttonHeight), new Vector2(buttonWidth, buttonHeight),
                 delegate() { state = State.Running; }, Color.RoyalBlue,
-                font, "Continue", Color.Red));
+                fontSmall, "Continue", Color.Red));
             pauseMenu.Add(new Button(whiteRect, new Vector2(left, centerY), new Vector2(buttonWidth, buttonHeight),
                 delegate() { state = State.Options; }, Color.RoyalBlue,
-                font, "Options", Color.Red));
+                fontSmall, "Options", Color.Red));
             pauseMenu.Add(new Button(whiteRect, new Vector2(left, height - buttonHeight * 2), new Vector2(buttonWidth, buttonHeight),
                 delegate() { Exit(); }, Color.RoyalBlue,
-                font, "Exit", Color.Red));
+                fontSmall, "Exit", Color.Red));
 
             optionsMenu = new List<Button>();
             optionsMenu.Add(new Button(whiteRect, new Vector2(left, buttonHeight), new Vector2(buttonWidth, buttonHeight),
@@ -198,24 +227,24 @@ namespace Source
                     //graphics.PreferredBackBufferWidth = graphics.IsFullScreen ? GraphicsDevice.DisplayMode.Width : GameData.VIEW_WIDTH;
                     //graphics.PreferredBackBufferHeight = graphics.IsFullScreen ? GraphicsDevice.DisplayMode.Height : GameData.VIEW_HEIGHT;
                     //graphics.ApplyChanges();
-                }, Color.Maroon, font, "Toggle fullscreen", Color.Chartreuse));
+                }, Color.Maroon, fontSmall, "Toggle fullscreen", Color.Chartreuse));
             optionsMenu.Add(new Button(whiteRect, new Vector2(left, centerY), new Vector2(buttonWidth, buttonHeight),
                 delegate() { state = State.Controls; }, Color.Maroon,
-                font, "Controls", Color.Chartreuse));
+                fontSmall, "Controls", Color.Chartreuse));
             optionsMenu.Add(new Button(whiteRect, new Vector2(left, height - buttonHeight * 2), new Vector2(buttonWidth, buttonHeight),
                 delegate() { state = State.Paused; }, Color.Maroon,
-                font, "Back", Color.Chartreuse));
+                fontSmall, "Back", Color.Chartreuse));
 
             controlsMenu = new List<Button>();
             controlsMenu.Add(new Button(whiteRect, new Vector2(buttonHeight, 0), new Vector2(width / 2f - buttonHeight + 1, height - buttonHeight * 3),
                 delegate() { }, Color.DarkGray,
-                font, "Player 1 controls\n" + GameData.keyboardControls[0], Color.Chartreuse));
+                fontSmall, "Player 1 controls\n" + GameData.keyboardControls[0], Color.Chartreuse));
             controlsMenu.Add(new Button(whiteRect, new Vector2(width / 2f, 0), new Vector2(width / 2f - buttonHeight, height - buttonHeight * 3),
                 delegate() { }, Color.DarkGray,
-                font, "Player 2 controls\n" + GameData.keyboardControls[1], Color.Chartreuse));
+                fontSmall, "Player 2 controls\n" + GameData.keyboardControls[1], Color.Chartreuse));
             controlsMenu.Add(new Button(whiteRect, new Vector2(left, height - buttonHeight * 2), new Vector2(buttonWidth, buttonHeight),
                 delegate() { state = State.Options; }, Color.DarkGray,
-                font, "Back", Color.Chartreuse));
+                fontSmall, "Back", Color.Chartreuse));
 
             // Load the level stored in LEVEL_FILE
             levelEnd = 0;
@@ -223,13 +252,10 @@ namespace Source
             MakeLevel();
 
             // Load the song
-			try {
-                Song song = Content.Load<Song>("Music/" + GameData.SONG);
-              MediaPlayer.IsRepeating = true;
-              MediaPlayer.Volume = GameData.VOLUME;
-              MediaPlayer.Play(song);
-			} catch (Microsoft.Xna.Framework.Content.ContentLoadException cle) {
-			}
+            Song song = Content.Load<Song>("Music/" + GameData.SONG);
+            MediaPlayer.IsRepeating = true;
+            MediaPlayer.Volume = GameData.VOLUME;
+            MediaPlayer.Play(song);
         }
 
         /// <summary>
@@ -301,7 +327,9 @@ namespace Source
                         Exit();
                     break;
                 case State.MainMenu:
-                    HandleMenu(mainMenu);
+                    //HandleMenu(mainMenu);
+                    root.UpdateInput(gameTime.ElapsedGameTime.TotalMilliseconds);
+                    root.UpdateLayout(gameTime.ElapsedGameTime.TotalMilliseconds);
                     if (ToggleKey(Keys.Enter))
                         state = State.Running;
                     else if (ToggleKey(Keys.Escape))
@@ -1019,21 +1047,21 @@ namespace Source
                     {
                         text.AppendLine(string.Format("Player {0}: {1}", i + 1, players[i].Score));
                     }
-                    spriteBatch.DrawString(font, text, new Vector2(10, 10), Color.Green);
+                    spriteBatch.DrawString(fontSmall, text, new Vector2(10, 10), Color.Green);
 
                     // Display frames per second in the top right
                     string frames = (1f / deltaTime).ToString("n2");
-                    float leftX = GraphicsDevice.Viewport.Width - font.MeasureString(frames).X;
-                    spriteBatch.DrawString(font, frames, new Vector2(leftX, 0f), Color.LightGray);
+                    float leftX = GraphicsDevice.Viewport.Width - fontSmall.MeasureString(frames).X;
+                    spriteBatch.DrawString(fontSmall, frames, new Vector2(leftX, 0f), Color.LightGray);
 
                     // Display current survived time
                     string time = totalTime.ToString("n1") + "s survived";
-                    leftX = GraphicsDevice.Viewport.Width / 2f - font.MeasureString(time).X / 2f;
-                    spriteBatch.DrawString(font, time, new Vector2(leftX, 0f), Color.LightSkyBlue);
+                    leftX = GraphicsDevice.Viewport.Width / 2f - fontSmall.MeasureString(time).X / 2f;
+                    spriteBatch.DrawString(fontSmall, time, new Vector2(leftX, 0f), Color.LightSkyBlue);
 
                     // Display version number
-                    Vector2 pos = new Vector2(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height) - font.MeasureString(GameData.Version);
-                    spriteBatch.DrawString(font, GameData.Version, pos, Color.LightSalmon);
+                    Vector2 pos = new Vector2(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height) - fontSmall.MeasureString(GameData.Version);
+                    spriteBatch.DrawString(fontSmall, GameData.Version, pos, Color.LightSalmon);
 
                     //if (levelAnnounceWaitAt > 0)
                     //{
@@ -1052,10 +1080,11 @@ namespace Source
                     break;
                 case State.MainMenu:
                     GraphicsDevice.Clear(Color.Turquoise);
-                    spriteBatch.Begin();
-                    foreach (Button button in mainMenu)
-                        button.Draw(spriteBatch);
-                    spriteBatch.End();
+                    root.Draw(gameTime.ElapsedGameTime.TotalMilliseconds);
+                    //spriteBatch.Begin();
+                    //foreach (Button button in mainMenu)
+                    //    button.Draw(spriteBatch);
+                    //spriteBatch.End();
                     break;
                 case State.Options:
                     GraphicsDevice.Clear(Color.Chocolate);

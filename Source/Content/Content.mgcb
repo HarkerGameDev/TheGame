@@ -42,3 +42,9 @@
 /processorParam:Quality=Best
 /build:Music/afln_s_gdc-1.wav
 
+#begin Fonts/Segoe_UI_15_Bold.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:TextureFormat=Compressed
+/build:Fonts/Segoe_UI_15_Bold.spritefont
+

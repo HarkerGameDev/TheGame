@@ -49,7 +49,7 @@ namespace Game
                     }
                 }
             }
-            catch (Exception e) { }
+            catch (Exception) { }
             
             //System.IO.File.Delete(tempFile);
 

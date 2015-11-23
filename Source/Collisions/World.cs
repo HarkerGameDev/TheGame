@@ -115,7 +115,7 @@ namespace Source.Collisions
                         wall.Color = Color.Azure;
                         game.walls.RemoveAt(i);
                         MakeParticles(proj.Position, wall, GameData.NUM_PART_WALL, 0, 0);
-                        game.particles.Add(new Particle(wall.Position, game.font, "BAM!"));
+                        game.particles.Add(new Particle(wall.Position, game.fontSmall, "BAM!"));
                     }
                     else
                         wall.SetColor();
