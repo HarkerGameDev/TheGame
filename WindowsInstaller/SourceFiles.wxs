@@ -2,6 +2,21 @@
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
     <Fragment>
         <DirectoryRef Id="INSTALLDIR">
+            <Component Id="cmp131B86610BFFD94A1B96ED0594231A4E" Guid="*">
+                <File Id="fil53E58FBC16883434583B1F81B2F8FF66" KeyPath="yes" Source="$(var.SourceFilesDir)\EmptyKeys.UserInterface.Core.dll" />
+            </Component>
+            <Component Id="cmp5C8BE23FBEFFB5ADB6A8E714EE657174" Guid="*">
+                <File Id="fil000D10A453A7396743DAB3B42F315C4F" KeyPath="yes" Source="$(var.SourceFilesDir)\EmptyKeys.UserInterface.Core.xml" />
+            </Component>
+            <Component Id="cmpBD2B1D0F75FE0F21612A37BF05583309" Guid="*">
+                <File Id="fil7BF987BB0E2C8F15F09C4AE81E010191" KeyPath="yes" Source="$(var.SourceFilesDir)\EmptyKeys.UserInterface.dll" />
+            </Component>
+            <Component Id="cmpE00944F1053EAEBD8399956A826329ED" Guid="*">
+                <File Id="fil430086FC119075A7B8C31B9C6A6E7247" KeyPath="yes" Source="$(var.SourceFilesDir)\EmptyKeys.UserInterface.MonoGame.dll" />
+            </Component>
+            <Component Id="cmp62A8FEE4DBCB215C925B3F4C4E10BEEB" Guid="*">
+                <File Id="filFB36B08A21E8E3E4BD3C6E6DC7A7AF43" KeyPath="yes" Source="$(var.SourceFilesDir)\EmptyKeys.UserInterface.xml" />
+            </Component>
             <Component Id="cmp5FEF7BBDF35B39BDF108D4FC6FF4C924" Guid="*">
                 <File Id="filF247318FDF4D94A3E8F97465F6757FC1" KeyPath="yes" Source="$(var.SourceFilesDir)\Game.exe" />
             </Component>
@@ -19,6 +34,12 @@
             </Component>
             <Component Id="cmpD672AC6093B252514879260B93A5A63B" Guid="*">
                 <File Id="fil6B9D8B4A55A053ABE8EA440DBA65873F" KeyPath="yes" Source="$(var.SourceFilesDir)\Game.vshost.exe.manifest" />
+            </Component>
+            <Component Id="cmp4E757CE1E25D9772FA17C804B3F76DD6" Guid="*">
+                <File Id="filE296055AE9DC681223CE83B5A75FED17" KeyPath="yes" Source="$(var.SourceFilesDir)\GameUILibrary.dll" />
+            </Component>
+            <Component Id="cmpB4FDB10DC123A4E9B60D698EFDE83DA7" Guid="*">
+                <File Id="fil075F187FB7161DC2C555FAC20A2BDD3B" KeyPath="yes" Source="$(var.SourceFilesDir)\GameUILibrary.pdb" />
             </Component>
             <Component Id="cmpDF8906FA2FAFCA00EDD43FF484161254" Guid="*">
                 <File Id="fil2B874DD9C41E03DB58ADB612B22613B3" KeyPath="yes" Source="$(var.SourceFilesDir)\Microsoft.Deployment.WindowsInstaller.dll" />
@@ -78,6 +99,9 @@
                     <Component Id="cmp25969B4D9C08E4DFA7C82B80D9DDDB52" Guid="*">
                         <File Id="fil304E75987E1ED54502B579B0CE3DF8F2" KeyPath="yes" Source="$(var.SourceFilesDir)\Content\Fonts\ScoreBig.xnb" />
                     </Component>
+                    <Component Id="cmpD286185F685C898893375AC3C505ABD8" Guid="*">
+                        <File Id="filBAF24551D2C4C2CAB779580553F5E8C5" KeyPath="yes" Source="$(var.SourceFilesDir)\Content\Fonts\Segoe_UI_15_Bold.xnb" />
+                    </Component>
                 </Directory>
                 <Directory Id="dirEB2BA839D633B2654C055B9D83D25871" Name="Music">
                     <Component Id="cmpCC705B498256CB68609D249BEEE4B3E9" Guid="*">
@@ -92,12 +116,19 @@
     </Fragment>
     <Fragment>
         <ComponentGroup Id="GameFiles">
+            <ComponentRef Id="cmp131B86610BFFD94A1B96ED0594231A4E" />
+            <ComponentRef Id="cmp5C8BE23FBEFFB5ADB6A8E714EE657174" />
+            <ComponentRef Id="cmpBD2B1D0F75FE0F21612A37BF05583309" />
+            <ComponentRef Id="cmpE00944F1053EAEBD8399956A826329ED" />
+            <ComponentRef Id="cmp62A8FEE4DBCB215C925B3F4C4E10BEEB" />
             <ComponentRef Id="cmp5FEF7BBDF35B39BDF108D4FC6FF4C924" />
             <ComponentRef Id="cmp10B3ADA67921BA7127B12DFCB13A82CC" />
             <ComponentRef Id="cmpA1E5623C69D1EE284019560C04CCEDA9" />
             <ComponentRef Id="cmp092292E169838EB08640D820B53C5FFB" />
             <ComponentRef Id="cmp43B6E20384786FCCC834919101544DDE" />
             <ComponentRef Id="cmpD672AC6093B252514879260B93A5A63B" />
+            <ComponentRef Id="cmp4E757CE1E25D9772FA17C804B3F76DD6" />
+            <ComponentRef Id="cmpB4FDB10DC123A4E9B60D698EFDE83DA7" />
             <ComponentRef Id="cmpDF8906FA2FAFCA00EDD43FF484161254" />
             <ComponentRef Id="cmpCBC13A32BEA32F0E0E7EC1EDF51D2BC1" />
             <ComponentRef Id="cmpA4E2315F34E39171C2343F76EA85A474" />
@@ -116,6 +147,7 @@
             <ComponentRef Id="cmp5B33A7BE5FBBC4861B355D75AF67FA79" />
             <ComponentRef Id="cmp02B8A6EB72D7FB968B7D33F4812C61BE" />
             <ComponentRef Id="cmp25969B4D9C08E4DFA7C82B80D9DDDB52" />
+            <ComponentRef Id="cmpD286185F685C898893375AC3C505ABD8" />
             <ComponentRef Id="cmpCC705B498256CB68609D249BEEE4B3E9" />
             <ComponentRef Id="cmpDDDA067ABBCB8AD8395AEC31DAEA321D" />
         </ComponentGroup>

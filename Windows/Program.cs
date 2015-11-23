@@ -49,7 +49,10 @@ namespace Game
                     }
                 }
             }
-            catch (Exception) { }
+            catch (Exception e)
+            {
+                System.IO.File.AppendAllText("logs.txt", e.ToString() + "\n");
+            }
             
             //System.IO.File.Delete(tempFile);
 
