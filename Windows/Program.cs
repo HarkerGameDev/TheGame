@@ -1,5 +1,7 @@
 ﻿using System;
 using System.IO;
+using System.Reflection;
+using System.Diagnostics;
 using Microsoft.Deployment.WindowsInstaller;
 
 namespace Game
@@ -41,12 +43,16 @@ namespace Game
                     db.DeleteOnClose(tempFile);
 
                     Version newVer = new Version(str);
-                    Version curVer = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+                    Version curVer = Assembly.GetExecutingAssembly().GetName().Version;
                     if (newVer > curVer)
                     {
-                        //Console.WriteLine(newVer + "\n" + curVer);
-                        //Installer.SetInternalUI(InstallUIOptions.Basic);
-                        Installer.InstallProduct(tempFile, "");
+                        ProcessStartInfo Info = new ProcessStartInfo();
+                        Info.Arguments = "/C start /wait msiexec /i \"" + tempFile + "\" /passive & start \"\" \"" + Assembly.GetExecutingAssembly().Location + "\"";
+                        Info.WindowStyle = ProcessWindowStyle.Hidden;
+                        Info.CreateNoWindow = true;
+                        Info.FileName = "cmd.exe";
+                        Process.Start(Info);
+                        Environment.Exit(1);
                     }
                 }
             }
@@ -59,6 +65,11 @@ namespace Game
 
             using (var game = new Source.Game1())
                 game.Run();
+        }
+
+        static void Application_ApplicationExit(object sender, EventArgs e)
+        {
+            throw new NotImplementedException();
         }
     }
 #endif

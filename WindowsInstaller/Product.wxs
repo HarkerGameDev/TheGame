@@ -43,6 +43,7 @@
     <Property Id="WIXUI_INSTALLDIR" Value="INSTALLDIR" />
     <UIRef Id="MyWixUI_InstallDir" />
 
+    <Property Id="LAUNCHAPPONEXIT" Value="1" />
     <CustomAction Id="LaunchApplication" FileKey="filF247318FDF4D94A3E8F97465F6757FC1" ExeCommand="" Execute="immediate" Impersonate="yes" Return="asyncNoWait" />
     <UI>
       <Publish Dialog="MyExitDialog" Control="Finish" Order="1" Event="DoAction" Value="LaunchApplication">LAUNCHAPPONEXIT</Publish>
@@ -52,8 +53,6 @@
 
     <Icon Id="icon.ico" SourceFile="..\Windows\Icon.ico" />
     <Property Id="ARPPRODUCTICON" Value="icon.ico" />
-    
-    <Property Id="MSIRESTARTMANAGERCONTROL" Value="Disable" />
 	</Product>
 
 	<Fragment>
