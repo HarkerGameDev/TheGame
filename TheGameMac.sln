@@ -5,18 +5,31 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Source", "Source\Source.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mac", "Mac\Mac.csproj", "{FF8D3891-8C23-4928-88A4-09BA161BA05E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameUILibrary", "GameUILibrary\GameUILibrary.csproj", "{0D59160C-4AE3-4772-A0BE-85A2B10CD15D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
 		Release|x86 = Release|x86
+		DMGCreation|Any CPU = DMGCreation|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0D59160C-4AE3-4772-A0BE-85A2B10CD15D}.Debug|x86.ActiveCfg = Debug|x86
+		{0D59160C-4AE3-4772-A0BE-85A2B10CD15D}.Debug|x86.Build.0 = Debug|x86
+		{0D59160C-4AE3-4772-A0BE-85A2B10CD15D}.DMGCreation|Any CPU.ActiveCfg = Release|Any CPU
+		{0D59160C-4AE3-4772-A0BE-85A2B10CD15D}.DMGCreation|Any CPU.Build.0 = Release|Any CPU
+		{0D59160C-4AE3-4772-A0BE-85A2B10CD15D}.Release|x86.ActiveCfg = Release|x86
+		{0D59160C-4AE3-4772-A0BE-85A2B10CD15D}.Release|x86.Build.0 = Release|x86
 		{E757DB6F-A3C0-463E-89BE-AC72BC371E89}.Debug|x86.ActiveCfg = Debug|x86
 		{E757DB6F-A3C0-463E-89BE-AC72BC371E89}.Debug|x86.Build.0 = Debug|x86
+		{E757DB6F-A3C0-463E-89BE-AC72BC371E89}.DMGCreation|Any CPU.ActiveCfg = DMGCreation|Any CPU
+		{E757DB6F-A3C0-463E-89BE-AC72BC371E89}.DMGCreation|Any CPU.Build.0 = DMGCreation|Any CPU
 		{E757DB6F-A3C0-463E-89BE-AC72BC371E89}.Release|x86.ActiveCfg = Release|x86
 		{E757DB6F-A3C0-463E-89BE-AC72BC371E89}.Release|x86.Build.0 = Release|x86
 		{FF8D3891-8C23-4928-88A4-09BA161BA05E}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{FF8D3891-8C23-4928-88A4-09BA161BA05E}.Debug|x86.Build.0 = Debug|Any CPU
+		{FF8D3891-8C23-4928-88A4-09BA161BA05E}.DMGCreation|Any CPU.ActiveCfg = DMGCreation|Any CPU
+		{FF8D3891-8C23-4928-88A4-09BA161BA05E}.DMGCreation|Any CPU.Build.0 = DMGCreation|Any CPU
 		{FF8D3891-8C23-4928-88A4-09BA161BA05E}.Release|x86.ActiveCfg = Release|Any CPU
 		{FF8D3891-8C23-4928-88A4-09BA161BA05E}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection

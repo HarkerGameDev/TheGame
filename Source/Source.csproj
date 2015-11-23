@@ -12,8 +12,8 @@
     <MonoGamePlatform>WindowsGL</MonoGamePlatform>
     <MonoGameContentBuilderExe>
     </MonoGameContentBuilderExe>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <TargetFrameworkProfile />
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <PlatformTarget>x86</PlatformTarget>
@@ -25,6 +25,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <PlatformTarget>x86</PlatformTarget>
@@ -35,6 +36,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
@@ -44,6 +46,9 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <WarningLevel>4</WarningLevel>
+    <Optimize>false</Optimize>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
     <OutputPath>bin\Release\</OutputPath>
@@ -53,6 +58,13 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'DMGCreation|AnyCPU' ">
+    <Optimize>false</Optimize>
+    <OutputPath>bin\DMGCreation</OutputPath>
+    <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Collisions\Body.cs" />
@@ -71,22 +83,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="EmptyKeys.UserInterface, Version=1.11.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\EmptyKeysUI_MonoGame.1.11.0.0\lib\portable-net45+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1\Common\AnyCPU\EmptyKeys.UserInterface.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="EmptyKeys.UserInterface.Core, Version=1.11.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\EmptyKeysUI_MonoGame.1.11.0.0\lib\portable-net45+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1\Common\AnyCPU\EmptyKeys.UserInterface.Core.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="EmptyKeys.UserInterface.Debug, Version=1.11.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\EmptyKeysUI_MonoGame.1.11.0.0\lib\portable-net45+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1\Common\AnyCPU\EmptyKeys.UserInterface.Debug.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="EmptyKeys.UserInterface.MonoGame, Version=1.11.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\EmptyKeysUI_MonoGame.1.11.0.0\lib\portable-net45+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1\MonoGame\AnyCPU\EmptyKeys.UserInterface.MonoGame.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="System" />
     <Reference Include="System.Drawing" />
@@ -99,6 +95,18 @@
     </Reference>
     <Reference Include="MonoGame.Framework">
       <HintPath>..\packages\MonoGame.Framework.WindowsDX.3.4.0.459\lib\net40\MonoGame.Framework.dll</HintPath>
+    </Reference>
+    <Reference Include="EmptyKeys.UserInterface, Version=1.11.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\packages\EmptyKeysUI_MonoGame.1.11.0.0\lib\portable-net45+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1\Common\AnyCPU\EmptyKeys.UserInterface.dll</HintPath>
+    </Reference>
+    <Reference Include="EmptyKeys.UserInterface.Core, Version=1.11.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\packages\EmptyKeysUI_MonoGame.1.11.0.0\lib\portable-net45+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1\Common\AnyCPU\EmptyKeys.UserInterface.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="EmptyKeys.UserInterface.Debug, Version=1.11.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\packages\EmptyKeysUI_MonoGame.1.11.0.0\lib\portable-net45+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1\Common\AnyCPU\EmptyKeys.UserInterface.Debug.dll</HintPath>
+    </Reference>
+    <Reference Include="EmptyKeys.UserInterface.MonoGame, Version=1.11.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\packages\EmptyKeysUI_MonoGame.1.11.0.0\lib\portable-net45+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1\MonoGame\AnyCPU\EmptyKeys.UserInterface.MonoGame.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -129,7 +137,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\GameUILibrary\GameUILibrary.csproj">
-      <Project>{0d59160c-4ae3-4772-a0be-85a2b10cd15d}</Project>
+      <Project>{0D59160C-4AE3-4772-A0BE-85A2B10CD15D}</Project>
       <Name>GameUILibrary</Name>
     </ProjectReference>
   </ItemGroup>

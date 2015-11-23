@@ -8,7 +8,6 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>Game</RootNamespace>
     <MonoMacResourcePrefix>Resources</MonoMacResourcePrefix>
-    <AssemblyName>Game</AssemblyName>
     <SuppressXamMacMigration>True</SuppressXamMacMigration>
     <ApplicationIcon>..\Windows\Icon.ico</ApplicationIcon>
   </PropertyGroup>
@@ -27,11 +26,7 @@
     <EnablePackageSigning>false</EnablePackageSigning>
     <EnableCodeSigning>false</EnableCodeSigning>
     <CreatePackage>true</CreatePackage>
-    <CustomCommands>
-      <CustomCommands>
-        <Command type="AfterBuild" command="dmg_creation/Create_Relo" workingdir="${ProjectDir}/dmg_creation" />
-      </CustomCommands>
-    </CustomCommands>
+    <AssemblyName>Game</AssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>true</Optimize>
@@ -43,9 +38,26 @@
     <UseSGen>false</UseSGen>
     <IncludeMonoRuntime>true</IncludeMonoRuntime>
     <CreatePackage>true</CreatePackage>
-	<CodeSigningKey>Developer ID Application</CodeSigningKey>
-    <EnableCodeSigning>true</EnableCodeSigning>
+    <EnableCodeSigning>false</EnableCodeSigning>
     <EnablePackageSigning>false</EnablePackageSigning>
+    <AssemblyName>Game</AssemblyName>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'DMGCreation|AnyCPU' ">
+    <Optimize>false</Optimize>
+    <OutputPath>bin\DMGCreation</OutputPath>
+    <WarningLevel>4</WarningLevel>
+    <EnableCodeSigning>false</EnableCodeSigning>
+    <UseRefCounting>false</UseRefCounting>
+    <UseSGen>false</UseSGen>
+    <IncludeMonoRuntime>true</IncludeMonoRuntime>
+    <AssemblyName>Mac</AssemblyName>
+    <CreatePackage>true</CreatePackage>
+    <EnablePackageSigning>false</EnablePackageSigning>
+    <CustomCommands>
+      <CustomCommands>
+        <Command type="AfterBuild" command="dmg_creation/Create_Relo" workingdir="${ProjectDir}/dmg_creation" externalConsole="True" />
+      </CustomCommands>
+    </CustomCommands>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -79,6 +91,7 @@
   <ItemGroup>
     <Folder Include="Content\" />
     <Folder Include="Content\Art\" />
+    <Folder Include="Content\Music\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\Source\Content\Fonts\Score.xnb">
@@ -91,6 +104,17 @@
     </Content>
     <Content Include="..\Source\Content\Art\GreenDude.png">
       <Link>Content\Art\GreenDude.png</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\Fonts\Segoe_UI_15_Bold.xnb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Source\Content\bin\MacOSX\Music\afln_s_gdc-1.m4a">
+      <Link>Content\Music\afln_s_gdc-1.m4a</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Source\Content\bin\MacOSX\Music\afln_s_gdc-1.xnb">
+      <Link>Content\Music\afln_s_gdc-1.xnb</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
