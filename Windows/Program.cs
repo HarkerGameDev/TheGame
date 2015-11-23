@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using Source;
 using Microsoft.Deployment.WindowsInstaller;
 
 namespace Game
@@ -58,7 +57,7 @@ namespace Game
                 File.AppendAllText(logDir + "log.txt", e.ToString() + "\r\n");
             }
 
-            using (var game = new Game1())
+            using (var game = new Source.Game1())
                 game.Run();
         }
     }

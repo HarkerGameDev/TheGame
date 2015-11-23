@@ -52,6 +52,8 @@
 
     <Icon Id="icon.ico" SourceFile="..\Windows\Icon.ico" />
     <Property Id="ARPPRODUCTICON" Value="icon.ico" />
+    
+    <Property Id="MSIRESTARTMANAGERCONTROL" Value="Disable" />
 	</Product>
 
 	<Fragment>
