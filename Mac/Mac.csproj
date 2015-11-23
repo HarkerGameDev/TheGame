@@ -23,10 +23,10 @@
     <ConsolePause>false</ConsolePause>
     <UseRefCounting>false</UseRefCounting>
     <UseSGen>false</UseSGen>
-    <IncludeMonoRuntime>false</IncludeMonoRuntime>
+    <IncludeMonoRuntime>true</IncludeMonoRuntime>
     <EnablePackageSigning>false</EnablePackageSigning>
     <EnableCodeSigning>false</EnableCodeSigning>
-    <CreatePackage>false</CreatePackage>
+    <CreatePackage>true</CreatePackage>
     <CustomCommands>
       <CustomCommands>
         <Command type="AfterBuild" command="dmg_creation/Create_Relo" workingdir="${ProjectDir}/dmg_creation" />
@@ -35,15 +35,16 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>true</Optimize>
-    <OutputPath>..\install</OutputPath>
+    <OutputPath>bin\Release</OutputPath>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
     <UseRefCounting>false</UseRefCounting>
     <UseSGen>false</UseSGen>
-    <IncludeMonoRuntime>false</IncludeMonoRuntime>
-    <CreatePackage>false</CreatePackage>
-    <EnableCodeSigning>false</EnableCodeSigning>
+    <IncludeMonoRuntime>true</IncludeMonoRuntime>
+    <CreatePackage>true</CreatePackage>
+	<CodeSigningKey>Developer ID Application</CodeSigningKey>
+    <EnableCodeSigning>true</EnableCodeSigning>
     <EnablePackageSigning>false</EnablePackageSigning>
   </PropertyGroup>
   <ItemGroup>
