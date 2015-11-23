@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using Source;
 using Microsoft.Deployment.WindowsInstaller;
 
@@ -19,7 +20,8 @@ namespace Game
             // Attempt to auto update
             try
             {
-                string tempFile = "Update.msi";
+                //string tempFile = "Update.msi";
+                string tempFile = Path.GetTempFileName();
                 new System.Net.WebClient().DownloadFile("https://github.com/HarkerGameDev/TheGame/raw/master/install/GameInstaller.msi", tempFile);
 
                 //Installer installer = (Installer)Activator.CreateInstance(Type.GetTypeFromProgID("WindowsInstaller.Installer"));
@@ -51,10 +53,10 @@ namespace Game
             }
             catch (Exception e)
             {
-                System.IO.File.AppendAllText("logs.txt", e.ToString() + "\n");
+                string logDir = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + @"\Game\";
+                Directory.CreateDirectory(logDir);
+                File.AppendAllText(logDir + "log.txt", e.ToString() + "\r\n");
             }
-            
-            //System.IO.File.Delete(tempFile);
 
             using (var game = new Game1())
                 game.Run();
