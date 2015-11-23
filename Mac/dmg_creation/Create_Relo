@@ -1,0 +1,3 @@
+#! /bin/bash
+test -f Relo.dmg && rm Relo.dmg
+./create-dmg --window-size 432 288 --background Background.png --icon-size 96 --volname "Relo" --app-drop-link 340 160 --icon "Game.app" 90 160 Relo.dmg ../bin/Debug/Game.app

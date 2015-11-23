@@ -27,6 +27,11 @@
     <EnablePackageSigning>false</EnablePackageSigning>
     <EnableCodeSigning>false</EnableCodeSigning>
     <CreatePackage>false</CreatePackage>
+    <CustomCommands>
+      <CustomCommands>
+        <Command type="AfterBuild" command="dmg_creation/Create_Relo" workingdir="${ProjectDir}/dmg_creation" />
+      </CustomCommands>
+    </CustomCommands>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>true</Optimize>
@@ -71,12 +76,6 @@
     <InterfaceDefinition Include="MainMenu.xib" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Source\Source.csproj">
-      <Project>{E757DB6F-A3C0-463E-89BE-AC72BC371E89}</Project>
-      <Name>Source</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <Folder Include="Content\" />
     <Folder Include="Content\Art\" />
   </ItemGroup>
@@ -93,5 +92,11 @@
       <Link>Content\Art\GreenDude.png</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Source\Source.csproj">
+      <Project>{E757DB6F-A3C0-463E-89BE-AC72BC371E89}</Project>
+      <Name>Source</Name>
+    </ProjectReference>
   </ItemGroup>
 </Project>
