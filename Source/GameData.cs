@@ -15,16 +15,10 @@ namespace Source
     {
         // TODO stuff some of the user-configurable stuff into a main menu screen (like controls and # of players)
         //public const int LEVEL = -1;            // if this is greater than -1, levels will not be procedurally generated (useful for editing)
-        public const int numPlayers = 2;            // number of players
 
-        public static bool[] useController = { false, false, false };    // true means the player at the index will be using a controller.
-        public static Controls[] keyboardControls = {            // defines the keyboard controls which will be used
-                                                       new Controls(Keys.Left, Keys.Right, Keys.Up, Keys.Down, Keys.RightShift),
-                                                       new Controls(Keys.A, Keys.D, Keys.W, Keys.S, Keys.LeftShift),
-                                                       new Controls(Keys.J, Keys.L, Keys.I, Keys.K, Keys.O)
-                                                    };
-        public static Player.Ability[] playerAbilities = { Player.Ability.GravityPull, Player.Ability.GravityPush };    // abilities for each player
-        public static Color[] playerColors = { Color.Red, Color.Yellow, Color.Purple };     // colors of each player
+        public const int numPlayers = 4;            // number of players
+        public static Player.Ability[] playerAbilities = { Player.Ability.GravityPull, Player.Ability.GravityPush };    // pool of abilities for players -- currently randomly chosen at start
+        public static Color[] playerColors = { Color.Red, Color.Yellow, Color.Purple, Color.ForestGreen, Color.Khaki };     // colors of each player
 
 
         public const int NEW_SEED_MINS = 10;     // minutes until a new level seed will be generated
@@ -87,7 +81,7 @@ namespace Source
 #if DEBUG
         public const float BOOST_SPEED = -RUN_VELOCITY; // m/s -- horizontal velocity when boosting
 #else
-        public const float BOOST_SPEED = 25f; // m/s -- horizontal velocity when boosting
+        public const float BOOST_SPEED = 26f; // m/s -- horizontal velocity when boosting
 #endif
 
         public const float GRAVITY = 36f;   // m/s^2 -- gravity for players
@@ -167,23 +161,80 @@ namespace Source
             }
         }
 
-        public struct Controls {
-            public Keys special, right, up, down, shoot;
+        public interface Controls
+        {
 
-            public Controls(Keys special, Keys right, Keys up, Keys down, Keys shoot) {
+            bool Special { get; }
+            bool Boost { get; }
+            bool Jump { get; }
+            bool Slam { get; }
+            bool Shoot { get; }
+
+            string ToString();
+        }
+
+        public struct KeyboardControls : Controls
+        {
+            public bool Special { get { return game.ToggleKey(special); } }
+            public bool Boost { get { return Keyboard.GetState().IsKeyDown(boost); } }
+            public bool Jump { get { return Keyboard.GetState().IsKeyDown(jump); } }
+            public bool Slam { get { return Keyboard.GetState().IsKeyDown(slam); } }
+            public bool Shoot { get { return game.ToggleKey(shoot); } }
+
+            private Game1 game;
+            private Keys special, boost, jump, slam, shoot;
+
+            public KeyboardControls(Game1 game, Keys special, Keys boost, Keys jump, Keys slam, Keys shoot)
+            {
+                this.game = game;
                 this.special = special;
-                this.right = right;
-                this.up = up;
-                this.down = down;
+                this.boost = boost;
+                this.jump = jump;
+                this.slam = slam;
                 this.shoot = shoot;
             }
 
             public override string ToString()
             {
                 StringBuilder builder = new StringBuilder();
-                builder.AppendLine("Boost = " + right)
-                    .AppendLine("Jump = " + up)
-                    .AppendLine("Slam = " + down)
+                builder.AppendLine("Boost = " + boost)
+                    .AppendLine("Jump = " + jump)
+                    .AppendLine("Slam = " + slam)
+                    .AppendLine("Shoot = " + shoot)
+                    .AppendLine("Special = " + special);
+                return builder.ToString();
+            }
+        }
+
+        public struct GamePadControls : Controls
+        {
+            public bool Special { get { return game.ToggleButton(playerIndex, special); } }
+            public bool Boost { get { return GamePad.GetState(playerIndex, GamePadDeadZone.Circular).IsButtonDown(boost); } }
+            public bool Jump { get { return GamePad.GetState(playerIndex, GamePadDeadZone.Circular).IsButtonDown(jump); } }
+            public bool Slam { get { return GamePad.GetState(playerIndex, GamePadDeadZone.Circular).IsButtonDown(slam); } }
+            public bool Shoot { get { return game.ToggleButton(playerIndex, shoot); } }
+
+            private Game1 game;
+            private PlayerIndex playerIndex;
+            private Buttons special, boost, jump, slam, shoot;
+
+            public GamePadControls(Game1 game, PlayerIndex playerIndex, Buttons special, Buttons boost, Buttons jump, Buttons slam, Buttons shoot)
+            {
+                this.game = game;
+                this.playerIndex = playerIndex;
+                this.special = special;
+                this.boost = boost;
+                this.jump = jump;
+                this.slam = slam;
+                this.shoot = shoot;
+            }
+
+            public override string ToString()
+            {
+                StringBuilder builder = new StringBuilder();
+                builder.AppendLine("Boost = " + boost)
+                    .AppendLine("Jump = " + jump)
+                    .AppendLine("Slam = " + slam)
                     .AppendLine("Shoot = " + shoot)
                     .AppendLine("Special = " + special);
                 return builder.ToString();

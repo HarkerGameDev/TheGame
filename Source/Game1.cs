@@ -39,8 +39,10 @@ namespace Source
         private SpriteBatch spriteBatch;
 
         private KeyboardState prevKeyState;
-        private GamePadState prevPadState;
+        private GamePadState[] prevPadStates;
         private MouseState prevMouseState;
+
+        private GameData.Controls[] playerControls;
 
         private static Texture2D whiteRect;
         public SpriteFont fontSmall, fontBig;
@@ -141,9 +143,18 @@ namespace Source
 
             // Initialize previous keyboard and gamepad states
             prevKeyState = new KeyboardState();
-            prevPadState = new GamePadState();
-
             prevMouseState = new MouseState();
+            prevPadStates = new GamePadState[4];
+            for (int i = 0; i < prevPadStates.Length; i++)
+                prevPadStates[i] = new GamePadState();
+
+            // Load controls (hardcoded for now)
+            playerControls = new GameData.Controls[] {
+                                                       new GameData.KeyboardControls(this, Keys.Left, Keys.Right, Keys.Up, Keys.Down, Keys.RightShift),
+                                                       new GameData.KeyboardControls(this, Keys.A, Keys.D, Keys.W, Keys.S, Keys.LeftShift),
+                                                       new GameData.KeyboardControls(this, Keys.J, Keys.L, Keys.I, Keys.K, Keys.O),
+                                                       new GameData.GamePadControls(this, PlayerIndex.One, Buttons.LeftTrigger, Buttons.LeftThumbstickRight, Buttons.RightTrigger, Buttons.LeftThumbstickDown, Buttons.A)
+                                                  };
 
             base.Initialize();      // This calls LoadContent()
         }
@@ -176,7 +187,7 @@ namespace Source
             for (int i = 0; i < GameData.numPlayers; i++)
             {
                 Vector2 spawnLoc = new Vector2(GameData.PLAYER_START, -rand.Next(GameData.MIN_SPAWN, GameData.MAX_SPAWN));
-				players.Add(new Player(Content.Load<Texture2D>("Art/GreenDude"), spawnLoc, GameData.playerColors[i], GameData.playerAbilities[i]));
+				players.Add(new Player(Content.Load<Texture2D>("Art/GreenDude"), spawnLoc, GameData.playerColors[i], GameData.playerAbilities[rand.Next(GameData.playerAbilities.Length)]));
             }
             floors = new List<Floor>();
             walls = new List<Wall>();
@@ -238,10 +249,10 @@ namespace Source
             controlsMenu = new List<Button>();
             controlsMenu.Add(new Button(whiteRect, new Vector2(buttonHeight, 0), new Vector2(width / 2f - buttonHeight + 1, height - buttonHeight * 3),
                 delegate() { }, Color.DarkGray,
-                fontSmall, "Player 1 controls\n" + GameData.keyboardControls[0], Color.Chartreuse));
+                fontSmall, "Player 1 controls\n" + playerControls[0], Color.Chartreuse));
             controlsMenu.Add(new Button(whiteRect, new Vector2(width / 2f, 0), new Vector2(width / 2f - buttonHeight, height - buttonHeight * 3),
                 delegate() { }, Color.DarkGray,
-                fontSmall, "Player 2 controls\n" + GameData.keyboardControls[1], Color.Chartreuse));
+                fontSmall, "Player 2 controls\n" + playerControls[1], Color.Chartreuse));
             controlsMenu.Add(new Button(whiteRect, new Vector2(left, height - buttonHeight * 2), new Vector2(buttonWidth, buttonHeight),
                 delegate() { state = State.Options; }, Color.DarkGray,
                 fontSmall, "Back", Color.Chartreuse));
@@ -348,8 +359,9 @@ namespace Source
             }
 
             prevKeyState = Keyboard.GetState();
-            prevPadState = GamePad.GetState(0);
             prevMouseState = Mouse.GetState();
+            for (int i = 0; i < prevPadStates.Length; i++)
+                prevPadStates[i] = GamePad.GetState((PlayerIndex)i, GamePadDeadZone.Circular);
 
             base.Update(gameTime);
         }
@@ -361,27 +373,12 @@ namespace Source
         {
             KeyboardState state = Keyboard.GetState();
 
-            int currentController = 0;
-            int currentKeyboard = 0;
             for (int i = 0; i < players.Count; i++)
             {
                 Player player = players[i];
-
-                if (GameData.useController[i])
+                if (player.TimeSinceDeath < GameData.PHASE_TIME)
                 {
-                    currentController++;
-                    //if (player.TimeSinceDeath < GameData.PHASE_TIME)
-                    //{
-                    //    HandleGamepad(deltaTime, player, currentController - 1);
-                    //}
-                }
-                else
-                {
-                    currentKeyboard++;
-                    if (player.TimeSinceDeath < GameData.PHASE_TIME)
-                    {
-                        HandleKeyboard(deltaTime, player, currentKeyboard - 1);
-                    }
+                    HandleKeyboard(deltaTime, player, i);
                 }
 
                 if (player.TimeSinceDeath > 0)
@@ -458,7 +455,7 @@ namespace Source
         private void HandleKeyboard(float deltaTime, Player player, int controller)
         {
             KeyboardState state = Keyboard.GetState();
-            GameData.Controls controls = GameData.keyboardControls[controller];
+            GameData.Controls controls = playerControls[controller];
 
             //float impulse = GameData.MAX_ACCEL * deltaTime;
             //float impulse = MathHelper.SmoothStep(MAX_IMPULSE, 0f, Math.Abs(player.Velocity.X) / MAX_VELOCITY) * deltaTime;
@@ -472,7 +469,7 @@ namespace Source
 
             if (!player.InAir)
             {
-                if (state.IsKeyDown(controls.right))                    // boost
+                if (controls.Boost)                    // boost
                 {
                     if (player.BoostTime > GameData.BOOST_LENGTH / 2)
                     {
@@ -487,7 +484,7 @@ namespace Source
                     player.TargetVelocity = GameData.RUN_VELOCITY;
                     player.CurrentState = Player.State.Walking;
                 }
-                if (state.IsKeyDown(controls.up))     // jump
+                if (controls.Jump)     // jump
                 {
                     //if (player.CurrentState == Player.State.Boosting)
                     //{
@@ -502,7 +499,7 @@ namespace Source
                     player.TargetVelocity = player.TargetVelocity * GameData.JUMP_SLOW;
                     player.CurrentState = Player.State.Jumping;
                 }
-                else if (state.IsKeyDown(controls.down))
+                else if (controls.Slam)
                 {
                     player.CurrentState = Player.State.Slamming;
                     if (player.Velocity.Y < GameData.SLAM_SPEED)
@@ -511,7 +508,7 @@ namespace Source
             }
             else
             {
-                if (state.IsKeyDown(controls.down))
+                if (controls.Slam)
                 {
                     player.CurrentState = Player.State.Slamming;
                     if (player.Velocity.Y < GameData.SLAM_SPEED)
@@ -524,88 +521,17 @@ namespace Source
                 //if (player.Velocity.X == 0)
                 //    player.Velocity.X = GameData.RUN_VELOCITY;
             }
-            if (ToggleKey(controls.shoot) && player.TimeSinceDeath <= 0 && player.BoostTime > GameData.SHOOT_COST)
+            if (controls.Shoot && player.TimeSinceDeath <= 0 && player.BoostTime > GameData.SHOOT_COST)
             {
                 player.Projectiles.Add(new Projectile(whiteRect, new Vector2(player.Position.X - player.Size.X / 2f, player.Position.Y), player.Color));
                 player.BoostTime -= GameData.SHOOT_COST;
                 //Console.WriteLine("Shooting!");
             }
-            if (ToggleKey(controls.special))                // activate (or toggle) special
+            if (controls.Special)                // activate (or toggle) special
             {
                 player.AbilityActive = !player.AbilityActive;
             }
         }
-
-        ///// <summary>
-        ///// Handles input for a single player for given input keys
-        ///// </summary>
-        ///// <param name="deltaTime"></param>
-        ///// <param name="player"></param>
-        ///// <param name="controller">Must be from 0 to 3</param>
-        //private void HandleGamepad(float deltaTime, Player player, int controller)
-        //{
-        //    GamePadState state = GamePad.GetState((PlayerIndex)controller, GamePadDeadZone.Circular);
-
-        //    float impulse = GameData.MAX_ACCEL * deltaTime;
-        //    //float impulse = MathHelper.SmoothStep(MAX_IMPULSE, 0f, Math.Abs(player.Velocity.X) / MAX_VELOCITY) * deltaTime;
-        //    //impulse = (float)Math.Pow(impulse, IMPULSE_POW);
-
-        //    float slow = GameData.SLOWDOWN * deltaTime;
-        //    if (player.CurrentState == Player.State.Jumping)
-        //    {
-        //        slow *= GameData.AIR_RESIST;
-        //    }
-
-        //    if (state.ThumbSticks.Left.X == 0f)         // air resistance and friction
-        //    {
-        //        if (Math.Abs(player.Velocity.X) < GameData.MIN_VELOCITY)
-        //            player.Velocity = new Vector2(0f, player.Velocity.Y);
-        //        else
-        //        {
-        //            int playerVelSign = Math.Sign(player.Velocity.X);
-        //            player.Velocity += (new Vector2(Math.Sign(player.Velocity.X) * -slow, 0f));
-        //        }
-        //    }
-        //    else
-        //    {
-        //        // move right and left
-        //        player.Velocity += (new Vector2(impulse * state.ThumbSticks.Left.X, 0f));
-
-        //        if (player.CurrentState == Player.State.CanJump) // change direction quicker
-        //        {
-        //            if (player.Velocity.X > 0f && state.ThumbSticks.Left.X > 0f)
-        //                player.Velocity += (new Vector2(-slow, 0f));
-        //            else if (player.Velocity.X < 0f && state.ThumbSticks.Left.X < 0f)
-        //                player.Velocity += (new Vector2(slow, 0f));
-        //        }
-        //    }
-
-        //    if (state.IsButtonDown(Buttons.A) && player.CurrentState == Player.State.CanJump)     // jump
-        //    {
-        //        player.Velocity = (new Vector2(player.Velocity.X, -GameData.JUMP_SPEED));
-        //    }
-
-        //    if (state.ThumbSticks.Left.Y > 0f)
-        //    {                                                   // fall
-        //        if (player.CurrentState == Player.State.Jumping)
-        //            player.CurrentState = Player.State.Slamming;
-        //        else if (player.CurrentState == Player.State.CanJump)
-        //            player.CurrentState = Player.State.Sliding;
-        //    }
-        //    else
-        //    {
-        //        if (player.CurrentState == Player.State.Slamming)
-        //            player.CurrentState = Player.State.Jumping;
-        //        else if (player.CurrentState == Player.State.Sliding)
-        //            player.CurrentState = Player.State.CanJump;
-        //    }
-
-        //    if (state.IsButtonDown(Buttons.X) && prevPadState.IsButtonUp(Buttons.X) && player.TimeSinceDeath <= 0)
-        //    {
-        //        player.Projectiles.Add(new Projectile(whiteRect, new Vector2(player.Position.X, player.Position.Y), player.Color));
-        //        //Console.WriteLine("Shooting!");
-        //    }
-        //}
 
         private void wobbleScreen(float amplifier)
         {
@@ -737,9 +663,14 @@ namespace Source
             }
         }
 
-        private bool ToggleKey(Keys key)
+        public bool ToggleKey(Keys key)
         {
             return Keyboard.GetState().IsKeyDown(key) && prevKeyState.IsKeyUp(key);
+        }
+
+        public bool ToggleButton(PlayerIndex playerIndex, Buttons button)
+        {
+            return GamePad.GetState(playerIndex, GamePadDeadZone.Circular).IsButtonDown(button) && prevPadStates[(int)playerIndex].IsButtonUp(button);
         }
 
         /// <summary>
