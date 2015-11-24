@@ -74,14 +74,14 @@ namespace Source
         public List<Obstacle> obstacles;
 
         private List<Button> pauseMenu;
-        private List<Button> mainMenu;
+        //private List<Button> mainMenu;
         private List<Button> optionsMenu;
         private List<Button> controlsMenu;
 
         private int levelEnd;
         private float death;
 
-        private Root root;
+        private MainMenu mainMenu;
 
         private int nativeScreenWidth;
         private int nativeScreenHeight;
@@ -171,7 +171,7 @@ namespace Source
             // Load menus
             SpriteFont font = Content.Load<SpriteFont>("Fonts/Segoe_UI_15_Bold");
             FontManager.DefaultFont = Engine.Instance.Renderer.CreateFont(font);
-            root = new Root();
+            mainMenu = new MainMenu();
             FontManager.Instance.LoadFonts(Content, "Fonts");
 
             // Use this to draw any rectangles
@@ -208,17 +208,6 @@ namespace Source
             float buttonHeight = height * GameData.BUTTON_HEIGHT;
             float left = (width - buttonWidth) / 2f;
             float centerY = (height - buttonHeight) / 2f;
-
-            mainMenu = new List<Button>();
-            mainMenu.Add(new Button(whiteRect, new Vector2(left, buttonHeight), new Vector2(buttonWidth, buttonHeight),
-                delegate() { state = State.Running; }, Color.White,
-                fontBig, "Play!", Color.Red));
-            mainMenu.Add(new Button(whiteRect, new Vector2(left, centerY), new Vector2(buttonWidth, buttonHeight),
-                delegate() { state = State.Options; }, Color.White,
-                fontBig, "Options", Color.Red));
-            mainMenu.Add(new Button(whiteRect, new Vector2(left, height - buttonHeight * 2), new Vector2(buttonWidth, buttonHeight),
-                delegate() { Exit(); }, Color.White,
-                fontBig, "Exit", Color.Red));
 
             pauseMenu = new List<Button>();
             pauseMenu.Add(new Button(whiteRect, new Vector2(left, buttonHeight), new Vector2(buttonWidth, buttonHeight),
@@ -338,9 +327,8 @@ namespace Source
                         Exit();
                     break;
                 case State.MainMenu:
-                    //HandleMenu(mainMenu);
-                    root.UpdateInput(gameTime.ElapsedGameTime.TotalMilliseconds);
-                    root.UpdateLayout(gameTime.ElapsedGameTime.TotalMilliseconds);
+                    mainMenu.UpdateInput(gameTime.ElapsedGameTime.TotalMilliseconds);
+                    mainMenu.UpdateLayout(gameTime.ElapsedGameTime.TotalMilliseconds);
                     if (ToggleKey(Keys.Enter))
                         state = State.Running;
                     else if (ToggleKey(Keys.Escape))
@@ -1011,11 +999,7 @@ namespace Source
                     break;
                 case State.MainMenu:
                     GraphicsDevice.Clear(Color.Turquoise);
-                    root.Draw(gameTime.ElapsedGameTime.TotalMilliseconds);
-                    //spriteBatch.Begin();
-                    //foreach (Button button in mainMenu)
-                    //    button.Draw(spriteBatch);
-                    //spriteBatch.End();
+                    mainMenu.Draw(gameTime.ElapsedGameTime.TotalMilliseconds);
                     break;
                 case State.Options:
                     GraphicsDevice.Clear(Color.Chocolate);

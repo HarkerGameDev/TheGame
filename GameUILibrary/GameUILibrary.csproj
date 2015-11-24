@@ -58,7 +58,7 @@
     <Content Include="license.txt" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="GeneratedUI\Root.xaml.cs" />
+    <Compile Include="GeneratedUI\MainMenu.xaml.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -97,7 +97,7 @@
     <Resource Include="license.txt" />
   </ItemGroup>
   <ItemGroup>
-    <Page Include="Root.xaml">
+    <Page Include="MainMenu.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

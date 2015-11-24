@@ -22,16 +22,16 @@ namespace EmptyKeys.UserInterface.Generated {
     
     
     [GeneratedCodeAttribute("Empty Keys UI Generator", "1.11.0.0")]
-    public partial class Root : UIRoot {
+    public partial class MainMenu : UIRoot {
         
         private TextBlock e_0;
         
-        public Root() : 
+        public MainMenu() : 
                 base() {
             this.Initialize();
         }
         
-        public Root(int width, int height) : 
+        public MainMenu(int width, int height) : 
                 base(width, height) {
             this.Initialize();
         }
