@@ -15,7 +15,6 @@ namespace Source.Collisions
     {
         public const float OBSTACLE_WIDTH = 0.8f;
         public const float OBSTACLE_HEIGHT = 0.5f;
-        //public bool Breakable = false;
 
         public Obstacle(Texture2D texture, Vector2 position, float scale = 1f)
             : base(texture, position, new Vector2(OBSTACLE_WIDTH, OBSTACLE_HEIGHT) * scale)

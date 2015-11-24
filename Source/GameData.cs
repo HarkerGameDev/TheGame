@@ -13,9 +13,6 @@ namespace Source
 {
     internal static class GameData
     {
-        // TODO stuff some of the user-configurable stuff into a main menu screen (like controls and # of players)
-        //public const int LEVEL = -1;            // if this is greater than -1, levels will not be procedurally generated (useful for editing)
-
         public const int numPlayers = 4;            // number of players
         public static Player.Ability[] playerAbilities = { Player.Ability.GravityPull, Player.Ability.GravityPush };    // pool of abilities for players -- currently randomly chosen at start
         public static Color[] playerColors = { Color.Red, Color.Yellow, Color.Purple, Color.ForestGreen, Color.Khaki };     // colors of each player
@@ -95,9 +92,6 @@ namespace Source
         public const float SLAM_SPEED = 17f; // m/s -- the speed at which the player goes down when slamming
         public const float SLOWDOWN = 45f;      // m/s^2 -- impulse applied in opposite direction of travel to simulate friction
         public const float AIR_RESIST = 0.75f; //     -- air resistance on a scale of 0 to 1, where 1 is as if player is on ground
-        //public const double JUMP_WAIT = 0.5;   // s   -- how long the player needs to wait before jumping again
-        //public const float PUSH_VEL = 1f;      // m/s -- the player is given a little push going down platforms under this velocity
-        //public const float PUSH_POW = 10f;     // m/s -- the impulse applied to the player to get down a platform
         public const float MIN_WOBBLE = 0f;  //     -- the minimum ratio between max velocity and (max - current velocity) for wobbling
         public const float MAX_WOBBLE = 0f;    //     -- the maximum ratio for wobbling; we don't want wobble amplifier 40x
         public const float RESPAWN_DIST = 10;
@@ -108,7 +102,6 @@ namespace Source
         public const float STUN_LENGTH = 0.5f; // the player is stunned for this long
         public const float STUN_SCALE = 0.6f; // the player speed is scaled by this when stunned
         public const float SHOOT_COST = 0.3f; // boost bar cost of a shot
-        //public const float JUMP_COST = 2 * JUMP_SPEED / GRAVITY / (BOOST_REGEN / BOOST_LENGTH); // use five equations to see time it takes to land on equal surface (v = v0 + at)
 
         public const string SONG = "afln_s_gdc-1";    // the song to play, over, and over, and over again. NEVER STOP THE PARTY!
         public const float VOLUME = 0.0f;                // volume for song
@@ -144,10 +137,6 @@ namespace Source
         {
             get
             {
-                //Assembly asm = Assembly.GetEntryAssembly();
-                //FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(asm.Location);
-                //return String.Format("{0}.{1}.{2}", fvi.ProductMajorPart, fvi.ProductMinorPart, fvi.ProductBuildPart);
-
                 Version ver = Assembly.GetEntryAssembly().GetName().Version;
                 return String.Format("{0}.{1}.{2}", ver.Major, ver.Minor, ver.Build);
             }

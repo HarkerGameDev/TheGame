@@ -67,8 +67,6 @@ namespace Source.Graphics
             Vector2 displaySize = new Vector2(width, height) * scale;
             Rectangle destinationRectangle = new Rectangle(ConvertUnits.ToDisplayUnits(player.Position).ToPoint(), ConvertUnits.ToDisplayUnits(displaySize).ToPoint());
 
-            //spriteBatch.Draw(Texture, destinationRectangle, sourceRectangle, Color.White);
-            //spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(Position), null, Color, Rotation, Origin, ConvertUnits.ToDisplayUnits(textureScale), SpriteEffects.None, 0f);
             spriteBatch.Draw(Texture, destinationRectangle, sourceRectangle, player.Color, player.Rotation, player.Origin, SpriteEffects.None, 0f);
         }
     }

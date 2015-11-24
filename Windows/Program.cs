@@ -14,6 +14,7 @@ namespace Game
     {
         /// <summary>
         /// The main entry point for the application.
+        /// Automatically updates application, and restarts application when done
         /// </summary>
         [STAThread]
         static void Main()
@@ -21,17 +22,8 @@ namespace Game
             // Attempt to auto update
             try
             {
-                //string tempFile = "Update.msi";
                 string tempFile = Path.GetTempFileName();
                 new System.Net.WebClient().DownloadFile("https://github.com/HarkerGameDev/TheGame/raw/master/install/GameInstaller.msi", tempFile);
-
-                //Installer installer = (Installer)Activator.CreateInstance(Type.GetTypeFromProgID("WindowsInstaller.Installer"));
-                //Database db = installer.OpenDatabase(tempFile, 0);
-                //View dv = db.OpenView("SELECT `Value` FROM `Property` WHERE `Property`='ProductVersion'");
-                //dv.Execute();
-                //Record record = dv.Fetch();
-                //string str = record.get_StringData(1);
-                //dv.Close();
 
                 using (Database db = new Database(tempFile))
                 {
@@ -65,11 +57,6 @@ namespace Game
 
             using (var game = new Source.Game1())
                 game.Run();
-        }
-
-        static void Application_ApplicationExit(object sender, EventArgs e)
-        {
-            throw new NotImplementedException();
         }
     }
 #endif

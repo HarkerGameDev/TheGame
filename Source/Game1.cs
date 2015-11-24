@@ -63,7 +63,6 @@ namespace Source
 
         private Vector2 screenOffset;
 
-        //private bool paused;
         private State state;
         private float totalTime;
 
@@ -74,7 +73,6 @@ namespace Source
         public List<Obstacle> obstacles;
 
         private List<Button> pauseMenu;
-        //private List<Button> mainMenu;
         private List<Button> optionsMenu;
         private List<Button> controlsMenu;
 
@@ -224,9 +222,6 @@ namespace Source
             optionsMenu.Add(new Button(whiteRect, new Vector2(left, buttonHeight), new Vector2(buttonWidth, buttonHeight),
                 delegate() {
                     graphics.ToggleFullScreen();
-                    //graphics.PreferredBackBufferWidth = graphics.IsFullScreen ? GraphicsDevice.DisplayMode.Width : GameData.VIEW_WIDTH;
-                    //graphics.PreferredBackBufferHeight = graphics.IsFullScreen ? GraphicsDevice.DisplayMode.Height : GameData.VIEW_HEIGHT;
-                    //graphics.ApplyChanges();
                 }, Color.Maroon, fontSmall, "Toggle fullscreen", Color.Chartreuse));
             optionsMenu.Add(new Button(whiteRect, new Vector2(left, centerY), new Vector2(buttonWidth, buttonHeight),
                 delegate() { state = State.Controls; }, Color.Maroon,
@@ -312,7 +307,6 @@ namespace Source
                         death += MathHelper.Lerp(GameData.DEAD_START, GameData.DEAD_END, remaining) * deltaTime;
 
                         CheckPlayer();
-                        //player.Update(gameTime.ElapsedGameTime.TotalSeconds);
 
                         world.Step(deltaTime);
                     }
@@ -445,10 +439,6 @@ namespace Source
             KeyboardState state = Keyboard.GetState();
             GameData.Controls controls = playerControls[controller];
 
-            //float impulse = GameData.MAX_ACCEL * deltaTime;
-            //float impulse = MathHelper.SmoothStep(MAX_IMPULSE, 0f, Math.Abs(player.Velocity.X) / MAX_VELOCITY) * deltaTime;
-            //impulse = (float)Math.Pow(impulse, IMPULSE_POW);
-
             float slow = GameData.SLOWDOWN * deltaTime;
             if (player.CurrentState == Player.State.Jumping)
             {
@@ -474,15 +464,6 @@ namespace Source
                 }
                 if (controls.Jump)     // jump
                 {
-                    //if (player.CurrentState == Player.State.Boosting)
-                    //{
-                        //Console.WriteLine("Boosting jump");
-                        //player.BoostTime -= GameData.JUMP_COST;
-                        //if (player.BoostTime < 0)
-                        //    player.BoostTime = 0;
-                    //}
-
-                    //Console.WriteLine("Player state: " + player.CurrentState);
                     player.Velocity.Y = -GameData.JUMP_SPEED;
                     player.TargetVelocity = player.TargetVelocity * GameData.JUMP_SLOW;
                     player.CurrentState = Player.State.Jumping;
@@ -506,14 +487,11 @@ namespace Source
                 {
                     player.CurrentState = Player.State.Jumping;
                 }
-                //if (player.Velocity.X == 0)
-                //    player.Velocity.X = GameData.RUN_VELOCITY;
             }
             if (controls.Shoot && player.TimeSinceDeath <= 0 && player.BoostTime > GameData.SHOOT_COST)
             {
                 player.Projectiles.Add(new Projectile(whiteRect, new Vector2(player.Position.X - player.Size.X / 2f, player.Position.Y), player.Color));
                 player.BoostTime -= GameData.SHOOT_COST;
-                //Console.WriteLine("Shooting!");
             }
             if (controls.Special)                // activate (or toggle) special
             {
@@ -523,8 +501,6 @@ namespace Source
 
         private void wobbleScreen(float amplifier)
         {
-            //Wobble screen with given amplifier
-            //Ain't nobody got time for those calculations
             screenCenter.X += (float)((rand.NextDouble() - 0.5) * amplifier * 2);
             screenCenter.Y += (float)((rand.NextDouble() - 0.5) * amplifier * 2);
         }
@@ -592,7 +568,6 @@ namespace Source
                             else
                                 startDraw = center + offset;
                             endDraw = mouseSimPosRound;
-                            //currentFloor.Body.Dispose();
                             floors.Remove(currentFloor);
                             currentFloor = null;
                             editingFloor = true;
@@ -618,7 +593,6 @@ namespace Source
             {                                                       // Delete selected floor
                 if (keyboard.IsKeyDown(Keys.Back))
                 {
-                    //currentFloor.Body.Dispose();
                     floors.Remove(currentFloor);
                     currentFloor = null;
                 }
@@ -635,7 +609,6 @@ namespace Source
                 else if (ToggleKey(Keys.F))
                 {
                     currentFloor.Health = currentFloor.Health == 0 ? GameData.STAIR_HEALTH : 0;
-                    //Console.WriteLine("Made floor" + (currentFloor.Breakable ? "" : " not") + " breakable");
                     currentFloor.Color = currentFloor.Health != 0 ? Color.LightGoldenrodYellow : Color.Azure;
                 }
             }
@@ -702,30 +675,21 @@ namespace Source
                     float targetX = allDead ? averageX : max.Position.X;
                     float targetY = allDead ? -GameData.RESPAWN_DIST : max.Position.Y;
                     float newX = MathHelper.Lerp(targetX, player.Position.X, val);
-                    //float newY = MathHelper.Lerp(targetY, allDead ? 0 : player.Position.Y, val);
                     float newY = MathHelper.Lerp(player.SpawnY, player.Position.Y, val);
 
                     player.MoveToPosition(new Vector2(newX, newY));
-                    //player.Velocity = new Vector2(newX - player.Position.X, newY - player.Position.Y) * val;
-                    //Console.WriteLine("Player moving to " + new Vector2(newX, newY));
-                    //Console.WriteLine("Target " + new Vector2(targetX, targetY));
-                    //Console.WriteLine("Max: " + max == null);
                 }
                 else if (player.Position.X < averageX - ConvertUnits.ToSimUnits(GameData.DEAD_DIST))
                 {
                     player.Kill(rand);
                     if (max != null)
                         max.Score++;
-                    //if (--player.Score < 0)
-                    //    player.Score = 0;
                 }
 #if !DEBUG
                 else if (player.Position.X < death)
                 {
                     player.Kill(rand);
                     player.Score -= GameData.DEATH_LOSS;
-                    //if (player.Score < 0)
-                    //    player.Score = 0;
                 }
 #endif
             }
@@ -737,8 +701,6 @@ namespace Source
                 foreach (Player player in players)
                 {
                     player.Score += (int)totalTime / GameData.WIN_SCORE;
-                    //if (player.Score < 0)
-                    //    player.Score = 0;
                 }
                 Reset();
             }
@@ -751,22 +713,12 @@ namespace Source
             //        max.Score += GameData.WIN_SCORE;
             //}
 
-            //float currentRatio = editLevel ? GameData.PIXEL_METER_EDIT : GameData.PIXEL_METER;
             float dist = maxY - minY;
             if (dist * currentZoom / GameData.SCREEN_SPACE > GraphicsDevice.Viewport.Height)
                 ConvertUnits.SetDisplayUnitToSimUnitRatio(GraphicsDevice.Viewport.Height * GameData.SCREEN_SPACE / dist);
             else
                 ConvertUnits.SetDisplayUnitToSimUnitRatio(currentZoom);
         }
-
-        ///// <summary>
-        ///// Load the level specified in level and increments levelEnd
-        ///// </summary>
-        //private void LoadLevel()
-        //{
-        //    levelEnd += levels.LoadLevel(levelEnd) + GameData.LEVEL_DIST;
-        //    Console.WriteLine("LevelEnd: " + levelEnd);
-        //}
 
         private void MakeLevel()
         {
@@ -775,8 +727,6 @@ namespace Source
 
             int minStep = randLevel.Next(GameData.MIN_LEVEL_STEP, GameData.MAX_LEVEL_STEP);
             int maxStep = randLevel.Next(GameData.MIN_LEVEL_STEP, GameData.MAX_LEVEL_STEP);
-            //int minStep = GameData.MIN_LEVEL_STEP;
-            //int maxStep = GameData.MAX_LEVEL_STEP;
             if (maxStep < minStep)
             {
                 int temp = maxStep;
@@ -784,7 +734,6 @@ namespace Source
                 minStep = temp;
             }
 
-            //float x = levelEnd + width / 2f;
             float step = randLevel.Next(minStep, maxStep);
             float y = -step;
             for (int i = 0; i < numFloors; i++)
@@ -815,7 +764,6 @@ namespace Source
                         {
                             if (stair.Intersects(floor) != Vector2.Zero)
                             {
-                                //floor.Color = Color.Green;
                                 if (++numCollisions > 0)
                                     break;
                             }
@@ -841,12 +789,10 @@ namespace Source
                     {
                         if (wall.Intersects(floor) != Vector2.Zero)
                         {
-                            //floor.Color = Color.Plum;
                             if (floor.Health > 0)
                             {
                                 wall = null;
                                 validStair = false;
-                                //Console.WriteLine("Floor is colliding with wall " + floor.Position);
                                 break;
                             }
                             else
@@ -919,10 +865,7 @@ namespace Source
                     spriteBatch.Begin(transformMatrix: view);
                     spriteBatch.Draw(whiteRect, new Rectangle(-(int)view.Translation.X, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height), Color.LightGray);
                     foreach (Floor floor in floors)
-                    {
                         floor.Draw(spriteBatch);
-                        //DrawRect(floor, Color.Green, Vector2.Zero, new Vector2(0.6f));
-                    }
                     foreach (Wall wall in walls)
                         wall.Draw(spriteBatch);
                     foreach (Obstacle obstacle in obstacles)
@@ -951,13 +894,7 @@ namespace Source
 
 
                     // Draw all HUD elements
-                    // TODO display a proper pause menu
                     spriteBatch.Begin();
-                    //if (paused)
-                    //{
-                    //    float centerX = GraphicsDevice.Viewport.Width / 2.0f - fontBig.MeasureString("Paused").X / 2.0f;
-                    //    spriteBatch.DrawString(fontBig, "Paused", new Vector2(centerX, GraphicsDevice.Viewport.Height * 0.1f), Color.Yellow);
-                    //}
 
                     // Display scores in the top left
                     System.Text.StringBuilder text = new System.Text.StringBuilder();
@@ -982,12 +919,6 @@ namespace Source
                     Vector2 pos = new Vector2(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height) - fontSmall.MeasureString(GameData.Version);
                     spriteBatch.DrawString(fontSmall, GameData.Version, pos, Color.LightSalmon);
 
-                    //if (levelAnnounceWaitAt > 0)
-                    //{
-                    //    float centerX = GraphicsDevice.Viewport.Width / 2.0f - fontBig.MeasureString("Level " + currentLevel).X / 2.0f;
-                    //    spriteBatch.DrawString(fontBig, "Level " + currentLevel, new Vector2(centerX, GraphicsDevice.Viewport.Height * 0.1f), Color.Aqua);
-                    //    levelAnnounceWaitAt -= (float)gameTime.ElapsedGameTime.TotalSeconds;
-                    //}
                     spriteBatch.End();
                     break;
                 case State.Paused:
@@ -1031,18 +962,6 @@ namespace Source
         private void DrawRect(Vector2 position, Color color, float rotation, Vector2 origin, Vector2 scale)
         {
             spriteBatch.Draw(whiteRect, ConvertUnits.ToDisplayUnits(position), null, color, rotation, origin, ConvertUnits.ToDisplayUnits(scale), SpriteEffects.None, 0f);
-        }
-
-        /// <summary>
-        /// Draws a rectangle. Make sure this is called AFTER spriteBatch.Begin()
-        /// </summary>
-        /// <param name="body">The body for the rectangle to draw</param>
-        /// <param name="color"></param>
-        /// <param name="origin">The center for the texture to use</param>
-        /// <param name="scale">The horizontal and vertical scale for the rectangle</param>
-        private void DrawRect(Body body, Color color, Vector2 origin, Vector2 scale)
-        {
-            spriteBatch.Draw(whiteRect, ConvertUnits.ToDisplayUnits(body.Position), null, color, body.Rotation, origin, ConvertUnits.ToDisplayUnits(scale), SpriteEffects.None, 0f);
         }
 
         /// <summary>
