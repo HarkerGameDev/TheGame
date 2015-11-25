@@ -6,6 +6,9 @@
              xmlns:c="clr-namespace:EmptyKeys.UserInterface.Designer.Charts;assembly=EmptyKeys.UserInterface.Designer"
              mc:Ignorable="d" 
              d:DesignHeight="640" d:DesignWidth="800">
-    <!-- Creates a text block saying press enter to start -->
-    <TextBlock Text="Press ENTER to start" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20" FontWeight="Bold" Foreground="Red"/>
+    <!-- Creates a text block saying paused and options on the line beneath. Learning to fix formatting, left the format in comments below-->
+    <TextBlock>
+        <Run Text="Paused"/> <LineBreak/> <Run Text ="Options"/>
+    </TextBlock>
+    <!--"HorizontalAlignment="Center" VerticalAlignment="Top" FontSize="20" FontWeight="Bold" Foreground="Red"-->
 </ek:UIRoot>
