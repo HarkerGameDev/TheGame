@@ -52,9 +52,10 @@ namespace EmptyKeys.UserInterface.Generated {
             this.e_0.VerticalAlignment = VerticalAlignment.Top;
             this.e_0.Foreground = new SolidColorBrush(new ColorW(255, 0, 0, 255));
             this.e_0.Text = "Paused\r\nControls\r\n";
-            this.e_0.FontSize = 20F;
+            this.e_0.TextAlignment = TextAlignment.Center;
+            this.e_0.FontSize = 40F;
             this.e_0.FontStyle = FontStyle.Bold;
-            FontManager.Instance.AddFont("Segoe UI", 20F, FontStyle.Bold, "Segoe_UI_15_Bold");
+            FontManager.Instance.AddFont("Segoe UI", 40F, FontStyle.Bold, "Segoe_UI_30_Bold");
         }
     }
 }

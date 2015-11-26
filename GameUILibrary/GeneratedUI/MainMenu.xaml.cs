@@ -129,6 +129,7 @@ namespace EmptyKeys.UserInterface.Generated {
             this.e_6.Name = "e_6";
             this.e_6.Text = "Quit";
             this.e_6.FontSize = 20F;
+            FontManager.Instance.AddFont("Segoe UI", 40F, FontStyle.Bold, "Segoe_UI_30_Bold");
             FontManager.Instance.AddFont("Segoe UI", 20F, FontStyle.Bold, "Segoe_UI_15_Bold");
             FontManager.Instance.AddFont("Segoe UI", 12F, FontStyle.Bold, "Segoe_UI_9_Bold");
         }

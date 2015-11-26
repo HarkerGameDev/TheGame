@@ -55,9 +55,9 @@ namespace EmptyKeys.UserInterface.Generated {
             this.e_0.TextAlignment = TextAlignment.Center;
             this.e_0.FontSize = 40F;
             this.e_0.FontStyle = FontStyle.Bold;
+            FontManager.Instance.AddFont("Segoe UI", 40F, FontStyle.Bold, "Segoe_UI_30_Bold");
             FontManager.Instance.AddFont("Segoe UI", 20F, FontStyle.Bold, "Segoe_UI_15_Bold");
             FontManager.Instance.AddFont("Segoe UI", 12F, FontStyle.Bold, "Segoe_UI_9_Bold");
-            FontManager.Instance.AddFont("Segoe UI", 40F, FontStyle.Bold, "Segoe_UI_30_Bold");
         }
     }
 }
