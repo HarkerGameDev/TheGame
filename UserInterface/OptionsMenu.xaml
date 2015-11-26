@@ -6,8 +6,32 @@
              xmlns:c="clr-namespace:EmptyKeys.UserInterface.Designer.Charts;assembly=EmptyKeys.UserInterface.Designer"
              mc:Ignorable="d" 
              d:DesignHeight="640" d:DesignWidth="800">
-    <!-- Creates a text block saying paused and options on the line beneath.-->
-    <TextBlock HorizontalAlignment="Center" VerticalAlignment="Top" FontSize="40" FontWeight="Bold" Foreground="Red" TextAlignment="Center">
-        <Run Text="Paused"/> <LineBreak/> <Run Text ="Options"/>
-    </TextBlock>
+    <!--Creates a Grid to nest items. Only 1 content allowed in ek:UIRoot-->
+    <Grid>
+        <!--Defines 8 equally sized rows-->
+        <Grid.RowDefinitions>
+            <RowDefinition Height="1*" />
+            <RowDefinition Height="1*" />
+            <RowDefinition Height="1*" />
+            <RowDefinition Height="1*" />
+            <RowDefinition Height="1*" />
+            <RowDefinition Height="1*" />
+            <RowDefinition Height="1*" />
+            <RowDefinition Height="1*" />
+        </Grid.RowDefinitions>
+        <!--Creates a TextBlock saying options-->
+        <TextBlock Text ="Options" HorizontalAlignment="Center" VerticalAlignment="Top" FontSize="40" FontWeight="Bold" TextAlignment="Center"/>
+        <!--Creates a Button saying toggle fullscreen-->
+        <Button Width="165" Height="80" Grid.Row="2">
+            <TextBlock Text="Toggle Fullscreen" FontSize="20" FontWeight="Bold"/>
+        </Button>
+        <!--Creates a Button saying controls-->
+        <Button Width="165" Height="80" Grid.Row="4">
+            <TextBlock Text="Controls" FontSize="20" FontWeight="Bold"/>
+        </Button>
+        <!--Creates a Button saying back-->
+        <Button Width="165" Height="80" Grid.Row="6">
+            <TextBlock Text="Back" FontSize="20" FontWeight="Bold"/>
+        </Button>
+    </Grid>
 </ek:UIRoot>

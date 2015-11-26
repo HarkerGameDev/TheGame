@@ -24,7 +24,21 @@ namespace EmptyKeys.UserInterface.Generated {
     [GeneratedCodeAttribute("Empty Keys UI Generator", "1.11.0.0")]
     public partial class OptionsMenu : UIRoot {
         
-        private TextBlock e_0;
+        private Grid e_0;
+        
+        private TextBlock e_1;
+        
+        private Button e_2;
+        
+        private TextBlock e_3;
+        
+        private Button e_4;
+        
+        private TextBlock e_5;
+        
+        private Button e_6;
+        
+        private TextBlock e_7;
         
         public OptionsMenu() : 
                 base() {
@@ -45,16 +59,85 @@ namespace EmptyKeys.UserInterface.Generated {
         
         private void InitializeComponent() {
             // e_0 element
-            this.e_0 = new TextBlock();
+            this.e_0 = new Grid();
             this.Content = this.e_0;
             this.e_0.Name = "e_0";
-            this.e_0.HorizontalAlignment = HorizontalAlignment.Center;
-            this.e_0.VerticalAlignment = VerticalAlignment.Top;
-            this.e_0.Foreground = new SolidColorBrush(new ColorW(255, 0, 0, 255));
-            this.e_0.Text = "Paused\r\nOptions\r\n";
-            this.e_0.TextAlignment = TextAlignment.Center;
-            this.e_0.FontSize = 40F;
-            this.e_0.FontStyle = FontStyle.Bold;
+            RowDefinition row_e_0_0 = new RowDefinition();
+            row_e_0_0.Height = new GridLength(1F, GridUnitType.Star);
+            this.e_0.RowDefinitions.Add(row_e_0_0);
+            RowDefinition row_e_0_1 = new RowDefinition();
+            row_e_0_1.Height = new GridLength(1F, GridUnitType.Star);
+            this.e_0.RowDefinitions.Add(row_e_0_1);
+            RowDefinition row_e_0_2 = new RowDefinition();
+            row_e_0_2.Height = new GridLength(1F, GridUnitType.Star);
+            this.e_0.RowDefinitions.Add(row_e_0_2);
+            RowDefinition row_e_0_3 = new RowDefinition();
+            row_e_0_3.Height = new GridLength(1F, GridUnitType.Star);
+            this.e_0.RowDefinitions.Add(row_e_0_3);
+            RowDefinition row_e_0_4 = new RowDefinition();
+            row_e_0_4.Height = new GridLength(1F, GridUnitType.Star);
+            this.e_0.RowDefinitions.Add(row_e_0_4);
+            RowDefinition row_e_0_5 = new RowDefinition();
+            row_e_0_5.Height = new GridLength(1F, GridUnitType.Star);
+            this.e_0.RowDefinitions.Add(row_e_0_5);
+            RowDefinition row_e_0_6 = new RowDefinition();
+            row_e_0_6.Height = new GridLength(1F, GridUnitType.Star);
+            this.e_0.RowDefinitions.Add(row_e_0_6);
+            RowDefinition row_e_0_7 = new RowDefinition();
+            row_e_0_7.Height = new GridLength(1F, GridUnitType.Star);
+            this.e_0.RowDefinitions.Add(row_e_0_7);
+            // e_1 element
+            this.e_1 = new TextBlock();
+            this.e_0.Children.Add(this.e_1);
+            this.e_1.Name = "e_1";
+            this.e_1.HorizontalAlignment = HorizontalAlignment.Center;
+            this.e_1.VerticalAlignment = VerticalAlignment.Top;
+            this.e_1.Text = "Options";
+            this.e_1.TextAlignment = TextAlignment.Center;
+            this.e_1.FontSize = 40F;
+            this.e_1.FontStyle = FontStyle.Bold;
+            // e_2 element
+            this.e_2 = new Button();
+            this.e_0.Children.Add(this.e_2);
+            this.e_2.Name = "e_2";
+            this.e_2.Height = 80F;
+            this.e_2.Width = 165F;
+            Grid.SetRow(this.e_2, 2);
+            // e_3 element
+            this.e_3 = new TextBlock();
+            this.e_2.Content = this.e_3;
+            this.e_3.Name = "e_3";
+            this.e_3.Text = "Toggle Fullscreen";
+            this.e_3.FontSize = 20F;
+            this.e_3.FontStyle = FontStyle.Bold;
+            // e_4 element
+            this.e_4 = new Button();
+            this.e_0.Children.Add(this.e_4);
+            this.e_4.Name = "e_4";
+            this.e_4.Height = 80F;
+            this.e_4.Width = 165F;
+            Grid.SetRow(this.e_4, 4);
+            // e_5 element
+            this.e_5 = new TextBlock();
+            this.e_4.Content = this.e_5;
+            this.e_5.Name = "e_5";
+            this.e_5.Text = "Controls";
+            this.e_5.FontSize = 20F;
+            this.e_5.FontStyle = FontStyle.Bold;
+            // e_6 element
+            this.e_6 = new Button();
+            this.e_0.Children.Add(this.e_6);
+            this.e_6.Name = "e_6";
+            this.e_6.Height = 80F;
+            this.e_6.Width = 165F;
+            Grid.SetRow(this.e_6, 6);
+            // e_7 element
+            this.e_7 = new TextBlock();
+            this.e_6.Content = this.e_7;
+            this.e_7.Name = "e_7";
+            this.e_7.Text = "Back";
+            this.e_7.FontSize = 20F;
+            this.e_7.FontStyle = FontStyle.Bold;
             FontManager.Instance.AddFont("Segoe UI", 40F, FontStyle.Bold, "Segoe_UI_30_Bold");
             FontManager.Instance.AddFont("Segoe UI", 20F, FontStyle.Bold, "Segoe_UI_15_Bold");
             FontManager.Instance.AddFont("Segoe UI", 12F, FontStyle.Bold, "Segoe_UI_9_Bold");

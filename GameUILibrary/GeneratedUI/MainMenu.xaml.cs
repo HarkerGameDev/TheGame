@@ -26,17 +26,19 @@ namespace EmptyKeys.UserInterface.Generated {
         
         private Grid e_0;
         
-        private Button e_1;
+        private TextBlock e_1;
         
-        private TextBlock e_2;
+        private Button e_2;
         
-        private Button e_3;
+        private TextBlock e_3;
         
-        private TextBlock e_4;
+        private Button e_4;
         
-        private Button e_5;
+        private TextBlock e_5;
         
-        private TextBlock e_6;
+        private Button e_6;
+        
+        private TextBlock e_7;
         
         public MainMenu() : 
                 base() {
@@ -88,47 +90,57 @@ namespace EmptyKeys.UserInterface.Generated {
             row_e_0_7.Height = new GridLength(1F, GridUnitType.Star);
             this.e_0.RowDefinitions.Add(row_e_0_7);
             // e_1 element
-            this.e_1 = new Button();
+            this.e_1 = new TextBlock();
             this.e_0.Children.Add(this.e_1);
             this.e_1.Name = "e_1";
-            this.e_1.Height = 80F;
-            this.e_1.Width = 160F;
-            Grid.SetRow(this.e_1, 2);
+            this.e_1.Width = 800F;
+            this.e_1.HorizontalAlignment = HorizontalAlignment.Center;
+            this.e_1.Text = "Game";
+            this.e_1.TextAlignment = TextAlignment.Center;
+            this.e_1.FontSize = 40F;
+            this.e_1.FontStyle = FontStyle.Bold;
             // e_2 element
-            this.e_2 = new TextBlock();
-            this.e_1.Content = this.e_2;
+            this.e_2 = new Button();
+            this.e_0.Children.Add(this.e_2);
             this.e_2.Name = "e_2";
-            this.e_2.Text = "Start(Press Enter)";
-            this.e_2.FontSize = 20F;
-            this.e_2.FontStyle = FontStyle.Bold;
+            this.e_2.Height = 80F;
+            this.e_2.Width = 165F;
+            Grid.SetRow(this.e_2, 2);
             // e_3 element
-            this.e_3 = new Button();
-            this.e_0.Children.Add(this.e_3);
+            this.e_3 = new TextBlock();
+            this.e_2.Content = this.e_3;
             this.e_3.Name = "e_3";
-            this.e_3.Height = 80F;
-            this.e_3.Width = 160F;
-            Grid.SetRow(this.e_3, 4);
+            this.e_3.Text = "Start(Press Enter)";
+            this.e_3.FontSize = 20F;
+            this.e_3.FontStyle = FontStyle.Bold;
             // e_4 element
-            this.e_4 = new TextBlock();
-            this.e_3.Content = this.e_4;
+            this.e_4 = new Button();
+            this.e_0.Children.Add(this.e_4);
             this.e_4.Name = "e_4";
-            this.e_4.Text = "Options";
-            this.e_4.FontSize = 20F;
-            this.e_4.FontStyle = FontStyle.Bold;
+            this.e_4.Height = 80F;
+            this.e_4.Width = 165F;
+            Grid.SetRow(this.e_4, 4);
             // e_5 element
-            this.e_5 = new Button();
-            this.e_0.Children.Add(this.e_5);
+            this.e_5 = new TextBlock();
+            this.e_4.Content = this.e_5;
             this.e_5.Name = "e_5";
-            this.e_5.Height = 80F;
-            this.e_5.Width = 160F;
+            this.e_5.Text = "Options";
+            this.e_5.FontSize = 20F;
             this.e_5.FontStyle = FontStyle.Bold;
-            Grid.SetRow(this.e_5, 6);
             // e_6 element
-            this.e_6 = new TextBlock();
-            this.e_5.Content = this.e_6;
+            this.e_6 = new Button();
+            this.e_0.Children.Add(this.e_6);
             this.e_6.Name = "e_6";
-            this.e_6.Text = "Quit";
-            this.e_6.FontSize = 20F;
+            this.e_6.Height = 80F;
+            this.e_6.Width = 165F;
+            this.e_6.FontStyle = FontStyle.Bold;
+            Grid.SetRow(this.e_6, 6);
+            // e_7 element
+            this.e_7 = new TextBlock();
+            this.e_6.Content = this.e_7;
+            this.e_7.Name = "e_7";
+            this.e_7.Text = "Quit";
+            this.e_7.FontSize = 20F;
             FontManager.Instance.AddFont("Segoe UI", 40F, FontStyle.Bold, "Segoe_UI_30_Bold");
             FontManager.Instance.AddFont("Segoe UI", 20F, FontStyle.Bold, "Segoe_UI_15_Bold");
             FontManager.Instance.AddFont("Segoe UI", 12F, FontStyle.Bold, "Segoe_UI_9_Bold");

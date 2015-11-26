@@ -8,7 +8,7 @@
              d:DesignHeight="640" d:DesignWidth="800">
     <!--Creates a Grid to nest items. Only 1 content is allowed in each ek:UIRoot-->
     <Grid HorizontalAlignment="Center" Width="800" Height="640">
-        <!--Defines 16 equally sized rows-->
+        <!--Defines 8 equally sized rows-->
         <Grid.RowDefinitions>
             <RowDefinition Height="1*" />
             <RowDefinition Height="1*" />
@@ -19,16 +19,18 @@
             <RowDefinition Height="1*" />
             <RowDefinition Height="1*" />
         </Grid.RowDefinitions>
-        <!-- Creates a Button saying press start(press enter) -->
-        <Button Width="160" Height="80" Grid.Row="2">
+        <!--Creates a TextBlock with the name of the game-->
+        <TextBlock Text="Game" FontSize="40" FontWeight="Bold" TextAlignment="Center" HorizontalAlignment="Center" Width="800"/>
+        <!--Creates a Button saying press start(press enter)-->
+        <Button Width="165" Height="80" Grid.Row="2">
             <TextBlock Text="Start(Press Enter)" FontSize="20" FontWeight="Bold"/>
         </Button>
         <!--Creates a Button saying options-->
-        <Button Width="160" Height="80" Grid.Row="4">
+        <Button Width="165" Height="80" Grid.Row="4">
             <TextBlock Text="Options" FontSize="20" FontWeight="Bold"/>
         </Button>
         <!--Creates a Button saying quit-->
-        <Button Width="160" Height="80" Grid.Row="6" FontWeight="Bold">
+        <Button Width="165" Height="80" Grid.Row="6" FontWeight="Bold">
             <TextBlock Text="Quit" FontSize="20"/>
         </Button>
     </Grid>
