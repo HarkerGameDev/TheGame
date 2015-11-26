@@ -7,5 +7,5 @@
              mc:Ignorable="d" 
              d:DesignHeight="640" d:DesignWidth="800">
     <!-- Creates a text block saying paused-->
-    <TextBlock Text="Paused" HorizontalAlignment="Center" VerticalAlignment="Top" FontSize="40" FontWeight="Bold" Foreground="Red"/>
+    <TextBlock Text="Paused" HorizontalAlignment="Center" VerticalAlignment="Top" FontSize="40" FontWeight="Bold" Foreground="Red" TextAlignment="Center"/>
 </ek:UIRoot>

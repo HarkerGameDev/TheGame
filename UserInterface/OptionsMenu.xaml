@@ -6,9 +6,8 @@
              xmlns:c="clr-namespace:EmptyKeys.UserInterface.Designer.Charts;assembly=EmptyKeys.UserInterface.Designer"
              mc:Ignorable="d" 
              d:DesignHeight="640" d:DesignWidth="800">
-    <!-- Creates a text block saying paused and options on the line beneath. Learning to fix formatting, left the format in comments below-->
-    <TextBlock>
+    <!-- Creates a text block saying paused and options on the line beneath.-->
+    <TextBlock HorizontalAlignment="Center" VerticalAlignment="Top" FontSize="40" FontWeight="Bold" Foreground="Red" TextAlignment="Center">
         <Run Text="Paused"/> <LineBreak/> <Run Text ="Options"/>
     </TextBlock>
-    <!--"HorizontalAlignment="Center" VerticalAlignment="Top" FontSize="20" FontWeight="Bold" Foreground="Red"-->
 </ek:UIRoot>
