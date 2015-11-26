@@ -48,3 +48,9 @@
 /processorParam:TextureFormat=Compressed
 /build:Fonts/Segoe_UI_15_Bold.spritefont
 
+#begin Fonts/Segoe_UI_9_Bold.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:TextureFormat=Compressed
+/build:Fonts/Segoe_UI_9_Bold.spritefont
+
