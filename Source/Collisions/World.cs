@@ -33,7 +33,7 @@ namespace Source.Collisions
                 part.LiveTime -= deltaTime;
                 if (part.LiveTime < 0)
                     game.particles.RemoveAt(i);
-                else if(part.type.Equals(Particle.Type.Texture))
+                else if(part.type == Particle.Type.Texture)
                 {
                     if (TestPoint(part.Position) == null)
                     {
@@ -44,33 +44,61 @@ namespace Source.Collisions
                 }
             }
 
-            foreach (Player player in game.players)
+            for (int i = game.drops.Count - 1; i >= 0; i--)
             {
-                if (player.TimeSinceDeath <= 0)
+                Drop drop = game.drops[i];
+                drop.LiveTime -= deltaTime;
+                if (drop.LiveTime < 0)
                 {
-                    for (int i = player.Projectiles.Count - 1; i >= 0; i--)
+                    if (drop.type == Drop.Type.Bomb)
+                        ApplyGravity(GameData.BOMB_FORCE, drop.Player, drop.Position, 1);
+                    game.drops.RemoveAt(i);
+                }
+                else
+                {
+                    drop.Velocity.Y += GameData.GRAVITY * deltaTime;
+                    drop.Move(deltaTime);
+                    Vector2 translation = CheckCollisions(drop);
+                    if (translation != Vector2.Zero)
                     {
-                        for (int j = 0; j < GameData.PROJ_STEP; j++)
-                        {
-                            if (!CalculateProjectile(player, deltaTime / GameData.PROJ_STEP, i))
-                                break;
-                        }
+                        drop.MovePosition(-translation);
+                        if (translation.X != 0)
+                            drop.Velocity.X = 0;
+                        if (translation.Y != 0)
+                            drop.Velocity.Y = 0;
                     }
-
-                    player.Velocity.Y += GameData.GRAVITY * deltaTime;
-
-                    for (int i = 0; i < GameData.PLAYER_STEP; i++)
-                    {
-                        player.Move(deltaTime / GameData.PLAYER_STEP);
-                        CheckWalls(player);
-                    }
-                    CheckFloors(player);
-                    CheckObstacles(player);
-
-                    if (player.AbilityActive)
-                        PerformSpecial(player, deltaTime);
+                    if (drop.type == Drop.Type.Singularity)
+                        ApplyGravity(-GameData.GRAVITY_FORCE, drop.Player, drop.Position, deltaTime);
                 }
             }
+
+                foreach (Player player in game.players)
+                {
+                    if (player.TimeSinceDeath <= 0)
+                    {
+                        for (int i = player.Projectiles.Count - 1; i >= 0; i--)
+                        {
+                            for (int j = 0; j < GameData.PROJ_STEP; j++)
+                            {
+                                if (!CalculateProjectile(player, deltaTime / GameData.PROJ_STEP, i))
+                                    break;
+                            }
+                        }
+
+                        player.Velocity.Y += GameData.GRAVITY * deltaTime;
+
+                        for (int i = 0; i < GameData.PLAYER_STEP; i++)
+                        {
+                            player.Move(deltaTime / GameData.PLAYER_STEP);
+                            CheckWalls(player);
+                        }
+                        CheckFloors(player);
+                        CheckObstacles(player);
+
+                        if (player.AbilityActive)
+                            PerformSpecial(player, deltaTime);
+                    }
+                }
         }
 
         /// <summary>
@@ -320,27 +348,40 @@ namespace Source.Collisions
             switch (player.CurrentAbility)
             {
                 case Player.Ability.GravityPull:
-                case Player.Ability.GravityPush:
-                    float scale = GameData.GRAVITY_FORCE * (player.CurrentAbility == Player.Ability.GravityPull ? -1 : 1);
-
-                    foreach (Particle part in game.particles)
-                    {
-                        Vector2 dist = part.Position - player.Position;
-                        float length = dist.Length();
-                        if (length > GameData.GRAVITY_CUTOFF)
-                            part.Velocity += deltaTime * scale * dist / (length * length); // 1/r for gravity
-                    }
-                    foreach (Player body in game.players)
-                    {
-                        if (body != player && body.TimeSinceDeath <= 0)
-                        {
-                            Vector2 dist = body.Position - player.Position;
-                            float length = dist.Length();
-                            if (length > GameData.GRAVITY_CUTOFF)
-                                body.Velocity += deltaTime * scale * dist / (length * length); // 1/r for gravity
-                        }
-                    }
+                    ApplyGravity(-GameData.GRAVITY_FORCE, player, player.Position, deltaTime);
                     break;
+                case Player.Ability.GravityPush:
+                    ApplyGravity(GameData.GRAVITY_FORCE, player, player.Position, deltaTime);
+                    break;
+                case Player.Ability.Explosive:
+                    game.drops.Add(new Drop(player, Game1.whiteRect, player.Position, 0.16f, Drop.Type.Bomb));
+                    player.AbilityActive = false;
+                    break;
+                case Player.Ability.Singularity:
+                    game.drops.Add(new Drop(player, Game1.whiteRect, player.Position, 0.08f, Drop.Type.Singularity));
+                    player.AbilityActive = false;
+                    break;
+            }
+        }
+
+        private void ApplyGravity(float scale, Body player, Vector2 position, float deltaTime)
+        {
+            foreach (Particle part in game.particles)
+            {
+                Vector2 dist = part.Position - position;
+                float length = dist.Length();
+                if (length > GameData.GRAVITY_CUTOFF)
+                    part.Velocity += deltaTime * scale * dist / (length * length); // 1/r for gravity
+            }
+            foreach (Player body in game.players)
+            {
+                if (body != player && body.TimeSinceDeath <= 0)
+                {
+                    Vector2 dist = body.Position - position;
+                    float length = dist.Length();
+                    if (length > GameData.GRAVITY_CUTOFF)
+                        body.Velocity += deltaTime * scale * dist / (length * length); // 1/r for gravity
+                }
             }
         }
 
@@ -353,7 +394,35 @@ namespace Source.Collisions
                     return body;
                 }
             }
+            foreach (Body body in game.walls)
+            {
+                if (body.TestPoint(point))
+                {
+                    return body;
+                }
+            }
             return null;
+        }
+
+        public Vector2 CheckCollisions(Body body)
+        {
+            foreach (Body target in game.floors)
+            {
+                Vector2 translation = target.Intersects(body);
+                if (translation != Vector2.Zero)
+                {
+                    return translation;
+                }
+            }
+            foreach (Body target in game.walls)
+            {
+                Vector2 translation = target.Intersects(body);
+                if (translation != Vector2.Zero)
+                {
+                    return translation;
+                }
+            }
+            return Vector2.Zero;
         }
     }
 }

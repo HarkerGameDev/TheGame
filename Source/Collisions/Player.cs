@@ -40,7 +40,7 @@ namespace Source.Collisions
 
         public enum Ability
         {
-            GravityPull, GravityPush
+            GravityPull, GravityPush, Explosive, Singularity
         }
 
         public AnimatedSprite Sprite;

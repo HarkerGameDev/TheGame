@@ -37,6 +37,7 @@ namespace Source
     {
         private GraphicsDeviceManager graphics;
         private SpriteBatch spriteBatch;
+        private RenderTarget2D renderTarget;
 
         private KeyboardState prevKeyState;
         private GamePadState[] prevPadStates;
@@ -44,8 +45,9 @@ namespace Source
 
         private GameData.Controls[] playerControls;
 
-        private static Texture2D whiteRect;
+        public static Texture2D whiteRect;
         public SpriteFont fontSmall, fontBig;
+        private Effect effect;
 
         public Random rand;
         private Random randLevel;
@@ -71,6 +73,7 @@ namespace Source
         public List<Wall> walls;
         public List<Particle> particles;
         public List<Obstacle> obstacles;
+        public List<Drop> drops;
 
         private List<Button> pauseMenu;
         private List<Button> optionsMenu;
@@ -128,6 +131,14 @@ namespace Source
             currentZoom = GameData.PIXEL_METER;
             ConvertUnits.SetDisplayUnitToSimUnitRatio(currentZoom);
 
+            // Set up renderTarget for post-processing
+            renderTarget = new RenderTarget2D(GraphicsDevice,
+                GraphicsDevice.PresentationParameters.BackBufferWidth,
+                GraphicsDevice.PresentationParameters.BackBufferHeight,
+                false,
+                GraphicsDevice.PresentationParameters.BackBufferFormat,
+                GraphicsDevice.PresentationParameters.DepthStencilFormat);
+
             // Set seed for a scheduled random level (minutes since Jan 1, 2015)
             rand = new Random();
             randLevel = new Random(GameData.GetSeed);
@@ -179,18 +190,26 @@ namespace Source
             // Load assets in the Content Manager
             fontSmall = Content.Load<SpriteFont>("Fonts/Score");
             fontBig = Content.Load<SpriteFont>("Fonts/ScoreBig");
+            effect = Content.Load<Effect>("Effects/Test");
 
             // Create objects
             players = new List<Player>();
+#if DEBUG
+            Array playerAbilities = new[] { Player.Ability.Explosive };
+#else
+            Array playerAbilities = Enum.GetValues(typeof(Player.Ability));
+#endif
             for (int i = 0; i < GameData.numPlayers; i++)
             {
+                // create a player with color specified in GameData and random color
                 Vector2 spawnLoc = new Vector2(GameData.PLAYER_START, -rand.Next(GameData.MIN_SPAWN, GameData.MAX_SPAWN));
-				players.Add(new Player(Content.Load<Texture2D>("Art/GreenDude"), spawnLoc, GameData.playerColors[i], GameData.playerAbilities[rand.Next(GameData.playerAbilities.Length)]));
+				players.Add(new Player(Content.Load<Texture2D>("Art/GreenDude"), spawnLoc, GameData.playerColors[i], (Player.Ability)playerAbilities.GetValue(rand.Next(playerAbilities.Length))));
             }
             floors = new List<Floor>();
             walls = new List<Wall>();
             particles = new List<Particle>();
             obstacles = new List<Obstacle>();
+            drops = new List<Drop>();
             world = new World(this);
 
             // Initialize camera
@@ -421,6 +440,7 @@ namespace Source
             floors.Clear();
             walls.Clear();
             obstacles.Clear();
+            drops.Clear();
             levelEnd = 0;
             totalTime = 0;
             death = -GameData.DEAD_MAX;
@@ -821,104 +841,122 @@ namespace Source
                 obstacles.RemoveRange(0, obstacles.Count - GameData.MAX_OBSTACLES);
         }
 
+        private void DrawGame(double deltaTime)
+        {
+            GraphicsDevice.Clear(Color.CornflowerBlue);
+
+            // Find average position across all players
+            Vector2 averagePos = Vector2.Zero;
+            foreach (Player player in players)
+                averagePos += player.Position;
+            averagePos /= players.Count;
+
+            // Calculate camera location matrix
+            Matrix view;
+            if (editLevel)
+                view = Matrix.CreateTranslation(new Vector3(screenOffset + cameraBounds.Center.ToVector2() - ConvertUnits.ToDisplayUnits(averagePos), 0f));
+            else
+                view = Matrix.CreateTranslation(new Vector3(screenOffset + screenCenter - ConvertUnits.ToDisplayUnits(averagePos), 0f));
+
+
+            // Draw players
+            spriteBatch.Begin(transformMatrix: view);
+            foreach (Player player in players)
+            {
+                if (player.TimeSinceDeath < GameData.PHASE_TIME)
+                {
+                    player.Sprite.Update(deltaTime);
+                    player.Draw(spriteBatch);
+                    foreach (Projectile proj in player.Projectiles)
+                        proj.Draw(spriteBatch);
+                }
+            }
+            spriteBatch.End();
+
+
+            // Draw all objects
+            spriteBatch.Begin(transformMatrix: view);
+            spriteBatch.Draw(whiteRect, new Rectangle(-(int)view.Translation.X, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height), Color.LightGray);
+            foreach (Floor floor in floors)
+                floor.Draw(spriteBatch);
+            foreach (Wall wall in walls)
+                wall.Draw(spriteBatch);
+            foreach (Obstacle obstacle in obstacles)
+                obstacle.Draw(spriteBatch);
+            foreach (Drop drop in drops)
+                drop.Draw(spriteBatch);
+            if (currentFloor != null)
+                DrawRect(currentFloor.Position, Color.Green, currentFloor.Rotation, currentFloor.Origin, currentFloor.Size);
+            if (editingFloor)
+            {
+                Vector2 dist = endDraw - startDraw;
+                float rotation = (float)Math.Atan2(dist.Y, dist.X);
+                Vector2 scale = new Vector2(dist.Length(), Floor.FLOOR_HEIGHT);
+                Vector2 origin = new Vector2(0.5f, 0.5f);
+                DrawRect(startDraw + dist / 2, Color.Azure, rotation, origin, scale);
+            }
+            if (editLevel)
+                DrawRect(Vector2.Zero, Color.LightGreen, 0f, new Vector2(0.5f, 0.5f), new Vector2(1, 1));
+            spriteBatch.End();
+
+
+            // Draw all particles and dead wall
+            spriteBatch.Begin(transformMatrix: view);
+            foreach (Particle part in particles)
+                part.Draw(spriteBatch);
+            spriteBatch.Draw(whiteRect, new Rectangle((int)ConvertUnits.ToDisplayUnits(death) - GameData.DEAD_WIDTH, -GameData.DEAD_HEIGHT, GameData.DEAD_WIDTH, GameData.DEAD_HEIGHT), Color.Purple);
+            spriteBatch.End();
+
+
+            // Draw all HUD elements
+            spriteBatch.Begin();
+
+            // Display scores in the top left
+            System.Text.StringBuilder text = new System.Text.StringBuilder();
+            text.AppendLine("Scores");
+            for (int i = 0; i < players.Count; i++)
+            {
+                text.AppendLine(string.Format("Player {0}: {1}", i + 1, players[i].Score));
+            }
+            spriteBatch.DrawString(fontSmall, text, new Vector2(10, 10), Color.Green);
+
+            // Display frames per second in the top right
+            string frames = (1f / deltaTime).ToString("n2");
+            float leftX = GraphicsDevice.Viewport.Width - fontSmall.MeasureString(frames).X;
+            spriteBatch.DrawString(fontSmall, frames, new Vector2(leftX, 0f), Color.LightGray);
+
+            // Display current survived time
+            string time = totalTime.ToString("n1") + "s survived";
+            leftX = GraphicsDevice.Viewport.Width / 2f - fontSmall.MeasureString(time).X / 2f;
+            spriteBatch.DrawString(fontSmall, time, new Vector2(leftX, 0f), Color.LightSkyBlue);
+
+            // Display version number
+            Vector2 pos = new Vector2(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height) - fontSmall.MeasureString(GameData.Version);
+            spriteBatch.DrawString(fontSmall, GameData.Version, pos, Color.LightSalmon);
+
+            spriteBatch.End();
+        }
+
+        private void DrawSceneToTexture(RenderTarget2D renderTarget, double deltaTime)
+        {
+            GraphicsDevice.SetRenderTarget(renderTarget);
+            DrawGame(deltaTime);
+            GraphicsDevice.SetRenderTarget(null);
+        }
+
         /// <summary>
         /// This is called when the game should draw itself.
         /// </summary>
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            double deltaTime = (double)gameTime.ElapsedGameTime.TotalSeconds;
-            GraphicsDevice.Clear(Color.CornflowerBlue);
+            double deltaTime = gameTime.ElapsedGameTime.TotalSeconds;
 
             switch (state) {
                 case State.Running:
-                    // Find average position across all players
-                    Vector2 averagePos = Vector2.Zero;
-                    foreach (Player player in players)
-                        averagePos += player.Position;
-                    averagePos /= players.Count;
-
-                    // Calculate camera location matrix
-                    Matrix view;
-                    if (editLevel)
-                        view = Matrix.CreateTranslation(new Vector3(screenOffset + cameraBounds.Center.ToVector2() - ConvertUnits.ToDisplayUnits(averagePos), 0f));
-                    else
-                        view = Matrix.CreateTranslation(new Vector3(screenOffset + screenCenter - ConvertUnits.ToDisplayUnits(averagePos), 0f));
-
-
-                    // Draw players
-                    spriteBatch.Begin(transformMatrix: view);
-                    foreach (Player player in players)
-                    {
-                        if (player.TimeSinceDeath < GameData.PHASE_TIME)
-                        {
-                            player.Sprite.Update(deltaTime);
-                            player.Draw(spriteBatch);
-                            foreach (Projectile proj in player.Projectiles)
-                                proj.Draw(spriteBatch);
-                        }
-                    }
-                    spriteBatch.End();
-
-
-                    // Draw all objects
-                    spriteBatch.Begin(transformMatrix: view);
-                    spriteBatch.Draw(whiteRect, new Rectangle(-(int)view.Translation.X, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height), Color.LightGray);
-                    foreach (Floor floor in floors)
-                        floor.Draw(spriteBatch);
-                    foreach (Wall wall in walls)
-                        wall.Draw(spriteBatch);
-                    foreach (Obstacle obstacle in obstacles)
-                        obstacle.Draw(spriteBatch);
-                    if (currentFloor != null)
-                        DrawRect(currentFloor.Position, Color.Green, currentFloor.Rotation, currentFloor.Origin, currentFloor.Size);
-                    if (editingFloor)
-                    {
-                        Vector2 dist = endDraw - startDraw;
-                        float rotation = (float)Math.Atan2(dist.Y, dist.X);
-                        Vector2 scale = new Vector2(dist.Length(), Floor.FLOOR_HEIGHT);
-                        Vector2 origin = new Vector2(0.5f, 0.5f);
-                        DrawRect(startDraw + dist / 2, Color.Azure, rotation, origin, scale);
-                    }
-                    if (editLevel)
-                        DrawRect(Vector2.Zero, Color.LightGreen, 0f, new Vector2(0.5f, 0.5f), new Vector2(1, 1));
-                    spriteBatch.End();
-
-
-                    // Draw all particles and dead wall
-                    spriteBatch.Begin(transformMatrix: view);
-                    foreach (Particle part in particles)
-                        part.Draw(spriteBatch);
-                    spriteBatch.Draw(whiteRect, new Rectangle((int)ConvertUnits.ToDisplayUnits(death) - GameData.DEAD_WIDTH, -GameData.DEAD_HEIGHT, GameData.DEAD_WIDTH, GameData.DEAD_HEIGHT), Color.Purple); // please excuse these magic numbers, they are meaningless
-                    spriteBatch.End();
-
-
-                    // Draw all HUD elements
-                    spriteBatch.Begin();
-
-                    // Display scores in the top left
-                    System.Text.StringBuilder text = new System.Text.StringBuilder();
-                    text.AppendLine("Scores");
-                    for (int i = 0; i < players.Count; i++)
-                    {
-                        text.AppendLine(string.Format("Player {0}: {1}", i + 1, players[i].Score));
-                    }
-                    spriteBatch.DrawString(fontSmall, text, new Vector2(10, 10), Color.Green);
-
-                    // Display frames per second in the top right
-                    string frames = (1f / deltaTime).ToString("n2");
-                    float leftX = GraphicsDevice.Viewport.Width - fontSmall.MeasureString(frames).X;
-                    spriteBatch.DrawString(fontSmall, frames, new Vector2(leftX, 0f), Color.LightGray);
-
-                    // Display current survived time
-                    string time = totalTime.ToString("n1") + "s survived";
-                    leftX = GraphicsDevice.Viewport.Width / 2f - fontSmall.MeasureString(time).X / 2f;
-                    spriteBatch.DrawString(fontSmall, time, new Vector2(leftX, 0f), Color.LightSkyBlue);
-
-                    // Display version number
-                    Vector2 pos = new Vector2(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height) - fontSmall.MeasureString(GameData.Version);
-                    spriteBatch.DrawString(fontSmall, GameData.Version, pos, Color.LightSalmon);
-
+                    DrawSceneToTexture(renderTarget, deltaTime);
+                    spriteBatch.Begin(effect: effect);
+                    spriteBatch.Draw(renderTarget, GraphicsDevice.Viewport.Bounds, Color.White);
                     spriteBatch.End();
                     break;
                 case State.Paused:
@@ -986,10 +1024,6 @@ namespace Source
                     if (mouse.LeftButton == ButtonState.Pressed && prevMouseState.LeftButton == ButtonState.Released)
                     {
                         button.OnClick();
-                    }
-                    else
-                    {
-                        // TODO some hover over display
                     }
                 }
             }

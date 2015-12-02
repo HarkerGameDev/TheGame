@@ -14,7 +14,6 @@ namespace Source
     internal static class GameData
     {
         public const int numPlayers = 4;            // number of players
-        public static Player.Ability[] playerAbilities = { Player.Ability.GravityPull, Player.Ability.GravityPush };    // pool of abilities for players -- currently randomly chosen at start
         public static Color[] playerColors = { Color.Red, Color.Yellow, Color.Purple, Color.ForestGreen, Color.Khaki };     // colors of each player
 
 
@@ -40,6 +39,7 @@ namespace Source
         public const int LEVEL_DIST_MAX = 12;
 
         public const float GRAVITY_FORCE = 150f;  // G (in physics) in essence
+        public const float BOMB_FORCE = 200f;        // force in m/s when a bomb explodes
         public const float GRAVITY_CUTOFF = 0.5f;    // minimum distance where gravity applies (to avoid super speed)
 
         public const float FLOOR_HOLE = 4.4f;   // size in m of hole to make when slamming
@@ -129,6 +129,8 @@ namespace Source
 
         public const float PROJ_SPEED = 60f;    // speed of a projectile
         public const float PROJ_LIVE = 1.0f;     // lifetime of a projectile in s
+
+        public const float DROP_LIVE = 1f;      // lifetimem of a drop
 
         public const float BUTTON_WIDTH = 0.4f;  // width of a button in proportion of screen
         public const float BUTTON_HEIGHT = 0.12f;    // height of button in proportion
