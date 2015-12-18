@@ -38,10 +38,6 @@ namespace Source
         public const int LEVEL_DIST_MIN = 5;    // the space between different buildings
         public const int LEVEL_DIST_MAX = 12;
 
-        public const float GRAVITY_FORCE = 150f;  // G (in physics) in essence
-        public const float BOMB_FORCE = 200f;        // force in m/s when a bomb explodes
-        public const float GRAVITY_CUTOFF = 0.5f;    // minimum distance where gravity applies (to avoid super speed)
-
         public const float FLOOR_HOLE = 4.4f;   // size in m of hole to make when slamming
         public const int WINDOW_HEALTH = 1;     // windows are on the side of buildings
         public const int WALL_HEALTH = 3;       // walls are inside the buildings themselves
@@ -99,8 +95,6 @@ namespace Source
 
         public const float BOOST_LENGTH = 6f;  // how long a player can boost for
         public const float BOOST_REGEN = 8.7f; // boost will be refilled in this time (from 0)
-        public const float STUN_LENGTH = 0.5f; // the player is stunned for this long
-        public const float STUN_SCALE = 0.6f; // the player speed is scaled by this when stunned
         public const float SHOOT_COST = 0.3f; // boost bar cost of a shot
 
         public const string SONG = "afln_s_gdc-1";    // the song to play, over, and over, and over again. NEVER STOP THE PARTY!
@@ -130,7 +124,12 @@ namespace Source
         public const float PROJ_SPEED = 60f;    // speed of a projectile
         public const float PROJ_LIVE = 1.0f;     // lifetime of a projectile in s
 
-        public const float DROP_LIVE = 1f;      // lifetimem of a drop
+        public const float DROP_LIVE = 1f;      // lifetime of a drop
+        public const float STUN_TIME = 0.5f;    // time of stun
+        public const float STUN_RADIUS = 3.3f;    // radius within which a player will be stuned from an explosion (in m)
+        public const float GRAVITY_FORCE = 150f;  // G (in physics) in essence
+        public const float BOMB_FORCE = 200f;        // force in m/s when a bomb explodes
+        public const float MAX_FORCE = 40f;    // maximum (m/s^2)^2 for a gravity force
 
         public const float BUTTON_WIDTH = 0.4f;  // width of a button in proportion of screen
         public const float BUTTON_HEIGHT = 0.12f;    // height of button in proportion

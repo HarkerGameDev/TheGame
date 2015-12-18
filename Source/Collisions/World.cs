@@ -51,21 +51,46 @@ namespace Source.Collisions
                 if (drop.LiveTime < 0)
                 {
                     if (drop.type == Drop.Type.Bomb)
+                    {
                         ApplyGravity(GameData.BOMB_FORCE, drop.Player, drop.Position, 1);
+                        foreach (Player player in game.players)
+                        {
+                            if ((player.Position - drop.Position).LengthSquared() < GameData.STUN_RADIUS)
+                            {
+                                player.CurrentState = Player.State.Stunned;
+                                player.StunTime = GameData.STUN_TIME;
+                            }
+                        }
+                    }
                     game.drops.RemoveAt(i);
                 }
                 else
                 {
                     drop.Velocity.Y += GameData.GRAVITY * deltaTime;
                     drop.Move(deltaTime);
-                    Vector2 translation = CheckCollisions(drop);
-                    if (translation != Vector2.Zero)
+                    foreach (Body target in game.floors)
                     {
-                        drop.MovePosition(-translation);
-                        if (translation.X != 0)
-                            drop.Velocity.X = 0;
-                        if (translation.Y != 0)
-                            drop.Velocity.Y = 0;
+                        Vector2 translation = target.Intersects(drop);
+                        if (translation != Vector2.Zero)
+                        {
+                            drop.MovePosition(translation);
+                            if (translation.X != 0)
+                                drop.Velocity.X = 0;
+                            if (translation.Y != 0)
+                                drop.Velocity.Y = 0;
+                        }
+                    }
+                    foreach (Body target in game.walls)
+                    {
+                        Vector2 translation = target.Intersects(drop);
+                        if (translation != Vector2.Zero)
+                        {
+                            drop.MovePosition(translation);
+                            if (translation.X != 0)
+                                drop.Velocity.X = 0;
+                            if (translation.Y != 0)
+                                drop.Velocity.Y = 0;
+                        }
                     }
                     if (drop.type == Drop.Type.Singularity)
                         ApplyGravity(-GameData.GRAVITY_FORCE, drop.Player, drop.Position, deltaTime);
@@ -193,7 +218,7 @@ namespace Source.Collisions
                 Vector2 translation = player.Intersects(floor);
                 if (translation != Vector2.Zero)
                 {
-                    if (player.CurrentState != Player.State.Slamming)
+                    if (player.CurrentState != Player.State.Slamming && player.CurrentState != Player.State.Stunned)
                     {
                         totalCollisions++;
 
@@ -213,7 +238,7 @@ namespace Source.Collisions
                         }
                         player.MovePosition(-translation);
                     }
-                    else        // player is Slamming
+                    else        // player is Slamming or Stunned
                     {
                         if (floor.Health > 0)
                         {
@@ -254,7 +279,7 @@ namespace Source.Collisions
                 player.Velocity = Vector2.Zero;
             }
 
-            if (totalCollisions == 0 && !player.InAir)
+            if (totalCollisions == 0 && !player.InAir && player.CurrentState != Player.State.Stunned)
                 player.CurrentState = Player.State.Jumping;
         }
 
@@ -297,7 +322,7 @@ namespace Source.Collisions
                 Vector2 translation = player.Intersects(wall);
                 if (translation != Vector2.Zero)
                 {
-                    if (player.CurrentState == Player.State.Slamming && wall.Health == 1)
+                    if ((player.CurrentState == Player.State.Slamming || player.CurrentState == Player.State.Stunned) && wall.Health == 1)
                     {
                         game.walls.RemoveAt(i);
                         MakeParticles(player.Position, wall, GameData.NUM_PART_WALL, 0, 1);
@@ -325,7 +350,7 @@ namespace Source.Collisions
                 Vector2 translation = player.Intersects(obstacle);
                 if (translation != Vector2.Zero)
                 {
-                    if (player.CurrentState == Player.State.Slamming)
+                    if (player.CurrentState == Player.State.Slamming || player.CurrentState == Player.State.Stunned)
                     {
                         game.walls.RemoveAt(i);
                         MakeParticles(player.Position, obstacle, GameData.NUM_PART_FLOOR, 0, 0);
@@ -370,8 +395,16 @@ namespace Source.Collisions
             {
                 Vector2 dist = part.Position - position;
                 float length = dist.Length();
-                if (length > GameData.GRAVITY_CUTOFF)
-                    part.Velocity += deltaTime * scale * dist / (length * length); // 1/r for gravity
+                if (length != 0)
+                {
+                    Vector2 force = scale * dist / (length * length);
+                    if (force.LengthSquared() > GameData.MAX_FORCE)
+                    {
+                        force.Normalize();
+                        force *= GameData.MAX_FORCE;
+                    }
+                    part.Velocity += force * deltaTime; // 1/r for gravity
+                }
             }
             foreach (Player body in game.players)
             {
@@ -379,8 +412,17 @@ namespace Source.Collisions
                 {
                     Vector2 dist = body.Position - position;
                     float length = dist.Length();
-                    if (length > GameData.GRAVITY_CUTOFF)
-                        body.Velocity += deltaTime * scale * dist / (length * length); // 1/r for gravity
+                    if (length != 0)
+                    {
+                        Vector2 force = scale * dist / (length * length);
+                        if (force.Length() > GameData.MAX_FORCE)
+                        {
+                            force.Normalize();
+                            force *= GameData.MAX_FORCE;
+                        }
+                        Console.WriteLine("Applying force: " + force);
+                        body.Velocity += force * deltaTime; // 1/r for gravity
+                    }
                 }
             }
         }
@@ -402,27 +444,6 @@ namespace Source.Collisions
                 }
             }
             return null;
-        }
-
-        public Vector2 CheckCollisions(Body body)
-        {
-            foreach (Body target in game.floors)
-            {
-                Vector2 translation = target.Intersects(body);
-                if (translation != Vector2.Zero)
-                {
-                    return translation;
-                }
-            }
-            foreach (Body target in game.walls)
-            {
-                Vector2 translation = target.Intersects(body);
-                if (translation != Vector2.Zero)
-                {
-                    return translation;
-                }
-            }
-            return Vector2.Zero;
         }
     }
 }

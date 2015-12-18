@@ -459,63 +459,61 @@ namespace Source
             KeyboardState state = Keyboard.GetState();
             GameData.Controls controls = playerControls[controller];
 
-            float slow = GameData.SLOWDOWN * deltaTime;
-            if (player.CurrentState == Player.State.Jumping)
+            if (player.CurrentState != Player.State.Stunned)
             {
-                slow *= GameData.AIR_RESIST;
-            }
-
-            if (!player.InAir)
-            {
-                if (controls.Boost)                    // boost
+                if (!player.InAir)
                 {
-                    if (player.BoostTime > GameData.BOOST_LENGTH / 2)
+                    if (controls.Boost)                    // boost
                     {
-                        player.TargetVelocity = GameData.BOOST_SPEED;
-                        player.CurrentState = Player.State.Boosting;
+                        if (player.BoostTime > GameData.BOOST_LENGTH / 2)
+                        {
+                            player.TargetVelocity = GameData.BOOST_SPEED;
+                            player.CurrentState = Player.State.Boosting;
+                        }
+                        else if (player.CurrentState != Player.State.Boosting)
+                            player.TargetVelocity = GameData.RUN_VELOCITY;
                     }
-                    else if (player.CurrentState != Player.State.Boosting)
+                    else                           // normal run
+                    {
                         player.TargetVelocity = GameData.RUN_VELOCITY;
-                }
-                else                           // normal run
-                {
-                    player.TargetVelocity = GameData.RUN_VELOCITY;
-                    player.CurrentState = Player.State.Walking;
-                }
-                if (controls.Jump)     // jump
-                {
-                    player.Velocity.Y = -GameData.JUMP_SPEED;
-                    player.TargetVelocity = player.TargetVelocity * GameData.JUMP_SLOW;
-                    player.CurrentState = Player.State.Jumping;
-                }
-                else if (controls.Slam)
-                {
-                    player.CurrentState = Player.State.Slamming;
-                    if (player.Velocity.Y < GameData.SLAM_SPEED)
-                        player.Velocity.Y = GameData.SLAM_SPEED;
-                }
-            }
-            else
-            {
-                if (controls.Slam)
-                {
-                    player.CurrentState = Player.State.Slamming;
-                    if (player.Velocity.Y < GameData.SLAM_SPEED)
-                        player.Velocity.Y = GameData.SLAM_SPEED;
+                        player.CurrentState = Player.State.Walking;
+                    }
+                    if (controls.Jump)     // jump
+                    {
+                        player.Velocity.Y = -GameData.JUMP_SPEED;
+                        player.TargetVelocity = player.TargetVelocity * GameData.JUMP_SLOW;
+                        player.CurrentState = Player.State.Jumping;
+                    }
+                    else if (controls.Slam)
+                    {
+                        player.CurrentState = Player.State.Slamming;
+                        if (player.Velocity.Y < GameData.SLAM_SPEED)
+                            player.Velocity.Y = GameData.SLAM_SPEED;
+                    }
                 }
                 else
                 {
-                    player.CurrentState = Player.State.Jumping;
+                    if (controls.Slam)
+                    {
+                        player.CurrentState = Player.State.Slamming;
+                        if (player.Velocity.Y < GameData.SLAM_SPEED)
+                            player.Velocity.Y = GameData.SLAM_SPEED;
+                    }
+                    else
+                    {
+                        player.CurrentState = Player.State.Jumping;
+                    }
                 }
-            }
-            if (controls.Shoot && player.TimeSinceDeath <= 0 && player.BoostTime > GameData.SHOOT_COST)
-            {
-                player.Projectiles.Add(new Projectile(whiteRect, new Vector2(player.Position.X - player.Size.X / 2f, player.Position.Y), player.Color));
-                player.BoostTime -= GameData.SHOOT_COST;
-            }
-            if (controls.Special)                // activate (or toggle) special
-            {
-                player.AbilityActive = !player.AbilityActive;
+
+                if (controls.Shoot && player.TimeSinceDeath <= 0 && player.BoostTime > GameData.SHOOT_COST)
+                {
+                    player.Projectiles.Add(new Projectile(whiteRect, new Vector2(player.Position.X - player.Size.X / 2f, player.Position.Y), player.Color));
+                    player.BoostTime -= GameData.SHOOT_COST;
+                }
+                if (controls.Special)                // activate (or toggle) special
+                {
+                    player.AbilityActive = !player.AbilityActive;
+                }
             }
         }
 

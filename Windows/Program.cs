@@ -19,6 +19,7 @@ namespace Game
         [STAThread]
         static void Main()
         {
+#if !DEBUG
             // Attempt to auto update
             try
             {
@@ -54,6 +55,7 @@ namespace Game
                 Directory.CreateDirectory(logDir);
                 File.AppendAllText(logDir + "log.txt", e.ToString() + "\r\n");
             }
+#endif
 
             using (var game = new Source.Game1())
                 game.Run();
