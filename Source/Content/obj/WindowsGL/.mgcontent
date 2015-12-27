@@ -11,6 +11,7 @@
     <File>C:/Users/nkoso/OneDrive/Documents/Monogame Projects/TheGame/Source/Content/Fonts/Segoe_UI_15_Bold.spritefont</File>
     <File>C:/Users/nkoso/OneDrive/Documents/Monogame Projects/TheGame/Source/Content/Fonts/Segoe_UI_9_Bold.spritefont</File>
     <File>C:/Users/nkoso/OneDrive/Documents/Monogame Projects/TheGame/Source/Content/Fonts/Segoe_UI_30_Bold.spritefont</File>
-    <File>C:/Users/nkoso/OneDrive/Documents/Monogame Projects/TheGame/Source/Content/Effects/Test.fx</File>
+    <File>C:/Users/nkoso/OneDrive/Documents/Monogame Projects/TheGame/Source/Content/Effects/reductionEffect.fx</File>
+    <File>C:/Users/nkoso/OneDrive/Documents/Monogame Projects/TheGame/Source/Content/Effects/resolveShadowsEffect.fx</File>
   </SourceFiles>
 </SourceFileCollection>

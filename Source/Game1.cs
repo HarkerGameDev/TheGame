@@ -14,6 +14,8 @@ using Source.Graphics;
 using EmptyKeys.UserInterface;
 using EmptyKeys.UserInterface.Generated;
 
+using Ziggyware;
+
 namespace Source
 {
     /// <summary>
@@ -35,38 +37,42 @@ namespace Source
     /// </summary>
     public class Game1 : Game
     {
-        private GraphicsDeviceManager graphics;
-        private SpriteBatch spriteBatch;
-        private RenderTarget2D renderTarget;
+        GraphicsDeviceManager graphics;
+        SpriteBatch spriteBatch;
+        RenderTarget2D renderTarget;
 
-        private KeyboardState prevKeyState;
-        private GamePadState[] prevPadStates;
-        private MouseState prevMouseState;
+        KeyboardState prevKeyState;
+        GamePadState[] prevPadStates;
+        MouseState prevMouseState;
 
-        private GameData.Controls[] playerControls;
+        GameData.Controls[] playerControls;
 
         public static Texture2D whiteRect;
         public SpriteFont fontSmall, fontBig;
-        private Effect effect;
+
+        QuadRenderComponent quadRender;
+        ShadowmapResolver shadowmapResolver;
+        LightArea lightArea;
+        RenderTarget2D screenShadows;
 
         public Random rand;
-        private Random randLevel;
-        private World world;
+        Random randLevel;
+        World world;
 
-        private Rectangle cameraBounds;
-        private Vector2 screenCenter;
-        private float currentZoom;
+        Rectangle cameraBounds;
+        Vector2 screenCenter;
+        float currentZoom;
 
-        private bool editLevel;
+        bool editLevel;
         public Floor currentFloor;
-        private bool editingFloor;
-        private Vector2 startDraw;
-        private Vector2 endDraw;
+        bool editingFloor;
+        Vector2 startDraw;
+        Vector2 endDraw;
 
-        private Vector2 screenOffset;
+        Vector2 screenOffset;
 
-        private State state;
-        private float totalTime;
+        State state;
+        float totalTime;
 
         public List<Player> players;
         public List<Floor> floors;
@@ -75,17 +81,17 @@ namespace Source
         public List<Obstacle> obstacles;
         public List<Drop> drops;
 
-        private List<Button> pauseMenu;
-        private List<Button> optionsMenu;
-        private List<Button> controlsMenu;
+        List<Button> pauseMenu;
+        List<Button> optionsMenu;
+        List<Button> controlsMenu;
 
-        private int levelEnd;
-        private float death;
+        int levelEnd;
+        float death;
 
-        private MainMenu mainMenu;
+        MainMenu mainMenu;
 
-        private int nativeScreenWidth;
-        private int nativeScreenHeight;
+        int nativeScreenWidth;
+        int nativeScreenHeight;
 
         public enum State
         {
@@ -98,6 +104,9 @@ namespace Source
             graphics.DeviceCreated += graphics_DeviceCreated;
             graphics.PreparingDeviceSettings += graphics_PreparingDeviceSettings;
             IsMouseVisible = true;
+
+            quadRender = new QuadRenderComponent(this);
+            Components.Add(quadRender);
         }
 
         private void graphics_DeviceCreated(object sender, EventArgs e)
@@ -177,6 +186,12 @@ namespace Source
             Content.RootDirectory = "Content";
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
+            //Initialize shadows
+            shadowmapResolver = new ShadowmapResolver(GraphicsDevice, quadRender, ShadowmapSize.Size256, ShadowmapSize.Size1024);
+            shadowmapResolver.LoadContent(Content);
+            lightArea = new LightArea(GraphicsDevice, ShadowmapSize.Size512);
+            screenShadows = new RenderTarget2D(GraphicsDevice, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
+
             // Load menus
             SpriteFont font = Content.Load<SpriteFont>("Fonts/Segoe_UI_15_Bold");
             FontManager.DefaultFont = Engine.Instance.Renderer.CreateFont(font);
@@ -190,7 +205,6 @@ namespace Source
             // Load assets in the Content Manager
             fontSmall = Content.Load<SpriteFont>("Fonts/Score");
             fontBig = Content.Load<SpriteFont>("Fonts/ScoreBig");
-            effect = Content.Load<Effect>("Effects/Test");
 
             // Create objects
             players = new List<Player>();
@@ -839,10 +853,82 @@ namespace Source
                 obstacles.RemoveRange(0, obstacles.Count - GameData.MAX_OBSTACLES);
         }
 
-        private void DrawGame(double deltaTime)
+        private void DrawSceneToTexture(RenderTarget2D renderTarget, double deltaTime)
         {
-            GraphicsDevice.Clear(Color.LawnGreen);
+            GraphicsDevice.SetRenderTarget(renderTarget);
+            GraphicsDevice.Clear(Color.CornflowerBlue);
 
+            // Evaluate light area
+            // TODO actual lights instead of on player
+            lightArea.LightPosition = players[0].Position;
+            lightArea.BeginDrawingShadowCasters();
+            DrawCasters(lightArea);
+            lightArea.EndDrawingShadowCasters();
+            //shadowmapResolver.ResolveShadows(lightArea.RenderTarget, lightArea.RenderTarget, lightArea.LightPosition);
+
+            // Calculate shadows
+            GraphicsDevice.SetRenderTarget(screenShadows);
+            GraphicsDevice.Clear(Color.Blue);
+            spriteBatch.Begin(blendState: BlendState.Additive);
+            spriteBatch.Draw(lightArea.RenderTarget, lightArea.LightPosition - lightArea.LightAreaSize * 0.5f, Color.Red);
+            spriteBatch.End();
+            GraphicsDevice.SetRenderTarget(renderTarget);
+
+            // Draw background
+            GraphicsDevice.Clear(Color.Black);
+            DrawBackground();
+
+            BlendState blendState = new BlendState();
+            blendState.ColorSourceBlend = Blend.DestinationColor;
+            blendState.ColorDestinationBlend = Blend.SourceColor;
+            spriteBatch.Begin(SpriteSortMode.Immediate, blendState);
+            spriteBatch.Draw(screenShadows, Vector2.Zero, Color.White);
+            spriteBatch.End();
+
+            DrawScene(deltaTime);
+
+            GraphicsDevice.SetRenderTarget(null);
+        }
+
+        private void DrawCasters(LightArea lightArea)
+        {
+            Matrix view = Matrix.CreateTranslation(new Vector3(ConvertUnits.ToDisplayUnits(lightArea.ToRelativePosition(Vector2.Zero)), 0f));
+
+            // Draw all objects
+            spriteBatch.Begin(transformMatrix: view);
+            foreach (Floor floor in floors)
+                floor.Draw(spriteBatch);
+            foreach (Wall wall in walls)
+                wall.Draw(spriteBatch);
+            foreach (Obstacle obstacle in obstacles)
+                obstacle.Draw(spriteBatch);
+            foreach (Drop drop in drops)
+                drop.Draw(spriteBatch);
+            if (currentFloor != null)
+                DrawRect(currentFloor.Position, Color.Green, currentFloor.Rotation, currentFloor.Origin, currentFloor.Size);
+            if (editingFloor)
+            {
+                Vector2 dist = endDraw - startDraw;
+                float rotation = (float)Math.Atan2(dist.Y, dist.X);
+                Vector2 scale = new Vector2(dist.Length(), Floor.FLOOR_HEIGHT);
+                Vector2 origin = new Vector2(0.5f, 0.5f);
+                DrawRect(startDraw + dist / 2, Color.Azure, rotation, origin, scale);
+            }
+            if (editLevel)
+                DrawRect(Vector2.Zero, Color.LightGreen, 0f, new Vector2(0.5f, 0.5f), new Vector2(1, 1));
+            spriteBatch.End();
+
+
+            // Draw all particles and dead wall
+            spriteBatch.Begin(transformMatrix: view);
+            foreach (Particle part in particles)
+                part.Draw(spriteBatch);
+            spriteBatch.Draw(whiteRect, new Rectangle((int)ConvertUnits.ToDisplayUnits(death) - GameData.DEAD_WIDTH, -GameData.DEAD_HEIGHT, GameData.DEAD_WIDTH, GameData.DEAD_HEIGHT), Color.Purple);
+            spriteBatch.End();
+        }
+
+        private void DrawScene(double deltaTime)
+        {
             // Find average position across all players
             Vector2 averagePos = Vector2.Zero;
             foreach (Player player in players)
@@ -855,7 +941,6 @@ namespace Source
                 view = Matrix.CreateTranslation(new Vector3(screenOffset + cameraBounds.Center.ToVector2() - ConvertUnits.ToDisplayUnits(averagePos), 0f));
             else
                 view = Matrix.CreateTranslation(new Vector3(screenOffset + screenCenter - ConvertUnits.ToDisplayUnits(averagePos), 0f));
-
 
             // Draw players
             spriteBatch.Begin(transformMatrix: view);
@@ -870,7 +955,6 @@ namespace Source
                 }
             }
             spriteBatch.End();
-
 
             // Draw all objects
             spriteBatch.Begin(transformMatrix: view);
@@ -935,11 +1019,9 @@ namespace Source
             spriteBatch.End();
         }
 
-        private void DrawSceneToTexture(RenderTarget2D renderTarget, double deltaTime)
+        private void DrawBackground()
         {
-            GraphicsDevice.SetRenderTarget(renderTarget);
-            DrawGame(deltaTime);
-            GraphicsDevice.SetRenderTarget(null);
+            // TODO make parrallaxed background
         }
 
         /// <summary>
@@ -953,7 +1035,7 @@ namespace Source
             switch (state) {
                 case State.Running:
                     DrawSceneToTexture(renderTarget, deltaTime);
-                    spriteBatch.Begin(effect: effect);
+                    spriteBatch.Begin();
                     spriteBatch.Draw(renderTarget, GraphicsDevice.Viewport.Bounds, Color.White);
                     spriteBatch.End();
                     break;

@@ -60,9 +60,15 @@
 /processorParam:TextureFormat=Compressed
 /build:Fonts/Segoe_UI_30_Bold.spritefont
 
-#begin Effects/Test.fx
+#begin Effects/reductionEffect.fx
 /importer:EffectImporter
 /processor:EffectProcessor
 /processorParam:DebugMode=Auto
-/build:Effects/Test.fx
+/build:Effects/reductionEffect.fx
+
+#begin Effects/resolveShadowsEffect.fx
+/importer:EffectImporter
+/processor:EffectProcessor
+/processorParam:DebugMode=Auto
+/build:Effects/resolveShadowsEffect.fx
 
