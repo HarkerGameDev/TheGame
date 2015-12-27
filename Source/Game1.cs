@@ -39,7 +39,6 @@ namespace Source
     {
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
-        RenderTarget2D renderTarget;
 
         KeyboardState prevKeyState;
         GamePadState[] prevPadStates;
@@ -59,8 +58,9 @@ namespace Source
         Random randLevel;
         World world;
 
-        Rectangle cameraBounds;
-        Vector2 screenCenter;
+        Rectangle cameraBounds; // limit of where the player can be on screen
+        Vector2 screenCenter; // where the player is on the screen
+        Vector2 screenOffset; // offset from mouse panning
         float currentZoom;
 
         bool editLevel;
@@ -68,8 +68,6 @@ namespace Source
         bool editingFloor;
         Vector2 startDraw;
         Vector2 endDraw;
-
-        Vector2 screenOffset;
 
         State state;
         float totalTime;
@@ -126,6 +124,9 @@ namespace Source
             graphics.SynchronizeWithVerticalRetrace = true;
             graphics.PreferredDepthStencilFormat = DepthFormat.Depth24Stencil8;
             e.GraphicsDeviceInformation.PresentationParameters.MultiSampleCount = 16;
+
+            IsFixedTimeStep = false;
+            graphics.SynchronizeWithVerticalRetrace = false;
         }
 
         /// <summary>
@@ -139,14 +140,6 @@ namespace Source
             // Sets how many pixels is a meter
             currentZoom = GameData.PIXEL_METER;
             ConvertUnits.SetDisplayUnitToSimUnitRatio(currentZoom);
-
-            // Set up renderTarget for post-processing
-            renderTarget = new RenderTarget2D(GraphicsDevice,
-                GraphicsDevice.PresentationParameters.BackBufferWidth,
-                GraphicsDevice.PresentationParameters.BackBufferHeight,
-                false,
-                GraphicsDevice.PresentationParameters.BackBufferFormat,
-                GraphicsDevice.PresentationParameters.DepthStencilFormat);
 
             // Set seed for a scheduled random level (minutes since Jan 1, 2015)
             rand = new Random();
@@ -853,31 +846,38 @@ namespace Source
                 obstacles.RemoveRange(0, obstacles.Count - GameData.MAX_OBSTACLES);
         }
 
-        private void DrawSceneToTexture(RenderTarget2D renderTarget, double deltaTime)
+        private void DrawGame(double deltaTime)
         {
-            GraphicsDevice.SetRenderTarget(renderTarget);
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
-            // Evaluate light area
-            // TODO actual lights instead of on player
-            lightArea.LightPosition = players[0].Position;
-            lightArea.BeginDrawingShadowCasters();
-            DrawCasters(lightArea);
-            lightArea.EndDrawingShadowCasters();
-            //shadowmapResolver.ResolveShadows(lightArea.RenderTarget, lightArea.RenderTarget, lightArea.LightPosition);
+            // Find average position across all players
+            Vector2 averagePos = Vector2.Zero;
+            foreach (Player player in players)
+                averagePos += player.Position;
+            averagePos /= players.Count;
+            averagePos = ConvertUnits.ToDisplayUnits(averagePos);
 
-            // Calculate shadows
+            // Calculate shadows for lightArea
+            // TODO actual lights instead of on player
+            lightArea.LightPosition = ConvertUnits.ToDisplayUnits(players[0].Position);
+            lightArea.BeginDrawingShadowCasters();
+            DrawCasters(lightArea, averagePos);
+            lightArea.EndDrawingShadowCasters();
+            shadowmapResolver.ResolveShadows(lightArea.RenderTarget, lightArea.RenderTarget, lightArea.LightPosition);
+
+            // Combine shadows
             GraphicsDevice.SetRenderTarget(screenShadows);
-            GraphicsDevice.Clear(Color.Blue);
+            GraphicsDevice.Clear(new Color(new Vector3(0.1f))); // masking color for things that aren't under light
             spriteBatch.Begin(blendState: BlendState.Additive);
-            spriteBatch.Draw(lightArea.RenderTarget, lightArea.LightPosition - lightArea.LightAreaSize * 0.5f, Color.Red);
+            //screenOffset + screenCenter - averagePos
+            spriteBatch.Draw(lightArea.RenderTarget, screenOffset + screenCenter - averagePos + lightArea.LightPosition - lightArea.LightAreaSize * 0.5f, Color.Yellow);
             spriteBatch.End();
-            GraphicsDevice.SetRenderTarget(renderTarget);
+            GraphicsDevice.SetRenderTarget(null);
 
             // Draw background
-            GraphicsDevice.Clear(Color.Black);
             DrawBackground();
 
+            // Draw shadows to screen
             BlendState blendState = new BlendState();
             blendState.ColorSourceBlend = Blend.DestinationColor;
             blendState.ColorDestinationBlend = Blend.SourceColor;
@@ -885,62 +885,58 @@ namespace Source
             spriteBatch.Draw(screenShadows, Vector2.Zero, Color.White);
             spriteBatch.End();
 
-            DrawScene(deltaTime);
+            DrawScene(deltaTime, averagePos);
 
-            GraphicsDevice.SetRenderTarget(null);
+            int width = GraphicsDevice.Viewport.Width;
+            int height = GraphicsDevice.Viewport.Height;
+            spriteBatch.Begin(SpriteSortMode.Immediate);
+            spriteBatch.Draw(lightArea.RenderTarget, new Rectangle((int)(width * 0.9), (int)(height * 0.9), (int)(width * 0.1), (int)(height * 0.1)), Color.White);
+            spriteBatch.Draw(screenShadows, new Rectangle((int)(width * 0.9), (int)(height * 0.8), (int)(width * 0.1), (int)(height * 0.1)), Color.White);
+            spriteBatch.End();
         }
 
-        private void DrawCasters(LightArea lightArea)
+        private void DrawCasters(LightArea lightArea, Vector2 averagePos)
         {
-            Matrix view = Matrix.CreateTranslation(new Vector3(ConvertUnits.ToDisplayUnits(lightArea.ToRelativePosition(Vector2.Zero)), 0f));
+            //Vector2 screenPos = screenOffset + screenCenter - ConvertUnits.ToDisplayUnits(averagePos);
+
+            Matrix view = Matrix.CreateTranslation(new Vector3((screenOffset + lightArea.LightAreaSize * 0.5f - lightArea.LightPosition), 0f));
 
             // Draw all objects
             spriteBatch.Begin(transformMatrix: view);
             foreach (Floor floor in floors)
-                floor.Draw(spriteBatch);
+                floor.Draw(spriteBatch, lightArea);
             foreach (Wall wall in walls)
-                wall.Draw(spriteBatch);
+                wall.Draw(spriteBatch, lightArea);
             foreach (Obstacle obstacle in obstacles)
-                obstacle.Draw(spriteBatch);
+                obstacle.Draw(spriteBatch, lightArea);
             foreach (Drop drop in drops)
-                drop.Draw(spriteBatch);
+                drop.Draw(spriteBatch, lightArea);
             if (currentFloor != null)
-                DrawRect(currentFloor.Position, Color.Green, currentFloor.Rotation, currentFloor.Origin, currentFloor.Size);
+                DrawRect(currentFloor.Position, Color.Black, currentFloor.Rotation, currentFloor.Origin, currentFloor.Size);
             if (editingFloor)
             {
                 Vector2 dist = endDraw - startDraw;
                 float rotation = (float)Math.Atan2(dist.Y, dist.X);
                 Vector2 scale = new Vector2(dist.Length(), Floor.FLOOR_HEIGHT);
                 Vector2 origin = new Vector2(0.5f, 0.5f);
-                DrawRect(startDraw + dist / 2, Color.Azure, rotation, origin, scale);
+                DrawRect(startDraw + dist / 2, Color.Black, rotation, origin, scale);
             }
             if (editLevel)
-                DrawRect(Vector2.Zero, Color.LightGreen, 0f, new Vector2(0.5f, 0.5f), new Vector2(1, 1));
+                DrawRect(Vector2.Zero, Color.Black, 0f, new Vector2(0.5f, 0.5f), new Vector2(1, 1));
             spriteBatch.End();
 
 
             // Draw all particles and dead wall
             spriteBatch.Begin(transformMatrix: view);
             foreach (Particle part in particles)
-                part.Draw(spriteBatch);
-            spriteBatch.Draw(whiteRect, new Rectangle((int)ConvertUnits.ToDisplayUnits(death) - GameData.DEAD_WIDTH, -GameData.DEAD_HEIGHT, GameData.DEAD_WIDTH, GameData.DEAD_HEIGHT), Color.Purple);
+                part.Draw(spriteBatch, lightArea);
+            //spriteBatch.Draw(whiteRect, new Rectangle((int)ConvertUnits.ToDisplayUnits(death) - GameData.DEAD_WIDTH, -GameData.DEAD_HEIGHT, GameData.DEAD_WIDTH, GameData.DEAD_HEIGHT), Color.Purple);
             spriteBatch.End();
         }
 
-        private void DrawScene(double deltaTime)
+        private void DrawScene(double deltaTime, Vector2 averagePos)
         {
-            // Find average position across all players
-            Vector2 averagePos = Vector2.Zero;
-            foreach (Player player in players)
-                averagePos += player.Position;
-            averagePos /= players.Count;
-
-            // Calculate camera location matrix
-            Matrix view;
-            if (editLevel)
-                view = Matrix.CreateTranslation(new Vector3(screenOffset + cameraBounds.Center.ToVector2() - ConvertUnits.ToDisplayUnits(averagePos), 0f));
-            else
-                view = Matrix.CreateTranslation(new Vector3(screenOffset + screenCenter - ConvertUnits.ToDisplayUnits(averagePos), 0f));
+            Matrix view = Matrix.CreateTranslation(new Vector3(screenOffset + screenCenter - averagePos, 0f));
 
             // Draw players
             spriteBatch.Begin(transformMatrix: view);
@@ -1021,6 +1017,7 @@ namespace Source
 
         private void DrawBackground()
         {
+            GraphicsDevice.Clear(Color.LawnGreen);
             // TODO make parrallaxed background
         }
 
@@ -1034,10 +1031,7 @@ namespace Source
 
             switch (state) {
                 case State.Running:
-                    DrawSceneToTexture(renderTarget, deltaTime);
-                    spriteBatch.Begin();
-                    spriteBatch.Draw(renderTarget, GraphicsDevice.Viewport.Bounds, Color.White);
-                    spriteBatch.End();
+                    DrawGame(deltaTime);
                     break;
                 case State.Paused:
                     GraphicsDevice.Clear(Color.Yellow);

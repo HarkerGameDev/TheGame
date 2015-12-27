@@ -83,9 +83,11 @@ namespace Source
         public const int DEATH_LOSS = 2;    // score to lose when the purple only catches 1 player
 
 #if DEBUG
-        public const float BOOST_SPEED = -RUN_VELOCITY; // m/s -- horizontal velocity when boosting
+        public const float BOOST_SPEED = -1; // m/s -- horizontal velocity when boosting
+        public const float BOOST_REGEN = 0.1f; // boost will be refilled in this time (from 0)
 #else
         public const float BOOST_SPEED = 26f; // m/s -- horizontal velocity when boosting
+        public const float BOOST_REGEN = 8.7f; // boost will be refilled in this time (from 0)
 #endif
 
         public const float GRAVITY = 36f;   // m/s^2 -- gravity for players
@@ -102,7 +104,6 @@ namespace Source
         public const float CLIMB_SPEED = 8f;     // m/s -- speed of climbing onto a ledge
 
         public const float BOOST_LENGTH = 6f;  // how long a player can boost for
-        public const float BOOST_REGEN = 8.7f; // boost will be refilled in this time (from 0)
         public const float SHOOT_COST = 0.3f; // boost bar cost of a shot
 
         public const string SONG = "afln_s_gdc-1.wav";    // the song to play, over, and over, and over again. NEVER STOP THE PARTY!
