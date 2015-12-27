@@ -887,12 +887,14 @@ namespace Source
 
             DrawScene(deltaTime, averagePos);
 
+#if DEBUG
             int width = GraphicsDevice.Viewport.Width;
             int height = GraphicsDevice.Viewport.Height;
             spriteBatch.Begin(SpriteSortMode.Immediate);
             spriteBatch.Draw(lightArea.RenderTarget, new Rectangle((int)(width * 0.9), (int)(height * 0.9), (int)(width * 0.1), (int)(height * 0.1)), Color.White);
             spriteBatch.Draw(screenShadows, new Rectangle((int)(width * 0.9), (int)(height * 0.8), (int)(width * 0.1), (int)(height * 0.1)), Color.White);
             spriteBatch.End();
+#endif
         }
 
         private void DrawCasters(LightArea lightArea, Vector2 averagePos)

@@ -44,14 +44,11 @@
             <Component Id="cmpDF8906FA2FAFCA00EDD43FF484161254" Guid="*">
                 <File Id="fil2B874DD9C41E03DB58ADB612B22613B3" KeyPath="yes" Source="$(var.SourceFilesDir)\Microsoft.Deployment.WindowsInstaller.dll" />
             </Component>
-            <Component Id="cmpCBC13A32BEA32F0E0E7EC1EDF51D2BC1" Guid="*">
-                <File Id="filBBE6CFAE30C72757914F4AADE0482508" KeyPath="yes" Source="$(var.SourceFilesDir)\Microsoft.Deployment.WindowsInstaller.xml" />
-            </Component>
             <Component Id="cmpA4E2315F34E39171C2343F76EA85A474" Guid="*">
                 <File Id="filB960EE948C8B9C5D31DB635D9727100D" KeyPath="yes" Source="$(var.SourceFilesDir)\MonoGame.Framework.dll" />
             </Component>
-            <Component Id="cmpE55F2C5E82F9417FFFEE05619AD9AFB4" Guid="*">
-                <File Id="fil84AF0E5CE1F7E4394E08E97D8814A8BE" KeyPath="yes" Source="$(var.SourceFilesDir)\MonoGame.Framework.xml" />
+            <Component Id="cmp4DD20E0A364DB01A80EC9D6757C63318" Guid="*">
+                <File Id="fil7EF266BE739BB0510D031E6AAA4AE573" KeyPath="yes" Source="$(var.SourceFilesDir)\OpenTK.dll" />
             </Component>
             <Component Id="cmpF7823522CDD572337F4DA0AE07DA2EE7" Guid="*">
                 <File Id="fil0909A581CD8247E500EE8BFCFD10DD6A" KeyPath="yes" Source="$(var.SourceFilesDir)\SharpDX.Direct2D1.dll" />
@@ -86,10 +83,24 @@
             <Component Id="cmpD70A03A95329ED267F1F32ECBEAF74A2" Guid="*">
                 <File Id="fil7245F183AF38256F5A775FCC734081C4" KeyPath="yes" Source="$(var.SourceFilesDir)\Source.pdb" />
             </Component>
+            <Component Id="cmpF88D81A4064ACB0DE8157DEA4D417106" Guid="*">
+                <File Id="fil7C94231512F7293E63E44DAC44781685" KeyPath="yes" Source="$(var.SourceFilesDir)\Windows.vshost.exe.config" />
+            </Component>
+            <Component Id="cmp5344EFC6920D0C0E0479418CB0D1FB8E" Guid="*">
+                <File Id="fil7BF1AC262882BF7C17637DFF9158966D" KeyPath="yes" Source="$(var.SourceFilesDir)\Windows.vshost.exe.manifest" />
+            </Component>
             <Directory Id="dir36665998438621F6BB41818960BE2CEC" Name="Content">
                 <Directory Id="dir625118AEDF6A60F84556DF2B8FD83917" Name="Art">
                     <Component Id="cmp5B33A7BE5FBBC4861B355D75AF67FA79" Guid="*">
                         <File Id="filCA0B1813EB20F071162FBFB9349DA523" KeyPath="yes" Source="$(var.SourceFilesDir)\Content\Art\GreenDude.xnb" />
+                    </Component>
+                </Directory>
+                <Directory Id="dir5689A9CCDBC34A360D3AA572B586D719" Name="Effects">
+                    <Component Id="cmp10A264D743FF0F4C90954A8A85E2C0A0" Guid="*">
+                        <File Id="filFF1F56154F85141AA2B29423D2920B77" KeyPath="yes" Source="$(var.SourceFilesDir)\Content\Effects\reductionEffect.xnb" />
+                    </Component>
+                    <Component Id="cmp743A22BA8C11361EE97B8D6279DDB1BD" Guid="*">
+                        <File Id="fil397040E6720A69CE3F0F3F1C12379E20" KeyPath="yes" Source="$(var.SourceFilesDir)\Content\Effects\resolveShadowsEffect.xnb" />
                     </Component>
                 </Directory>
                 <Directory Id="dirC94B360692D876915BFC8202F11CBEBB" Name="Fonts">
@@ -102,10 +113,19 @@
                     <Component Id="cmpD286185F685C898893375AC3C505ABD8" Guid="*">
                         <File Id="filBAF24551D2C4C2CAB779580553F5E8C5" KeyPath="yes" Source="$(var.SourceFilesDir)\Content\Fonts\Segoe_UI_15_Bold.xnb" />
                     </Component>
+                    <Component Id="cmpAA06DA05C7471BB75916F74F71D8607D" Guid="*">
+                        <File Id="fil0621762A746BAD03C54DCFA761DF45CF" KeyPath="yes" Source="$(var.SourceFilesDir)\Content\Fonts\Segoe_UI_30_Bold.xnb" />
+                    </Component>
+                    <Component Id="cmp6FD0F26434D86EBC405D5931314E75EF" Guid="*">
+                        <File Id="fil1F84FBB1C251CA394F16DCE4CA638569" KeyPath="yes" Source="$(var.SourceFilesDir)\Content\Fonts\Segoe_UI_9_Bold.xnb" />
+                    </Component>
                 </Directory>
                 <Directory Id="dirEB2BA839D633B2654C055B9D83D25871" Name="Music">
-                    <Component Id="cmpCC705B498256CB68609D249BEEE4B3E9" Guid="*">
-                        <File Id="filFEDAF9CA6F3871DCAA7B630EEBB18C3A" KeyPath="yes" Source="$(var.SourceFilesDir)\Content\Music\afln_s_gdc-1.wma" />
+                    <Component Id="cmp7514CC42DE31EDBC652984B0AFDD603F" Guid="*">
+                        <File Id="fil794A4DEA2614C32FE47D175F83DE259B" KeyPath="yes" Source="$(var.SourceFilesDir)\Content\Music\afln_s_gdc-1.m4a" />
+                    </Component>
+                    <Component Id="cmp4DBDB650F330868B605F5F6031DB6B51" Guid="*">
+                        <File Id="fil99925DD6E76128E9EC851A00A101714C" KeyPath="yes" Source="$(var.SourceFilesDir)\Content\Music\afln_s_gdc-1.wav" />
                     </Component>
                     <Component Id="cmpDDDA067ABBCB8AD8395AEC31DAEA321D" Guid="*">
                         <File Id="filE02EC23903F30A6F7C8E14FF2AD9F0FB" KeyPath="yes" Source="$(var.SourceFilesDir)\Content\Music\afln_s_gdc-1.xnb" />
@@ -130,9 +150,8 @@
             <ComponentRef Id="cmp4E757CE1E25D9772FA17C804B3F76DD6" />
             <ComponentRef Id="cmpB4FDB10DC123A4E9B60D698EFDE83DA7" />
             <ComponentRef Id="cmpDF8906FA2FAFCA00EDD43FF484161254" />
-            <ComponentRef Id="cmpCBC13A32BEA32F0E0E7EC1EDF51D2BC1" />
             <ComponentRef Id="cmpA4E2315F34E39171C2343F76EA85A474" />
-            <ComponentRef Id="cmpE55F2C5E82F9417FFFEE05619AD9AFB4" />
+            <ComponentRef Id="cmp4DD20E0A364DB01A80EC9D6757C63318" />
             <ComponentRef Id="cmpF7823522CDD572337F4DA0AE07DA2EE7" />
             <ComponentRef Id="cmp67FFC4902B13B33DF23C49E38B185E72" />
             <ComponentRef Id="cmp5CF510CE0CE8760DB2E562E4E97628EB" />
@@ -144,11 +163,18 @@
             <ComponentRef Id="cmpD5BB730922D891BBF1C845CCC167AF91" />
             <ComponentRef Id="cmpC4FCCCF1912E6039285E3C056BF7D4C5" />
             <ComponentRef Id="cmpD70A03A95329ED267F1F32ECBEAF74A2" />
+            <ComponentRef Id="cmpF88D81A4064ACB0DE8157DEA4D417106" />
+            <ComponentRef Id="cmp5344EFC6920D0C0E0479418CB0D1FB8E" />
             <ComponentRef Id="cmp5B33A7BE5FBBC4861B355D75AF67FA79" />
+            <ComponentRef Id="cmp10A264D743FF0F4C90954A8A85E2C0A0" />
+            <ComponentRef Id="cmp743A22BA8C11361EE97B8D6279DDB1BD" />
             <ComponentRef Id="cmp02B8A6EB72D7FB968B7D33F4812C61BE" />
             <ComponentRef Id="cmp25969B4D9C08E4DFA7C82B80D9DDDB52" />
             <ComponentRef Id="cmpD286185F685C898893375AC3C505ABD8" />
-            <ComponentRef Id="cmpCC705B498256CB68609D249BEEE4B3E9" />
+            <ComponentRef Id="cmpAA06DA05C7471BB75916F74F71D8607D" />
+            <ComponentRef Id="cmp6FD0F26434D86EBC405D5931314E75EF" />
+            <ComponentRef Id="cmp7514CC42DE31EDBC652984B0AFDD603F" />
+            <ComponentRef Id="cmp4DBDB650F330868B605F5F6031DB6B51" />
             <ComponentRef Id="cmpDDDA067ABBCB8AD8395AEC31DAEA321D" />
         </ComponentGroup>
     </Fragment>
