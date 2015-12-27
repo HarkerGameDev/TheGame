@@ -20,15 +20,15 @@ namespace Source
     /// This is the main type for the game.
     /// 
     /// IMPORTANT NOTES - PLEASE READ ALL:
-    /// - Please use (0,0) as the bottom left for all levels -- you will see a green box there
-    /// - (0,0) is in the top left for drawing to screen, and (0,0) is in the center for Farseer physics
-    /// - Farseer uses meters, monogame uses pixels -- use ConvertUnits to convert
+    /// - Please use (0,0) as the bottom left for all levels -- you will see a green box there when editing
+    /// - (0,0) is in the top left for drawing to screen, and (0,0) is in the center of a physics object
+    /// - Physics uses meters, monogame uses pixels -- use ConvertUnits to convert
     /// - Please follow the style guide in place, which is
     ///   * ALL_CAPS for global constants
     ///   * UpperCamelCase for members (instance fields and methods)
     ///   * lowerCamelCase for other variables
     /// - Search for 'TODO' for things that need to be finished
-    /// - For things that need to be added, look at the google doc, https://docs.google.com/document/d/1ofddsIU92CeK2RtJ5eg3PWEG8U2o49VdmNxmAJwwMMg/edit
+    /// - For things that need to be added, look at the bottom of the google doc, https://docs.google.com/document/d/1ofddsIU92CeK2RtJ5eg3PWEG8U2o49VdmNxmAJwwMMg/edit
     /// - Make good commit messages
     /// - There are no "assigned tasks" anymore, just subteams - do what needs to be done on the TOOD list (google doc)
     /// - No magic numbers permitted!
@@ -841,7 +841,7 @@ namespace Source
 
         private void DrawGame(double deltaTime)
         {
-            GraphicsDevice.Clear(Color.CornflowerBlue);
+            GraphicsDevice.Clear(Color.LawnGreen);
 
             // Find average position across all players
             Vector2 averagePos = Vector2.Zero;

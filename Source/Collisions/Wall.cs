@@ -34,7 +34,7 @@ namespace Source.Collisions
 
         public void SetColor()
         {
-            Color = new Color(Color.AliceBlue.ToVector3() * (1f - ((float)Health - 1f) / (GameData.WALL_HEALTH)));
+            Color = new Color(Color.AliceBlue.ToVector3() * (1f - ((float)Health - 1f) / (GameData.WALL_HEALTH + 2)));
         }
     }
 }

@@ -24,7 +24,9 @@ namespace Source.Collisions
             : base(texture, position, new Vector2(radius * 2))
         {
             LiveTime = GameData.DROP_LIVE;
+            Velocity = player.Velocity + new Vector2(GameData.DROP_SPEED_X, GameData.DROP_SPEED_Y);
             this.type = type;
+            this.Player = player;
         }
     }
 }

@@ -55,7 +55,7 @@ namespace Source.Collisions
                         ApplyGravity(GameData.BOMB_FORCE, drop.Player, drop.Position, 1);
                         foreach (Player player in game.players)
                         {
-                            if ((player.Position - drop.Position).LengthSquared() < GameData.STUN_RADIUS)
+                            if (player != drop.Player && (player.Position - drop.Position).LengthSquared() < GameData.STUN_RADIUS)
                             {
                                 player.CurrentState = Player.State.Stunned;
                                 player.StunTime = GameData.STUN_TIME;
@@ -74,9 +74,10 @@ namespace Source.Collisions
                         if (translation != Vector2.Zero)
                         {
                             drop.MovePosition(translation);
-                            if (translation.X != 0)
+                            drop.Velocity.X -= drop.Velocity.X * GameData.DROP_FRICTION * deltaTime;
+                            if (translation.Y == 0)
                                 drop.Velocity.X = 0;
-                            if (translation.Y != 0)
+                            if (translation.X == 0)
                                 drop.Velocity.Y = 0;
                         }
                     }
@@ -86,9 +87,9 @@ namespace Source.Collisions
                         if (translation != Vector2.Zero)
                         {
                             drop.MovePosition(translation);
-                            if (translation.X != 0)
+                            if (translation.Y == 0)
                                 drop.Velocity.X = 0;
-                            if (translation.Y != 0)
+                            if (translation.X == 0)
                                 drop.Velocity.Y = 0;
                         }
                     }
@@ -110,9 +111,9 @@ namespace Source.Collisions
                             }
                         }
 
-                        player.Velocity.Y += GameData.GRAVITY * deltaTime;
+                    player.Velocity.Y += GameData.GRAVITY * deltaTime;
 
-                        for (int i = 0; i < GameData.PLAYER_STEP; i++)
+                    for (int i = 0; i < GameData.PLAYER_STEP; i++)
                         {
                             player.Move(deltaTime / GameData.PLAYER_STEP);
                             CheckWalls(player);
@@ -410,6 +411,7 @@ namespace Source.Collisions
             {
                 if (body != player && body.TimeSinceDeath <= 0)
                 {
+                    //Console.WriteLine(body.Velocity + "\t\t" + player.Velocity);
                     Vector2 dist = body.Position - position;
                     float length = dist.Length();
                     if (length != 0)
@@ -420,7 +422,7 @@ namespace Source.Collisions
                             force.Normalize();
                             force *= GameData.MAX_FORCE;
                         }
-                        Console.WriteLine("Applying force: " + force);
+                        //Console.WriteLine("Applying force: " + force);
                         body.Velocity += force * deltaTime; // 1/r for gravity
                     }
                 }
