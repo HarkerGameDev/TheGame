@@ -65,6 +65,8 @@ namespace Source
         public const int VIEW_WIDTH = 1280;        // width of unscaled screen in pixels
         public const int VIEW_HEIGHT = 720;        // height of unscaled screen in pixels
 
+        public const float SHADOW_SCALE = PIXEL_METER / 3.4f; // what light calculations will be normalized to for (smaller scale = larger light)
+
 #if DEBUG
         public const float DEAD_START = 0;
         public const float DEAD_END = 0;

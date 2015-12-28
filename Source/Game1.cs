@@ -182,7 +182,7 @@ namespace Source
             //Initialize shadows
             shadowmapResolver = new ShadowmapResolver(GraphicsDevice, quadRender, ShadowmapSize.Size256, ShadowmapSize.Size1024);
             shadowmapResolver.LoadContent(Content);
-            lightArea = new LightArea(GraphicsDevice, ShadowmapSize.Size512);
+            lightArea = new LightArea(GraphicsDevice, ShadowmapSize.Size128);
             screenShadows = new RenderTarget2D(GraphicsDevice, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
 
             // Load menus
@@ -855,13 +855,15 @@ namespace Source
             foreach (Player player in players)
                 averagePos += player.Position;
             averagePos /= players.Count;
-            averagePos = ConvertUnits.ToDisplayUnits(averagePos);
+            averagePos += new Vector2(-10, 0);
+            //Vector2 averagePos = ConvertUnits.ToDisplayUnits(averagePos);
 
             // Calculate shadows for lightArea
             // TODO actual lights instead of on player
+            ConvertUnits.SetDisplayUnitToSimUnitRatio(GameData.SHADOW_SCALE);
             lightArea.LightPosition = ConvertUnits.ToDisplayUnits(players[0].Position);
             lightArea.BeginDrawingShadowCasters();
-            DrawCasters(lightArea, averagePos);
+            DrawCasters(lightArea, ConvertUnits.ToDisplayUnits(averagePos));
             lightArea.EndDrawingShadowCasters();
             shadowmapResolver.ResolveShadows(lightArea.RenderTarget, lightArea.RenderTarget, lightArea.LightPosition);
 
@@ -870,7 +872,9 @@ namespace Source
             GraphicsDevice.Clear(new Color(new Vector3(0.1f))); // masking color for things that aren't under light
             spriteBatch.Begin(blendState: BlendState.Additive);
             //screenOffset + screenCenter - averagePos
-            spriteBatch.Draw(lightArea.RenderTarget, screenOffset + screenCenter - averagePos + lightArea.LightPosition - lightArea.LightAreaSize * 0.5f, Color.Yellow);
+            float scale = currentZoom / GameData.SHADOW_SCALE;
+            spriteBatch.Draw(lightArea.RenderTarget, screenOffset + screenCenter - ConvertUnits.ToDisplayUnits(averagePos) * scale + lightArea.LightPosition * scale
+                - lightArea.LightAreaSize * 0.5f * scale, null, Color.Yellow, 0f, Vector2.Zero, scale, SpriteEffects.None, 0f);
             spriteBatch.End();
             GraphicsDevice.SetRenderTarget(null);
 
@@ -885,7 +889,8 @@ namespace Source
             spriteBatch.Draw(screenShadows, Vector2.Zero, Color.White);
             spriteBatch.End();
 
-            DrawScene(deltaTime, averagePos);
+            ConvertUnits.SetDisplayUnitToSimUnitRatio(currentZoom);
+            DrawScene(deltaTime, ConvertUnits.ToDisplayUnits(averagePos));
 
 #if DEBUG
             int width = GraphicsDevice.Viewport.Width;
@@ -901,7 +906,7 @@ namespace Source
         {
             //Vector2 screenPos = screenOffset + screenCenter - ConvertUnits.ToDisplayUnits(averagePos);
 
-            Matrix view = Matrix.CreateTranslation(new Vector3((screenOffset + lightArea.LightAreaSize * 0.5f - lightArea.LightPosition), 0f));
+            Matrix view = Matrix.CreateTranslation(new Vector3((lightArea.LightAreaSize * 0.5f - lightArea.LightPosition), 0f));
 
             // Draw all objects
             spriteBatch.Begin(transformMatrix: view);
@@ -913,18 +918,15 @@ namespace Source
                 obstacle.Draw(spriteBatch, lightArea);
             foreach (Drop drop in drops)
                 drop.Draw(spriteBatch, lightArea);
-            if (currentFloor != null)
-                DrawRect(currentFloor.Position, Color.Black, currentFloor.Rotation, currentFloor.Origin, currentFloor.Size);
-            if (editingFloor)
-            {
-                Vector2 dist = endDraw - startDraw;
-                float rotation = (float)Math.Atan2(dist.Y, dist.X);
-                Vector2 scale = new Vector2(dist.Length(), Floor.FLOOR_HEIGHT);
-                Vector2 origin = new Vector2(0.5f, 0.5f);
-                DrawRect(startDraw + dist / 2, Color.Black, rotation, origin, scale);
-            }
-            if (editLevel)
-                DrawRect(Vector2.Zero, Color.Black, 0f, new Vector2(0.5f, 0.5f), new Vector2(1, 1));
+
+            //if (editingFloor)
+            //{
+            //    Vector2 dist = endDraw - startDraw;
+            //    float rotation = (float)Math.Atan2(dist.Y, dist.X);
+            //    Vector2 scale = new Vector2(dist.Length(), Floor.FLOOR_HEIGHT);
+            //    Vector2 origin = new Vector2(0.5f, 0.5f);
+            //    DrawRect(startDraw + dist / 2, Color.Black, rotation, origin, scale);
+            //}
             spriteBatch.End();
 
 
@@ -932,7 +934,6 @@ namespace Source
             spriteBatch.Begin(transformMatrix: view);
             foreach (Particle part in particles)
                 part.Draw(spriteBatch, lightArea);
-            //spriteBatch.Draw(whiteRect, new Rectangle((int)ConvertUnits.ToDisplayUnits(death) - GameData.DEAD_WIDTH, -GameData.DEAD_HEIGHT, GameData.DEAD_WIDTH, GameData.DEAD_HEIGHT), Color.Purple);
             spriteBatch.End();
         }
 

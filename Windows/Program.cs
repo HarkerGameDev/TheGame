@@ -19,7 +19,7 @@ namespace Game
         [STAThread]
         static void Main()
         {
-#if !DEBUG
+#if !DEBUG && false
             // Attempt to auto update
             try
             {
