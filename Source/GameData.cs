@@ -16,7 +16,7 @@ namespace Source
 #if DEBUG
         public const int numPlayers = 1;
 #else
-        public const int numPlayers = 4;            // number of players
+        public const int numPlayers = 1;            // number of players
 #endif
 
         public static Color[] playerColors = { Color.Red, Color.Yellow, Color.Purple, Color.ForestGreen, Color.Khaki };     // colors of each player
@@ -55,8 +55,6 @@ namespace Source
         public const float PLAYER_START = 2f;   // starting x position of player
         public const int MIN_SPAWN = MAX_LEVEL_STEP * 2 + 1;  // minimum spawning position (vertically)
         public const int MAX_SPAWN = MIN_LEVEL_STEP * MIN_NUM_FLOORS + 10;  // maximum spawning position (vertically)
-        public const int PLAYER_STEP = 2;       // player collisions will be calculated this many times per tick to avoid  (only if fixed time step)
-        public const int PROJ_STEP = 2;         // projectile movement will be split up into this many steps
         public const float SPAWN_PROTECT = 5f;  // stuff this far apart from the player will be destroyed when the player is spawned
 
         public const float ZOOM_STEP = 1.5f;       // scale by which zoom is changed with + and -
@@ -132,6 +130,8 @@ namespace Source
         public const int NUM_PART_WALL = 10;        // number of particles to spawn when a wall is exploded
         public const int NUM_PART_FLOOR = 5;        // number of particles to spawn when slamming and a hole is made
 
+        public const float PROJ_WIDTH = 1f;     // width of a projectile in m
+        public const float PROJ_HEIGHT = 0.25f; // height of a projectile in m
         public const float PROJ_SPEED = 60f;    // speed of a projectile
         public const float PROJ_LIVE = 1.0f;     // lifetime of a projectile in s
 
@@ -147,6 +147,10 @@ namespace Source
 
         public const float BUTTON_WIDTH = 0.4f;  // width of a button in proportion of screen
         public const float BUTTON_HEIGHT = 0.12f;    // height of button in proportion
+
+        public const float BACKGROUND_1_MOVE = 0.5f;    // speed of first layer
+        public const float BACKGROUND_2_MOVE = 0.2f;    // speed of second layer
+        public const float BACKGROUND_3_MOVE = 0.08f;    // speed of third layer
 
         public static string Version
         {

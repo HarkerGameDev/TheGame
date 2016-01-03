@@ -98,33 +98,38 @@ namespace Source.Collisions
                 }
             }
 
-                foreach (Player player in game.players)
+            int projStep = (int)Math.Ceiling(deltaTime * GameData.PROJ_SPEED / GameData.PROJ_WIDTH);
+            float projDeltaTime = deltaTime / projStep;
+            foreach (Player player in game.players)
+            {
+                if (player.TimeSinceDeath <= 0)
                 {
-                    if (player.TimeSinceDeath <= 0)
+                    for (int i = player.Projectiles.Count - 1; i >= 0; i--)
                     {
-                        for (int i = player.Projectiles.Count - 1; i >= 0; i--)
+                        for (int j = 0; j < projStep; j++)
                         {
-                            for (int j = 0; j < GameData.PROJ_STEP; j++)
-                            {
-                                if (!CalculateProjectile(player, deltaTime / GameData.PROJ_STEP, i))
-                                    break;
-                            }
+                            if (!CalculateProjectile(player, projDeltaTime, i))
+                                break;
                         }
+                    }
 
                     player.Velocity.Y += GameData.GRAVITY * deltaTime;
+                    int playerStep = Math.Max((int)Math.Ceiling(deltaTime * player.Velocity.Y / player.Size.Y),
+                                              (int)Math.Ceiling(deltaTime * player.Velocity.X / player.Size.X));
+                    if (playerStep < 1) playerStep = 1;
 
-                    for (int i = 0; i < GameData.PLAYER_STEP; i++)
-                        {
-                            player.Move(deltaTime / GameData.PLAYER_STEP);
-                            CheckWalls(player);
-                        }
-                        CheckFloors(player);
-                        CheckObstacles(player);
-
-                        if (player.AbilityActive)
-                            PerformSpecial(player, deltaTime);
+                    for (int i = 0; i < playerStep; i++)
+                    {
+                        player.Move(deltaTime / playerStep);
+                        CheckWalls(player);
                     }
+                    CheckFloors(player);
+                    CheckObstacles(player);
+
+                    if (player.AbilityActive)
+                        PerformSpecial(player, deltaTime);
                 }
+            }
         }
 
         /// <summary>

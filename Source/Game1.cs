@@ -47,6 +47,7 @@ namespace Source
         GameData.Controls[] playerControls;
 
         public static Texture2D whiteRect;
+        Texture2D background;
         public SpriteFont fontSmall, fontBig;
 
         QuadRenderComponent quadRender;
@@ -196,6 +197,7 @@ namespace Source
             whiteRect.SetData(new[] { Color.White });
 
             // Load assets in the Content Manager
+            background = Content.Load<Texture2D>("Art/skyscrapers");
             fontSmall = Content.Load<SpriteFont>("Fonts/Score");
             fontBig = Content.Load<SpriteFont>("Fonts/ScoreBig");
 
@@ -860,6 +862,7 @@ namespace Source
 
             // Calculate shadows for lightArea
             // TODO actual lights instead of on player
+            float zoom = ConvertUnits.ToDisplayUnits(1);
             ConvertUnits.SetDisplayUnitToSimUnitRatio(GameData.SHADOW_SCALE);
             lightArea.LightPosition = ConvertUnits.ToDisplayUnits(players[0].Position);
             lightArea.BeginDrawingShadowCasters();
@@ -872,14 +875,15 @@ namespace Source
             GraphicsDevice.Clear(new Color(new Vector3(0.1f))); // masking color for things that aren't under light
             spriteBatch.Begin(blendState: BlendState.Additive);
             //screenOffset + screenCenter - averagePos
-            float scale = currentZoom / GameData.SHADOW_SCALE;
+            float scale = zoom / GameData.SHADOW_SCALE;
             spriteBatch.Draw(lightArea.RenderTarget, screenOffset + screenCenter - ConvertUnits.ToDisplayUnits(averagePos) * scale + lightArea.LightPosition * scale
                 - lightArea.LightAreaSize * 0.5f * scale, null, Color.Yellow, 0f, Vector2.Zero, scale, SpriteEffects.None, 0f);
             spriteBatch.End();
             GraphicsDevice.SetRenderTarget(null);
 
             // Draw background
-            DrawBackground();
+            ConvertUnits.SetDisplayUnitToSimUnitRatio(zoom);
+            DrawBackground(ConvertUnits.ToDisplayUnits(averagePos));
 
             // Draw shadows to screen
             BlendState blendState = new BlendState();
@@ -889,7 +893,6 @@ namespace Source
             spriteBatch.Draw(screenShadows, Vector2.Zero, Color.White);
             spriteBatch.End();
 
-            ConvertUnits.SetDisplayUnitToSimUnitRatio(currentZoom);
             DrawScene(deltaTime, ConvertUnits.ToDisplayUnits(averagePos));
 
 #if DEBUG
@@ -1018,10 +1021,20 @@ namespace Source
             spriteBatch.End();
         }
 
-        private void DrawBackground()
+        private void DrawBackground(Vector2 averagePos)
         {
-            GraphicsDevice.Clear(Color.LawnGreen);
-            // TODO make parrallaxed background
+            int width = GraphicsDevice.Viewport.Width;
+            int height = GraphicsDevice.Viewport.Height;
+
+            GraphicsDevice.Clear(Color.MidnightBlue);
+            spriteBatch.Begin(samplerState: SamplerState.LinearWrap);
+            spriteBatch.Draw(background, new Vector2(0, height * 0.5f), new Rectangle((int)(averagePos.X * 0.08f), (int)(averagePos.Y * 0.0002f * 0), width * 10, background.Height), Color.Black,
+                0f, new Vector2(0, background.Height / 2), 0.1f, SpriteEffects.None, 0f);
+            spriteBatch.Draw(background, new Vector2(0, height * 0.55f), new Rectangle((int)(averagePos.X * 0.2f), (int)(averagePos.Y * 0.0005f * 0), width * 4, background.Height), Color.Gray,
+                0f, new Vector2(0, background.Height / 2), 0.25f, SpriteEffects.None, 0f);
+            spriteBatch.Draw(background, new Vector2(0, height * 0.6f), new Rectangle((int)(averagePos.X * 0.4f), (int)(averagePos.Y * 0.001f * 0), width * 2, background.Height), Color.White,
+                0f, new Vector2(0, background.Height / 2), 0.5f, SpriteEffects.None, 0f);
+            spriteBatch.End();
         }
 
         /// <summary>

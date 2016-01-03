@@ -72,3 +72,14 @@
 /processorParam:DebugMode=Auto
 /build:Effects/resolveShadowsEffect.fx
 
+#begin Art/skyscrapers.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:TextureFormat=Color
+/build:Art/skyscrapers.png
+
