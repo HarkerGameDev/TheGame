@@ -64,6 +64,8 @@ namespace Source
         public const int VIEW_HEIGHT = 720;        // height of unscaled screen in pixels
 
         public const float SHADOW_SCALE = PIXEL_METER / 3.4f; // what light calculations will be normalized to for (smaller scale = larger light)
+        public static Color DARK_COLOR = new Color(new Vector3(0.1f));  // color mask for non-lit areas
+        public static Color LIGHT_COLOR = Color.Yellow;
 
 #if DEBUG
         public const float DEAD_START = 0;
@@ -148,9 +150,20 @@ namespace Source
         public const float BUTTON_WIDTH = 0.4f;  // width of a button in proportion of screen
         public const float BUTTON_HEIGHT = 0.12f;    // height of button in proportion
 
-        public const float BACKGROUND_1_MOVE = 0.5f;    // speed of first layer
-        public const float BACKGROUND_2_MOVE = 0.2f;    // speed of second layer
-        public const float BACKGROUND_3_MOVE = 0.08f;    // speed of third layer
+        public const float BACK1_MOVE = 0.4f;   // speed of layer
+        public const float BACK1_CENTER = 0.6f; // y center on screen
+        public const float BACK1_SIZE = 0.5f;   // size of layer
+        public static Color BACK1_COLOR = Color.White; // color mask for layer
+
+        public const float BACK2_MOVE = 0.2f;   // speed of layer
+        public const float BACK2_CENTER = 0.55f; // y center on screen
+        public const float BACK2_SIZE = 0.25f;   // size of layer
+        public static Color BACK2_COLOR = Color.Gray; // color mask for layer
+
+        public const float BACK3_MOVE = 0.08f;   // speed of layer
+        public const float BACK3_CENTER = 0.5f; // y center on screen
+        public const float BACK3_SIZE = 0.1f;   // size of layer
+        public static Color BACK3_COLOR = Color.Black; // color mask for layer
 
         public static string Version
         {

@@ -857,7 +857,6 @@ namespace Source
             foreach (Player player in players)
                 averagePos += player.Position;
             averagePos /= players.Count;
-            averagePos += new Vector2(-10, 0);
             //Vector2 averagePos = ConvertUnits.ToDisplayUnits(averagePos);
 
             // Calculate shadows for lightArea
@@ -872,12 +871,12 @@ namespace Source
 
             // Combine shadows
             GraphicsDevice.SetRenderTarget(screenShadows);
-            GraphicsDevice.Clear(new Color(new Vector3(0.1f))); // masking color for things that aren't under light
+            GraphicsDevice.Clear(GameData.DARK_COLOR); // masking color for things that aren't under light
             spriteBatch.Begin(blendState: BlendState.Additive);
             //screenOffset + screenCenter - averagePos
             float scale = zoom / GameData.SHADOW_SCALE;
             spriteBatch.Draw(lightArea.RenderTarget, screenOffset + screenCenter - ConvertUnits.ToDisplayUnits(averagePos) * scale + lightArea.LightPosition * scale
-                - lightArea.LightAreaSize * 0.5f * scale, null, Color.Yellow, 0f, Vector2.Zero, scale, SpriteEffects.None, 0f);
+                - lightArea.LightAreaSize * 0.5f * scale, null, GameData.LIGHT_COLOR, 0f, Vector2.Zero, scale, SpriteEffects.None, 0f);
             spriteBatch.End();
             GraphicsDevice.SetRenderTarget(null);
 
@@ -1028,12 +1027,15 @@ namespace Source
 
             GraphicsDevice.Clear(Color.MidnightBlue);
             spriteBatch.Begin(samplerState: SamplerState.LinearWrap);
-            spriteBatch.Draw(background, new Vector2(0, height * 0.5f), new Rectangle((int)(averagePos.X * 0.08f), (int)(averagePos.Y * 0.0002f * 0), width * 10, background.Height), Color.Black,
-                0f, new Vector2(0, background.Height / 2), 0.1f, SpriteEffects.None, 0f);
-            spriteBatch.Draw(background, new Vector2(0, height * 0.55f), new Rectangle((int)(averagePos.X * 0.2f), (int)(averagePos.Y * 0.0005f * 0), width * 4, background.Height), Color.Gray,
-                0f, new Vector2(0, background.Height / 2), 0.25f, SpriteEffects.None, 0f);
-            spriteBatch.Draw(background, new Vector2(0, height * 0.6f), new Rectangle((int)(averagePos.X * 0.4f), (int)(averagePos.Y * 0.001f * 0), width * 2, background.Height), Color.White,
-                0f, new Vector2(0, background.Height / 2), 0.5f, SpriteEffects.None, 0f);
+            spriteBatch.Draw(background, new Vector2(0, height * GameData.BACK3_CENTER),
+               new Rectangle((int)(averagePos.X * GameData.BACK3_MOVE), 0, (int)(width / GameData.BACK3_SIZE), background.Height),
+               GameData.BACK3_COLOR, 0f, new Vector2(0, background.Height / 2), GameData.BACK3_SIZE, SpriteEffects.None, 0f);
+            spriteBatch.Draw(background, new Vector2(0, height * GameData.BACK2_CENTER),
+               new Rectangle((int)(averagePos.X * GameData.BACK2_MOVE), 0, (int)(width / GameData.BACK2_SIZE), background.Height),
+               GameData.BACK2_COLOR, 0f, new Vector2(0, background.Height / 2), GameData.BACK2_SIZE, SpriteEffects.None, 0f);
+            spriteBatch.Draw(background, new Vector2(0, height * GameData.BACK1_CENTER),
+                new Rectangle((int)(averagePos.X * GameData.BACK1_MOVE), 0, (int)(width / GameData.BACK1_SIZE), background.Height),
+                GameData.BACK1_COLOR, 0f, new Vector2(0, background.Height / 2), GameData.BACK1_SIZE, SpriteEffects.None, 0f);
             spriteBatch.End();
         }
 
