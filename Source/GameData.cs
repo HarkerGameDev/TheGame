@@ -65,7 +65,7 @@ namespace Source
 
         public const float SHADOW_SCALE = PIXEL_METER / 3.4f; // what light calculations will be normalized to for (smaller scale = larger light)
         public static Color DARK_COLOR = new Color(new Vector3(0.1f));  // color mask for non-lit areas
-        public static Color LIGHT_COLOR = Color.Yellow;
+        public static Color LIGHT_COLOR = Color.Wheat;
 
 #if DEBUG
         public const float DEAD_START = 0;
@@ -79,7 +79,7 @@ namespace Source
         public const int DEAD_WIDTH = 600;
         public const int DEAD_HEIGHT = 2000;
         public const float WIN_TIME = 60f;  // s -- survive for this long to win
-        public const float MAX_SPEED_SCALE = 1.4f; // game is this much faster by the end of win
+        public const float MAX_SPEED_SCALE = 0.9f; // game is this much faster by the end of win
         public const int WIN_SCORE = 10;    // player gets 1 point for every WIN_SCORE seconds they survive
         public const int LOSE_SCORE = 5;    // score to lose when hit by purple
         public const int DEATH_LOSS = 2;    // score to lose when the purple only catches 1 player
@@ -96,9 +96,10 @@ namespace Source
         public const float GRAVITY_PART = 15f; // m/s^2 -- gravity for particles
         public const float MIN_VELOCITY = 1f;  // m/s -- what can be considered target velocity
         public const float RUN_VELOCITY = 22f; // m/s -- maximum horizontal velocity for player
-        public const float MAX_ACCEL = 40f;   // m/s^2 -- the impulse which is applied when player starts moving after standing still
+        public const float MAX_ACCEL = 30f;   // m/s^2 -- the impulse which is applied when player starts moving after standing still
         public const float JUMP_SPEED = 18f; // m/s -- the initial upwards velocity when player jumps
         public const float JUMP_SLOW = 0.85f;   // -- x velocity is scaled by this when jumping
+        public const float WALL_SLOW = 0.2f;    // -- player speed is reduced to this ratio when a window is hit
         public const float SLAM_SPEED = 17f; // m/s -- the speed at which the player goes down when slamming
         public const float MIN_WOBBLE = 0f;  //     -- the minimum ratio between max velocity and (max - current velocity) for wobbling
         public const float MAX_WOBBLE = 0f;    //     -- the maximum ratio for wobbling; we don't want wobble amplifier 40x

@@ -126,7 +126,7 @@ namespace Source
             graphics.PreferredDepthStencilFormat = DepthFormat.Depth24Stencil8;
             e.GraphicsDeviceInformation.PresentationParameters.MultiSampleCount = 16;
 
-            IsFixedTimeStep = false;
+            IsFixedTimeStep = true;
             graphics.SynchronizeWithVerticalRetrace = false;
         }
 
@@ -329,7 +329,8 @@ namespace Source
 
                         totalTime += deltaTime;
                         float remaining = totalTime / GameData.WIN_TIME;
-                        deltaTime = deltaTime * MathHelper.Lerp(1f, GameData.MAX_SPEED_SCALE, remaining);
+                        float timeScale = 1f + GameData.MAX_SPEED_SCALE * (float)Math.Sqrt(remaining);
+                        deltaTime = deltaTime * timeScale;
                         if (remaining > 1)
                             remaining = 1;
                         death += MathHelper.Lerp(GameData.DEAD_START, GameData.DEAD_END, remaining) * deltaTime;
@@ -388,7 +389,7 @@ namespace Source
                 Player player = players[i];
                 if (player.TimeSinceDeath < GameData.PHASE_TIME)
                 {
-                    HandleKeyboard(deltaTime, player, i);
+                    HandleKeyboard(player, i);
                 }
 
                 if (player.TimeSinceDeath > 0)
@@ -460,10 +461,9 @@ namespace Source
         /// <summary>
         /// Handles input for a single player for given input keys
         /// </summary>
-        /// <param name="deltaTime"></param>
         /// <param name="player"></param>
         /// <param name="controller"></param>
-        private void HandleKeyboard(float deltaTime, Player player, int controller)
+        private void HandleKeyboard(Player player, int controller)
         {
             KeyboardState state = Keyboard.GetState();
             GameData.Controls controls = playerControls[controller];
@@ -929,11 +929,8 @@ namespace Source
             //    Vector2 origin = new Vector2(0.5f, 0.5f);
             //    DrawRect(startDraw + dist / 2, Color.Black, rotation, origin, scale);
             //}
-            spriteBatch.End();
-
 
             // Draw all particles and dead wall
-            spriteBatch.Begin(transformMatrix: view);
             foreach (Particle part in particles)
                 part.Draw(spriteBatch, lightArea);
             spriteBatch.End();

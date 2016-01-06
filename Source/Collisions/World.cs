@@ -336,7 +336,16 @@ namespace Source.Collisions
                     else
                     {
                         translation.Y = 0;
-                        player.Velocity.X = 0;
+                        if (wall.Health > 1)
+                        {
+                            player.Velocity.X = 0;
+                        }
+                        else
+                        {
+                            player.Velocity.X *= GameData.WALL_SLOW;
+                            game.walls.RemoveAt(i);
+                            MakeParticles(wall.Position, wall, GameData.NUM_PART_WALL, 1, 0);
+                        }
                         player.MovePosition(-translation);
 
                         if (wall.Position.Y < player.Position.Y)
