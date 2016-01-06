@@ -72,7 +72,7 @@ namespace Source
         public const float DEAD_END = 0;
 #else
         public const float DEAD_START = RUN_VELOCITY - 2f;   // m/s -- the speed of dead wave at start of game
-        public const float DEAD_END = RUN_VELOCITY + 0.5f; // m/s -- the speed at which the dead 'wave' on the left moves by the end of the game
+        public const float DEAD_END = RUN_VELOCITY + 0.0f; // m/s -- the speed at which the dead 'wave' on the left moves by the end of the game
 #endif
 
         public const float DEAD_MAX = 40f; // m -- maximum distance between player and death if player is doing well
@@ -197,6 +197,24 @@ namespace Source
             bool Shoot { get; }     // toggle
 
             string ToString();
+        }
+
+        public class SimulatedControls : Controls
+        {
+            public bool Special { get; set; }
+            public bool Boost { get; set; }
+            public bool Jump { get; set; }
+            public bool Slam { get; set; }
+            public bool Shoot { get; set; }
+
+            public SimulatedControls(Game1 game)
+            {
+                Special = false;
+                Boost = false;
+                Jump = false;
+                Slam = false;
+                Shoot = false;
+            }
         }
 
         public struct KeyboardControls : Controls

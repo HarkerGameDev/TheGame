@@ -18,17 +18,18 @@ namespace Source.Collisions
         private const float BAR_WIDTH = 1f; // length of bar in meters
         private const float BAR_HEIGHT = 0.25f;
 
-        public State CurrentState = State.Jumping;
-        public double TimeSinceDeath = 0;
-        public int Score = 0;
+        public State CurrentState;
+        public double TimeSinceDeath;
+        public int Score;
+        public float BoostTime;
+        public float StunTime;
+        public bool WallAbove;
+        public float TargetVelocity;
+        public float SpawnY;
+        public bool AbilityActive;
+        public Ability CurrentAbility;
+
         public List<Projectile> Projectiles;
-        public float BoostTime = GameData.BOOST_LENGTH;
-        public float StunTime = 0;
-        public bool WallAbove = false;
-        public float TargetVelocity = GameData.RUN_VELOCITY;
-        public float SpawnY = 0;
-        public bool AbilityActive = false;
-        public Ability CurrentAbility = Ability.GravityPull;
 
         public bool InAir { get { return CurrentState == State.Jumping || CurrentState == State.Slamming; } }
         public bool CanJump { get { return CurrentState == State.Walking || CurrentState == State.Boosting; } }
@@ -45,14 +46,30 @@ namespace Source.Collisions
 
         public AnimatedSprite Sprite;
 
+        public void ResetValues()
+        {
+            CurrentState = State.Jumping;
+            TimeSinceDeath = 0;
+            Score = 0;
+            BoostTime = GameData.BOOST_LENGTH;
+            StunTime = 0;
+            WallAbove = false;
+            TargetVelocity = GameData.RUN_VELOCITY;
+            SpawnY = 0;
+            AbilityActive = false;
+            //CurrentAbility = Ability.GravityPull;
+
+            Projectiles = new List<Projectile>();
+            Velocity = Vector2.Zero;
+        }
+
         public Player(Texture2D texture, Vector2 position, Color color, Ability ability)
             : base(texture, position, new Vector2(0.6f, 1.8f))
         {
-            this.Color = color;
+            Color = color;
             CurrentAbility = ability;
 
-            Projectiles = new List<Projectile>();
-            Velocity.X = 0f;
+            ResetValues();
 
             int[] animationFrames = { 4, 4, 2, 4, 2, 1 };
             Origin = new Vector2(Origin.X / animationFrames.Max(), Origin.Y / animationFrames.Length);

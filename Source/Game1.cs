@@ -101,6 +101,8 @@ namespace Source
         bool prevBoost = false;
         bool prevJump = false;
         bool prevSlam = false;
+        bool simulating = false;
+        int simIndex = 0;
 
         public enum State
         {
@@ -155,8 +157,6 @@ namespace Source
             // Set seed for a scheduled random level (minutes since Jan 1, 2015)
             randSeed = DateTime.Now.Millisecond;
             randLevelSeed = GameData.GetSeed;
-            rand = new Random(randSeed);
-            randLevel = new Random(randLevelSeed);
 
             // Set variables
             times = new List<float>();
@@ -169,15 +169,122 @@ namespace Source
             for (int i = 0; i < prevPadStates.Length; i++)
                 prevPadStates[i] = new GamePadState();
 
-            // Load controls (hardcoded for now)
-            playerControls = new GameData.Controls[] {
+            if (simulating)
+            {
+                LoadReplay();
+            }
+            else
+            {
+                playerControls = new GameData.Controls[] {
                                                        new GameData.KeyboardControls(this, Keys.Left, Keys.Right, Keys.Up, Keys.Down, Keys.RightShift),
                                                        new GameData.KeyboardControls(this, Keys.A, Keys.D, Keys.W, Keys.S, Keys.LeftShift),
                                                        new GameData.KeyboardControls(this, Keys.J, Keys.L, Keys.I, Keys.K, Keys.O),
                                                        new GameData.GamePadControls(this, PlayerIndex.One, Buttons.LeftTrigger, Buttons.LeftThumbstickRight, Buttons.RightTrigger, Buttons.LeftThumbstickDown, Buttons.A)
                                                   };
+            }
+
+            rand = new Random(randSeed);
+            randLevel = new Random(randLevelSeed);
 
             base.Initialize();      // This calls LoadContent()
+        }
+
+        private void LoadReplay()
+        {
+            // TODO load replays
+            IAsyncResult result = StorageDevice.BeginShowSelector(null, null);
+            result.AsyncWaitHandle.WaitOne();
+            StorageDevice device = StorageDevice.EndShowSelector(result);
+            result.AsyncWaitHandle.Close();
+            if (device != null && device.IsConnected)
+            {
+                result = device.BeginOpenContainer("Game", null, null);
+                result.AsyncWaitHandle.WaitOne();
+                StorageContainer container = device.EndOpenContainer(result);
+                result.AsyncWaitHandle.Close();
+
+                string directory = "Replays";
+                string filename = directory + @"\replay";
+                filename += (container.GetFileNames(filename + "*").Length - 1) + ".rep";
+
+                BinaryReader file = new BinaryReader(container.OpenFile(filename, FileMode.Open));
+                randSeed = file.ReadInt32();
+                randLevelSeed = file.ReadInt32();
+                while (file.BaseStream.Position != file.BaseStream.Length)
+                {
+                    times.Add(file.ReadSingle());
+                    keys.Add((GameData.ControlKey)file.ReadByte());
+                    Console.WriteLine("Loading: " + times[times.Count - 1]);
+                }
+
+                file.Close();
+                container.Dispose();
+            }
+
+            playerControls = new GameData.Controls[] { new GameData.SimulatedControls(this), new GameData.SimulatedControls(this) };
+        }
+
+        private void Reset()
+        {
+            // TODO save replay
+            if (!simulating)
+            {
+                IAsyncResult result = StorageDevice.BeginShowSelector(null, null);
+                result.AsyncWaitHandle.WaitOne();
+                StorageDevice device = StorageDevice.EndShowSelector(result);
+                result.AsyncWaitHandle.Close();
+                if (device != null && device.IsConnected)
+                {
+                    result = device.BeginOpenContainer("Game", null, null);
+                    result.AsyncWaitHandle.WaitOne();
+                    StorageContainer container = device.EndOpenContainer(result);
+                    result.AsyncWaitHandle.Close();
+
+                    string directory = "Replays";
+                    string filename = directory + @"\replay";
+                    filename += container.GetFileNames(filename + "*").Length + ".rep";
+
+                    BinaryWriter file = new BinaryWriter(container.OpenFile(filename, FileMode.Create));
+                    file.Write(randSeed);
+                    file.Write(randLevelSeed);
+                    for (int i = 0; i < times.Count; i++)
+                    {
+                        file.Write(times[i]);
+                        file.Write((byte)keys[i]);
+                    }
+
+                    file.Close();
+                    container.Dispose();
+                }
+            }
+
+            rand = new Random(randSeed);
+            randLevel = new Random(randLevelSeed);
+            foreach (Player player in players)
+            {
+                player.MoveToPosition(new Vector2(GameData.PLAYER_START, -rand.Next(GameData.MIN_SPAWN, GameData.MAX_SPAWN)));
+                player.ResetValues();
+            }
+            floors.Clear();
+            walls.Clear();
+            particles.Clear();
+            obstacles.Clear();
+            drops.Clear();
+            levelEnd = 0;
+            totalTime = 0;
+            death = -GameData.DEAD_MAX;
+
+            if (!simulating)
+            {
+                times.Clear();
+                keys.Clear();
+            }
+            else
+            {
+                simIndex = 0;
+                playerControls = new GameData.Controls[] { new GameData.SimulatedControls(this), new GameData.SimulatedControls(this) };
+                //simulating = false;
+            }
         }
 
         /// <summary>
@@ -261,8 +368,13 @@ namespace Source
                     graphics.ToggleFullScreen();
                 }, Color.Maroon, fontSmall, "Toggle fullscreen", Color.Chartreuse));
             optionsMenu.Add(new Button(whiteRect, new Vector2(left, centerY), new Vector2(buttonWidth, buttonHeight),
-                delegate() { state = State.Controls; }, Color.Maroon,
-                fontSmall, "Controls", Color.Chartreuse));
+                delegate() {
+                    simulating = true;
+                    LoadReplay();
+                    Reset();
+                    state = State.Running;
+                }, Color.Maroon,
+                fontSmall, "Instant replay", Color.Chartreuse));
             optionsMenu.Add(new Button(whiteRect, new Vector2(left, height - buttonHeight * 2), new Vector2(buttonWidth, buttonHeight),
                 delegate() { state = State.Paused; }, Color.Maroon,
                 fontSmall, "Back", Color.Chartreuse));
@@ -332,8 +444,55 @@ namespace Source
                     else
                     {
                         float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+                        if (simulating)
+                        {
+                            while (simIndex < times.Count && times[simIndex] - totalTime <= 0)
+                            {
+                                //deltaTime += diff;
+                                Console.Write("Sim: " + totalTime + "\t\tReplay: " + times[simIndex] +
+                                    "\t\tDelta: " + deltaTime + "\t\tDiff: " + (times[simIndex] - totalTime) + "\t\t");
+                                GameData.SimulatedControls control = (GameData.SimulatedControls)playerControls[0];
+                                GameData.ControlKey key = keys[simIndex];
+                                switch (key)
+                                {
+                                    case GameData.ControlKey.Special:
+                                        control.Special = true;
+                                        Console.WriteLine("Special");
+                                        break;
+                                    case GameData.ControlKey.Boost:
+                                        control.Boost = !control.Boost;
+                                        Console.WriteLine(control.Boost ? "Boosting" : "Not Boosting");
+                                        break;
+                                    case GameData.ControlKey.Jump:
+                                        control.Jump = !control.Jump;
+                                        Console.WriteLine(control.Jump ? "Jumping" : "Not Jumping");
+                                        players[0].Color = control.Jump ? Color.White : Color.Red;
+                                        break;
+                                    case GameData.ControlKey.Slam:
+                                        control.Slam = !control.Slam;
+                                        Console.WriteLine(control.Slam ? "Slamming" : "Not Slamming");
+                                        break;
+                                    case GameData.ControlKey.Shoot:
+                                        control.Shoot = true;
+                                        Console.WriteLine("Shoot");
+                                        break;
+                                }
+                                simIndex++;
+                            }
+                        }
+
                         if (currentFloor == null)
                             HandleInput(deltaTime);
+
+                        if (simulating)
+                        {
+                            GameData.SimulatedControls control = (GameData.SimulatedControls)playerControls[0];
+                            control.Special = false;
+                            control.Shoot = false;
+                        }
+
+                        CheckPlayer();
 
                         totalTime += deltaTime;
                         float remaining = totalTime / GameData.WIN_TIME;
@@ -342,8 +501,6 @@ namespace Source
                         if (remaining > 1)
                             remaining = 1;
                         death += MathHelper.Lerp(GameData.DEAD_START, GameData.DEAD_END, remaining) * deltaTime;
-
-                        CheckPlayer();
 
                         world.Step(deltaTime);
                     }
@@ -390,8 +547,6 @@ namespace Source
         /// </summary>
         private void HandleInput(float deltaTime)
         {
-            KeyboardState state = Keyboard.GetState();
-
             for (int i = 0; i < players.Count; i++)
             {
                 Player player = players[i];
@@ -417,11 +572,6 @@ namespace Source
                 }
             }
 
-            if (ToggleKey(Keys.R))                        // reset
-            {
-                Reset();
-            }
-
             // Find average velocity across the players
             Vector2 averageVel = Vector2.Zero;
             foreach (Player player in players)
@@ -444,57 +594,11 @@ namespace Source
                 wobbleScreen(GameData.MAX_WOBBLE);
             else if (wobbleRatio >= GameData.MIN_WOBBLE)
                 wobbleScreen(wobbleRatio);
-        }
 
-        private void Reset()
-        {
-            // TODO save replay
-            IAsyncResult result = StorageDevice.BeginShowSelector(null, null);
-            result.AsyncWaitHandle.WaitOne();
-            StorageDevice device = StorageDevice.EndShowSelector(result);
-            result.AsyncWaitHandle.Close();
-            if (device != null && device.IsConnected)
+            if (ToggleKey(Keys.R))                        // reset
             {
-                result = device.BeginOpenContainer("Game", null, null);
-                result.AsyncWaitHandle.WaitOne();
-                StorageContainer container = device.EndOpenContainer(result);
-                result.AsyncWaitHandle.Close();
-
-                string directory = "Replays";
-                string filename = directory + @"\replay";
-                filename += container.GetFileNames(filename + "*").Length + ".rep";
-
-                BinaryWriter file = new BinaryWriter(container.OpenFile(filename, FileMode.Create));
-                file.Write(randSeed);
-                file.Write(randLevelSeed);
-                for (int i=0; i<times.Count; i++)
-                {
-                    file.Write(times[i]);
-                    file.Write((int)keys[i]);
-                }
-
-                file.Close();
-                container.Dispose();
+                Reset();
             }
-
-            foreach (Player player in players)
-            {
-                player.MoveToPosition(new Vector2(GameData.PLAYER_START, -rand.Next(GameData.MIN_SPAWN, GameData.MAX_SPAWN)));
-                player.Velocity = Vector2.Zero;
-                player.TimeSinceDeath = 0;
-                player.BoostTime = GameData.BOOST_LENGTH;
-            }
-            floors.Clear();
-            walls.Clear();
-            obstacles.Clear();
-            drops.Clear();
-            levelEnd = 0;
-            totalTime = 0;
-            death = -GameData.DEAD_MAX;
-            rand = new Random(randSeed);
-            randLevel = new Random(randLevelSeed);
-            times.Clear();
-            keys.Clear();
         }
 
         /// <summary>
@@ -506,33 +610,36 @@ namespace Source
         {
             GameData.Controls controls = playerControls[controller];
 
-            if (controls.Special)
+            if (!simulating)
             {
-                times.Add(totalTime);
-                keys.Add(GameData.ControlKey.Special);
-            }
-            if (controls.Shoot)
-            {
-                times.Add(totalTime);
-                keys.Add(GameData.ControlKey.Shoot);
-            }
-            if (controls.Boost != prevBoost)
-            {
-                times.Add(totalTime);
-                prevBoost = !prevBoost;
-                keys.Add(GameData.ControlKey.Boost);
-            }
-            if (controls.Jump != prevJump)
-            {
-                times.Add(totalTime);
-                prevJump = !prevJump;
-                keys.Add(GameData.ControlKey.Jump);
-            }
-            if (controls.Slam != prevSlam)
-            {
-                times.Add(totalTime);
-                prevSlam = !prevSlam;
-                keys.Add(GameData.ControlKey.Slam);
+                if (controls.Special)
+                {
+                    times.Add(totalTime);
+                    keys.Add(GameData.ControlKey.Special);
+                }
+                if (controls.Shoot)
+                {
+                    times.Add(totalTime);
+                    keys.Add(GameData.ControlKey.Shoot);
+                }
+                if (controls.Boost != prevBoost)
+                {
+                    times.Add(totalTime);
+                    prevBoost = !prevBoost;
+                    keys.Add(GameData.ControlKey.Boost);
+                }
+                if (controls.Jump != prevJump)
+                {
+                    times.Add(totalTime);
+                    prevJump = !prevJump;
+                    keys.Add(GameData.ControlKey.Jump);
+                }
+                if (controls.Slam != prevSlam)
+                {
+                    times.Add(totalTime);
+                    prevSlam = !prevSlam;
+                    keys.Add(GameData.ControlKey.Slam);
+                }
             }
 
             if (player.CurrentState != Player.State.Stunned)
@@ -789,7 +896,7 @@ namespace Source
             }
 
             float currentX = max == null ? averageX : max.Position.X;
-#if !DEBUG
+
             if (currentX < death)   // lose
             {
                 foreach (Player player in players)
@@ -798,7 +905,6 @@ namespace Source
                 }
                 Reset();
             }
-#endif
 
             //if (totalTime > GameData.WIN_TIME)  // win. TODO -- do more than reset
             //{

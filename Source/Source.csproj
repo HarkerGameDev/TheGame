@@ -75,7 +75,7 @@
     <Compile Include="Collisions\Floor.cs" />
     <Compile Include="Collisions\Projectile.cs" />
     <Compile Include="Collisions\Player.cs" />
-    <Compile Include="Collisions\World.cs" />
+    <Compile Include="World.cs" />
     <Compile Include="Game1.cs" />
     <Compile Include="GameData.cs" />
     <Compile Include="Graphics\AnimatedSprite.cs" />

@@ -344,7 +344,7 @@ namespace Source.Collisions
                         {
                             player.Velocity.X *= GameData.WALL_SLOW;
                             game.walls.RemoveAt(i);
-                            MakeParticles(wall.Position, wall, GameData.NUM_PART_WALL, 1, 0);
+                            MakeParticles(player.Position, wall, GameData.NUM_PART_WALL, 1, 0);
                         }
                         player.MovePosition(-translation);
 
