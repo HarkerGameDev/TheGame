@@ -7,6 +7,8 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
+using Microsoft.Xna.Framework.Storage;
+using Microsoft.Xna.Framework.GamerServices;
 
 using Source.Collisions;
 using Source.Graphics;
@@ -62,16 +64,17 @@ namespace Source
         Rectangle cameraBounds; // limit of where the player can be on screen
         Vector2 screenCenter; // where the player is on the screen
         Vector2 screenOffset; // offset from mouse panning
-        float currentZoom;
+        float currentZoom = GameData.PIXEL_METER;
 
-        bool editLevel;
+
+        bool editLevel = false;
         public Floor currentFloor;
         bool editingFloor;
         Vector2 startDraw;
         Vector2 endDraw;
 
-        State state;
-        float totalTime;
+        State state = State.MainMenu;
+        float totalTime = 0;
 
         public List<Player> players;
         public List<Floor> floors;
@@ -84,13 +87,20 @@ namespace Source
         List<Button> optionsMenu;
         List<Button> controlsMenu;
 
-        int levelEnd;
-        float death;
+        int levelEnd = 0;
+        float death = -GameData.DEAD_MAX;
 
         MainMenu mainMenu;
 
         int nativeScreenWidth;
         int nativeScreenHeight;
+
+        List<float> times;
+        List<GameData.ControlKey> keys;
+        int randSeed, randLevelSeed;
+        bool prevBoost = false;
+        bool prevJump = false;
+        bool prevSlam = false;
 
         public enum State
         {
@@ -106,6 +116,7 @@ namespace Source
 
             quadRender = new QuadRenderComponent(this);
             Components.Add(quadRender);
+            Components.Add(new GamerServicesComponent(this));
         }
 
         private void graphics_DeviceCreated(object sender, EventArgs e)
@@ -139,19 +150,17 @@ namespace Source
         protected override void Initialize()
         {
             // Sets how many pixels is a meter
-            currentZoom = GameData.PIXEL_METER;
             ConvertUnits.SetDisplayUnitToSimUnitRatio(currentZoom);
 
             // Set seed for a scheduled random level (minutes since Jan 1, 2015)
-            rand = new Random();
-            randLevel = new Random(GameData.GetSeed);
+            randSeed = DateTime.Now.Millisecond;
+            randLevelSeed = GameData.GetSeed;
+            rand = new Random(randSeed);
+            randLevel = new Random(randLevelSeed);
 
             // Set variables
-            //paused = false;
-            state = State.MainMenu;
-            editLevel = false;
-            death = -GameData.DEAD_MAX;
-            totalTime = 0;
+            times = new List<float>();
+            keys = new List<GameData.ControlKey>();
 
             // Initialize previous keyboard and gamepad states
             prevKeyState = new KeyboardState();
@@ -270,15 +279,14 @@ namespace Source
                 fontSmall, "Back", Color.Chartreuse));
 
             // Load the level stored in LEVEL_FILE
-            levelEnd = 0;
             //LoadLevel();
             MakeLevel();
 
-            // Load the song
-            Song song = Content.Load<Song>("Music/" + GameData.SONG);
-            MediaPlayer.IsRepeating = true;
-            MediaPlayer.Volume = GameData.VOLUME;
-            MediaPlayer.Play(song);
+            //// Load the song
+            //Song song = Content.Load<Song>("Music/" + GameData.SONG);
+            //MediaPlayer.IsRepeating = true;
+            //MediaPlayer.Volume = GameData.VOLUME;
+            //MediaPlayer.Play(song);
         }
 
         /// <summary>
@@ -389,7 +397,7 @@ namespace Source
                 Player player = players[i];
                 if (player.TimeSinceDeath < GameData.PHASE_TIME)
                 {
-                    HandleKeyboard(player, i);
+                    HandlePlayerInput(player, i);
                 }
 
                 if (player.TimeSinceDeath > 0)
@@ -440,6 +448,35 @@ namespace Source
 
         private void Reset()
         {
+            // TODO save replay
+            IAsyncResult result = StorageDevice.BeginShowSelector(null, null);
+            result.AsyncWaitHandle.WaitOne();
+            StorageDevice device = StorageDevice.EndShowSelector(result);
+            result.AsyncWaitHandle.Close();
+            if (device != null && device.IsConnected)
+            {
+                result = device.BeginOpenContainer("Game", null, null);
+                result.AsyncWaitHandle.WaitOne();
+                StorageContainer container = device.EndOpenContainer(result);
+                result.AsyncWaitHandle.Close();
+
+                string directory = "Replays";
+                string filename = directory + @"\replay";
+                filename += container.GetFileNames(filename + "*").Length + ".rep";
+
+                BinaryWriter file = new BinaryWriter(container.OpenFile(filename, FileMode.Create));
+                file.Write(randSeed);
+                file.Write(randLevelSeed);
+                for (int i=0; i<times.Count; i++)
+                {
+                    file.Write(times[i]);
+                    file.Write((int)keys[i]);
+                }
+
+                file.Close();
+                container.Dispose();
+            }
+
             foreach (Player player in players)
             {
                 player.MoveToPosition(new Vector2(GameData.PLAYER_START, -rand.Next(GameData.MIN_SPAWN, GameData.MAX_SPAWN)));
@@ -454,8 +491,10 @@ namespace Source
             levelEnd = 0;
             totalTime = 0;
             death = -GameData.DEAD_MAX;
-            rand = new Random();
-            randLevel = new Random(GameData.GetSeed);
+            rand = new Random(randSeed);
+            randLevel = new Random(randLevelSeed);
+            times.Clear();
+            keys.Clear();
         }
 
         /// <summary>
@@ -463,10 +502,38 @@ namespace Source
         /// </summary>
         /// <param name="player"></param>
         /// <param name="controller"></param>
-        private void HandleKeyboard(Player player, int controller)
+        private void HandlePlayerInput(Player player, int controller)
         {
-            KeyboardState state = Keyboard.GetState();
             GameData.Controls controls = playerControls[controller];
+
+            if (controls.Special)
+            {
+                times.Add(totalTime);
+                keys.Add(GameData.ControlKey.Special);
+            }
+            if (controls.Shoot)
+            {
+                times.Add(totalTime);
+                keys.Add(GameData.ControlKey.Shoot);
+            }
+            if (controls.Boost != prevBoost)
+            {
+                times.Add(totalTime);
+                prevBoost = !prevBoost;
+                keys.Add(GameData.ControlKey.Boost);
+            }
+            if (controls.Jump != prevJump)
+            {
+                times.Add(totalTime);
+                prevJump = !prevJump;
+                keys.Add(GameData.ControlKey.Jump);
+            }
+            if (controls.Slam != prevSlam)
+            {
+                times.Add(totalTime);
+                prevSlam = !prevSlam;
+                keys.Add(GameData.ControlKey.Slam);
+            }
 
             if (player.CurrentState != Player.State.Stunned)
             {

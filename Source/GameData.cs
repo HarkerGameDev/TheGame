@@ -109,8 +109,8 @@ namespace Source
         public const float BOOST_LENGTH = 6f;  // how long a player can boost for
         public const float SHOOT_COST = 0.3f; // boost bar cost of a shot
 
-        public const string SONG = "afln_s_gdc-1.wav";    // the song to play, over, and over, and over again. NEVER STOP THE PARTY!
-        public const float VOLUME = 0.0f;                // volume for song
+        //public const string SONG = "afln_s_gdc-1.wav";    // the song to play, over, and over, and over again. NEVER STOP THE PARTY!
+        //public const float VOLUME = 0.0f;                // volume for song
 
         public const float CAMERA_SCALE_X = 4f;         // how fast the camera moves
         public const float CAMERA_SCALE_Y = 20f;        // vertical speed of camera
@@ -183,14 +183,18 @@ namespace Source
             }
         }
 
+        public enum ControlKey
+        {
+            Special, Boost, Jump, Slam, Shoot
+        }
+
         public interface Controls
         {
-
-            bool Special { get; }
-            bool Boost { get; }
-            bool Jump { get; }
-            bool Slam { get; }
-            bool Shoot { get; }
+            bool Special { get; }   // toggle
+            bool Boost { get; }     // hold
+            bool Jump { get; }      // hold
+            bool Slam { get; }      // hold
+            bool Shoot { get; }     // toggle
 
             string ToString();
         }
