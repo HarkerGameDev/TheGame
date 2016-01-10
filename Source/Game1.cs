@@ -66,7 +66,6 @@ namespace Source
         Vector2 screenOffset; // offset from mouse panning
         float currentZoom = GameData.PIXEL_METER;
 
-
         bool editLevel = false;
         public Floor currentFloor;
         bool editingFloor;
@@ -75,6 +74,7 @@ namespace Source
 
         State state = State.MainMenu;
         float totalTime = 0;
+        float highScore = 0;
 
         public List<Player> players;
         public List<Floor> floors;
@@ -103,6 +103,7 @@ namespace Source
         bool prevSlam = false;
         bool simulating = false;
         int simIndex = 0;
+        int currentReplay = 0;
 
         public enum State
         {
@@ -139,7 +140,7 @@ namespace Source
             graphics.PreferredDepthStencilFormat = DepthFormat.Depth24Stencil8;
             e.GraphicsDeviceInformation.PresentationParameters.MultiSampleCount = 16;
 
-            IsFixedTimeStep = true;
+            IsFixedTimeStep = false;
             graphics.SynchronizeWithVerticalRetrace = false;
         }
 
@@ -171,7 +172,7 @@ namespace Source
 
             if (simulating)
             {
-                LoadReplay();
+                LoadReplay(currentReplay);
             }
             else
             {
@@ -189,9 +190,9 @@ namespace Source
             base.Initialize();      // This calls LoadContent()
         }
 
-        private void LoadReplay()
+        private void LoadReplay(int replay)
         {
-            // TODO load replays
+            // TODO load replays with UI
             IAsyncResult result = StorageDevice.BeginShowSelector(null, null);
             result.AsyncWaitHandle.WaitOne();
             StorageDevice device = StorageDevice.EndShowSelector(result);
@@ -205,7 +206,11 @@ namespace Source
 
                 string directory = "Replays";
                 string filename = directory + @"\replay";
-                filename += (container.GetFileNames(filename + "*").Length - 1) + ".rep";
+                int max = container.GetFileNames(filename + "*").Length - 1;
+                if (replay > max)
+                    replay = max;
+                filename += replay + ".rep";
+                Console.WriteLine("Max: " + max);
 
                 BinaryReader file = new BinaryReader(container.OpenFile(filename, FileMode.Open));
                 randSeed = file.ReadInt32();
@@ -216,6 +221,8 @@ namespace Source
                     keys.Add((GameData.ControlKey)file.ReadByte());
                     Console.WriteLine("Loading: " + times[times.Count - 1]);
                 }
+                Console.WriteLine("Loaded replay" + replay + ".rep");
+                Console.WriteLine("Loading\trandSeed: " + randSeed + "\trandLevelSeed: " + randLevelSeed);
 
                 file.Close();
                 container.Dispose();
@@ -226,9 +233,12 @@ namespace Source
 
         private void Reset()
         {
-            // TODO save replay
             if (!simulating)
             {
+                if (totalTime > highScore)
+                    highScore = totalTime;
+
+                // save replay
                 IAsyncResult result = StorageDevice.BeginShowSelector(null, null);
                 result.AsyncWaitHandle.WaitOne();
                 StorageDevice device = StorageDevice.EndShowSelector(result);
@@ -258,6 +268,11 @@ namespace Source
                 }
             }
 
+            randSeed = rand.Next();
+            randLevelSeed = rand.Next();
+            if (simulating)
+                LoadReplay(++currentReplay);
+            Console.WriteLine("Using:\trandSeed: " + randSeed + "\trandLevelSeed: " + randLevelSeed);
             rand = new Random(randSeed);
             randLevel = new Random(randLevelSeed);
             foreach (Player player in players)
@@ -365,12 +380,13 @@ namespace Source
             optionsMenu = new List<Button>();
             optionsMenu.Add(new Button(whiteRect, new Vector2(left, buttonHeight), new Vector2(buttonWidth, buttonHeight),
                 delegate() {
-                    graphics.ToggleFullScreen();
-                }, Color.Maroon, fontSmall, "Toggle fullscreen", Color.Chartreuse));
+                    state = State.Controls;
+                }, Color.Maroon, fontSmall, "Controls", Color.Chartreuse));
             optionsMenu.Add(new Button(whiteRect, new Vector2(left, centerY), new Vector2(buttonWidth, buttonHeight),
                 delegate() {
                     simulating = true;
-                    LoadReplay();
+                    currentReplay = int.MaxValue;
+                    LoadReplay(currentReplay);
                     Reset();
                     state = State.Running;
                 }, Color.Maroon,
@@ -467,7 +483,7 @@ namespace Source
                                     case GameData.ControlKey.Jump:
                                         control.Jump = !control.Jump;
                                         Console.WriteLine(control.Jump ? "Jumping" : "Not Jumping");
-                                        players[0].Color = control.Jump ? Color.White : Color.Red;
+                                        //players[0].Color = control.Jump ? Color.White : Color.Red;
                                         break;
                                     case GameData.ControlKey.Slam:
                                         control.Slam = !control.Slam;
@@ -1034,6 +1050,7 @@ namespace Source
 
             // Calculate shadows for lightArea
             // TODO actual lights instead of on player
+            // TODO optimize lights (use geometric lighting)
             float zoom = ConvertUnits.ToDisplayUnits(1);
             ConvertUnits.SetDisplayUnitToSimUnitRatio(GameData.SHADOW_SCALE);
             lightArea.LightPosition = ConvertUnits.ToDisplayUnits(players[0].Position);
@@ -1182,6 +1199,11 @@ namespace Source
             string time = totalTime.ToString("n1") + "s survived";
             leftX = GraphicsDevice.Viewport.Width / 2f - fontSmall.MeasureString(time).X / 2f;
             spriteBatch.DrawString(fontSmall, time, new Vector2(leftX, 0f), Color.LightSkyBlue);
+
+            // Display high score
+            string high = "High Score: " + highScore.ToString("n1");
+            leftX = GraphicsDevice.Viewport.Width / 2f - fontSmall.MeasureString(high).X / 2f;
+            spriteBatch.DrawString(fontSmall, high, new Vector2(leftX, 40f), Color.Yellow);
 
             // Display version number
             Vector2 pos = new Vector2(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height) - fontSmall.MeasureString(GameData.Version);

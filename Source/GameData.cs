@@ -188,6 +188,7 @@ namespace Source
             Special, Boost, Jump, Slam, Shoot
         }
 
+        // TODO intuitive controls
         public interface Controls
         {
             bool Special { get; }   // toggle

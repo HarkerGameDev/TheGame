@@ -120,8 +120,8 @@ namespace Source.Collisions
         public Vector2 Intersects(Body other)
         {
             //Separating Axis Theorem
-            int edgeCountA = 4;
-            int edgeCountB = 4;
+            int edgeCountA = 2;
+            int edgeCountB = 2;
             float minIntervalDistance = 0;
             Vector2 translationAxis = Vector2.Zero;
             Vector2 edge;
