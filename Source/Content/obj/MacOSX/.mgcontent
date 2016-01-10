@@ -1,16 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<SourceFileCollection xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<SourceFileCollection xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <Profile>Reach</Profile>
   <Platform>MacOSX</Platform>
   <Config />
   <SourceFiles>
-    <File>C:/Users/Nikita/Desktop/Nikita/Projects/Monogame/TheGame/Source/Content/Fonts/Score.spritefont</File>
-    <File>C:/Users/Nikita/Desktop/Nikita/Projects/Monogame/TheGame/Source/Content/Fonts/ScoreBig.spritefont</File>
-    <File>C:/Users/Nikita/Desktop/Nikita/Projects/Monogame/TheGame/Source/Content/Art/GreenDude.png</File>
-    <File>C:/Users/Nikita/Desktop/Nikita/Projects/Monogame/TheGame/Source/Content/Music/afln_s_gdc-1.wav</File>
-    <File>C:/Users/Nikita/Desktop/Nikita/Projects/Monogame/TheGame/Source/Content/Fonts/Segoe_UI_15_Bold.spritefont</File>
-    <File>C:/Users/Nikita/Desktop/Nikita/Projects/Monogame/TheGame/Source/Content/Fonts/Segoe_UI_9_Bold.spritefont</File>
-    <File>C:/Users/Nikita/Desktop/Nikita/Projects/Monogame/TheGame/Source/Content/Fonts/Segoe_UI_30_Bold.spritefont</File>
-    <File>C:/Users/Nikita/Desktop/Nikita/Projects/Monogame/TheGame/Source/Content/Effects/Test.fx</File>
+    <File>/Users/atierno/Projects/TheGame/Source/Content/Fonts/Score.spritefont</File>
+    <File>/Users/atierno/Projects/TheGame/Source/Content/Fonts/ScoreBig.spritefont</File>
+    <File>/Users/atierno/Projects/TheGame/Source/Content/Art/GreenDude.png</File>
+    <File>/Users/atierno/Projects/TheGame/Source/Content/Fonts/Segoe_UI_15_Bold.spritefont</File>
+    <File>/Users/atierno/Projects/TheGame/Source/Content/Fonts/Segoe_UI_9_Bold.spritefont</File>
+    <File>/Users/atierno/Projects/TheGame/Source/Content/Fonts/Segoe_UI_30_Bold.spritefont</File>
+    <File>/Users/atierno/Projects/TheGame/Source/Content/Art/skyscrapers.png</File>
   </SourceFiles>
 </SourceFileCollection>

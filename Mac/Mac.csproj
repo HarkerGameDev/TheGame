@@ -22,10 +22,10 @@
     <ConsolePause>false</ConsolePause>
     <UseRefCounting>false</UseRefCounting>
     <UseSGen>false</UseSGen>
-    <IncludeMonoRuntime>true</IncludeMonoRuntime>
+    <IncludeMonoRuntime>false</IncludeMonoRuntime>
     <EnablePackageSigning>false</EnablePackageSigning>
     <EnableCodeSigning>false</EnableCodeSigning>
-    <CreatePackage>true</CreatePackage>
+    <CreatePackage>false</CreatePackage>
     <AssemblyName>Game</AssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -83,6 +83,7 @@
   <ItemGroup>
     <None Include="Info.plist" />
     <None Include="packages.config" />
+    <None Include="Content\Content.mgcb" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -90,33 +91,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Content\" />
-    <Folder Include="Content\Art\" />
-    <Folder Include="Content\Music\" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="..\Source\Content\Fonts\Score.xnb">
-      <Link>Content\Fonts\Score.xnb</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Source\Content\Fonts\ScoreBig.xnb">
-      <Link>Content\Fonts\ScoreBig.xnb</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Source\Content\Art\GreenDude.png">
-      <Link>Content\Art\GreenDude.png</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Content\Fonts\Segoe_UI_15_Bold.xnb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Source\Content\bin\MacOSX\Music\afln_s_gdc-1.m4a">
-      <Link>Content\Music\afln_s_gdc-1.m4a</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Source\Content\bin\MacOSX\Music\afln_s_gdc-1.xnb">
-      <Link>Content\Music\afln_s_gdc-1.xnb</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Source\Source.csproj">
