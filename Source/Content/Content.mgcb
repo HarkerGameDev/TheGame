@@ -3,7 +3,7 @@
 
 /outputDir:bin/$(Platform)
 /intermediateDir:obj/$(Platform)
-/platform:WindowsGL
+/platform:MacOSX
 /config:
 /profile:Reach
 /compress:False
@@ -35,12 +35,6 @@
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:TextureFormat=Color
 /build:Art/GreenDude.png
-
-#begin Music/afln_s_gdc-1.wav
-/importer:WavImporter
-/processor:SongProcessor
-/processorParam:Quality=Best
-/build:Music/afln_s_gdc-1.wav
 
 #begin Fonts/Segoe_UI_15_Bold.spritefont
 /importer:FontDescriptionImporter
