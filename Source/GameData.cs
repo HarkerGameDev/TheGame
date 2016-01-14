@@ -132,6 +132,7 @@ namespace Source
         public const float PARTICLE_Y = 5f;         // maximum y velocity of a particle in either direction
         public const int NUM_PART_WALL = 10;        // number of particles to spawn when a wall is exploded
         public const int NUM_PART_FLOOR = 5;        // number of particles to spawn when slamming and a hole is made
+        public const float BOOST_PART_TIME = 1 / 30f;   // time until a new particle will be spawned when boosting
 
         public const float PROJ_WIDTH = 1f;     // width of a projectile in m
         public const float PROJ_HEIGHT = 0.25f; // height of a projectile in m

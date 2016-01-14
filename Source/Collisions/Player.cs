@@ -28,6 +28,7 @@ namespace Source.Collisions
         public float SpawnY;
         public bool AbilityActive;
         public Ability CurrentAbility;
+        public float BoostPart;
 
         public List<Projectile> Projectiles;
 
@@ -58,6 +59,7 @@ namespace Source.Collisions
             SpawnY = 0;
             AbilityActive = false;
             //CurrentAbility = Ability.GravityPull;
+            BoostPart = GameData.BOOST_PART_TIME;
 
             Projectiles = new List<Projectile>();
             Velocity = Vector2.Zero;
@@ -98,7 +100,10 @@ namespace Source.Collisions
                     Velocity.X -= Math.Sign(diff) * deltaTime * GameData.MAX_ACCEL;
 
                 if (CurrentState == State.Boosting)
+                {
                     BoostTime -= deltaTime;
+                    BoostPart -= deltaTime;
+                }
                 else if (BoostTime < GameData.BOOST_LENGTH)
                     BoostTime += deltaTime * GameData.BOOST_LENGTH / GameData.BOOST_REGEN;
 

@@ -28,7 +28,7 @@ namespace Source
     /// - (0,0) is in the top left for drawing to screen, and (0,0) is in the center of a physics object
     /// - Physics uses meters, monogame uses pixels -- use ConvertUnits to convert
     /// - Please follow the style guide in place, which is
-    ///   * ALL_CAPS for global constants
+    ///   * ALL_CAPS for global constants (define in GameData)
     ///   * UpperCamelCase for members (instance fields and methods)
     ///   * lowerCamelCase for other variables
     /// - Search for 'TODO' for things that need to be finished
@@ -140,7 +140,7 @@ namespace Source
             graphics.PreferredDepthStencilFormat = DepthFormat.Depth24Stencil8;
             e.GraphicsDeviceInformation.PresentationParameters.MultiSampleCount = 16;
 
-            IsFixedTimeStep = false;
+            IsFixedTimeStep = true;
             graphics.SynchronizeWithVerticalRetrace = false;
         }
 

@@ -104,6 +104,13 @@ namespace Source.Collisions
             {
                 if (player.TimeSinceDeath <= 0)
                 {
+                    while (player.BoostPart < 0)
+                    {
+                        player.BoostPart += GameData.BOOST_PART_TIME;
+                        MakeParticles(new Vector2(player.Position.X, player.Position.Y + player.Size.Y / 3),
+                            game.floors[0], 1, 0, -1);
+                    }
+
                     for (int i = player.Projectiles.Count - 1; i >= 0; i--)
                     {
                         for (int j = 0; j < projStep; j++)
@@ -114,8 +121,8 @@ namespace Source.Collisions
                     }
 
                     player.Velocity.Y += GameData.GRAVITY * deltaTime;
-                    int playerStep = Math.Max((int)Math.Ceiling(deltaTime * player.Velocity.Y / player.Size.Y),
-                                              (int)Math.Ceiling(deltaTime * player.Velocity.X / player.Size.X));
+                    int playerStep = Math.Max((int)Math.Ceiling(deltaTime * player.Velocity.Y / player.Size.Y / 1.5f),
+                                              (int)Math.Ceiling(deltaTime * player.Velocity.X / player.Size.X / 1.5f));
                     if (playerStep < 1) playerStep = 1;
 
                     for (int i = 0; i < playerStep; i++)
