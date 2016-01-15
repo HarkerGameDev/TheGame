@@ -334,16 +334,11 @@ namespace Source
 
             // Create objects
             players = new List<Player>();
-#if DEBUG
-            Array playerAbilities = new[] { Player.Ability.Explosive };
-#else
-            Array playerAbilities = Enum.GetValues(typeof(Player.Ability));
-#endif
             for (int i = 0; i < GameData.numPlayers; i++)
             {
                 // create a player with color specified in GameData and random color
                 Vector2 spawnLoc = new Vector2(GameData.PLAYER_START, -rand.Next(GameData.MIN_SPAWN, GameData.MAX_SPAWN));
-				players.Add(new Player(Content.Load<Texture2D>("Art/GreenDude"), spawnLoc, GameData.playerColors[i], (Player.Ability)playerAbilities.GetValue(rand.Next(playerAbilities.Length))));
+				players.Add(new Player(Content.Load<Texture2D>("Art/GreenDude"), spawnLoc, GameData.playerCharacters[i]));
             }
             floors = new List<Floor>();
             walls = new List<Wall>();
@@ -698,7 +693,7 @@ namespace Source
                         if (player.Velocity.Y < GameData.SLAM_SPEED)
                             player.Velocity.Y = GameData.SLAM_SPEED;
                     }
-                    else
+                    else if (player.CurrentState == Player.State.Slamming)
                     {
                         player.CurrentState = Player.State.Jumping;
                     }

@@ -27,22 +27,17 @@ namespace Source.Collisions
         public float TargetVelocity;
         public float SpawnY;
         public bool AbilityActive;
-        public Ability CurrentAbility;
+        public Character CurrentCharacter;
         public float BoostPart;
 
         public List<Projectile> Projectiles;
 
-        public bool InAir { get { return CurrentState == State.Jumping || CurrentState == State.Slamming; } }
+        public bool InAir { get { return CurrentState == State.Jumping || CurrentState == State.Slamming || CurrentState == State.Stunned || CurrentState == State.Flying; } }
         public bool CanJump { get { return CurrentState == State.Walking || CurrentState == State.Boosting; } }
 
         public enum State
         {
-            Jumping=0, Walking=1, Slamming=2, Boosting=3, Climbing=4, Stunned=5
-        }
-
-        public enum Ability
-        {
-            GravityPull, GravityPush, Explosive, Singularity
+            Jumping=0, Walking=1, Slamming=2, Boosting=3, Climbing=4, Stunned=5, Flying=6
         }
 
         public AnimatedSprite Sprite;
@@ -65,15 +60,15 @@ namespace Source.Collisions
             Velocity = Vector2.Zero;
         }
 
-        public Player(Texture2D texture, Vector2 position, Color color, Ability ability)
+        public Player(Texture2D texture, Vector2 position, Character character)
             : base(texture, position, new Vector2(0.6f, 1.8f))
         {
-            Color = color;
-            CurrentAbility = ability;
+            Color = character.Color;
+            CurrentCharacter = character;
 
             ResetValues();
 
-            int[] animationFrames = { 4, 4, 2, 4, 2, 1 };
+            int[] animationFrames = { 4, 4, 2, 4, 2, 1, 1 };
             Origin = new Vector2(Origin.X / animationFrames.Max(), Origin.Y / animationFrames.Length);
             float textureScale = 1.8f / Origin.Y / 2f * (20f / 18f);
             Sprite = new AnimatedSprite(texture, this, animationFrames, textureScale);
@@ -85,7 +80,7 @@ namespace Source.Collisions
         /// <param name="deltaTime"></param>
         public override void Move(float deltaTime)
         {
-            if (CurrentState == State.Stunned)
+            if (CurrentState == State.Stunned || CurrentState == State.Flying)
             {
                 StunTime -= deltaTime;
                 if (StunTime < 0)

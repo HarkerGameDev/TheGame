@@ -231,7 +231,7 @@ namespace Source.Collisions
                 Vector2 translation = player.Intersects(floor);
                 if (translation != Vector2.Zero)
                 {
-                    if (player.CurrentState != Player.State.Slamming && player.CurrentState != Player.State.Stunned)
+                    if (player.CurrentState != Player.State.Slamming && player.CurrentState != Player.State.Stunned && player.CurrentState != Player.State.Flying)
                     {
                         totalCollisions++;
 
@@ -292,7 +292,7 @@ namespace Source.Collisions
                 player.Velocity = Vector2.Zero;
             }
 
-            if (totalCollisions == 0 && !player.InAir && player.CurrentState != Player.State.Stunned)
+            if (totalCollisions == 0 && !player.InAir)
                 player.CurrentState = Player.State.Jumping;
         }
 
@@ -335,29 +335,37 @@ namespace Source.Collisions
                 Vector2 translation = player.Intersects(wall);
                 if (translation != Vector2.Zero)
                 {
-                    if ((player.CurrentState == Player.State.Slamming || player.CurrentState == Player.State.Stunned) && wall.Health == 1)
+                    translation.Y = 0;
+                    if (wall.IsWindow)
                     {
                         game.walls.RemoveAt(i);
-                        MakeParticles(player.Position, wall, GameData.NUM_PART_WALL, 0, 1);
+                        if (player.CurrentState == Player.State.Slamming || player.CurrentState == Player.State.Stunned || player.CurrentState == Player.State.Flying)
+                        {
+                            MakeParticles(player.Position, wall, GameData.NUM_PART_WALL, 0, 1);
+                        }
+                        else
+                        {
+                            player.Velocity.X *= GameData.WINDOW_SLOW;
+                            MakeParticles(player.Position, wall, GameData.NUM_PART_WALL, 1, 0);
+                        }
                     }
                     else
                     {
-                        translation.Y = 0;
-                        if (wall.Health > 1)
+                        if (player.CurrentState == Player.State.Flying)
+                        {
+                            game.walls.RemoveAt(i);
+                            player.Velocity.X *= GameData.WALL_SLOW;
+                            MakeParticles(player.Position, wall, GameData.NUM_PART_WALL, 1, 0);
+                        }
+                        else
                         {
                             player.Velocity.X = 0;
                             player.MovePosition(-translation);
                         }
-                        else
-                        {
-                            player.Velocity.X *= GameData.WALL_SLOW;
-                            game.walls.RemoveAt(i);
-                            MakeParticles(player.Position, wall, GameData.NUM_PART_WALL, 1, 0);
-                        }
-
-                        if (wall.Position.Y < player.Position.Y)
-                            player.WallAbove = true;
                     }
+
+                    if (wall.Position.Y < player.Position.Y)
+                        player.WallAbove = true;
                 }
             }
 
@@ -381,12 +389,13 @@ namespace Source.Collisions
                     {
                         player.Velocity.Y = -GameData.OBSTACLE_JUMP;
                         player.StunTime = GameData.OBSTACLE_STUN;
-                        player.CurrentState = Player.State.Stunned;
+                        player.CurrentState = Player.State.Flying;
                         Console.WriteLine("OBSTACLE JUMP");
                     }
                     else if (translation.Y == 0) // hitting from side
                     {
-                        player.Velocity.X *= GameData.WALL_SLOW;
+                        player.Velocity.X *= GameData.WINDOW_SLOW;
+                        player.Velocity.Y = 0;
                         player.CurrentState = Player.State.Stunned;
                         player.StunTime = GameData.OBSTACLE_HIT_STUN;
                         game.obstacles.RemoveAt(i);
@@ -406,23 +415,23 @@ namespace Source.Collisions
 
         private void PerformSpecial(Player player, float deltaTime)
         {
-            switch (player.CurrentAbility)
-            {
-                case Player.Ability.GravityPull:
-                    ApplyGravity(-GameData.GRAVITY_FORCE, player, player.Position, deltaTime);
-                    break;
-                case Player.Ability.GravityPush:
-                    ApplyGravity(GameData.GRAVITY_FORCE, player, player.Position, deltaTime);
-                    break;
-                case Player.Ability.Explosive:
-                    game.drops.Add(new Drop(player, Game1.whiteRect, player.Position, 0.16f, Drop.Type.Bomb));
-                    player.AbilityActive = false;
-                    break;
-                case Player.Ability.Singularity:
-                    game.drops.Add(new Drop(player, Game1.whiteRect, player.Position, 0.08f, Drop.Type.Singularity));
-                    player.AbilityActive = false;
-                    break;
-            }
+            //switch (player.CurrentCharacter)
+            //{
+            //    case Player.Ability.GravityPull:
+            //        ApplyGravity(-GameData.GRAVITY_FORCE, player, player.Position, deltaTime);
+            //        break;
+            //    case Player.Ability.GravityPush:
+            //        ApplyGravity(GameData.GRAVITY_FORCE, player, player.Position, deltaTime);
+            //        break;
+            //    case Player.Ability.Explosive:
+            //        game.drops.Add(new Drop(player, Game1.whiteRect, player.Position, 0.16f, Drop.Type.Bomb));
+            //        player.AbilityActive = false;
+            //        break;
+            //    case Player.Ability.Singularity:
+            //        game.drops.Add(new Drop(player, Game1.whiteRect, player.Position, 0.08f, Drop.Type.Singularity));
+            //        player.AbilityActive = false;
+            //        break;
+            //}
         }
 
         private void ApplyGravity(float scale, Body player, Vector2 position, float deltaTime)

@@ -19,7 +19,10 @@ namespace Source
         public const int numPlayers = 1;            // number of players
 #endif
 
-        public static Color[] playerColors = { Color.Red, Color.Yellow, Color.Purple, Color.ForestGreen, Color.Khaki };     // colors of each player
+        public static Character[] playerCharacters = {
+            new Character(Color.Red, Character.AbilityOne.GravityPull, Character.AbilityTwo.GravityPush, Character.AbilityThree.Singularity),
+            new Character(Color.Yellow, Character.AbilityOne.GravityPull, Character.AbilityTwo.GravityPush, Character.AbilityThree.Singularity)
+        };
 
 
         public const int NEW_SEED_MINS = 10;     // minutes until a new level seed will be generated
@@ -100,9 +103,10 @@ namespace Source
         public const float RUN_VELOCITY = 22f; // m/s -- maximum horizontal velocity for player
         public const float MAX_ACCEL = 30f;   // m/s^2 -- the impulse which is applied when player starts moving after standing still
         public const float JUMP_SPEED = 18f; // m/s -- the initial upwards velocity when player jumps
-        public const float OBSTACLE_JUMP = 30f; // m/s -- initial upwards velocity after vaulting off of an obstacle succesfully
+        public const float OBSTACLE_JUMP = 25f; // m/s -- initial upwards velocity after vaulting off of an obstacle succesfully
         public const float JUMP_SLOW = 0.85f;   // -- x velocity is scaled by this when jumping
-        public const float WALL_SLOW = 0.2f;    // -- player speed is reduced to this ratio when a window is hit
+        public const float WINDOW_SLOW = 0.2f;    // -- player speed is reduced to this ratio when a window is hit
+        public const float WALL_SLOW = 0.2f;    // -- player speed is reduced to this ratio when a wall is hit while flying
         public const float SLAM_SPEED = 17f; // m/s -- the speed at which the player goes down when slamming
         public const float MIN_WOBBLE = 0f;  //     -- the minimum ratio between max velocity and (max - current velocity) for wobbling
         public const float MAX_WOBBLE = 0f;    //     -- the maximum ratio for wobbling; we don't want wobble amplifier 40x

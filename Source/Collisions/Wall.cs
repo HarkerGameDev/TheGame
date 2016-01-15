@@ -16,6 +16,7 @@ namespace Source.Collisions
         public const float WALL_WIDTH = 0.4f;
 
         public int Health;
+        public bool IsWindow;
 
         /// <summary>
         /// 
@@ -30,6 +31,7 @@ namespace Source.Collisions
         {
             Health = health < 0 ? 90000 : health;   // a very large number is just infinite health
             SetColor();
+            IsWindow = health == 1;
         }
 
         public void SetColor()
