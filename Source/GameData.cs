@@ -40,6 +40,8 @@ namespace Source
         public const int MAX_NUM_FLOORS = 11;
         public const int MIN_WALL_DIST = 10;    // distance between walls inside rooms
         public const int MAX_WALL_DIST = 90;
+        public const int MIN_OBSTACLE_DIST = 10;    // distance between obstacles inside rooms
+        public const int MAX_OBSTACLE_DIST = 50;
         public const int LEVEL_DIST_MIN = 5;    // the space between different buildings
         public const int LEVEL_DIST_MAX = 12;
 
@@ -98,6 +100,7 @@ namespace Source
         public const float RUN_VELOCITY = 22f; // m/s -- maximum horizontal velocity for player
         public const float MAX_ACCEL = 30f;   // m/s^2 -- the impulse which is applied when player starts moving after standing still
         public const float JUMP_SPEED = 18f; // m/s -- the initial upwards velocity when player jumps
+        public const float OBSTACLE_JUMP = 30f; // m/s -- initial upwards velocity after vaulting off of an obstacle succesfully
         public const float JUMP_SLOW = 0.85f;   // -- x velocity is scaled by this when jumping
         public const float WALL_SLOW = 0.2f;    // -- player speed is reduced to this ratio when a window is hit
         public const float SLAM_SPEED = 17f; // m/s -- the speed at which the player goes down when slamming
@@ -132,6 +135,7 @@ namespace Source
         public const float PARTICLE_Y = 5f;         // maximum y velocity of a particle in either direction
         public const int NUM_PART_WALL = 10;        // number of particles to spawn when a wall is exploded
         public const int NUM_PART_FLOOR = 5;        // number of particles to spawn when slamming and a hole is made
+        public const int NUM_PART_OBSTACLE = 3;     // number of particles to spawn when an obstacle is hit or destroyed
         public const float BOOST_PART_TIME = 1 / 30f;   // time until a new particle will be spawned when boosting
 
         public const float PROJ_WIDTH = 1f;     // width of a projectile in m
@@ -144,6 +148,8 @@ namespace Source
         public const float DROP_SPEED_Y = -14f;  // initial y speed of drop
         public const float DROP_FRICTION = 0.6f; // ratio of speed lost per second
         public const float STUN_TIME = 0.5f;    // time of stun
+        public const float OBSTACLE_STUN = 0.5f;    // time of stun after vaulting off obstacle
+        public const float OBSTACLE_HIT_STUN = 0.4f;    // time of stun after hitting an obstacle
         public const float STUN_RADIUS = 3.3f;    // radius within which a player will be stuned from an explosion (in m)
         public const float GRAVITY_FORCE = 150f;  // G (in physics) in essence
         public const float BOMB_FORCE = 200f;        // force in m/s when a bomb explodes

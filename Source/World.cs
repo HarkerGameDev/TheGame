@@ -346,6 +346,7 @@ namespace Source.Collisions
                         if (wall.Health > 1)
                         {
                             player.Velocity.X = 0;
+                            player.MovePosition(-translation);
                         }
                         else
                         {
@@ -353,7 +354,6 @@ namespace Source.Collisions
                             game.walls.RemoveAt(i);
                             MakeParticles(player.Position, wall, GameData.NUM_PART_WALL, 1, 0);
                         }
-                        player.MovePosition(-translation);
 
                         if (wall.Position.Y < player.Position.Y)
                             player.WallAbove = true;
@@ -372,22 +372,36 @@ namespace Source.Collisions
                 Vector2 translation = player.Intersects(obstacle);
                 if (translation != Vector2.Zero)
                 {
-                    if (player.CurrentState == Player.State.Slamming || player.CurrentState == Player.State.Stunned)
+                    if (player.CurrentState == Player.State.Slamming)
                     {
-                        game.walls.RemoveAt(i);
-                        MakeParticles(player.Position, obstacle, GameData.NUM_PART_FLOOR, 0, 0);
+                        game.obstacles.RemoveAt(i);
+                        MakeParticles(obstacle.Position, obstacle, GameData.NUM_PART_OBSTACLE, 0, 0);
                     }
-
-                    if (translation.X != 0)
-                        player.Velocity.X = 0;
-                    else
+                    else if (player.Velocity.Y < 0)  // player going up
+                    {
+                        player.Velocity.Y = -GameData.OBSTACLE_JUMP;
+                        player.StunTime = GameData.OBSTACLE_STUN;
+                        player.CurrentState = Player.State.Stunned;
+                        Console.WriteLine("OBSTACLE JUMP");
+                    }
+                    else if (translation.Y == 0) // hitting from side
+                    {
+                        player.Velocity.X *= GameData.WALL_SLOW;
+                        player.CurrentState = Player.State.Stunned;
+                        player.StunTime = GameData.OBSTACLE_HIT_STUN;
+                        game.obstacles.RemoveAt(i);
+                        MakeParticles(obstacle.Position, obstacle, GameData.NUM_PART_OBSTACLE, 0, 0);
+                        Console.WriteLine("OBSTACLE STUN");
+                    }
+                    else if (translation.Y > 0) // hitting from top
+                    {
+                        player.MovePosition(-translation);
                         player.Velocity.Y = 0;
-
-                    player.MovePosition(-translation);
+                        player.CurrentState = Player.State.Walking;
+                        Console.WriteLine("OBSTACLE WALK");
+                    }
                 }
             }
-
-            player.MovePosition(new Vector2(0.0001f, 0)); // an extremely small amount to still render floor climbing
         }
 
         private void PerformSpecial(Player player, float deltaTime)

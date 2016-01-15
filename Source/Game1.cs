@@ -952,29 +952,32 @@ namespace Source
 
             float step = randLevel.Next(minStep, maxStep);
             float y = -step;
-            for (int i = 0; i < numFloors; i++)
+            for (int i = 0; i < numFloors; i++) // do this for each layer
             {
+                // add the windows on either end
                 walls.Add(new Wall(whiteRect, new Vector2(levelEnd + Wall.WALL_WIDTH / 2, y + step / 2 + Floor.FLOOR_HEIGHT / 2), step, GameData.WINDOW_HEALTH));
                 walls.Add(new Wall(whiteRect, new Vector2(levelEnd + width - Wall.WALL_WIDTH / 2, y + step / 2 + Floor.FLOOR_HEIGHT / 2), step, GameData.WINDOW_HEALTH));
 
                 float dist = 0;
-                while (dist < width)
+                while (dist < width)    // make the floors
                 {
                     float floorSize = (float)randLevel.NextDouble() * GameData.MAX_FLOOR_DIST + GameData.MIN_FLOOR_DIST;
-                    if (floorSize > width - dist)
+                    if (floorSize > width - dist)   // floor exceeds limit of level
                     {
                         floorSize = width - dist;
-                        if (floorSize < GameData.MIN_FLOOR_WIDTH)
+                        if (floorSize < GameData.MIN_FLOOR_WIDTH)   // end of floors for the layer
                             break;
                     }
-                    floors.Add(new Floor(whiteRect, new Vector2(levelEnd + dist + floorSize / 2, y), floorSize));
-                    float holeSize = (float)randLevel.NextDouble() * GameData.MAX_FLOOR_HOLE + GameData.MIN_FLOOR_HOLE;
+                    floors.Add(new Floor(whiteRect, new Vector2(levelEnd + dist + floorSize / 2, y), floorSize));   // make the floor
+                    float holeSize = (float)randLevel.NextDouble() * GameData.MAX_FLOOR_HOLE + GameData.MIN_FLOOR_HOLE;     // add a hole
                     dist += floorSize + holeSize;
 
-                    if (dist < width && randLevel.NextDouble() < GameData.STAIR_CHANCE && holeSize > GameData.MIN_STAIR_DIST)
+                    // add stairs
+                    if (dist < width && randLevel.NextDouble() < GameData.STAIR_CHANCE && holeSize > GameData.MIN_STAIR_DIST)   // add a stair onto the hole
                     {
                         Floor stair = new Floor(whiteRect, new Vector2(levelEnd + dist - GameData.STAIR_WIDTH, y + step), new Vector2(levelEnd + dist, y));
 
+                        // check if there is something on the floor below the stair can start at
                         int numCollisions = 0;
                         foreach (Floor floor in floors)
                         {
@@ -985,6 +988,7 @@ namespace Source
                             }
                         }
 
+                        // make the stair
                         if (numCollisions > 0)
                         {
                             stair.Health = GameData.STAIR_HEALTH;
@@ -994,11 +998,13 @@ namespace Source
                     }
                 }
 
-                dist = randLevel.Next(GameData.MIN_WALL_DIST, GameData.MAX_WALL_DIST);
+                // add walls onto the layer
+                dist = randLevel.Next(GameData.MIN_WALL_DIST, GameData.MAX_WALL_DIST);  // reset dist
                 while (dist < width)
                 {
                     Wall wall = new Wall(whiteRect, new Vector2(levelEnd + dist, y + step / 2), step - Floor.FLOOR_HEIGHT, GameData.WALL_HEALTH);
 
+                    // check if the wall does not intersect with a staircase and has a floor on the top and bottom
                     bool validStair = true;
                     int numCollisions = 0;
                     foreach (Floor floor in floors)
@@ -1011,24 +1017,51 @@ namespace Source
                                 validStair = false;
                                 break;
                             }
-                            else
-                            {
-                                if (++numCollisions > 1 && !validStair)
-                                    break;
-                            }
+                            else if (++numCollisions > 1 && !validStair)
+                                break;
                         }
                     }
 
-                    if (validStair && numCollisions > 1)
+                    if (validStair && numCollisions > 1)    // make the wall
                        walls.Add(wall);
                     dist += randLevel.Next(GameData.MIN_WALL_DIST, GameData.MAX_WALL_DIST);
                 }
 
+                // add obstacles to the layer
+                dist = randLevel.Next(GameData.MIN_OBSTACLE_DIST, GameData.MAX_OBSTACLE_DIST);  // reset dist
+                while (dist < width)
+                {
+                    Obstacle obstacle = new Obstacle(whiteRect, new Vector2(levelEnd + dist, y + step - Obstacle.OBSTACLE_HEIGHT / 2));
+
+                    // make sure the obstacle does not intersect with a stair or is on a hole
+                    bool validStair = true;
+                    int numCollisions = 0;
+                    foreach (Floor floor in floors)
+                    {
+                        if (obstacle.Intersects(floor) != Vector2.Zero)
+                        {
+                            if (floor.Health > 0)
+                            {
+                                obstacle = null;
+                                validStair = false;
+                                break;
+                            }
+                            else if (++numCollisions > 0 && !validStair)
+                                break;
+                        }
+                    }
+
+                    if (validStair && numCollisions > 0)
+                        obstacles.Add(obstacle);
+                    dist += randLevel.Next(GameData.MIN_OBSTACLE_DIST, GameData.MAX_OBSTACLE_DIST);
+                }
+
                 step = randLevel.Next(minStep, maxStep);
-                y -= step;
+                y -= step;  // go to the next layer, which has a random height
             }
             levelEnd += width + randLevel.Next(GameData.LEVEL_DIST_MIN, GameData.LEVEL_DIST_MAX);
 
+            // remove previous levels
             if (floors.Count > GameData.MAX_FLOORS)
                 floors.RemoveRange(0, floors.Count - GameData.MAX_FLOORS);
             if (walls.Count > GameData.MAX_WALLS)

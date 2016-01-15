@@ -13,13 +13,13 @@ namespace Source.Collisions
     /// </summary>
     public class Obstacle : Body
     {
-        public const float OBSTACLE_WIDTH = 0.8f;
-        public const float OBSTACLE_HEIGHT = 0.5f;
+        public const float OBSTACLE_WIDTH = 2f;
+        public const float OBSTACLE_HEIGHT = 1.8f;
 
         public Obstacle(Texture2D texture, Vector2 position, float scale = 1f)
             : base(texture, position, new Vector2(OBSTACLE_WIDTH, OBSTACLE_HEIGHT) * scale)
         {
-            Color = Color.DarkSlateBlue;
+            Color = Color.SaddleBrown;
         }
     }
 }
