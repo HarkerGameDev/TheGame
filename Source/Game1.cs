@@ -710,10 +710,20 @@ namespace Source
                     }
                 }
 
+#if DEBUG
+                if (player.ActionTime < -GameData.ACTION_TIME_COOLDOWN)
+                    player.Color = player.CurrentCharacter.Color;
+                else if (player.ActionTime < 0)
+                    player.Color = Color.Green;
+#endif
+
                 if (controls.Action && player.TimeSinceDeath <= 0 && player.ActionTime < -GameData.ACTION_TIME_COOLDOWN)
                 {
                     player.ActionTime = GameData.ACTION_TIME;
-                    Console.WriteLine("Action");
+#if DEBUG
+                    player.Color = Color.Purple;
+#endif
+                    //Console.WriteLine("Action");
                     //player.Projectiles.Add(new Projectile(whiteRect, new Vector2(player.Position.X - player.Size.X / 2f, player.Position.Y), player.Color));
                     //player.BoostTime -= GameData.SHOOT_COST;
                 }
