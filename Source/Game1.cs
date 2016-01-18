@@ -178,7 +178,7 @@ namespace Source
             {
                 playerControls = new GameData.Controls[] {
                                                        new GameData.KeyboardControls(this, Keys.OemComma, Keys.OemPeriod, Keys.OemQuestion, Keys.Right, Keys.Up, Keys.Down, Keys.Left),
-                                                       new GameData.KeyboardControls(this, Keys.NumPad1, Keys.NumPad2, Keys.NumPad3, Keys.D, Keys.W, Keys.S, Keys.A),
+                                                       new GameData.KeyboardControls(this, Keys.D1, Keys.D2, Keys.D3, Keys.D, Keys.W, Keys.S, Keys.A),
                                                        new GameData.GamePadControls(this, PlayerIndex.One, Buttons.X, Buttons.B, Buttons.Y, Buttons.LeftThumbstickRight, Buttons.RightTrigger, Buttons.LeftThumbstickDown, Buttons.A)
                                                   };
             }
