@@ -105,7 +105,8 @@ namespace Source
         public const float MIN_WOBBLE = 0f;  //     -- the minimum ratio between max velocity and (max - current velocity) for wobbling
         public const float MAX_WOBBLE = 0f;    //     -- the maximum ratio for wobbling; we don't want wobble amplifier 40x
         public const float RESPAWN_DIST = 10;
-        public const float CLIMB_SPEED = 8f;     // m/s -- speed of climbing onto a ledge
+        public const float CLIMB_SPEED = 2f;     // m/s -- speed of climbing onto a ledge
+        public const float CLIMB_SPEED_FAST = 14f;     // m/s -- speed of climbing onto a ledge
 
         public const float BOOST_LENGTH = 6f;  // how long a player can boost for
         public const float SHOOT_COST = 0.3f; // boost bar cost of a shot
@@ -124,7 +125,8 @@ namespace Source
         public const float DEAD_DIST = 240f;            // players this distance or more behind the average x will move to the maximum player (in pixels)
         public const double DEAD_TIME = 3;             // respawn time when a player gets behind the cutoff
         public const double PHASE_TIME = 1;            // the point at which the player will be visible again after dying to get the player prepared
-        public const float ACTION_TIME = 0.2f;          // leway for how much time during which "Action" button applies after being hit
+        public const float ACTION_TIME = 0.3f;          // leway for how much time during which "Action" button applies after being hit
+        public const float ACTION_TIME_COOLDOWN = 0.7f;    // cooldown during which "action" button cannot be pressed
 
         public const float PARTICLE_WIDTH = .125f;  // width of a particle (as a square)
         public const float PARTICLE_LIFETIME = 1.4f;  // how long a particle lasts for (in s)

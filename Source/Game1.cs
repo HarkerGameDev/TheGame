@@ -710,9 +710,10 @@ namespace Source
                     }
                 }
 
-                if (controls.Action && player.TimeSinceDeath <= 0 && player.BoostTime > GameData.SHOOT_COST)
+                if (controls.Action && player.TimeSinceDeath <= 0 && player.ActionTime < -GameData.ACTION_TIME_COOLDOWN)
                 {
                     player.ActionTime = GameData.ACTION_TIME;
+                    Console.WriteLine("Action");
                     //player.Projectiles.Add(new Projectile(whiteRect, new Vector2(player.Position.X - player.Size.X / 2f, player.Position.Y), player.Color));
                     //player.BoostTime -= GameData.SHOOT_COST;
                 }

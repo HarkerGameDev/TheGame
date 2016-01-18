@@ -242,7 +242,7 @@ namespace Source.Collisions
                         if (Math.Abs(translation.X) > Math.Abs(translation.Y) && !player.WallAbove)
                         {
                             player.CurrentState = Player.State.Climbing;
-                            player.Velocity.Y = -GameData.CLIMB_SPEED;
+                            player.Velocity.Y = player.ActionTime > 0 ? -GameData.CLIMB_SPEED_FAST : -GameData.CLIMB_SPEED;
                         }
                         else if (player.CurrentState == Player.State.Climbing)
                             player.CurrentState = Player.State.Walking;
@@ -355,7 +355,7 @@ namespace Source.Collisions
                     }
                     else
                     {
-                        if (player.CurrentState == Player.State.Flying)
+                        if (player.CurrentState == Player.State.Flying || player.ActionTime > 0)
                         {
                             game.walls.RemoveAt(i);
                             player.Velocity.X *= GameData.WALL_SLOW;
@@ -394,7 +394,6 @@ namespace Source.Collisions
                         player.Velocity.Y = -GameData.OBSTACLE_JUMP;
                         player.StunTime = GameData.OBSTACLE_STUN;
                         player.CurrentState = Player.State.Flying;
-                        Console.WriteLine("OBSTACLE JUMP");
                     }
                     else if (translation.Y == 0) // hitting from side
                     {
@@ -404,14 +403,12 @@ namespace Source.Collisions
                         player.StunTime = GameData.OBSTACLE_HIT_STUN;
                         game.obstacles.RemoveAt(i);
                         MakeParticles(obstacle.Position, obstacle, GameData.NUM_PART_OBSTACLE, 0, 0);
-                        Console.WriteLine("OBSTACLE STUN");
                     }
                     else if (translation.Y > 0) // hitting from top
                     {
                         player.MovePosition(-translation);
                         player.Velocity.Y = 0;
                         player.CurrentState = Player.State.Walking;
-                        Console.WriteLine("OBSTACLE WALK");
                     }
                 }
             }
@@ -467,6 +464,21 @@ namespace Source.Collisions
                         force *= GameData.MAX_FORCE;
                     }
                     part.Velocity += force * deltaTime; // 1/r for gravity
+                }
+            }
+            foreach (Drop drop in game.drops)
+            {
+                Vector2 dist = drop.Position - position;
+                float length = dist.Length();
+                if (length != 0)
+                {
+                    Vector2 force = scale * dist / (length * length);
+                    if (force.LengthSquared() > GameData.MAX_FORCE)
+                    {
+                        force.Normalize();
+                        force *= GameData.MAX_FORCE;
+                    }
+                    drop.Velocity += force * deltaTime; // 1/r for gravity
                 }
             }
             foreach (Player body in game.players)
