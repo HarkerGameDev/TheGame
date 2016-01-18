@@ -16,14 +16,8 @@ namespace Source
 #if DEBUG
         public const int numPlayers = 1;
 #else
-        public const int numPlayers = 1;            // number of players
+        public const int numPlayers = 2;            // number of players
 #endif
-
-        public static Character[] playerCharacters = {
-            new Character(Color.Red, Character.AbilityOne.GravityPull, Character.AbilityTwo.GravityPush, Character.AbilityThree.Singularity),
-            new Character(Color.Yellow, Character.AbilityOne.GravityPull, Character.AbilityTwo.GravityPush, Character.AbilityThree.Singularity)
-        };
-
 
         public const int NEW_SEED_MINS = 10;     // minutes until a new level seed will be generated
         public const float LOAD_NEW = 70f;     // the next level will be loaded when the player is this far from the current end
@@ -130,6 +124,7 @@ namespace Source
         public const float DEAD_DIST = 240f;            // players this distance or more behind the average x will move to the maximum player (in pixels)
         public const double DEAD_TIME = 3;             // respawn time when a player gets behind the cutoff
         public const double PHASE_TIME = 1;            // the point at which the player will be visible again after dying to get the player prepared
+        public const float ACTION_TIME = 0.2f;          // leway for how much time during which "Action" button applies after being hit
 
         public const float PARTICLE_WIDTH = .125f;  // width of a particle (as a square)
         public const float PARTICLE_LIFETIME = 1.4f;  // how long a particle lasts for (in s)
@@ -196,58 +191,68 @@ namespace Source
 
         public enum ControlKey
         {
-            Special, Boost, Jump, Slam, Shoot
+            Special1, Special2, Special3, Boost, Jump, Slam, Action
         }
 
         // TODO intuitive controls
         public interface Controls
         {
-            bool Special { get; }   // toggle
+            bool Special1 { get; }   // toggle
+            bool Special2 { get; }  // toggle
+            bool Special3 { get; }  // toggle
             bool Boost { get; }     // hold
             bool Jump { get; }      // hold
             bool Slam { get; }      // hold
-            bool Shoot { get; }     // toggle
+            bool Action { get; }     // toggle
 
             string ToString();
         }
 
         public class SimulatedControls : Controls
         {
-            public bool Special { get; set; }
+            public bool Special1 { get; set; }
+            public bool Special2 { get; set; }
+            public bool Special3 { get; set; }
             public bool Boost { get; set; }
             public bool Jump { get; set; }
             public bool Slam { get; set; }
-            public bool Shoot { get; set; }
+            public bool Action { get; set; }
 
             public SimulatedControls(Game1 game)
             {
-                Special = false;
+                Special1 = false;
+                Special2 = false;
+                Special3 = false;
                 Boost = false;
                 Jump = false;
                 Slam = false;
-                Shoot = false;
+                Action = false;
             }
         }
 
         public struct KeyboardControls : Controls
         {
-            public bool Special { get { return game.ToggleKey(special); } }
+            public bool Special1 { get { return game.ToggleKey(special1); } }
+            public bool Special2 { get { return game.ToggleKey(special2); } }
+            public bool Special3 { get { return game.ToggleKey(special3); } }
             public bool Boost { get { return Keyboard.GetState().IsKeyDown(boost); } }
             public bool Jump { get { return Keyboard.GetState().IsKeyDown(jump); } }
             public bool Slam { get { return Keyboard.GetState().IsKeyDown(slam); } }
-            public bool Shoot { get { return game.ToggleKey(shoot); } }
+            public bool Action { get { return game.ToggleKey(action); } }
 
             private Game1 game;
-            private Keys special, boost, jump, slam, shoot;
+            private Keys special1, special2, special3, boost, jump, slam, action;
 
-            public KeyboardControls(Game1 game, Keys special, Keys boost, Keys jump, Keys slam, Keys shoot)
+            public KeyboardControls(Game1 game, Keys special1, Keys special2, Keys special3, Keys boost, Keys jump, Keys slam, Keys action)
             {
                 this.game = game;
-                this.special = special;
+                this.special1 = special1;
+                this.special2 = special2;
+                this.special3 = special3;
                 this.boost = boost;
                 this.jump = jump;
                 this.slam = slam;
-                this.shoot = shoot;
+                this.action = action;
             }
 
             public override string ToString()
@@ -256,33 +261,40 @@ namespace Source
                 builder.AppendLine("Boost = " + boost)
                     .AppendLine("Jump = " + jump)
                     .AppendLine("Slam = " + slam)
-                    .AppendLine("Shoot = " + shoot)
-                    .AppendLine("Special = " + special);
+                    .AppendLine("Action = " + action)
+                    .AppendLine("Special1 = " + special1)
+                    .AppendLine("Special2 = " + special2)
+                    .AppendLine("Special3 = " + special3);
+
                 return builder.ToString();
             }
         }
 
         public struct GamePadControls : Controls
         {
-            public bool Special { get { return game.ToggleButton(playerIndex, special); } }
+            public bool Special1 { get { return game.ToggleButton(playerIndex, special1); } }
+            public bool Special2 { get { return game.ToggleButton(playerIndex, special2); } }
+            public bool Special3 { get { return game.ToggleButton(playerIndex, special3); } }
             public bool Boost { get { return GamePad.GetState(playerIndex, GamePadDeadZone.Circular).IsButtonDown(boost); } }
             public bool Jump { get { return GamePad.GetState(playerIndex, GamePadDeadZone.Circular).IsButtonDown(jump); } }
             public bool Slam { get { return GamePad.GetState(playerIndex, GamePadDeadZone.Circular).IsButtonDown(slam); } }
-            public bool Shoot { get { return game.ToggleButton(playerIndex, shoot); } }
+            public bool Action { get { return game.ToggleButton(playerIndex, action); } }
 
             private Game1 game;
             private PlayerIndex playerIndex;
-            private Buttons special, boost, jump, slam, shoot;
+            private Buttons special1, special2, special3, boost, jump, slam, action;
 
-            public GamePadControls(Game1 game, PlayerIndex playerIndex, Buttons special, Buttons boost, Buttons jump, Buttons slam, Buttons shoot)
+            public GamePadControls(Game1 game, PlayerIndex playerIndex, Buttons special1, Buttons special2, Buttons special3, Buttons boost, Buttons jump, Buttons slam, Buttons action)
             {
                 this.game = game;
                 this.playerIndex = playerIndex;
-                this.special = special;
+                this.special1 = special1;
+                this.special2 = special2;
+                this.special3 = special3;
                 this.boost = boost;
                 this.jump = jump;
                 this.slam = slam;
-                this.shoot = shoot;
+                this.action = action;
             }
 
             public override string ToString()
@@ -291,8 +303,10 @@ namespace Source
                 builder.AppendLine("Boost = " + boost)
                     .AppendLine("Jump = " + jump)
                     .AppendLine("Slam = " + slam)
-                    .AppendLine("Shoot = " + shoot)
-                    .AppendLine("Special = " + special);
+                    .AppendLine("Action = " + action)
+                    .AppendLine("Special1 = " + special1)
+                    .AppendLine("Special2 = " + special2)
+                    .AppendLine("Special3 = " + special3);
                 return builder.ToString();
             }
         }

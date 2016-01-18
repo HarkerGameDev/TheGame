@@ -133,8 +133,12 @@ namespace Source.Collisions
                     CheckFloors(player);
                     CheckObstacles(player);
 
-                    if (player.AbilityActive)
-                        PerformSpecial(player, deltaTime);
+                    if (player.Ability1)
+                        PerformSpecial1(player, deltaTime);
+                    if (player.Ability2)
+                        PerformSpecial2(player, deltaTime);
+                    if (player.Ability3)
+                        PerformSpecial3(player, deltaTime);
                 }
             }
         }
@@ -339,7 +343,7 @@ namespace Source.Collisions
                     if (wall.IsWindow)
                     {
                         game.walls.RemoveAt(i);
-                        if (player.CurrentState == Player.State.Slamming || player.CurrentState == Player.State.Stunned || player.CurrentState == Player.State.Flying)
+                        if (player.CurrentState == Player.State.Slamming || player.CurrentState == Player.State.Stunned || player.CurrentState == Player.State.Flying || player.ActionTime > 0)
                         {
                             MakeParticles(player.Position, wall, GameData.NUM_PART_WALL, 0, 1);
                         }
@@ -413,25 +417,39 @@ namespace Source.Collisions
             }
         }
 
-        private void PerformSpecial(Player player, float deltaTime)
+        private void PerformSpecial1(Player player, float deltaTime)
         {
-            //switch (player.CurrentCharacter)
-            //{
-            //    case Player.Ability.GravityPull:
-            //        ApplyGravity(-GameData.GRAVITY_FORCE, player, player.Position, deltaTime);
-            //        break;
-            //    case Player.Ability.GravityPush:
-            //        ApplyGravity(GameData.GRAVITY_FORCE, player, player.Position, deltaTime);
-            //        break;
-            //    case Player.Ability.Explosive:
-            //        game.drops.Add(new Drop(player, Game1.whiteRect, player.Position, 0.16f, Drop.Type.Bomb));
-            //        player.AbilityActive = false;
-            //        break;
-            //    case Player.Ability.Singularity:
-            //        game.drops.Add(new Drop(player, Game1.whiteRect, player.Position, 0.08f, Drop.Type.Singularity));
-            //        player.AbilityActive = false;
-            //        break;
-            //}
+            switch (player.CurrentCharacter.Ability1)
+            {
+                case Character.AbilityOne.GravityPull:
+                    ApplyGravity(-GameData.GRAVITY_FORCE, player, player.Position, deltaTime);
+                    break;
+                case Character.AbilityOne.GravityPush:
+                    ApplyGravity(GameData.GRAVITY_FORCE, player, player.Position, deltaTime);
+                    break;
+            }
+        }
+
+        private void PerformSpecial2(Player player, float deltaTime)
+        {
+            switch (player.CurrentCharacter.Ability2)
+            {
+                case Character.AbilityTwo.Explosive:
+                    game.drops.Add(new Drop(player, Game1.whiteRect, player.Position, 0.16f, Drop.Type.Bomb));
+                    player.Ability2 = false;
+                    break;
+            }
+        }
+
+        private void PerformSpecial3(Player player, float deltaTime)
+        {
+            switch (player.CurrentCharacter.Ability3)
+            {
+                case Character.AbilityThree.Singularity:
+                    game.drops.Add(new Drop(player, Game1.whiteRect, player.Position, 0.08f, Drop.Type.Singularity));
+                    player.Ability3 = false;
+                    break;
+            }
         }
 
         private void ApplyGravity(float scale, Body player, Vector2 position, float deltaTime)

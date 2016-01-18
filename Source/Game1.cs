@@ -177,10 +177,9 @@ namespace Source
             else
             {
                 playerControls = new GameData.Controls[] {
-                                                       new GameData.KeyboardControls(this, Keys.Left, Keys.Right, Keys.Up, Keys.Down, Keys.RightShift),
-                                                       new GameData.KeyboardControls(this, Keys.A, Keys.D, Keys.W, Keys.S, Keys.LeftShift),
-                                                       new GameData.KeyboardControls(this, Keys.J, Keys.L, Keys.I, Keys.K, Keys.O),
-                                                       new GameData.GamePadControls(this, PlayerIndex.One, Buttons.LeftTrigger, Buttons.LeftThumbstickRight, Buttons.RightTrigger, Buttons.LeftThumbstickDown, Buttons.A)
+                                                       new GameData.KeyboardControls(this, Keys.OemComma, Keys.OemPeriod, Keys.OemQuestion, Keys.Right, Keys.Up, Keys.Down, Keys.Left),
+                                                       new GameData.KeyboardControls(this, Keys.NumPad1, Keys.NumPad2, Keys.NumPad3, Keys.D, Keys.W, Keys.S, Keys.A),
+                                                       new GameData.GamePadControls(this, PlayerIndex.One, Buttons.X, Buttons.B, Buttons.Y, Buttons.LeftThumbstickRight, Buttons.RightTrigger, Buttons.LeftThumbstickDown, Buttons.A)
                                                   };
             }
 
@@ -338,7 +337,7 @@ namespace Source
             {
                 // create a player with color specified in GameData and random color
                 Vector2 spawnLoc = new Vector2(GameData.PLAYER_START, -rand.Next(GameData.MIN_SPAWN, GameData.MAX_SPAWN));
-				players.Add(new Player(Content.Load<Texture2D>("Art/GreenDude"), spawnLoc, GameData.playerCharacters[i]));
+				players.Add(new Player(Content.Load<Texture2D>("Art/GreenDude"), spawnLoc, Character.playerCharacters[i]));
             }
             floors = new List<Floor>();
             walls = new List<Wall>();
@@ -467,26 +466,26 @@ namespace Source
                                 GameData.ControlKey key = keys[simIndex];
                                 switch (key)
                                 {
-                                    case GameData.ControlKey.Special:
-                                        control.Special = true;
-                                        Console.WriteLine("Special");
+                                    case GameData.ControlKey.Special1:
+                                        control.Special1 = true;
+                                        break;
+                                    case GameData.ControlKey.Special2:
+                                        control.Special2 = true;
+                                        break;
+                                    case GameData.ControlKey.Special3:
+                                        control.Special3 = true;
                                         break;
                                     case GameData.ControlKey.Boost:
                                         control.Boost = !control.Boost;
-                                        Console.WriteLine(control.Boost ? "Boosting" : "Not Boosting");
                                         break;
                                     case GameData.ControlKey.Jump:
                                         control.Jump = !control.Jump;
-                                        Console.WriteLine(control.Jump ? "Jumping" : "Not Jumping");
-                                        //players[0].Color = control.Jump ? Color.White : Color.Red;
                                         break;
                                     case GameData.ControlKey.Slam:
                                         control.Slam = !control.Slam;
-                                        Console.WriteLine(control.Slam ? "Slamming" : "Not Slamming");
                                         break;
-                                    case GameData.ControlKey.Shoot:
-                                        control.Shoot = true;
-                                        Console.WriteLine("Shoot");
+                                    case GameData.ControlKey.Action:
+                                        control.Action = true;
                                         break;
                                 }
                                 simIndex++;
@@ -499,8 +498,10 @@ namespace Source
                         if (simulating)
                         {
                             GameData.SimulatedControls control = (GameData.SimulatedControls)playerControls[0];
-                            control.Special = false;
-                            control.Shoot = false;
+                            control.Special1 = false;
+                            control.Special2 = false;
+                            control.Special3 = false;
+                            control.Action = false;
                         }
 
                         CheckPlayer();
@@ -623,15 +624,25 @@ namespace Source
 
             if (!simulating)
             {
-                if (controls.Special)
+                if (controls.Special1)
                 {
                     times.Add(totalTime);
-                    keys.Add(GameData.ControlKey.Special);
+                    keys.Add(GameData.ControlKey.Special1);
                 }
-                if (controls.Shoot)
+                if (controls.Special2)
                 {
                     times.Add(totalTime);
-                    keys.Add(GameData.ControlKey.Shoot);
+                    keys.Add(GameData.ControlKey.Special2);
+                }
+                if (controls.Special3)
+                {
+                    times.Add(totalTime);
+                    keys.Add(GameData.ControlKey.Special3);
+                }
+                if (controls.Action)
+                {
+                    times.Add(totalTime);
+                    keys.Add(GameData.ControlKey.Action);
                 }
                 if (controls.Boost != prevBoost)
                 {
@@ -699,15 +710,19 @@ namespace Source
                     }
                 }
 
-                if (controls.Shoot && player.TimeSinceDeath <= 0 && player.BoostTime > GameData.SHOOT_COST)
+                if (controls.Action && player.TimeSinceDeath <= 0 && player.BoostTime > GameData.SHOOT_COST)
                 {
-                    player.Projectiles.Add(new Projectile(whiteRect, new Vector2(player.Position.X - player.Size.X / 2f, player.Position.Y), player.Color));
-                    player.BoostTime -= GameData.SHOOT_COST;
+                    player.ActionTime = GameData.ACTION_TIME;
+                    //player.Projectiles.Add(new Projectile(whiteRect, new Vector2(player.Position.X - player.Size.X / 2f, player.Position.Y), player.Color));
+                    //player.BoostTime -= GameData.SHOOT_COST;
                 }
-                if (controls.Special)                // activate (or toggle) special
-                {
-                    player.AbilityActive = !player.AbilityActive;
-                }
+                // activate (or toggle) special abilities
+                if (controls.Special1)
+                    player.Ability1 = !player.Ability1;
+                if (controls.Special2)
+                    player.Ability2 = !player.Ability2;
+                if (controls.Special3)
+                    player.Ability3 = !player.Ability3;
             }
         }
 

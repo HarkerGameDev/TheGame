@@ -23,10 +23,13 @@ namespace Source.Collisions
         public int Score;
         public float BoostTime;
         public float StunTime;
+        public float ActionTime;
         public bool WallAbove;
         public float TargetVelocity;
         public float SpawnY;
-        public bool AbilityActive;
+        public bool Ability1;
+        public bool Ability2;
+        public bool Ability3;
         public Character CurrentCharacter;
         public float BoostPart;
 
@@ -52,8 +55,9 @@ namespace Source.Collisions
             WallAbove = false;
             TargetVelocity = GameData.RUN_VELOCITY;
             SpawnY = 0;
-            AbilityActive = false;
-            //CurrentAbility = Ability.GravityPull;
+            Ability1 = false;
+            Ability2 = false;
+            Ability3 = false;
             BoostPart = GameData.BOOST_PART_TIME;
 
             Projectiles = new List<Projectile>();
@@ -80,6 +84,7 @@ namespace Source.Collisions
         /// <param name="deltaTime"></param>
         public override void Move(float deltaTime)
         {
+            ActionTime -= deltaTime;
             if (CurrentState == State.Stunned || CurrentState == State.Flying)
             {
                 StunTime -= deltaTime;
@@ -127,7 +132,9 @@ namespace Source.Collisions
             Projectiles.Clear();
             SpawnY = -rand.Next(GameData.MIN_SPAWN, GameData.MAX_SPAWN);
             BoostTime = GameData.BOOST_LENGTH;
-            AbilityActive = false;
+            Ability1 = false;
+            Ability2 = false;
+            Ability3 = false;
         }
     }
 }

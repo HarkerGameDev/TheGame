@@ -10,6 +10,11 @@ namespace Source
 {
     public struct Character
     {
+        public static Character[] playerCharacters = {
+            new Character(Color.Red, AbilityOne.GravityPull, AbilityTwo.Explosive, AbilityThree.Singularity),
+            new Character(Color.Yellow, AbilityOne.GravityPush, AbilityTwo.Explosive, AbilityThree.Singularity)
+        };
+
         public readonly Color Color;
         public readonly AbilityOne Ability1;
         public readonly AbilityTwo Ability2;
@@ -17,12 +22,12 @@ namespace Source
 
         public enum AbilityOne
         {
-            GravityPull
+            GravityPull, GravityPush
         }
 
         public enum AbilityTwo
         {
-            GravityPush
+            Explosive
         }
 
         public enum AbilityThree
