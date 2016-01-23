@@ -1,4 +1,6 @@
-﻿using System;
+﻿//#define LIGHTING
+
+using System;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Collections.Generic;
@@ -53,10 +55,12 @@ namespace Source
         float fadeTime;
         public SpriteFont fontSmall, fontBig;
 
+#if LIGHTING
         QuadRenderComponent quadRender;
         ShadowmapResolver shadowmapResolver;
         LightArea lightArea;
         RenderTarget2D screenShadows;
+#endif
 
         public Random rand;
         Random randLevel;
@@ -118,9 +122,11 @@ namespace Source
             graphics.PreparingDeviceSettings += graphics_PreparingDeviceSettings;
             IsMouseVisible = true;
 
+#if LIGHTING
             quadRender = new QuadRenderComponent(this);
             Components.Add(quadRender);
             Components.Add(new GamerServicesComponent(this));
+#endif
         }
 
         private void graphics_DeviceCreated(object sender, EventArgs e)
@@ -311,11 +317,13 @@ namespace Source
             Content.RootDirectory = "Content";
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
+#if LIGHTING
             //Initialize shadows
             shadowmapResolver = new ShadowmapResolver(GraphicsDevice, quadRender, ShadowmapSize.Size256, ShadowmapSize.Size1024);
             shadowmapResolver.LoadContent(Content);
             lightArea = new LightArea(GraphicsDevice, ShadowmapSize.Size128);
             screenShadows = new RenderTarget2D(GraphicsDevice, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
+#endif
 
             // Load menus
             SpriteFont font = Content.Load<SpriteFont>("Fonts/Segoe_UI_15_Bold");
@@ -329,7 +337,7 @@ namespace Source
 
             // Load assets in the Content Manager
             //background = Content.Load<Texture2D>("Art/skyscrapers");
-            LoadLevel(1);
+            LoadLevel(2);
             fontSmall = Content.Load<SpriteFont>("Fonts/Score");
             fontBig = Content.Load<SpriteFont>("Fonts/ScoreBig");
 
@@ -470,6 +478,8 @@ namespace Source
                         LoadLevel(0);
                     else if (ToggleKey(Keys.O))
                         LoadLevel(1);
+                    else if (ToggleKey(Keys.P))
+                        LoadLevel(2);
 
                     if (editLevel)
                     {
@@ -1126,6 +1136,7 @@ namespace Source
             averagePos /= players.Count;
             //Vector2 averagePos = ConvertUnits.ToDisplayUnits(averagePos);
 
+#if LIGHTING
             // Calculate shadows for lightArea
             // TODO actual lights instead of on player
             // TODO optimize lights (use geometric lighting)
@@ -1147,11 +1158,13 @@ namespace Source
                 - lightArea.LightAreaSize * 0.5f * scale, null, GameData.LIGHT_COLOR, 0f, Vector2.Zero, scale, SpriteEffects.None, 0f);
             spriteBatch.End();
             GraphicsDevice.SetRenderTarget(null);
+            ConvertUnits.SetDisplayUnitToSimUnitRatio(zoom);
+#endif
 
             // Draw background
-            ConvertUnits.SetDisplayUnitToSimUnitRatio(zoom);
             DrawBackground(ConvertUnits.ToDisplayUnits(averagePos));
 
+#if LIGHTING
             // Draw shadows to screen
             BlendState blendState = new BlendState();
             blendState.ColorSourceBlend = Blend.DestinationColor;
@@ -1159,10 +1172,11 @@ namespace Source
             spriteBatch.Begin(SpriteSortMode.Immediate, blendState);
             spriteBatch.Draw(screenShadows, Vector2.Zero, Color.White);
             spriteBatch.End();
+#endif
 
             DrawScene(deltaTime, ConvertUnits.ToDisplayUnits(averagePos));
 
-#if DEBUG
+#if (DEBUG && LIGHTING)
             int width = GraphicsDevice.Viewport.Width;
             int height = GraphicsDevice.Viewport.Height;
             spriteBatch.Begin(SpriteSortMode.Immediate);
