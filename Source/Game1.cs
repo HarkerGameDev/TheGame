@@ -49,7 +49,8 @@ namespace Source
         GameData.Controls[] playerControls;
 
         public static Texture2D whiteRect;
-        Texture2D background;
+        Tuple<Texture2D, float, float, float>[] prevBackground, background;
+        float fadeTime;
         public SpriteFont fontSmall, fontBig;
 
         QuadRenderComponent quadRender;
@@ -327,7 +328,8 @@ namespace Source
             whiteRect.SetData(new[] { Color.White });
 
             // Load assets in the Content Manager
-            background = Content.Load<Texture2D>("Art/skyscrapers");
+            //background = Content.Load<Texture2D>("Art/skyscrapers");
+            LoadLevel(1);
             fontSmall = Content.Load<SpriteFont>("Fonts/Score");
             fontBig = Content.Load<SpriteFont>("Fonts/ScoreBig");
 
@@ -412,6 +414,23 @@ namespace Source
         }
 
         /// <summary>
+        /// Loads a level and stores it into background
+        /// </summary>
+        /// <param name="loadLevel"></param>
+        private void LoadLevel(int loadLevel)
+        {
+            float[][] level = GameData.WORLD_LAYERS[loadLevel];
+            background = new Tuple<Texture2D, float, float, float>[level.Length];
+            for (int i = 0; i < level.Length; i++)
+            {
+                float[] layer = level[i];
+                background[i] = new Tuple<Texture2D, float, float, float>(
+                    Content.Load<Texture2D>(string.Format("Worlds/World{0}/layer{1}", loadLevel, i)),
+                    layer[0], layer[1], layer[2]);
+            }
+        }
+
+        /// <summary>
         /// UnloadContent will be called once per game and is the place to unload
         /// game-specific content.
         /// </summary>
@@ -446,6 +465,11 @@ namespace Source
                             currentZoom = GameData.PIXEL_METER_EDIT;
                         ConvertUnits.SetDisplayUnitToSimUnitRatio(currentZoom);
                     }
+
+                    if (ToggleKey(Keys.I))
+                        LoadLevel(0);
+                    else if (ToggleKey(Keys.O))
+                        LoadLevel(1);
 
                     if (editLevel)
                     {
@@ -1273,15 +1297,25 @@ namespace Source
 
             GraphicsDevice.Clear(Color.MidnightBlue);
             spriteBatch.Begin(samplerState: SamplerState.LinearWrap);
-            spriteBatch.Draw(background, new Vector2(0, height * GameData.BACK3_CENTER),
-               new Rectangle((int)(averagePos.X * GameData.BACK3_MOVE), 0, (int)(width / GameData.BACK3_SIZE), background.Height),
-               GameData.BACK3_COLOR, 0f, new Vector2(0, background.Height / 2), GameData.BACK3_SIZE, SpriteEffects.None, 0f);
-            spriteBatch.Draw(background, new Vector2(0, height * GameData.BACK2_CENTER),
-               new Rectangle((int)(averagePos.X * GameData.BACK2_MOVE), 0, (int)(width / GameData.BACK2_SIZE), background.Height),
-               GameData.BACK2_COLOR, 0f, new Vector2(0, background.Height / 2), GameData.BACK2_SIZE, SpriteEffects.None, 0f);
-            spriteBatch.Draw(background, new Vector2(0, height * GameData.BACK1_CENTER),
-                new Rectangle((int)(averagePos.X * GameData.BACK1_MOVE), 0, (int)(width / GameData.BACK1_SIZE), background.Height),
-                GameData.BACK1_COLOR, 0f, new Vector2(0, background.Height / 2), GameData.BACK1_SIZE, SpriteEffects.None, 0f);
+            foreach (var layer in background)
+            {
+                Texture2D tex = layer.Item1;
+                float speed = layer.Item2;
+                float center = layer.Item3;
+                float size = layer.Item4;
+                spriteBatch.Draw(tex, new Vector2(0, height * center),
+                    new Rectangle((int)(averagePos.X * speed), 0, (int)(width / size), tex.Height),
+                    Color.White, 0f, new Vector2(0, tex.Height / 2), size, SpriteEffects.None, 0f);
+            }
+            //spriteBatch.Draw(background, new Vector2(0, height * GameData.BACK3_CENTER),
+            //   new Rectangle((int)(averagePos.X * GameData.BACK3_MOVE), 0, (int)(width / GameData.BACK3_SIZE), background.Height),
+            //   GameData.BACK3_COLOR, 0f, new Vector2(0, background.Height / 2), GameData.BACK3_SIZE, SpriteEffects.None, 0f);
+            //spriteBatch.Draw(background, new Vector2(0, height * GameData.BACK2_CENTER),
+            //   new Rectangle((int)(averagePos.X * GameData.BACK2_MOVE), 0, (int)(width / GameData.BACK2_SIZE), background.Height),
+            //   GameData.BACK2_COLOR, 0f, new Vector2(0, background.Height / 2), GameData.BACK2_SIZE, SpriteEffects.None, 0f);
+            //spriteBatch.Draw(background, new Vector2(0, height * GameData.BACK1_CENTER),
+            //    new Rectangle((int)(averagePos.X * GameData.BACK1_MOVE), 0, (int)(width / GameData.BACK1_SIZE), background.Height),
+            //    GameData.BACK1_COLOR, 0f, new Vector2(0, background.Height / 2), GameData.BACK1_SIZE, SpriteEffects.None, 0f);
             spriteBatch.End();
         }
 

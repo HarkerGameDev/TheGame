@@ -37,8 +37,8 @@ namespace Source
         public const int MAX_NUM_FLOORS = 11;
         public const int MIN_WALL_DIST = 10;    // distance between walls inside rooms
         public const int MAX_WALL_DIST = 90;
-        public const int MIN_OBSTACLE_DIST = 10;    // distance between obstacles inside rooms
-        public const int MAX_OBSTACLE_DIST = 50;
+        public const int MIN_OBSTACLE_DIST = 20;    // distance between obstacles inside rooms
+        public const int MAX_OBSTACLE_DIST = 60;
         public const int LEVEL_DIST_MIN = 5;    // the space between different buildings
         public const int LEVEL_DIST_MAX = 12;
 
@@ -77,7 +77,7 @@ namespace Source
         public const float DEAD_MAX = 40f; // m -- maximum distance between player and death if player is doing well
         public const int DEAD_WIDTH = 600;
         public const int DEAD_HEIGHT = 2000;
-        public const float WIN_TIME = 60f;  // s -- survive for this long to win
+        public const float WIN_TIME = 100f;  // s -- survive for this long to win
         public const float MAX_SPEED_SCALE = 0.9f; // game is this much faster by the end of win
         public const int WIN_SCORE = 10;    // player gets 1 point for every WIN_SCORE seconds they survive
         public const int LOSE_SCORE = 5;    // score to lose when hit by purple
@@ -159,20 +159,36 @@ namespace Source
         public const float BUTTON_WIDTH = 0.4f;  // width of a button in proportion of screen
         public const float BUTTON_HEIGHT = 0.12f;    // height of button in proportion
 
-        public const float BACK1_MOVE = 0.4f;   // speed of layer
-        public const float BACK1_CENTER = 0.6f; // y center on screen
-        public const float BACK1_SIZE = 0.5f;   // size of layer
-        public static Color BACK1_COLOR = Color.White; // color mask for layer
+        //public const int NUM_WORLDS = 3;    // number of worlds to load
+        // format of WORLD_LAYERS is:
+        //  first array is each individual world
+        //  second array is the layers in the world (in order of back to front)
+        //  inner array is {speed, center, size} of layer respectively (must be size 3)
+        public static float[][][] WORLD_LAYERS =
+        {
+            new float[][]
+            {
+                new float[] { 0.08f, 0.5f, 0.1f },
+                new float[] { 0.2f, 0.55f, 0.25f },
+                new float[] { 0.4f, 0.6f, 0.5f }
+            },
+            new float[][]
+            {
+                new float[] { 0.4f, 0.5f, 1.4f }
+            }
+        };
 
-        public const float BACK2_MOVE = 0.2f;   // speed of layer
-        public const float BACK2_CENTER = 0.55f; // y center on screen
-        public const float BACK2_SIZE = 0.25f;   // size of layer
-        public static Color BACK2_COLOR = Color.Gray; // color mask for layer
+        //public const float WORLD_1_1_MOVE = 0.4f;   // speed of layer
+        //public const float WORLD_1_1_CENTER = 0.6f; // y center on screen
+        //public const float WORLD_1_1_SIZE = 0.5f;   // size of layer
 
-        public const float BACK3_MOVE = 0.08f;   // speed of layer
-        public const float BACK3_CENTER = 0.5f; // y center on screen
-        public const float BACK3_SIZE = 0.1f;   // size of layer
-        public static Color BACK3_COLOR = Color.Black; // color mask for layer
+        //public const float WORLD_1_2_MOVE = 0.2f;   // speed of layer
+        //public const float WORLD_1_2_CENTER = 0.55f; // y center on screen
+        //public const float WORLD_1_2_SIZE = 0.25f;   // size of layer
+
+        //public const float WORLD_1_3_MOVE = 0.08f;   // speed of layer
+        //public const float WORLD_1_3_CENTER = 0.5f; // y center on screen
+        //public const float WORLD_1_3_SIZE = 0.1f;   // size of layer
 
         public static string Version
         {
