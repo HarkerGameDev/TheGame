@@ -178,7 +178,7 @@ namespace Source
             },
             new float[][]
             {
-                new float[] { 0f,    0.5f, 2.5f },
+                new float[] { 0f,    0.5f, 4.5f },
                 new float[] { 0.07f, 0.5f, 2.5f },
                 new float[] { 0.15f, 0.5f, 2.5f },
                 new float[] { 0.22f, 0.5f, 2.5f }

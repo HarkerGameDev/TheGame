@@ -418,12 +418,15 @@ namespace Source.Collisions
         {
             switch (player.CurrentCharacter.Ability1)
             {
-                case Character.AbilityOne.GravityPull:
-                    ApplyGravity(-GameData.GRAVITY_FORCE, player, player.Position, deltaTime);
-                    break;
-                case Character.AbilityOne.GravityPush:
-                    ApplyGravity(GameData.GRAVITY_FORCE, player, player.Position, deltaTime);
-                    break;
+                //case Character.AbilityOne.Transmute:
+                //    Projectile 
+
+                //case Character.AbilityOne.GravityPull:
+                //    ApplyGravity(-GameData.GRAVITY_FORCE, player, player.Position, deltaTime);
+                //    break;
+                //case Character.AbilityOne.GravityPush:
+                //    ApplyGravity(GameData.GRAVITY_FORCE, player, player.Position, deltaTime);
+                //    break;
             }
         }
 

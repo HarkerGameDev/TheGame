@@ -850,7 +850,6 @@ namespace Source
                         }
                     }
                 }
-
             }
             else if (editingFloor)                                  // Make the floor
             {
@@ -881,7 +880,7 @@ namespace Source
                 else if (ToggleKey(Keys.F))
                 {
                     currentFloor.Health = currentFloor.Health == 0 ? GameData.STAIR_HEALTH : 0;
-                    currentFloor.Color = currentFloor.Health != 0 ? Color.LightGoldenrodYellow : Color.Azure;
+                    currentFloor.Color = currentFloor.Health != 0 ? Color.LightGoldenrodYellow : Color.Crimson;
                 }
             }
             if (ToggleKey(Keys.OemPlus))                       // Zoom in and out
@@ -893,6 +892,10 @@ namespace Source
             {
                 currentZoom /= GameData.ZOOM_STEP;
                 ConvertUnits.SetDisplayUnitToSimUnitRatio(currentZoom);
+            }
+            if (keyboard.IsKeyDown(Keys.LeftControl))           // TODO save and load level
+            {
+
             }
         }
 
@@ -1136,12 +1139,13 @@ namespace Source
             averagePos /= players.Count;
             //Vector2 averagePos = ConvertUnits.ToDisplayUnits(averagePos);
 
+            float zoom = ConvertUnits.ToDisplayUnits(1);
+            ConvertUnits.SetDisplayUnitToSimUnitRatio(GameData.SHADOW_SCALE);
+
 #if LIGHTING
             // Calculate shadows for lightArea
             // TODO actual lights instead of on player
             // TODO optimize lights (use geometric lighting)
-            float zoom = ConvertUnits.ToDisplayUnits(1);
-            ConvertUnits.SetDisplayUnitToSimUnitRatio(GameData.SHADOW_SCALE);
             lightArea.LightPosition = ConvertUnits.ToDisplayUnits(players[0].Position);
             lightArea.BeginDrawingShadowCasters();
             DrawCasters(lightArea, ConvertUnits.ToDisplayUnits(averagePos));
@@ -1158,11 +1162,11 @@ namespace Source
                 - lightArea.LightAreaSize * 0.5f * scale, null, GameData.LIGHT_COLOR, 0f, Vector2.Zero, scale, SpriteEffects.None, 0f);
             spriteBatch.End();
             GraphicsDevice.SetRenderTarget(null);
-            ConvertUnits.SetDisplayUnitToSimUnitRatio(zoom);
 #endif
 
             // Draw background
             DrawBackground(ConvertUnits.ToDisplayUnits(averagePos));
+            ConvertUnits.SetDisplayUnitToSimUnitRatio(zoom);
 
 #if LIGHTING
             // Draw shadows to screen

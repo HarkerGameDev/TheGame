@@ -9,7 +9,7 @@ using Microsoft.Xna.Framework.Graphics;
 namespace Source.Collisions
 {
     /// <summary>
-    /// A player uses a rectangle for collisions (for now)
+    /// A projectile can hit stuff and has no gravity
     /// </summary>
     public class Projectile : Body
     {
