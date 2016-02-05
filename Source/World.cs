@@ -235,14 +235,14 @@ namespace Source.Collisions
                 Vector2 translation = player.Intersects(floor);
                 if (translation != Vector2.Zero)
                 {
-                    if (player.CurrentState != Player.State.Slamming && player.CurrentState != Player.State.Stunned && player.CurrentState != Player.State.Flying)
+                    if (player.CurrentState != Player.State.Stunned && player.CurrentState != Player.State.Flying)
                     {
                         totalCollisions++;
 
                         if (Math.Abs(translation.X) > Math.Abs(translation.Y) && !player.WallAbove)
                         {
                             player.CurrentState = Player.State.Climbing;
-                            player.Velocity.Y = player.ActionTime > 0 ? -GameData.CLIMB_SPEED_FAST : -GameData.CLIMB_SPEED;
+                            //player.Velocity.Y = player.ActionTime > 0 ? -GameData.CLIMB_SPEED_FAST : -GameData.CLIMB_SPEED;
                         }
                         else if (player.CurrentState == Player.State.Climbing)
                             player.CurrentState = Player.State.Walking;
@@ -343,7 +343,7 @@ namespace Source.Collisions
                     if (wall.IsWindow)
                     {
                         game.walls.RemoveAt(i);
-                        if (player.CurrentState == Player.State.Slamming || player.CurrentState == Player.State.Stunned || player.CurrentState == Player.State.Flying || player.ActionTime > 0)
+                        if (player.CurrentState == Player.State.Stunned || player.CurrentState == Player.State.Flying)
                         {
                             MakeParticles(player.Position, wall, GameData.NUM_PART_WALL, 0, 1);
                         }
@@ -355,7 +355,7 @@ namespace Source.Collisions
                     }
                     else
                     {
-                        if (player.CurrentState == Player.State.Flying || player.ActionTime > 0)
+                        if (player.CurrentState == Player.State.Flying)
                         {
                             game.walls.RemoveAt(i);
                             player.Velocity.X *= GameData.WALL_SLOW;
@@ -384,12 +384,12 @@ namespace Source.Collisions
                 Vector2 translation = player.Intersects(obstacle);
                 if (translation != Vector2.Zero)
                 {
-                    if (player.CurrentState == Player.State.Slamming)
-                    {
-                        game.obstacles.RemoveAt(i);
-                        MakeParticles(obstacle.Position, obstacle, GameData.NUM_PART_OBSTACLE, 0, 0);
-                    }
-                    else if (player.Velocity.Y < 0)  // player going up
+                    //if (player.CurrentState == Player.State.Slamming)
+                    //{
+                    //    game.obstacles.RemoveAt(i);
+                    //    MakeParticles(obstacle.Position, obstacle, GameData.NUM_PART_OBSTACLE, 0, 0);
+                    //}
+                    if (player.Velocity.Y < 0)  // player going up
                     {
                         player.Velocity.Y = -GameData.OBSTACLE_JUMP;
                         player.StunTime = GameData.OBSTACLE_STUN;

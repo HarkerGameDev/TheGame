@@ -23,7 +23,7 @@ namespace Source.Collisions
         public int Score;
         public float BoostTime;
         public float StunTime;
-        public float ActionTime;
+        //public float ActionTime;
         public bool WallAbove;
         public float TargetVelocity;
         public float SpawnY;
@@ -35,13 +35,13 @@ namespace Source.Collisions
 
         public List<Projectile> Projectiles;
 
-        public bool InAir { get { return CurrentState == State.Jumping || CurrentState == State.Slamming || CurrentState == State.Stunned
+        public bool InAir { get { return CurrentState == State.Jumping || CurrentState == State.Stunned
                     || CurrentState == State.Flying || CurrentState == State.Climbing; } }
         public bool CanJump { get { return CurrentState == State.Walking || CurrentState == State.Boosting; } }
 
         public enum State
         {
-            Jumping=0, Walking=1, Slamming=2, Boosting=3, Climbing=4, Stunned=5, Flying=6
+            Jumping=0, Walking=1, Boosting=3, Climbing=4, Stunned=5, Flying=6
         }
 
         public AnimatedSprite Sprite;
@@ -85,7 +85,7 @@ namespace Source.Collisions
         /// <param name="deltaTime"></param>
         public override void Move(float deltaTime)
         {
-            ActionTime -= deltaTime;
+            //ActionTime -= deltaTime;
             if (CurrentState == State.Stunned || CurrentState == State.Flying)
             {
                 StunTime -= deltaTime;

@@ -101,12 +101,12 @@ namespace Source
         public const float JUMP_SLOW = 0.85f;   // -- x velocity is scaled by this when jumping
         public const float WINDOW_SLOW = 0.2f;    // -- player speed is reduced to this ratio when a window is hit
         public const float WALL_SLOW = 0.2f;    // -- player speed is reduced to this ratio when a wall is hit while flying
-        public const float SLAM_SPEED = 17f; // m/s -- the speed at which the player goes down when slamming
+        //public const float SLAM_SPEED = 17f; // m/s -- the speed at which the player goes down when slamming
         public const float MIN_WOBBLE = 0f;  //     -- the minimum ratio between max velocity and (max - current velocity) for wobbling
         public const float MAX_WOBBLE = 0f;    //     -- the maximum ratio for wobbling; we don't want wobble amplifier 40x
         public const float RESPAWN_DIST = 10;
-        public const float CLIMB_SPEED = 2f;     // m/s -- speed of climbing onto a ledge
-        public const float CLIMB_SPEED_FAST = 14f;     // m/s -- speed of climbing onto a ledge
+        public const float CLIMB_SPEED = 8f;     // m/s -- speed of climbing onto a ledge
+        //public const float CLIMB_SPEED_FAST = 14f;     // m/s -- speed of climbing onto a ledge
 
         public const float BOOST_LENGTH = 6f;  // how long a player can boost for
         public const float SHOOT_COST = 0.3f; // boost bar cost of a shot
@@ -125,8 +125,8 @@ namespace Source
         public const float DEAD_DIST = 240f;            // players this distance or more behind the average x will move to the maximum player (in pixels)
         public const double DEAD_TIME = 3;             // respawn time when a player gets behind the cutoff
         public const double PHASE_TIME = 1;            // the point at which the player will be visible again after dying to get the player prepared
-        public const float ACTION_TIME = 0.25f;          // leway for how much time during which "Action" button applies after being hit
-        public const float ACTION_TIME_COOLDOWN = 0.3f;    // cooldown during which "action" button cannot be pressed
+        //public const float ACTION_TIME = 0.25f;          // leway for how much time during which "Action" button applies after being hit
+        //public const float ACTION_TIME_COOLDOWN = 0.3f;    // cooldown during which "action" button cannot be pressed
 
         public const float PARTICLE_WIDTH = .125f;  // width of a particle (as a square)
         public const float PARTICLE_LIFETIME = 1.4f;  // how long a particle lasts for (in s)
@@ -216,7 +216,7 @@ namespace Source
 
         public enum ControlKey
         {
-            Special1, Special2, Special3, Boost, Jump, Slam, Action
+            Special1, Special2, Special3, Boost, Jump, Action
         }
 
         // TODO intuitive controls
@@ -227,7 +227,7 @@ namespace Source
             bool Special3 { get; }  // toggle
             bool Boost { get; }     // hold
             bool Jump { get; }      // hold
-            bool Slam { get; }      // hold
+            //bool Slam { get; }      // hold
             bool Action { get; }     // toggle
 
             string ToString();
@@ -240,7 +240,7 @@ namespace Source
             public bool Special3 { get; set; }
             public bool Boost { get; set; }
             public bool Jump { get; set; }
-            public bool Slam { get; set; }
+            //public bool Slam { get; set; }
             public bool Action { get; set; }
 
             public SimulatedControls(Game1 game)
@@ -250,7 +250,7 @@ namespace Source
                 Special3 = false;
                 Boost = false;
                 Jump = false;
-                Slam = false;
+                //Slam = false;
                 Action = false;
             }
         }
@@ -262,13 +262,13 @@ namespace Source
             public bool Special3 { get { return game.ToggleKey(special3); } }
             public bool Boost { get { return Keyboard.GetState().IsKeyDown(boost); } }
             public bool Jump { get { return Keyboard.GetState().IsKeyDown(jump); } }
-            public bool Slam { get { return Keyboard.GetState().IsKeyDown(slam); } }
+            //public bool Slam { get { return Keyboard.GetState().IsKeyDown(slam); } }
             public bool Action { get { return game.ToggleKey(action); } }
 
             private Game1 game;
-            private Keys special1, special2, special3, boost, jump, slam, action;
+            private Keys special1, special2, special3, boost, jump, action;
 
-            public KeyboardControls(Game1 game, Keys special1, Keys special2, Keys special3, Keys boost, Keys jump, Keys slam, Keys action)
+            public KeyboardControls(Game1 game, Keys special1, Keys special2, Keys special3, Keys boost, Keys jump, Keys action)
             {
                 this.game = game;
                 this.special1 = special1;
@@ -276,7 +276,7 @@ namespace Source
                 this.special3 = special3;
                 this.boost = boost;
                 this.jump = jump;
-                this.slam = slam;
+                //this.slam = slam;
                 this.action = action;
             }
 
@@ -285,7 +285,7 @@ namespace Source
                 StringBuilder builder = new StringBuilder();
                 builder.AppendLine("Boost = " + boost)
                     .AppendLine("Jump = " + jump)
-                    .AppendLine("Slam = " + slam)
+                    //.AppendLine("Slam = " + slam)
                     .AppendLine("Action = " + action)
                     .AppendLine("Special1 = " + special1)
                     .AppendLine("Special2 = " + special2)
@@ -302,14 +302,14 @@ namespace Source
             public bool Special3 { get { return game.ToggleButton(playerIndex, special3); } }
             public bool Boost { get { return GamePad.GetState(playerIndex, GamePadDeadZone.Circular).IsButtonDown(boost); } }
             public bool Jump { get { return GamePad.GetState(playerIndex, GamePadDeadZone.Circular).IsButtonDown(jump); } }
-            public bool Slam { get { return GamePad.GetState(playerIndex, GamePadDeadZone.Circular).IsButtonDown(slam); } }
+            //public bool Slam { get { return GamePad.GetState(playerIndex, GamePadDeadZone.Circular).IsButtonDown(slam); } }
             public bool Action { get { return game.ToggleButton(playerIndex, action); } }
 
             private Game1 game;
             private PlayerIndex playerIndex;
-            private Buttons special1, special2, special3, boost, jump, slam, action;
+            private Buttons special1, special2, special3, boost, jump, action;
 
-            public GamePadControls(Game1 game, PlayerIndex playerIndex, Buttons special1, Buttons special2, Buttons special3, Buttons boost, Buttons jump, Buttons slam, Buttons action)
+            public GamePadControls(Game1 game, PlayerIndex playerIndex, Buttons special1, Buttons special2, Buttons special3, Buttons boost, Buttons jump, Buttons action)
             {
                 this.game = game;
                 this.playerIndex = playerIndex;
@@ -318,7 +318,7 @@ namespace Source
                 this.special3 = special3;
                 this.boost = boost;
                 this.jump = jump;
-                this.slam = slam;
+                //this.slam = slam;
                 this.action = action;
             }
 
@@ -327,7 +327,7 @@ namespace Source
                 StringBuilder builder = new StringBuilder();
                 builder.AppendLine("Boost = " + boost)
                     .AppendLine("Jump = " + jump)
-                    .AppendLine("Slam = " + slam)
+                    //.AppendLine("Slam = " + slam)
                     .AppendLine("Action = " + action)
                     .AppendLine("Special1 = " + special1)
                     .AppendLine("Special2 = " + special2)

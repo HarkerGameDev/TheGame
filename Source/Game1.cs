@@ -184,9 +184,9 @@ namespace Source
             else
             {
                 playerControls = new GameData.Controls[] {
-                                                       new GameData.KeyboardControls(this, Keys.OemComma, Keys.OemPeriod, Keys.OemQuestion, Keys.Right, Keys.Up, Keys.Down, Keys.Left),
-                                                       new GameData.KeyboardControls(this, Keys.D1, Keys.D2, Keys.D3, Keys.D, Keys.W, Keys.S, Keys.A),
-                                                       new GameData.GamePadControls(this, PlayerIndex.One, Buttons.X, Buttons.B, Buttons.Y, Buttons.LeftThumbstickRight, Buttons.RightTrigger, Buttons.LeftThumbstickDown, Buttons.A)
+                                                       new GameData.KeyboardControls(this, Keys.OemComma, Keys.OemPeriod, Keys.OemQuestion, Keys.Right, Keys.Up, Keys.Left),
+                                                       new GameData.KeyboardControls(this, Keys.D1, Keys.D2, Keys.D3, Keys.D, Keys.W, Keys.A),
+                                                       new GameData.GamePadControls(this, PlayerIndex.One, Buttons.X, Buttons.B, Buttons.Y, Buttons.LeftThumbstickRight, Buttons.RightTrigger, Buttons.A)
                                                   };
             }
 
@@ -347,7 +347,7 @@ namespace Source
             {
                 // create a player with color specified in GameData and random color
                 Vector2 spawnLoc = new Vector2(GameData.PLAYER_START, -rand.Next(GameData.MIN_SPAWN, GameData.MAX_SPAWN));
-				players.Add(new Player(Content.Load<Texture2D>("Art/GreenDude"), spawnLoc, Character.playerCharacters[i]));
+				players.Add(new Player(Content.Load<Texture2D>("Art/GreenDude"), spawnLoc, Character.playerCharacters[rand.Next(Character.playerCharacters.Length)]));
             }
             floors = new List<Floor>();
             walls = new List<Wall>();
@@ -515,9 +515,9 @@ namespace Source
                                     case GameData.ControlKey.Jump:
                                         control.Jump = !control.Jump;
                                         break;
-                                    case GameData.ControlKey.Slam:
-                                        control.Slam = !control.Slam;
-                                        break;
+                                    //case GameData.ControlKey.Slam:
+                                    //    control.Slam = !control.Slam;
+                                    //    break;
                                     case GameData.ControlKey.Action:
                                         control.Action = true;
                                         break;
@@ -690,12 +690,12 @@ namespace Source
                     prevJump = !prevJump;
                     keys.Add(GameData.ControlKey.Jump);
                 }
-                if (controls.Slam != prevSlam)
-                {
-                    times.Add(totalTime);
-                    prevSlam = !prevSlam;
-                    keys.Add(GameData.ControlKey.Slam);
-                }
+                //if (controls.Slam != prevSlam)
+                //{
+                //    times.Add(totalTime);
+                //    prevSlam = !prevSlam;
+                //    keys.Add(GameData.ControlKey.Slam);
+                //}
             }
 
             if (player.CurrentState != Player.State.Stunned)
@@ -723,44 +723,38 @@ namespace Source
                         player.TargetVelocity = player.TargetVelocity * GameData.JUMP_SLOW;
                         player.CurrentState = Player.State.Jumping;
                     }
-                    else if (controls.Slam)
-                    {
-                        player.CurrentState = Player.State.Slamming;
-                        if (player.Velocity.Y < GameData.SLAM_SPEED)
-                            player.Velocity.Y = GameData.SLAM_SPEED;
-                    }
+                    //else if (controls.Slam)
+                    //{
+                    //    player.CurrentState = Player.State.Slamming;
+                    //    if (player.Velocity.Y < GameData.SLAM_SPEED)
+                    //        player.Velocity.Y = GameData.SLAM_SPEED;
+                    //}
                 }
                 else
                 {
-                    if (controls.Slam)
-                    {
-                        player.CurrentState = Player.State.Slamming;
-                        if (player.Velocity.Y < GameData.SLAM_SPEED)
-                            player.Velocity.Y = GameData.SLAM_SPEED;
-                    }
-                    else if (player.CurrentState == Player.State.Slamming)
-                    {
-                        player.CurrentState = Player.State.Jumping;
-                    }
+                    //if (controls.Slam)
+                    //{
+                    //    player.CurrentState = Player.State.Slamming;
+                    //    if (player.Velocity.Y < GameData.SLAM_SPEED)
+                    //        player.Velocity.Y = GameData.SLAM_SPEED;
+                    //}
+                    //else if (player.CurrentState == Player.State.Slamming)
+                    //{
+                    //    player.CurrentState = Player.State.Jumping;
+                    //}
                 }
 
-#if DEBUG
-                if (player.ActionTime < -GameData.ACTION_TIME_COOLDOWN)
-                    player.Color = player.CurrentCharacter.Color;
-                else if (player.ActionTime < 0)
-                    player.Color = Color.Green;
-#endif
+                //if (player.ActionTime < -GameData.ACTION_TIME_COOLDOWN)
+                //    player.Color = player.CurrentCharacter.Color;
 
-                if (controls.Action && player.TimeSinceDeath <= 0 && player.ActionTime < -GameData.ACTION_TIME_COOLDOWN)
-                {
-                    player.ActionTime = GameData.ACTION_TIME;
-#if DEBUG
-                    player.Color = Color.Purple;
-#endif
-                    //Console.WriteLine("Action");
-                    //player.Projectiles.Add(new Projectile(whiteRect, new Vector2(player.Position.X - player.Size.X / 2f, player.Position.Y), player.Color));
-                    //player.BoostTime -= GameData.SHOOT_COST;
-                }
+                //if (controls.Action && player.TimeSinceDeath <= 0 && player.ActionTime < -GameData.ACTION_TIME_COOLDOWN)
+                //{
+                //    player.ActionTime = GameData.ACTION_TIME;
+                //    player.Color = new Color(Vector3.One - player.Color.ToVector3() * 0.8f);
+                //    //Console.WriteLine("Action");
+                //    //player.Projectiles.Add(new Projectile(whiteRect, new Vector2(player.Position.X - player.Size.X / 2f, player.Position.Y), player.Color));
+                //    //player.BoostTime -= GameData.SHOOT_COST;
+                //}
                 // activate (or toggle) special abilities
                 if (controls.Special1)
                     player.Ability1 = !player.Ability1;
