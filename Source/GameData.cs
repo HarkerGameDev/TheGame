@@ -64,6 +64,7 @@ namespace Source
         public static Color LIGHT_COLOR = Color.Wheat;
 
         public const float JUMP_SPEED = 18f; // m/s -- the initial upwards velocity when player jumps
+        public const float JUMP_TIME = 0.2f;  // s -- can hold jump for this long and still have upwards velocity
         //public const float JETPACK_ACCEL = 7f;  // m/s^2 -- upwards acceleration while jetpacking
         //public const float JETPACK_SPEED = 14f; // m/s -- upwards speed while using jetpack
         //public const float JETPACK_REGEN = 10f; // jetpack will be refilled in this time

@@ -22,6 +22,7 @@ namespace Source.Collisions
         public double TimeSinceDeath;
         public int Score;
         public float StunTime;
+        public float JumpTime;
         public bool WallAbove;
         public float TargetVelocity;
         public float SpawnY;
@@ -89,6 +90,9 @@ namespace Source.Collisions
             }
             else
             {
+                if (CurrentState == State.Jumping)
+                    JumpTime -= deltaTime;
+
                 float diff = Velocity.X - TargetVelocity;
                 if (Math.Abs(diff) < GameData.MIN_VELOCITY)
                     Velocity.X = TargetVelocity;

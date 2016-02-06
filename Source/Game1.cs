@@ -681,6 +681,21 @@ namespace Source
 
             if (player.CurrentState != Player.State.Stunned)
             {
+                if (controls.Jump)     // jump
+                {
+                    if (player.CanJump)
+                    {
+                        player.Velocity.Y = -GameData.JUMP_SPEED;
+                        player.TargetVelocity = player.TargetVelocity * GameData.JUMP_SLOW;
+                        player.CurrentState = Player.State.Jumping;
+                        player.JumpTime = GameData.JUMP_TIME;
+                    }
+                    else if (player.JumpTime > 0)
+                        player.Velocity.Y = -GameData.JUMP_SPEED;
+                }
+                else if (player.JumpTime > 0)
+                    player.JumpTime = 0;
+
                 if (!player.InAir)
                 {
                     if (controls.Right)     // move
@@ -689,13 +704,6 @@ namespace Source
                         player.TargetVelocity = -GameData.RUN_VELOCITY;
                     else
                         player.TargetVelocity = 0;
-
-                    if (controls.Jump)     // jump
-                    {
-                        player.Velocity.Y = -GameData.JUMP_SPEED;
-                        player.TargetVelocity = player.TargetVelocity * GameData.JUMP_SLOW;
-                        player.CurrentState = Player.State.Jumping;
-                    }
                 }
                 //else
                 //{
