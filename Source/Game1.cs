@@ -83,7 +83,6 @@ namespace Source
 
         public List<Player> players;
         public List<Floor> floors;
-        public List<Wall> walls;
         public List<Particle> particles;
         public List<Obstacle> obstacles;
         public List<Drop> drops;
@@ -102,7 +101,8 @@ namespace Source
         List<float> times;
         List<GameData.ControlKey> keys;
         int randSeed, randLevelSeed;
-        bool prevBoost = false;
+        bool prevLeft = false;
+        bool prevRight = false;
         bool prevJump = false;
         bool simulating = false;
         int simIndex = 0;
@@ -182,9 +182,9 @@ namespace Source
             else
             {
                 playerControls = new GameData.Controls[] {
-                                                       new GameData.KeyboardControls(this, Keys.OemComma, Keys.OemPeriod, Keys.OemQuestion, Keys.Right, Keys.Up, Keys.Left),
-                                                       new GameData.KeyboardControls(this, Keys.D1, Keys.D2, Keys.D3, Keys.D, Keys.W, Keys.A),
-                                                       new GameData.GamePadControls(this, PlayerIndex.One, Buttons.X, Buttons.B, Buttons.Y, Buttons.LeftThumbstickRight, Buttons.RightTrigger, Buttons.A)
+                                                       new GameData.KeyboardControls(this, Keys.OemComma, Keys.OemPeriod, Keys.OemQuestion, Keys.Left, Keys.Right, Keys.Up, Keys.Left),
+                                                       new GameData.KeyboardControls(this, Keys.D1, Keys.D2, Keys.D3, Keys.A, Keys.D, Keys.W, Keys.A),
+                                                       new GameData.GamePadControls(this, PlayerIndex.One, Buttons.X, Buttons.B, Buttons.Y, Buttons.LeftThumbstickLeft, Buttons.LeftThumbstickRight, Buttons.RightTrigger, Buttons.A)
                                                   };
             }
 
@@ -285,7 +285,6 @@ namespace Source
                 player.ResetValues();
             }
             floors.Clear();
-            walls.Clear();
             particles.Clear();
             obstacles.Clear();
             drops.Clear();
@@ -347,7 +346,6 @@ namespace Source
 				players.Add(new Player(Content.Load<Texture2D>("Art/GreenDude"), spawnLoc, Character.playerCharacters[rand.Next(Character.playerCharacters.Length)]));
             }
             floors = new List<Floor>();
-            walls = new List<Wall>();
             particles = new List<Particle>();
             obstacles = new List<Obstacle>();
             drops = new List<Drop>();
@@ -506,8 +504,11 @@ namespace Source
                                     case GameData.ControlKey.Special3:
                                         control.Special3 = true;
                                         break;
-                                    case GameData.ControlKey.Boost:
-                                        control.Boost = !control.Boost;
+                                    case GameData.ControlKey.Left:
+                                        control.Left = !control.Left;
+                                        break;
+                                    case GameData.ControlKey.Right:
+                                        control.Right = !control.Right;
                                         break;
                                     case GameData.ControlKey.Jump:
                                         control.Jump = !control.Jump;
@@ -590,17 +591,17 @@ namespace Source
                 if (player.TimeSinceDeath > 0)
                 {
                     player.TimeSinceDeath -= deltaTime;
-                    if (player.TimeSinceDeath < 0)
-                    {
-                        Body spawnProtect = new Floor(whiteRect,
-                            new Vector2(player.Position.X + GameData.SPAWN_PROTECT / 2f - player.Size.X, player.Position.Y), GameData.SPAWN_PROTECT);
-                        for (int x = walls.Count - 1; x >= 0; x--)
-                        {
-                            Wall wall = walls[x];
-                            if (spawnProtect.Intersects(wall) != Vector2.Zero)
-                                walls.RemoveAt(x);
-                        }
-                    }
+                    //if (player.TimeSinceDeath < 0)
+                    //{
+                    //    Body spawnProtect = new Floor(whiteRect,
+                    //        new Vector2(player.Position.X + GameData.SPAWN_PROTECT / 2f - player.Size.X, player.Position.Y), GameData.SPAWN_PROTECT);
+                    //    for (int x = walls.Count - 1; x >= 0; x--)
+                    //    {
+                    //        Wall wall = walls[x];
+                    //        if (spawnProtect.Intersects(wall) != Vector2.Zero)
+                    //            walls.RemoveAt(x);
+                    //    }
+                    //}
                 }
             }
 
@@ -611,15 +612,15 @@ namespace Source
             averageVel /= players.Count;
 
             // Calculate wobble-screen
-            float deltaX = ((cameraBounds.Center.X - screenCenter.X) / cameraBounds.Width - averageVel.X / GameData.RUN_VELOCITY) * GameData.CAMERA_SCALE_X;
-            deltaX = MathHelper.Clamp(deltaX, -GameData.MAX_CAMERA_SPEED_X, GameData.MAX_CAMERA_SPEED_X);
-            screenCenter.X += deltaX * deltaTime;
-            screenCenter.X = MathHelper.Clamp(screenCenter.X, cameraBounds.Left, cameraBounds.Right);
+            //float deltaX = ((cameraBounds.Center.X - screenCenter.X) / cameraBounds.Width - averageVel.X / GameData.RUN_VELOCITY) * GameData.CAMERA_SCALE_X;
+            //deltaX = MathHelper.Clamp(deltaX, -GameData.MAX_CAMERA_SPEED_X, GameData.MAX_CAMERA_SPEED_X);
+            //screenCenter.X += deltaX * deltaTime;
+            //screenCenter.X = MathHelper.Clamp(screenCenter.X, cameraBounds.Left, cameraBounds.Right);
 
-            float deltaY = ((cameraBounds.Center.Y - screenCenter.Y) / cameraBounds.Height - averageVel.Y / GameData.RUN_VELOCITY) * GameData.CAMERA_SCALE_Y;
-            deltaY = MathHelper.Clamp(deltaY, -GameData.MAX_CAMERA_SPEED_Y, GameData.MAX_CAMERA_SPEED_Y);
-            screenCenter.Y += deltaY * deltaTime;
-            screenCenter.Y = MathHelper.Clamp(screenCenter.Y, cameraBounds.Top, cameraBounds.Bottom);
+            //float deltaY = ((cameraBounds.Center.Y - screenCenter.Y) / cameraBounds.Height - averageVel.Y / GameData.RUN_VELOCITY) * GameData.CAMERA_SCALE_Y;
+            //deltaY = MathHelper.Clamp(deltaY, -GameData.MAX_CAMERA_SPEED_Y, GameData.MAX_CAMERA_SPEED_Y);
+            //screenCenter.Y += deltaY * deltaTime;
+            //screenCenter.Y = MathHelper.Clamp(screenCenter.Y, cameraBounds.Top, cameraBounds.Bottom);
 
             if (ToggleKey(Keys.R))                        // reset
             {
@@ -658,11 +659,17 @@ namespace Source
                     times.Add(totalTime);
                     keys.Add(GameData.ControlKey.Action);
                 }
-                if (controls.Boost != prevBoost)
+                if (controls.Left != prevLeft)
                 {
                     times.Add(totalTime);
-                    prevBoost = !prevBoost;
-                    keys.Add(GameData.ControlKey.Boost);
+                    prevLeft = !prevLeft;
+                    keys.Add(GameData.ControlKey.Left);
+                }
+                if (controls.Right != prevRight)
+                {
+                    times.Add(totalTime);
+                    prevRight = !prevRight;
+                    keys.Add(GameData.ControlKey.Right);
                 }
                 if (controls.Jump != prevJump)
                 {
@@ -676,21 +683,13 @@ namespace Source
             {
                 if (!player.InAir)
                 {
-                    if (controls.Boost)                    // boost
-                    {
-                        if (player.BoostTime > GameData.BOOST_LENGTH / 2)
-                        {
-                            player.TargetVelocity = GameData.BOOST_SPEED;
-                            player.CurrentState = Player.State.Boosting;
-                        }
-                        else if (player.CurrentState != Player.State.Boosting)
-                            player.TargetVelocity = GameData.RUN_VELOCITY;
-                    }
-                    else                           // normal run
-                    {
+                    if (controls.Right)     // move
                         player.TargetVelocity = GameData.RUN_VELOCITY;
-                        player.CurrentState = Player.State.Walking;
-                    }
+                    else if (controls.Left)
+                        player.TargetVelocity = -GameData.RUN_VELOCITY;
+                    else
+                        player.TargetVelocity = 0;
+
                     if (controls.Jump)     // jump
                     {
                         player.Velocity.Y = -GameData.JUMP_SPEED;
@@ -936,10 +935,6 @@ namespace Source
             float y = -step;
             for (int i = 0; i < numFloors; i++) // do this for each layer
             {
-                // add the windows on either end
-                walls.Add(new Wall(whiteRect, new Vector2(levelEnd + Wall.WALL_WIDTH / 2, y + step / 2 + Floor.FLOOR_HEIGHT / 2), step, GameData.WINDOW_HEALTH));
-                walls.Add(new Wall(whiteRect, new Vector2(levelEnd + width - Wall.WALL_WIDTH / 2, y + step / 2 + Floor.FLOOR_HEIGHT / 2), step, GameData.WINDOW_HEALTH));
-
                 float dist = 0;
                 while (dist < width)    // make the floors
                 {
@@ -1045,8 +1040,6 @@ namespace Source
             // remove previous levels
             if (floors.Count > GameData.MAX_FLOORS)
                 floors.RemoveRange(0, floors.Count - GameData.MAX_FLOORS);
-            if (walls.Count > GameData.MAX_WALLS)
-                walls.RemoveRange(0, walls.Count - GameData.MAX_WALLS);
             if (obstacles.Count > GameData.MAX_OBSTACLES)
                 obstacles.RemoveRange(0, obstacles.Count - GameData.MAX_OBSTACLES);
         }
@@ -1123,8 +1116,6 @@ namespace Source
             spriteBatch.Begin(transformMatrix: view);
             foreach (Floor floor in floors)
                 floor.Draw(spriteBatch, lightArea);
-            foreach (Wall wall in walls)
-                wall.Draw(spriteBatch, lightArea);
             foreach (Obstacle obstacle in obstacles)
                 obstacle.Draw(spriteBatch, lightArea);
             foreach (Drop drop in drops)
@@ -1168,8 +1159,6 @@ namespace Source
             spriteBatch.Draw(whiteRect, new Rectangle(-(int)view.Translation.X, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height), Color.LightGray);
             foreach (Floor floor in floors)
                 floor.Draw(spriteBatch);
-            foreach (Wall wall in walls)
-                wall.Draw(spriteBatch);
             foreach (Obstacle obstacle in obstacles)
                 obstacle.Draw(spriteBatch);
             foreach (Drop drop in drops)
