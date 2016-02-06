@@ -93,7 +93,6 @@ namespace Source
         List<Button> controlsMenu;
 
         int levelEnd = 0;
-        float death = -GameData.DEAD_MAX;
 
         MainMenu mainMenu;
 
@@ -105,7 +104,6 @@ namespace Source
         int randSeed, randLevelSeed;
         bool prevBoost = false;
         bool prevJump = false;
-        bool prevSlam = false;
         bool simulating = false;
         int simIndex = 0;
         int currentReplay = 0;
@@ -293,7 +291,6 @@ namespace Source
             drops.Clear();
             levelEnd = 0;
             totalTime = 0;
-            death = -GameData.DEAD_MAX;
 
             if (!simulating)
             {
@@ -515,9 +512,6 @@ namespace Source
                                     case GameData.ControlKey.Jump:
                                         control.Jump = !control.Jump;
                                         break;
-                                    //case GameData.ControlKey.Slam:
-                                    //    control.Slam = !control.Slam;
-                                    //    break;
                                     case GameData.ControlKey.Action:
                                         control.Action = true;
                                         break;
@@ -539,15 +533,7 @@ namespace Source
                         }
 
                         CheckPlayer();
-
                         totalTime += deltaTime;
-                        float remaining = totalTime / GameData.WIN_TIME;
-                        float timeScale = 1f + GameData.MAX_SPEED_SCALE * (float)Math.Sqrt(remaining);
-                        deltaTime = deltaTime * timeScale;
-                        if (remaining > 1)
-                            remaining = 1;
-                        death += MathHelper.Lerp(GameData.DEAD_START, GameData.DEAD_END, remaining) * deltaTime;
-
                         world.Step(deltaTime);
                     }
                     if (ToggleKey(Keys.Space))
@@ -598,7 +584,7 @@ namespace Source
                 Player player = players[i];
                 if (player.TimeSinceDeath < GameData.PHASE_TIME)
                 {
-                    HandlePlayerInput(player, i);
+                    HandlePlayerInput(player, i, deltaTime);
                 }
 
                 if (player.TimeSinceDeath > 0)
@@ -635,12 +621,6 @@ namespace Source
             screenCenter.Y += deltaY * deltaTime;
             screenCenter.Y = MathHelper.Clamp(screenCenter.Y, cameraBounds.Top, cameraBounds.Bottom);
 
-            float wobbleRatio = GameData.RUN_VELOCITY / (GameData.RUN_VELOCITY - averageVel.X);
-            if (wobbleRatio >= GameData.MAX_WOBBLE)
-                wobbleScreen(GameData.MAX_WOBBLE);
-            else if (wobbleRatio >= GameData.MIN_WOBBLE)
-                wobbleScreen(wobbleRatio);
-
             if (ToggleKey(Keys.R))                        // reset
             {
                 Reset();
@@ -652,7 +632,7 @@ namespace Source
         /// </summary>
         /// <param name="player"></param>
         /// <param name="controller"></param>
-        private void HandlePlayerInput(Player player, int controller)
+        private void HandlePlayerInput(Player player, int controller, float deltaTime)
         {
             GameData.Controls controls = playerControls[controller];
 
@@ -690,12 +670,6 @@ namespace Source
                     prevJump = !prevJump;
                     keys.Add(GameData.ControlKey.Jump);
                 }
-                //if (controls.Slam != prevSlam)
-                //{
-                //    times.Add(totalTime);
-                //    prevSlam = !prevSlam;
-                //    keys.Add(GameData.ControlKey.Slam);
-                //}
             }
 
             if (player.CurrentState != Player.State.Stunned)
@@ -723,38 +697,15 @@ namespace Source
                         player.TargetVelocity = player.TargetVelocity * GameData.JUMP_SLOW;
                         player.CurrentState = Player.State.Jumping;
                     }
-                    //else if (controls.Slam)
-                    //{
-                    //    player.CurrentState = Player.State.Slamming;
-                    //    if (player.Velocity.Y < GameData.SLAM_SPEED)
-                    //        player.Velocity.Y = GameData.SLAM_SPEED;
-                    //}
                 }
-                else
-                {
-                    //if (controls.Slam)
-                    //{
-                    //    player.CurrentState = Player.State.Slamming;
-                    //    if (player.Velocity.Y < GameData.SLAM_SPEED)
-                    //        player.Velocity.Y = GameData.SLAM_SPEED;
-                    //}
-                    //else if (player.CurrentState == Player.State.Slamming)
-                    //{
-                    //    player.CurrentState = Player.State.Jumping;
-                    //}
-                }
-
-                //if (player.ActionTime < -GameData.ACTION_TIME_COOLDOWN)
-                //    player.Color = player.CurrentCharacter.Color;
-
-                //if (controls.Action && player.TimeSinceDeath <= 0 && player.ActionTime < -GameData.ACTION_TIME_COOLDOWN)
+                //else
                 //{
-                //    player.ActionTime = GameData.ACTION_TIME;
-                //    player.Color = new Color(Vector3.One - player.Color.ToVector3() * 0.8f);
-                //    //Console.WriteLine("Action");
-                //    //player.Projectiles.Add(new Projectile(whiteRect, new Vector2(player.Position.X - player.Size.X / 2f, player.Position.Y), player.Color));
-                //    //player.BoostTime -= GameData.SHOOT_COST;
+                //    if (player.CurrentState == Player.State.Jumping && controls.Jump && player.JumpTime > GameData.JETPACK_CUTOFF)      // jetpack
+                //    {
+                //        player.Velocity.Y -= GameData.JETPACK_ACCEL * deltaTime;
+                //    }
                 //}
+
                 // activate (or toggle) special abilities
                 if (controls.Special1)
                     player.Ability1 = !player.Ability1;
@@ -873,8 +824,7 @@ namespace Source
                     currentFloor = null;
                 else if (ToggleKey(Keys.F))
                 {
-                    currentFloor.Health = currentFloor.Health == 0 ? GameData.STAIR_HEALTH : 0;
-                    currentFloor.Color = currentFloor.Health != 0 ? Color.LightGoldenrodYellow : Color.Crimson;
+                    currentFloor.Color = currentFloor.Color == Color.Crimson ? Color.LightGoldenrodYellow : Color.Crimson;
                 }
             }
             if (ToggleKey(Keys.OemPlus))                       // Zoom in and out
@@ -917,9 +867,6 @@ namespace Source
                 averageX += player.Position.X;
             averageX /= players.Count;
 
-            if (averageX - death > GameData.DEAD_MAX)
-                death = averageX - GameData.DEAD_MAX;
-
             foreach (Player player in players)
             {
                 if (player.Position.X > levelEnd - GameData.LOAD_NEW)
@@ -942,7 +889,6 @@ namespace Source
 
                     float val = (float)(player.TimeSinceDeath / GameData.DEAD_TIME);
                     float targetX = allDead ? averageX : max.Position.X;
-                    float targetY = allDead ? -GameData.RESPAWN_DIST : max.Position.Y;
                     float newX = MathHelper.Lerp(targetX, player.Position.X, val);
                     float newY = MathHelper.Lerp(player.SpawnY, player.Position.Y, val);
 
@@ -954,25 +900,9 @@ namespace Source
                     if (max != null)
                         max.Score++;
                 }
-#if !DEBUG
-                else if (player.Position.X < death)
-                {
-                    player.Kill(rand);
-                    player.Score -= GameData.DEATH_LOSS;
-                }
-#endif
             }
 
             float currentX = max == null ? averageX : max.Position.X;
-
-            if (currentX < death)   // lose
-            {
-                foreach (Player player in players)
-                {
-                    player.Score += (int)totalTime / GameData.WIN_SCORE;
-                }
-                Reset();
-            }
 
             //if (totalTime > GameData.WIN_TIME)  // win. TODO -- do more than reset
             //{
@@ -1043,41 +973,40 @@ namespace Source
                         // make the stair
                         if (numCollisions > 0)
                         {
-                            stair.Health = GameData.STAIR_HEALTH;
                             stair.Color = Color.LightGoldenrodYellow;
                             floors.Add(stair);
                         }
                     }
                 }
 
-                // add walls onto the layer
-                dist = randLevel.Next(GameData.MIN_WALL_DIST, GameData.MAX_WALL_DIST);  // reset dist
-                while (dist < width)
-                {
-                    Wall wall = new Wall(whiteRect, new Vector2(levelEnd + dist, y + step / 2), step - Floor.FLOOR_HEIGHT, GameData.WALL_HEALTH);
+                //// add walls onto the layer
+                //dist = randLevel.Next(GameData.MIN_WALL_DIST, GameData.MAX_WALL_DIST);  // reset dist
+                //while (dist < width)
+                //{
+                //    Wall wall = new Wall(whiteRect, new Vector2(levelEnd + dist, y + step / 2), step - Floor.FLOOR_HEIGHT, GameData.WALL_HEALTH);
 
-                    // check if the wall does not intersect with a staircase and has a floor on the top and bottom
-                    bool validStair = true;
-                    int numCollisions = 0;
-                    foreach (Floor floor in floors)
-                    {
-                        if (wall.Intersects(floor) != Vector2.Zero)
-                        {
-                            if (floor.Health > 0)
-                            {
-                                wall = null;
-                                validStair = false;
-                                break;
-                            }
-                            else if (++numCollisions > 1 && !validStair)
-                                break;
-                        }
-                    }
+                //    // check if the wall does not intersect with a staircase and has a floor on the top and bottom
+                //    bool validStair = true;
+                //    int numCollisions = 0;
+                //    foreach (Floor floor in floors)
+                //    {
+                //        if (wall.Intersects(floor) != Vector2.Zero)
+                //        {
+                //            if (floor.Health > 0)
+                //            {
+                //                wall = null;
+                //                validStair = false;
+                //                break;
+                //            }
+                //            else if (++numCollisions > 1 && !validStair)
+                //                break;
+                //        }
+                //    }
 
-                    if (validStair && numCollisions > 1)    // make the wall
-                       walls.Add(wall);
-                    dist += randLevel.Next(GameData.MIN_WALL_DIST, GameData.MAX_WALL_DIST);
-                }
+                //    if (validStair && numCollisions > 1)    // make the wall
+                //       walls.Add(wall);
+                //    dist += randLevel.Next(GameData.MIN_WALL_DIST, GameData.MAX_WALL_DIST);
+                //}
 
                 // add obstacles to the layer
                 dist = randLevel.Next(GameData.MIN_OBSTACLE_DIST, GameData.MAX_OBSTACLE_DIST);  // reset dist
@@ -1092,7 +1021,7 @@ namespace Source
                     {
                         if (obstacle.Intersects(floor) != Vector2.Zero)
                         {
-                            if (floor.Health > 0)
+                            if (floor.Rotation != 0)
                             {
                                 obstacle = null;
                                 validStair = false;
@@ -1264,7 +1193,6 @@ namespace Source
             spriteBatch.Begin(transformMatrix: view);
             foreach (Particle part in particles)
                 part.Draw(spriteBatch);
-            spriteBatch.Draw(whiteRect, new Rectangle((int)ConvertUnits.ToDisplayUnits(death) - GameData.DEAD_WIDTH, -GameData.DEAD_HEIGHT, GameData.DEAD_WIDTH, GameData.DEAD_HEIGHT), Color.Purple);
             spriteBatch.End();
 
 

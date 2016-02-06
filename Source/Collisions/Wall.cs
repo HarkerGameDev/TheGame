@@ -30,13 +30,7 @@ namespace Source.Collisions
             : base(texture, position, new Vector2(WALL_WIDTH, height), rotation)
         {
             Health = health < 0 ? 90000 : health;   // a very large number is just infinite health
-            SetColor();
             IsWindow = health == 1;
-        }
-
-        public void SetColor()
-        {
-            Color = new Color(Color.AliceBlue.ToVector3() * (1f - ((float)Health - 1f) / (GameData.WALL_HEALTH + 2)));
         }
     }
 }

@@ -181,8 +181,6 @@ namespace Source.Collisions
                         MakeParticles(proj.Position, wall, GameData.NUM_PART_WALL, 0, 0);
                         game.particles.Add(new Particle(wall.Position, game.fontSmall, "BAM!"));
                     }
-                    else
-                        wall.SetColor();
 
                     player.Projectiles.RemoveAt(projIndex);
                     return false;
@@ -193,11 +191,6 @@ namespace Source.Collisions
                 if (proj.Intersects(floor) != Vector2.Zero)
                 {
                     player.Projectiles.RemoveAt(projIndex);
-                    if (--floor.Health == 0)
-                    {
-                        game.floors.Remove(floor);
-                        MakeParticles(proj.Position, floor, GameData.NUM_PART_WALL, 1, 0);
-                    }
                     return false;
                 }
             }
@@ -257,7 +250,7 @@ namespace Source.Collisions
                     }
                     else        // player is Slamming or Stunned
                     {
-                        if (floor.Health > 0)
+                        if (floor.Rotation != 0)
                         {
                             MakeParticles(player.Position, floor, GameData.NUM_PART_WALL, 0, 1);
                         }
