@@ -30,12 +30,12 @@ namespace Source.Collisions
         public List<Projectile> Projectiles;
 
         public bool InAir { get { return CurrentState == State.Jumping || CurrentState == State.Stunned
-                    || CurrentState == State.Flying || CurrentState == State.Climbing; } }
+                    || CurrentState == State.Flying; } }
         public bool CanJump { get { return CurrentState == State.Walking; } }
 
         public enum State
         {
-            Jumping=0, Walking=1, Climbing=4, Stunned=5, Flying=6
+            Jumping=0, Walking=1, Stunned=5, Flying=6
         }
 
         public AnimatedSprite Sprite;

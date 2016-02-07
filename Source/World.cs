@@ -184,13 +184,13 @@ namespace Source.Collisions
                     {
                         totalCollisions++;
 
-                        if (Math.Abs(translation.X) > Math.Abs(translation.Y)/* && !player.WallAbove*/)
-                        {
-                            player.CurrentState = Player.State.Climbing;
-                            //player.Velocity.Y = player.ActionTime > 0 ? -GameData.CLIMB_SPEED_FAST : -GameData.CLIMB_SPEED;
-                        }
-                        else if (player.CurrentState == Player.State.Climbing)
-                            player.CurrentState = Player.State.Walking;
+                        //if (Math.Abs(translation.X) > Math.Abs(translation.Y)/* && !player.WallAbove*/)
+                        //{
+                        //    player.CurrentState = Player.State.Climbing;
+                        //    //player.Velocity.Y = player.ActionTime > 0 ? -GameData.CLIMB_SPEED_FAST : -GameData.CLIMB_SPEED;
+                        //}
+                        //else if (player.CurrentState == Player.State.Climbing)
+                        //    player.CurrentState = Player.State.Walking;
 
                         if (translation.Y != 0)
                         {
