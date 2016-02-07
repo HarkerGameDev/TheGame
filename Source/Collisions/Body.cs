@@ -75,7 +75,7 @@ namespace Source.Collisions
         /// <returns></returns>
         public bool TestPoint(Vector2 point)
         {
-            return Intersects(new Floor(texture, point, Floor.FLOOR_HEIGHT)) != Vector2.Zero;
+            return Intersects(new Platform(texture, point, Vector2.Zero)) != Vector2.Zero;
         }
 
         public virtual void Move(float deltaTime)
@@ -112,7 +112,7 @@ namespace Source.Collisions
         }
 
         /// <summary>
-        /// Intersection detection function, stores results in WillIntersect and Intersect
+        /// Intersection detection function
         /// Mostly derived from http://www.codeproject.com/Articles/15573/2D-Polygon-Collision-Detection
         /// </summary>
         /// <param name="other">The other Body to check intersection with</param>

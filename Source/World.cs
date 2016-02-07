@@ -68,7 +68,7 @@ namespace Source.Collisions
                 {
                     drop.Velocity.Y += GameData.GRAVITY * deltaTime;
                     drop.Move(deltaTime);
-                    foreach (Body target in game.floors)
+                    foreach (Body target in game.platforms)
                     {
                         Vector2 translation = target.Intersects(drop);
                         if (translation != Vector2.Zero)
@@ -90,36 +90,33 @@ namespace Source.Collisions
             float projDeltaTime = deltaTime / projStep;
             foreach (Player player in game.players)
             {
-                if (player.TimeSinceDeath <= 0)
+                for (int i = player.Projectiles.Count - 1; i >= 0; i--)
                 {
-                    for (int i = player.Projectiles.Count - 1; i >= 0; i--)
+                    for (int j = 0; j < projStep; j++)
                     {
-                        for (int j = 0; j < projStep; j++)
-                        {
-                            if (!CalculateProjectile(player, projDeltaTime, i))
-                                break;
-                        }
+                        if (!CalculateProjectile(player, projDeltaTime, i))
+                            break;
                     }
-
-                    player.Velocity.Y += GameData.GRAVITY * deltaTime;
-                    int playerStep = Math.Max((int)Math.Ceiling(deltaTime * player.Velocity.Y / player.Size.Y / 1.5f),
-                                              (int)Math.Ceiling(deltaTime * player.Velocity.X / player.Size.X / 1.5f));
-                    if (playerStep < 1) playerStep = 1;
-
-                    for (int i = 0; i < playerStep; i++)
-                    {
-                        player.Move(deltaTime / playerStep);
-                    }
-                    CheckFloors(player);
-                    CheckObstacles(player);
-
-                    if (player.Ability1)
-                        PerformSpecial1(player, deltaTime);
-                    if (player.Ability2)
-                        PerformSpecial2(player, deltaTime);
-                    if (player.Ability3)
-                        PerformSpecial3(player, deltaTime);
                 }
+
+                player.Velocity.Y += GameData.GRAVITY * deltaTime;
+                int playerStep = Math.Max((int)Math.Ceiling(deltaTime * player.Velocity.Y / player.Size.Y / 1.5f),
+                                            (int)Math.Ceiling(deltaTime * player.Velocity.X / player.Size.X / 1.5f));
+                if (playerStep < 1) playerStep = 1;
+
+                for (int i = 0; i < playerStep; i++)
+                {
+                    player.Move(deltaTime / playerStep);
+                }
+                CheckPlatforms(player);
+                CheckObstacles(player);
+
+                if (player.Ability1)
+                    PerformSpecial1(player, deltaTime);
+                if (player.Ability2)
+                    PerformSpecial2(player, deltaTime);
+                if (player.Ability3)
+                    PerformSpecial3(player, deltaTime);
             }
         }
 
@@ -139,9 +136,9 @@ namespace Source.Collisions
                 player.Projectiles.RemoveAt(projIndex);
                 return false;
             }
-            foreach (Floor floor in game.floors)
+            foreach (Platform platform in game.platforms)
             {
-                if (proj.Intersects(floor) != Vector2.Zero)
+                if (proj.Intersects(platform) != Vector2.Zero)
                 {
                     player.Projectiles.RemoveAt(projIndex);
                     return false;
@@ -173,19 +170,21 @@ namespace Source.Collisions
                     source.texture, 0f, rand(x, y, new Vector2(GameData.PARTICLE_X, GameData.PARTICLE_Y)), 0f, GameData.PARTICLE_LIFETIME, source.Color));
         }
 
-        private void CheckFloors(Player player)
+        private void CheckPlatforms(Player player)
         {
+            // TODO this seems kinda janky if player falls from great height
+            // TODO make collisions work for horizontal and vertical collisions
             int totalCollisions = 0;
-            foreach (Floor floor in game.floors)
+            foreach (Platform platform in game.platforms)
             {
-                Vector2 translation = player.Intersects(floor);
+                Vector2 translation = player.Intersects(platform);
                 if (translation != Vector2.Zero)
                 {
                     if (player.CurrentState != Player.State.Stunned && player.CurrentState != Player.State.Flying)
                     {
                         totalCollisions++;
 
-                        if (Math.Abs(translation.X) > Math.Abs(translation.Y) && !player.WallAbove)
+                        if (Math.Abs(translation.X) > Math.Abs(translation.Y)/* && !player.WallAbove*/)
                         {
                             player.CurrentState = Player.State.Climbing;
                             //player.Velocity.Y = player.ActionTime > 0 ? -GameData.CLIMB_SPEED_FAST : -GameData.CLIMB_SPEED;
@@ -201,45 +200,42 @@ namespace Source.Collisions
                         }
                         player.MovePosition(-translation);
                     }
-                    else        // player is Slamming or Stunned
-                    {
-                        if (floor.Rotation != 0)
-                        {
-                            MakeParticles(player.Position, floor, GameData.NUM_PART_FLOOR, 0, 1);
-                        }
-                        else
-                        {
-                            MakeParticles(player.Position, floor, GameData.NUM_PART_FLOOR, 0, 1);
+                    //else        // player is Slamming or Stunned
+                    //{
+                    //    if (platform.Rotation != 0)
+                    //    {
+                    //        MakeParticles(player.Position, platform, GameData.NUM_PART_FLOOR, 0, 1);
+                    //    }
+                    //    else
+                    //    {
+                    //        MakeParticles(player.Position, platform, GameData.NUM_PART_FLOOR, 0, 1);
 
-                            float newFloorX = floor.Position.X + player.Position.X;
-                            float sizeDiff = floor.Size.X / 2 + GameData.FLOOR_HOLE / 2;
-                            float halfWidth = floor.Size.X / 2 - GameData.FLOOR_HOLE / 2;
-                            float playerDist = player.Position.X - floor.Position.X;
+                    //        float newFloorX = platform.Position.X + player.Position.X;
+                    //        float sizeDiff = platform.Size.X / 2 + GameData.FLOOR_HOLE / 2;
+                    //        float halfWidth = platform.Size.X / 2 - GameData.FLOOR_HOLE / 2;
+                    //        float playerDist = player.Position.X - platform.Position.X;
 
-                            if (halfWidth + playerDist > GameData.MIN_FLOOR_WIDTH)
-                                game.floors.Add(new Floor(floor.texture, new Vector2((newFloorX - sizeDiff) / 2, floor.Position.Y), halfWidth + playerDist));
-                            if (halfWidth - playerDist > GameData.MIN_FLOOR_WIDTH)
-                                game.floors.Add(new Floor(floor.texture, new Vector2((newFloorX + sizeDiff) / 2, floor.Position.Y), halfWidth - playerDist));
-                        }
+                    //        if (halfWidth + playerDist > GameData.MIN_FLOOR_WIDTH)
+                    //            game.platforms.Add(new Platform(platform.texture, new Vector2((newFloorX - sizeDiff) / 2, platform.Position.Y), halfWidth + playerDist));
+                    //        if (halfWidth - playerDist > GameData.MIN_FLOOR_WIDTH)
+                    //            game.platforms.Add(new Platform(platform.texture, new Vector2((newFloorX + sizeDiff) / 2, platform.Position.Y), halfWidth - playerDist));
+                    //    }
 
-                        game.floors.Remove(floor);
-                        break;
-                    }
+                    //    game.platforms.Remove(platform);
+                    //    break;
+                    //}
                 }
             }
 
 			if (player.Position.Y > BOTTOM) {  // bottom of the level
-				player.Velocity.Y = 0;
-
 				// Kill the player
-                player.Kill(game.rand);
-				if (player.Score == 0) {
-					for (int i = 0; i < game.players.Count; i++) {
-						game.players [i].Score++;
-					}
-				}
-				player.Score--;
-                player.Velocity = Vector2.Zero;
+                player.Kill();
+				//if (player.Score == 0) {
+				//	for (int i = 0; i < game.players.Count; i++) {
+				//		game.players [i].Score++;
+				//	}
+				//}
+				//player.Score--;
             }
 
             if (totalCollisions == 0 && !player.InAir)
@@ -385,7 +381,7 @@ namespace Source.Collisions
             }
             foreach (Player body in game.players)
             {
-                if (body != player && body.TimeSinceDeath <= 0)
+                if (body != player)
                 {
                     //Console.WriteLine(body.Velocity + "\t\t" + player.Velocity);
                     Vector2 dist = body.Position - position;
@@ -407,7 +403,7 @@ namespace Source.Collisions
 
         public Body TestPoint(Vector2 point)
         {
-            foreach (Body body in game.floors)
+            foreach (Body body in game.platforms)
             {
                 if (body.TestPoint(point))
                 {

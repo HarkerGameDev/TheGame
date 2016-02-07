@@ -19,39 +19,7 @@ namespace Source
         public const int numPlayers = 2;            // number of players
 #endif
 
-        public const int NEW_SEED_MINS = 10;     // minutes until a new level seed will be generated
-        public const float LOAD_NEW = 70f;     // the next level will be loaded when the player is this far from the current end
-        public const int MAX_FLOORS = 50;    // maximum number of floors at any given time
-        public const int MAX_OBSTACLES = 40;    // maximum obstacles
-
-        public const int MIN_LEVEL_WIDTH = 60;  // width of levels
-        public const int MAX_LEVEL_WIDTH = 130;
-        public const float MIN_FLOOR_HOLE = 20f; // size of a hole inside a building
-        public const float MAX_FLOOR_HOLE = 40f - MIN_FLOOR_HOLE;
-        public const float MIN_FLOOR_DIST = 15; // width of a floor until a hole is reached
-        public const float MAX_FLOOR_DIST = 50 - MIN_FLOOR_DIST;
-        public const int MIN_LEVEL_STEP = 8;    // size of each floor in building
-        public const int MAX_LEVEL_STEP = 15;
-        public const int MIN_NUM_FLOORS = 4;    // number of floors per building
-        public const int MAX_NUM_FLOORS = 8;
-        //public const int MIN_WALL_DIST = 10;    // distance between walls inside rooms
-        //public const int MAX_WALL_DIST = 90;
-        public const int MIN_OBSTACLE_DIST = 50;    // distance between obstacles inside rooms
-        public const int MAX_OBSTACLE_DIST = 100;
-        public const int LEVEL_DIST_MIN = 20;    // the space between different buildings
-        public const int LEVEL_DIST_MAX = 32;
-
-        public const float FLOOR_HOLE = 4.4f;   // size in m of hole to make when slamming
-        public const int WINDOW_HEALTH = 1;     // windows are on the side of buildings
-        public const float MIN_FLOOR_WIDTH = 2f;  // floors cannot be smaller than this (by random generation or slamming)
-        public const double STAIR_CHANCE = 0.6; // chance a hole will have a stair to it (from 0 to 1)
-        public const float STAIR_WIDTH = MIN_FLOOR_DIST;   // horizontal distance of a stair
-        public const float MIN_STAIR_DIST = 6.3f;    // minimum size of a hole for a stair to be created
-
-        public const float PLAYER_START = 2f;   // starting x position of player
-        public const int MIN_SPAWN = MAX_LEVEL_STEP * 2 + 1;  // minimum spawning position (vertically)
-        public const int MAX_SPAWN = MIN_LEVEL_STEP * MIN_NUM_FLOORS + 20;  // maximum spawning position (vertically)
-        public const float SPAWN_PROTECT = 5f;  // stuff this far apart from the player will be destroyed when the player is spawned
+        public static Vector2 PLAYER_START = new Vector2(1f, -10f);
 
         public const float ZOOM_STEP = 1.5f;       // scale by which zoom is changed with + and -
         public const float PIXEL_METER = 24f;      // pixels per meter for normal game
@@ -74,7 +42,8 @@ namespace Source
 
         public const float MIN_VELOCITY = 1f;  // m/s -- what can be considered target velocity
         public const float RUN_VELOCITY = 22f; // m/s -- maximum horizontal velocity for player
-        public const float MAX_ACCEL = 30f;   // m/s^2 -- the impulse which is applied when player starts moving after standing still
+        public const float MAX_ACCEL = 30f;   // m/s^2 -- acceleration applied when reaching TargetVelocity
+        public const float AIR_ACCEL = 15f;   // m/s^2 -- acceleration while in air
         public const float OBSTACLE_JUMP = 25f; // m/s -- initial upwards velocity after vaulting off of an obstacle succesfully
         public const float CLIMB_SPEED = 8f;     // m/s -- speed of climbing onto a ledge
 
@@ -104,7 +73,7 @@ namespace Source
         public const float PARTICLE_X = 4f;         // maximum x velocity of a particle when randomly generating in either direction
         public const float PARTICLE_Y = 5f;         // maximum y velocity of a particle in either direction
         //public const int NUM_PART_WALL = 10;        // number of particles to spawn when a wall is exploded
-        public const int NUM_PART_FLOOR = 5;        // number of particles to spawn when slamming and a hole is made
+        //public const int NUM_PART_FLOOR = 5;        // number of particles to spawn when slamming and a hole is made
         public const int NUM_PART_OBSTACLE = 3;     // number of particles to spawn when an obstacle is hit or destroyed
 
         public const float PROJ_WIDTH = 1f;     // width of a projectile in m
@@ -164,13 +133,13 @@ namespace Source
             }
         }
 
-        public static int GetSeed
-        {
-            get
-            {
-                return (DateTime.UtcNow - new DateTime(2015, 1, 1)).Minutes / GameData.NEW_SEED_MINS;
-            }
-        }
+        //public static int GetSeed
+        //{
+        //    get
+        //    {
+        //        return (DateTime.UtcNow - new DateTime(2015, 1, 1)).Minutes / GameData.NEW_SEED_MINS;
+        //    }
+        //}
 
         public enum ControlKey
         {

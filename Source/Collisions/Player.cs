@@ -19,13 +19,9 @@ namespace Source.Collisions
         private const float BAR_HEIGHT = 0.25f;
 
         public State CurrentState;
-        public double TimeSinceDeath;
-        public int Score;
         public float StunTime;
         public float JumpTime;
-        public bool WallAbove;
         public float TargetVelocity;
-        public float SpawnY;
         public bool Ability1;
         public bool Ability2;
         public bool Ability3;
@@ -47,12 +43,8 @@ namespace Source.Collisions
         public void ResetValues()
         {
             CurrentState = State.Jumping;
-            TimeSinceDeath = 0;
-            Score = 0;
             StunTime = 0;
-            WallAbove = false;
             TargetVelocity = 0;
-            SpawnY = 0;
             Ability1 = false;
             Ability2 = false;
             Ability3 = false;
@@ -96,7 +88,9 @@ namespace Source.Collisions
                 float diff = Velocity.X - TargetVelocity;
                 if (Math.Abs(diff) < GameData.MIN_VELOCITY)
                     Velocity.X = TargetVelocity;
-                else // if (!InAir)
+                else if (InAir)
+                    Velocity.X -= Math.Sign(diff) * deltaTime * GameData.AIR_ACCEL;
+                else
                     Velocity.X -= Math.Sign(diff) * deltaTime * GameData.MAX_ACCEL;
             }
             base.Move(deltaTime);
@@ -111,12 +105,11 @@ namespace Source.Collisions
             //Game1.DrawRectangle(spriteBatch, pos, Color.Crimson, new Vector2(BAR_WIDTH * BoostTime / GameData.BOOST_LENGTH, BAR_HEIGHT));
         }
 
-        public void Kill(Random rand)
+        public void Kill()
         {
             Velocity = Vector2.Zero;
-            TimeSinceDeath = GameData.DEAD_TIME;
+            MoveToPosition(GameData.PLAYER_START);
             Projectiles.Clear();
-            SpawnY = -rand.Next(GameData.MIN_SPAWN, GameData.MAX_SPAWN);
             Ability1 = false;
             Ability2 = false;
             Ability3 = false;
