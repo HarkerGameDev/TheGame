@@ -19,7 +19,40 @@ namespace Source
         public const int numPlayers = 2;            // number of players
 #endif
 
-        public static Vector2 PLAYER_START = new Vector2(1f, -10f);
+        public const int NEW_SEED_MINS = 10;     // minutes until a new level seed will be generated
+        public const float LOAD_NEW = 70f;     // the next level will be loaded when the player is this far from the current end
+        public const int MAX_FLOORS = 50;    // maximum number of floors at any given time
+        public const int MAX_WALLS = 90;    // maximum number of walls
+        public const int MAX_OBSTACLES = 40;    // maximum obstacles
+
+        public const int MIN_LEVEL_WIDTH = 60;  // width of levels
+        public const int MAX_LEVEL_WIDTH = 130;
+        public const float MIN_FLOOR_HOLE = 20f; // size of a hole inside a building
+        public const float MAX_FLOOR_HOLE = 40f - MIN_FLOOR_HOLE;
+        public const float MIN_FLOOR_DIST = 15; // width of a floor until a hole is reached
+        public const float MAX_FLOOR_DIST = 50 - MIN_FLOOR_DIST;
+        public const int MIN_LEVEL_STEP = 8;    // size of each floor in building
+        public const int MAX_LEVEL_STEP = 15;
+        public const int MIN_NUM_FLOORS = 4;    // number of floors per building
+        public const int MAX_NUM_FLOORS = 8;
+        //public const int MIN_WALL_DIST = 10;    // distance between walls inside rooms
+        //public const int MAX_WALL_DIST = 90;
+        public const int MIN_OBSTACLE_DIST = 50;    // distance between obstacles inside rooms
+        public const int MAX_OBSTACLE_DIST = 100;
+        public const int LEVEL_DIST_MIN = 20;    // the space between different buildings
+        public const int LEVEL_DIST_MAX = 32;
+
+        public const float FLOOR_HOLE = 4.4f;   // size in m of hole to make when slamming
+        public const int WINDOW_HEALTH = 1;     // windows are on the side of buildings
+        public const float MIN_FLOOR_WIDTH = 2f;  // floors cannot be smaller than this (by random generation or slamming)
+        public const double STAIR_CHANCE = 0.6; // chance a hole will have a stair to it (from 0 to 1)
+        public const float STAIR_WIDTH = MIN_FLOOR_DIST;   // horizontal distance of a stair
+        public const float MIN_STAIR_DIST = 6.3f;    // minimum size of a hole for a stair to be created
+
+        public const float PLAYER_START = 2f;   // starting x position of player
+        public const int MIN_SPAWN = MAX_LEVEL_STEP * 2 + 1;  // minimum spawning position (vertically)
+        public const int MAX_SPAWN = MIN_LEVEL_STEP * MIN_NUM_FLOORS + 20;  // maximum spawning position (vertically)
+        public const float SPAWN_PROTECT = 5f;  // stuff this far apart from the player will be destroyed when the player is spawned
 
         public const float ZOOM_STEP = 1.5f;       // scale by which zoom is changed with + and -
         public const float PIXEL_METER = 24f;      // pixels per meter for normal game
@@ -31,8 +64,16 @@ namespace Source
         public static Color DARK_COLOR = new Color(new Vector3(0.1f));  // color mask for non-lit areas
         public static Color LIGHT_COLOR = Color.Wheat;
 
+#if DEBUG
+        public const float BOOST_SPEED = -1; // m/s -- horizontal velocity when boosting
+        public const float BOOST_REGEN = 0.1f; // boost will be refilled in this time (from 0)
+#else
+        public const float BOOST_SPEED = 26f; // m/s -- horizontal velocity when boosting
+        public const float BOOST_REGEN = 8.7f; // boost will be refilled in this time (from 0)
+#endif
+        public const float BOOST_LENGTH = 6f;  // how long a player can boost for
+
         public const float JUMP_SPEED = 18f; // m/s -- the initial upwards velocity when player jumps
-        public const float JUMP_TIME = 0.2f;  // s -- can hold jump for this long and still have upwards velocity
         //public const float JETPACK_ACCEL = 7f;  // m/s^2 -- upwards acceleration while jetpacking
         //public const float JETPACK_SPEED = 14f; // m/s -- upwards speed while using jetpack
         //public const float JETPACK_REGEN = 10f; // jetpack will be refilled in this time
@@ -42,14 +83,13 @@ namespace Source
 
         public const float MIN_VELOCITY = 1f;  // m/s -- what can be considered target velocity
         public const float RUN_VELOCITY = 22f; // m/s -- maximum horizontal velocity for player
-        public const float MAX_ACCEL = 30f;   // m/s^2 -- acceleration applied when reaching TargetVelocity
-        public const float AIR_ACCEL = 15f;   // m/s^2 -- acceleration while in air
+        public const float MAX_ACCEL = 30f;   // m/s^2 -- the impulse which is applied when player starts moving after standing still
         public const float OBSTACLE_JUMP = 25f; // m/s -- initial upwards velocity after vaulting off of an obstacle succesfully
         public const float CLIMB_SPEED = 8f;     // m/s -- speed of climbing onto a ledge
 
         public const float JUMP_SLOW = 0.85f;   // -- x velocity is scaled by this when jumping
         public const float WINDOW_SLOW = 0.2f;    // -- player speed is reduced to this ratio when a window is hit
-        //public const float WALL_SLOW = 0.2f;    // -- player speed is reduced to this ratio when a wall is hit while flying
+        public const float WALL_SLOW = 0.2f;    // -- player speed is reduced to this ratio when a wall is hit while flying
 
         //public const string SONG = "afln_s_gdc-1.wav";    // the song to play, over, and over, and over again. NEVER STOP THE PARTY!
         //public const float VOLUME = 0.0f;                // volume for song
@@ -72,9 +112,10 @@ namespace Source
         public const float PARTICLE_MAX_SPIN = 10f; // maximum angular velocity (in rad/s)
         public const float PARTICLE_X = 4f;         // maximum x velocity of a particle when randomly generating in either direction
         public const float PARTICLE_Y = 5f;         // maximum y velocity of a particle in either direction
-        //public const int NUM_PART_WALL = 10;        // number of particles to spawn when a wall is exploded
-        //public const int NUM_PART_FLOOR = 5;        // number of particles to spawn when slamming and a hole is made
+        public const int NUM_PART_WALL = 10;        // number of particles to spawn when a wall is exploded
+        public const int NUM_PART_FLOOR = 5;        // number of particles to spawn when slamming and a hole is made
         public const int NUM_PART_OBSTACLE = 3;     // number of particles to spawn when an obstacle is hit or destroyed
+        public const float BOOST_PART_TIME = 1 / 30f;   // time until a new particle will be spawned when boosting
 
         public const float PROJ_WIDTH = 1f;     // width of a projectile in m
         public const float PROJ_HEIGHT = 0.25f; // height of a projectile in m
@@ -133,26 +174,26 @@ namespace Source
             }
         }
 
-        //public static int GetSeed
-        //{
-        //    get
-        //    {
-        //        return (DateTime.UtcNow - new DateTime(2015, 1, 1)).Minutes / GameData.NEW_SEED_MINS;
-        //    }
-        //}
+        public static int GetSeed
+        {
+            get
+            {
+                return (DateTime.UtcNow - new DateTime(2015, 1, 1)).Minutes / GameData.NEW_SEED_MINS;
+            }
+        }
 
         public enum ControlKey
         {
-            Special1, Special2, Special3, Left, Right, Jump, Action
+            Special1, Special2, Special3, Boost, Jump, Action
         }
 
+        // TODO intuitive controls
         public interface Controls
         {
             bool Special1 { get; }   // toggle
             bool Special2 { get; }  // toggle
             bool Special3 { get; }  // toggle
-            bool Left { get; }     // hold
-            bool Right { get; }     // hold
+            bool Boost { get; }     // hold
             bool Jump { get; }      // hold
             bool Action { get; }     // toggle
 
@@ -164,8 +205,7 @@ namespace Source
             public bool Special1 { get; set; }
             public bool Special2 { get; set; }
             public bool Special3 { get; set; }
-            public bool Left { get; set; }
-            public bool Right { get; set; }
+            public bool Boost { get; set; }
             public bool Jump { get; set; }
             public bool Action { get; set; }
 
@@ -174,8 +214,7 @@ namespace Source
                 Special1 = false;
                 Special2 = false;
                 Special3 = false;
-                Left = false;
-                Right = false;
+                Boost = false;
                 Jump = false;
                 Action = false;
             }
@@ -186,22 +225,20 @@ namespace Source
             public bool Special1 { get { return game.ToggleKey(special1); } }
             public bool Special2 { get { return game.ToggleKey(special2); } }
             public bool Special3 { get { return game.ToggleKey(special3); } }
-            public bool Left { get { return Keyboard.GetState().IsKeyDown(left); } }
-            public bool Right { get { return Keyboard.GetState().IsKeyDown(right); } }
+            public bool Boost { get { return Keyboard.GetState().IsKeyDown(boost); } }
             public bool Jump { get { return Keyboard.GetState().IsKeyDown(jump); } }
             public bool Action { get { return game.ToggleKey(action); } }
 
             private Game1 game;
-            private Keys special1, special2, special3, left, right, jump, action;
+            private Keys special1, special2, special3, boost, jump, action;
 
-            public KeyboardControls(Game1 game, Keys special1, Keys special2, Keys special3, Keys left, Keys right, Keys jump, Keys action)
+            public KeyboardControls(Game1 game, Keys special1, Keys special2, Keys special3, Keys boost, Keys jump, Keys action)
             {
                 this.game = game;
                 this.special1 = special1;
                 this.special2 = special2;
                 this.special3 = special3;
-                this.left = left;
-                this.right = right;
+                this.boost = boost;
                 this.jump = jump;
                 this.action = action;
             }
@@ -209,8 +246,7 @@ namespace Source
             public override string ToString()
             {
                 StringBuilder builder = new StringBuilder();
-                builder.AppendLine("Left = " + left)
-                    .AppendLine("Right = " + right)
+                builder.AppendLine("Boost = " + boost)
                     .AppendLine("Jump = " + jump)
                     .AppendLine("Action = " + action)
                     .AppendLine("Special1 = " + special1)
@@ -226,24 +262,22 @@ namespace Source
             public bool Special1 { get { return game.ToggleButton(playerIndex, special1); } }
             public bool Special2 { get { return game.ToggleButton(playerIndex, special2); } }
             public bool Special3 { get { return game.ToggleButton(playerIndex, special3); } }
-            public bool Left { get { return GamePad.GetState(playerIndex, GamePadDeadZone.Circular).IsButtonDown(left); } }
-            public bool Right { get { return GamePad.GetState(playerIndex, GamePadDeadZone.Circular).IsButtonDown(right); } }
+            public bool Boost { get { return GamePad.GetState(playerIndex, GamePadDeadZone.Circular).IsButtonDown(boost); } }
             public bool Jump { get { return GamePad.GetState(playerIndex, GamePadDeadZone.Circular).IsButtonDown(jump); } }
             public bool Action { get { return game.ToggleButton(playerIndex, action); } }
 
             private Game1 game;
             private PlayerIndex playerIndex;
-            private Buttons special1, special2, special3, left, right, jump, action;
+            private Buttons special1, special2, special3, boost, jump, action;
 
-            public GamePadControls(Game1 game, PlayerIndex playerIndex, Buttons special1, Buttons special2, Buttons special3, Buttons left, Buttons right, Buttons jump, Buttons action)
+            public GamePadControls(Game1 game, PlayerIndex playerIndex, Buttons special1, Buttons special2, Buttons special3, Buttons boost, Buttons jump, Buttons action)
             {
                 this.game = game;
                 this.playerIndex = playerIndex;
                 this.special1 = special1;
                 this.special2 = special2;
                 this.special3 = special3;
-                this.left = left;
-                this.right = right;
+                this.boost = boost;
                 this.jump = jump;
                 this.action = action;
             }
@@ -251,8 +285,7 @@ namespace Source
             public override string ToString()
             {
                 StringBuilder builder = new StringBuilder();
-                builder.AppendLine("Left = " + left)
-                    .AppendLine("Right = " + right)
+                builder.AppendLine("Boost = " + boost)
                     .AppendLine("Jump = " + jump)
                     .AppendLine("Action = " + action)
                     .AppendLine("Special1 = " + special1)

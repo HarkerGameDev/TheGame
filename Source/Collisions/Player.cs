@@ -19,23 +19,29 @@ namespace Source.Collisions
         private const float BAR_HEIGHT = 0.25f;
 
         public State CurrentState;
+        public double TimeSinceDeath;
+        public int Score;
+        public float BoostTime;
         public float StunTime;
-        public float JumpTime;
+        //public float ActionTime;
+        public bool WallAbove;
         public float TargetVelocity;
+        public float SpawnY;
         public bool Ability1;
         public bool Ability2;
         public bool Ability3;
         public Character CurrentCharacter;
+        public float BoostPart;
 
         public List<Projectile> Projectiles;
 
         public bool InAir { get { return CurrentState == State.Jumping || CurrentState == State.Stunned
                     || CurrentState == State.Flying || CurrentState == State.Climbing; } }
-        public bool CanJump { get { return CurrentState == State.Walking; } }
+        public bool CanJump { get { return CurrentState == State.Walking || CurrentState == State.Boosting; } }
 
         public enum State
         {
-            Jumping=0, Walking=1, Climbing=4, Stunned=5, Flying=6
+            Jumping=0, Walking=1, Boosting=3, Climbing=4, Stunned=5, Flying=6
         }
 
         public AnimatedSprite Sprite;
@@ -43,11 +49,17 @@ namespace Source.Collisions
         public void ResetValues()
         {
             CurrentState = State.Jumping;
+            TimeSinceDeath = 0;
+            Score = 0;
+            BoostTime = GameData.BOOST_LENGTH;
             StunTime = 0;
-            TargetVelocity = 0;
+            WallAbove = false;
+            TargetVelocity = GameData.RUN_VELOCITY;
+            SpawnY = 0;
             Ability1 = false;
             Ability2 = false;
             Ability3 = false;
+            BoostPart = GameData.BOOST_PART_TIME;
 
             Projectiles = new List<Projectile>();
             Velocity = Vector2.Zero;
@@ -82,16 +94,25 @@ namespace Source.Collisions
             }
             else
             {
-                if (CurrentState == State.Jumping)
-                    JumpTime -= deltaTime;
-
                 float diff = Velocity.X - TargetVelocity;
                 if (Math.Abs(diff) < GameData.MIN_VELOCITY)
                     Velocity.X = TargetVelocity;
-                else if (InAir)
-                    Velocity.X -= Math.Sign(diff) * deltaTime * GameData.AIR_ACCEL;
-                else
+                else // if (!InAir)
                     Velocity.X -= Math.Sign(diff) * deltaTime * GameData.MAX_ACCEL;
+
+                if (CurrentState == State.Boosting)
+                {
+                    BoostTime -= deltaTime;
+                    BoostPart -= deltaTime;
+                }
+                else if (BoostTime < GameData.BOOST_LENGTH)
+                    BoostTime += deltaTime * GameData.BOOST_LENGTH / GameData.BOOST_REGEN;
+
+                if (BoostTime < 0)
+                {
+                    TargetVelocity = GameData.RUN_VELOCITY;
+                    CurrentState = State.Walking;
+                }
             }
             base.Move(deltaTime);
         }
@@ -100,16 +121,18 @@ namespace Source.Collisions
         {
             Sprite.Draw(spriteBatch);
 
-            //Vector2 pos = new Vector2(Position.X - BAR_WIDTH / 2, Position.Y - Size.Y * 0.7f);
-            //Game1.DrawRectangle(spriteBatch, pos, Color.LightSalmon, new Vector2(BAR_WIDTH, BAR_HEIGHT));
-            //Game1.DrawRectangle(spriteBatch, pos, Color.Crimson, new Vector2(BAR_WIDTH * BoostTime / GameData.BOOST_LENGTH, BAR_HEIGHT));
+            Vector2 pos = new Vector2(Position.X - BAR_WIDTH / 2, Position.Y - Size.Y * 0.7f);
+            Game1.DrawRectangle(spriteBatch, pos, Color.LightSalmon, new Vector2(BAR_WIDTH, BAR_HEIGHT));
+            Game1.DrawRectangle(spriteBatch, pos, Color.Crimson, new Vector2(BAR_WIDTH * BoostTime / GameData.BOOST_LENGTH, BAR_HEIGHT));
         }
 
-        public void Kill()
+        public void Kill(Random rand)
         {
-            Velocity = Vector2.Zero;
-            MoveToPosition(GameData.PLAYER_START);
+            Velocity = new Vector2(GameData.RUN_VELOCITY, 0f);
+            TimeSinceDeath = GameData.DEAD_TIME;
             Projectiles.Clear();
+            SpawnY = -rand.Next(GameData.MIN_SPAWN, GameData.MAX_SPAWN);
+            BoostTime = GameData.BOOST_LENGTH;
             Ability1 = false;
             Ability2 = false;
             Ability3 = false;

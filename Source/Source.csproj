@@ -68,7 +68,8 @@
     <Compile Include="Collisions\ConvertUnits.cs" />
     <Compile Include="Collisions\Drop.cs" />
     <Compile Include="Collisions\Obstacle.cs" />
-    <Compile Include="Collisions\Platform.cs" />
+    <Compile Include="Collisions\Wall.cs" />
+    <Compile Include="Collisions\Floor.cs" />
     <Compile Include="Collisions\Projectile.cs" />
     <Compile Include="Collisions\Player.cs" />
     <Compile Include="World.cs" />
@@ -135,9 +136,6 @@
   <ItemGroup>
     <None Include="Content\Effects\reductionEffect.fx" />
     <None Include="Content\Effects\resolveShadowsEffect.fx" />
-    <None Include="Levels\level0">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

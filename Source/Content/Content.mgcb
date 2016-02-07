@@ -66,7 +66,7 @@
 /processorParam:DebugMode=Auto
 /build:Effects/resolveShadowsEffect.fx
 
-#begin Backgrounds/Background0/layer0.png
+#begin Worlds/World0/layer0.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -75,9 +75,9 @@
 /processorParam:PremultiplyAlpha=True
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:TextureFormat=Color
-/build:Backgrounds/Background0/layer0.png
+/build:Worlds/World0/layer0.png
 
-#begin Backgrounds/Background0/layer1.png
+#begin Worlds/World0/layer1.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -86,9 +86,9 @@
 /processorParam:PremultiplyAlpha=True
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:TextureFormat=Color
-/build:Backgrounds/Background0/layer1.png
+/build:Worlds/World0/layer1.png
 
-#begin Backgrounds/Background0/layer2.png
+#begin Worlds/World0/layer2.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -97,9 +97,9 @@
 /processorParam:PremultiplyAlpha=True
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:TextureFormat=Color
-/build:Backgrounds/Background0/layer2.png
+/build:Worlds/World0/layer2.png
 
-#begin Backgrounds/Background1/layer0.jpg
+#begin Worlds/World1/layer0.jpg
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -108,9 +108,9 @@
 /processorParam:PremultiplyAlpha=True
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:TextureFormat=Color
-/build:Backgrounds/Background1/layer0.jpg
+/build:Worlds/World1/layer0.jpg
 
-#begin Backgrounds/Background2/layer0.png
+#begin Worlds/World2/layer0.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -119,9 +119,9 @@
 /processorParam:PremultiplyAlpha=True
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:TextureFormat=Color
-/build:Backgrounds/Background2/layer0.png
+/build:Worlds/World2/layer0.png
 
-#begin Backgrounds/Background2/layer1.png
+#begin Worlds/World2/layer1.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -130,9 +130,9 @@
 /processorParam:PremultiplyAlpha=True
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:TextureFormat=Color
-/build:Backgrounds/Background2/layer1.png
+/build:Worlds/World2/layer1.png
 
-#begin Backgrounds/Background2/layer2.png
+#begin Worlds/World2/layer2.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -141,9 +141,9 @@
 /processorParam:PremultiplyAlpha=True
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:TextureFormat=Color
-/build:Backgrounds/Background2/layer2.png
+/build:Worlds/World2/layer2.png
 
-#begin Backgrounds/Background2/layer3.png
+#begin Worlds/World2/layer3.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -152,5 +152,5 @@
 /processorParam:PremultiplyAlpha=True
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:TextureFormat=Color
-/build:Backgrounds/Background2/layer3.png
+/build:Worlds/World2/layer3.png
 
