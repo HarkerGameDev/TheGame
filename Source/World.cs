@@ -292,7 +292,7 @@ namespace Source.Collisions
                     }
                     else if (translation.Y == 0) // hitting from side
                     {
-                        player.Velocity.X *= GameData.WINDOW_SLOW;
+                        player.Velocity.X *= GameData.OBSTACLE_SLOW;
                         player.Velocity.Y = 0;
                         player.CurrentState = Player.State.Stunned;
                         player.StunTime = GameData.OBSTACLE_HIT_STUN;

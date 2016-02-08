@@ -103,14 +103,6 @@ namespace Source.Collisions
             spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(Position), null, Color, Rotation, Origin, ConvertUnits.ToDisplayUnits(Size) / (Origin * 2), SpriteEffects.None, 0f);
         }
 
-        public void Draw(SpriteBatch spriteBatch, Ziggyware.LightArea lightArea)
-        {
-            Color temp = Color;
-            Color = Color.Black;
-            Draw(spriteBatch);
-            Color = temp;
-        }
-
         /// <summary>
         /// Intersection detection function
         /// Mostly derived from http://www.codeproject.com/Articles/15573/2D-Polygon-Collision-Detection

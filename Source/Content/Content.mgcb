@@ -3,7 +3,7 @@
 
 /outputDir:bin/$(Platform)
 /intermediateDir:obj/$(Platform)
-/platform:WindowsGL
+/platform:Windows
 /config:
 /profile:Reach
 /compress:False
@@ -53,18 +53,6 @@
 /processor:FontDescriptionProcessor
 /processorParam:TextureFormat=Compressed
 /build:Fonts/Segoe_UI_30_Bold.spritefont
-
-#begin Effects/reductionEffect.fx
-/importer:EffectImporter
-/processor:EffectProcessor
-/processorParam:DebugMode=Auto
-/build:Effects/reductionEffect.fx
-
-#begin Effects/resolveShadowsEffect.fx
-/importer:EffectImporter
-/processor:EffectProcessor
-/processorParam:DebugMode=Auto
-/build:Effects/resolveShadowsEffect.fx
 
 #begin Backgrounds/Background0/layer0.png
 /importer:TextureImporter

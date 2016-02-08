@@ -77,9 +77,6 @@
     <Compile Include="Graphics\AnimatedSprite.cs" />
     <Compile Include="Graphics\Button.cs" />
     <Compile Include="Graphics\Particle.cs" />
-    <Compile Include="Lighting\LightArea.cs" />
-    <Compile Include="Lighting\QuadRenderComponent.cs" />
-    <Compile Include="Lighting\ShadowmapResolver.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -133,8 +130,6 @@
     <WCFMetadata Include="Service References\" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Content\Effects\reductionEffect.fx" />
-    <None Include="Content\Effects\resolveShadowsEffect.fx" />
     <None Include="Levels\level0">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

@@ -1,6 +1,4 @@
-﻿//#define LIGHTING
-
-using System;
+﻿using System;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Collections.Generic;
@@ -17,8 +15,6 @@ using Source.Graphics;
 
 using EmptyKeys.UserInterface;
 using EmptyKeys.UserInterface.Generated;
-
-using Ziggyware;
 
 namespace Source
 {
@@ -54,13 +50,6 @@ namespace Source
         Tuple<Texture2D, float, float, float>[] prevBackground, background;
         float fadeTime;
         public SpriteFont fontSmall, fontBig;
-
-#if LIGHTING
-        QuadRenderComponent quadRender;
-        ShadowmapResolver shadowmapResolver;
-        LightArea lightArea;
-        RenderTarget2D screenShadows;
-#endif
 
         public Random rand;
         //Random randLevel;
@@ -117,12 +106,6 @@ namespace Source
             graphics.DeviceCreated += graphics_DeviceCreated;
             graphics.PreparingDeviceSettings += graphics_PreparingDeviceSettings;
             IsMouseVisible = true;
-
-#if LIGHTING
-            quadRender = new QuadRenderComponent(this);
-            Components.Add(quadRender);
-            Components.Add(new GamerServicesComponent(this));
-#endif
         }
 
         private void graphics_DeviceCreated(object sender, EventArgs e)
@@ -311,14 +294,6 @@ namespace Source
         {
             Content.RootDirectory = "Content";
             spriteBatch = new SpriteBatch(GraphicsDevice);
-
-#if LIGHTING
-            //Initialize shadows
-            shadowmapResolver = new ShadowmapResolver(GraphicsDevice, quadRender, ShadowmapSize.Size256, ShadowmapSize.Size1024);
-            shadowmapResolver.LoadContent(Content);
-            lightArea = new LightArea(GraphicsDevice, ShadowmapSize.Size128);
-            screenShadows = new RenderTarget2D(GraphicsDevice, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
-#endif
 
             // Load menus
             SpriteFont font = Content.Load<SpriteFont>("Fonts/Segoe_UI_15_Bold");
@@ -959,83 +934,42 @@ namespace Source
             float zoom = ConvertUnits.ToDisplayUnits(1);
             ConvertUnits.SetDisplayUnitToSimUnitRatio(GameData.SHADOW_SCALE);
 
-#if LIGHTING
-            // Calculate shadows for lightArea
-            // TODO actual lights instead of on player
-            // TODO optimize lights (use geometric lighting)
-            lightArea.LightPosition = ConvertUnits.ToDisplayUnits(players[0].Position);
-            lightArea.BeginDrawingShadowCasters();
-            DrawCasters(lightArea, ConvertUnits.ToDisplayUnits(averagePos));
-            lightArea.EndDrawingShadowCasters();
-            shadowmapResolver.ResolveShadows(lightArea.RenderTarget, lightArea.RenderTarget, lightArea.LightPosition);
-
-            // Combine shadows
-            GraphicsDevice.SetRenderTarget(screenShadows);
-            GraphicsDevice.Clear(GameData.DARK_COLOR); // masking color for things that aren't under light
-            spriteBatch.Begin(blendState: BlendState.Additive);
-            //screenOffset + screenCenter - averagePos
-            float scale = zoom / GameData.SHADOW_SCALE;
-            spriteBatch.Draw(lightArea.RenderTarget, screenOffset + screenCenter - ConvertUnits.ToDisplayUnits(averagePos) * scale + lightArea.LightPosition * scale
-                - lightArea.LightAreaSize * 0.5f * scale, null, GameData.LIGHT_COLOR, 0f, Vector2.Zero, scale, SpriteEffects.None, 0f);
-            spriteBatch.End();
-            GraphicsDevice.SetRenderTarget(null);
-#endif
-
             // Draw background
             DrawBackground(ConvertUnits.ToDisplayUnits(averagePos));
             ConvertUnits.SetDisplayUnitToSimUnitRatio(zoom);
 
-#if LIGHTING
-            // Draw shadows to screen
-            BlendState blendState = new BlendState();
-            blendState.ColorSourceBlend = Blend.DestinationColor;
-            blendState.ColorDestinationBlend = Blend.SourceColor;
-            spriteBatch.Begin(SpriteSortMode.Immediate, blendState);
-            spriteBatch.Draw(screenShadows, Vector2.Zero, Color.White);
-            spriteBatch.End();
-#endif
-
             DrawScene(deltaTime, ConvertUnits.ToDisplayUnits(averagePos));
-
-#if (DEBUG && LIGHTING)
-            int width = GraphicsDevice.Viewport.Width;
-            int height = GraphicsDevice.Viewport.Height;
-            spriteBatch.Begin(SpriteSortMode.Immediate);
-            spriteBatch.Draw(lightArea.RenderTarget, new Rectangle((int)(width * 0.9), (int)(height * 0.9), (int)(width * 0.1), (int)(height * 0.1)), Color.White);
-            spriteBatch.Draw(screenShadows, new Rectangle((int)(width * 0.9), (int)(height * 0.8), (int)(width * 0.1), (int)(height * 0.1)), Color.White);
-            spriteBatch.End();
-#endif
         }
 
-        private void DrawCasters(LightArea lightArea, Vector2 averagePos)
-        {
-            //Vector2 screenPos = screenOffset + screenCenter - ConvertUnits.ToDisplayUnits(averagePos);
+        //private void DrawCasters(LightArea lightArea, Vector2 averagePos)
+        //{
+        //    //Vector2 screenPos = screenOffset + screenCenter - ConvertUnits.ToDisplayUnits(averagePos);
 
-            Matrix view = Matrix.CreateTranslation(new Vector3((lightArea.LightAreaSize * 0.5f - lightArea.LightPosition), 0f));
+        //    Matrix view = Matrix.CreateTranslation(new Vector3((lightArea.LightAreaSize * 0.5f - lightArea.LightPosition), 0f));
 
-            // Draw all objects
-            spriteBatch.Begin(transformMatrix: view);
-            foreach (Platform platform in platforms)
-                platform.Draw(spriteBatch, lightArea);
-            foreach (Obstacle obstacle in obstacles)
-                obstacle.Draw(spriteBatch, lightArea);
-            foreach (Drop drop in drops)
-                drop.Draw(spriteBatch, lightArea);
+        //    // Draw all objects
+        //    spriteBatch.Begin(transformMatrix: view);
+        //    foreach (Platform platform in platforms)
+        //        platform.Draw(spriteBatch, lightArea);
+        //    foreach (Obstacle obstacle in obstacles)
+        //        obstacle.Draw(spriteBatch, lightArea);
+        //    foreach (Drop drop in drops)
+        //        drop.Draw(spriteBatch, lightArea);
 
-            //if (editingFloor)
-            //{
-            //    Vector2 dist = endDraw - startDraw;
-            //    float rotation = (float)Math.Atan2(dist.Y, dist.X);
-            //    Vector2 scale = new Vector2(dist.Length(), Floor.FLOOR_HEIGHT);
-            //    Vector2 origin = new Vector2(0.5f, 0.5f);
-            //    DrawRect(startDraw + dist / 2, Color.Black, rotation, origin, scale);
-            //}
+        //    //if (editingFloor)
+        //    //{
+        //    //    Vector2 dist = endDraw - startDraw;
+        //    //    float rotation = (float)Math.Atan2(dist.Y, dist.X);
+        //    //    Vector2 scale = new Vector2(dist.Length(), Floor.FLOOR_HEIGHT);
+        //    //    Vector2 origin = new Vector2(0.5f, 0.5f);
+        //    //    DrawRect(startDraw + dist / 2, Color.Black, rotation, origin, scale);
+        //    //}
 
-            // Draw all particles and dead wall
-            foreach (Particle part in particles)
-                part.Draw(spriteBatch, lightArea);
-            spriteBatch.End();
-        }
+        //    // Draw all particles and dead wall
+        //    foreach (Particle part in particles)
+        //        part.Draw(spriteBatch, lightArea);
+        //    spriteBatch.End();
+        //}
 
         private void DrawScene(double deltaTime, Vector2 averagePos)
         {

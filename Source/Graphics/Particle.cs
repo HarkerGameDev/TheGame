@@ -81,19 +81,5 @@ namespace Source.Graphics
                     break;
             }
         }
-
-        public void Draw(SpriteBatch spriteBatch, Ziggyware.LightArea lightArea)
-        {
-            switch (type)
-            {
-                case Type.Text:
-                    spriteBatch.DrawString(font, text, ConvertUnits.ToDisplayUnits(Position), Color.Black);
-                    break;
-
-                case Type.Texture:
-                    spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(Position), null, Color.Black, Angle, new Vector2(texture.Width / 2.0f, texture.Height / 2.0f), ConvertUnits.ToDisplayUnits(Size) / new Vector2(texture.Width / 2.0f, texture.Height / 2.0f), SpriteEffects.None, 0f);
-                    break;
-            }
-        }
     }
 }

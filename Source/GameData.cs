@@ -48,7 +48,8 @@ namespace Source
         public const float CLIMB_SPEED = 8f;     // m/s -- speed of climbing onto a ledge
 
         public const float JUMP_SLOW = 0.85f;   // -- x velocity is scaled by this when jumping
-        public const float WINDOW_SLOW = 0.2f;    // -- player speed is reduced to this ratio when a window is hit
+        public const float OBSTACLE_SLOW = 0.2f;    // -- player speed is reduced to this ratio when an obstacle is hit incorrectly
+        //public const float WINDOW_SLOW = 0.2f;    // -- player speed is reduced to this ratio when a window is hit
         //public const float WALL_SLOW = 0.2f;    // -- player speed is reduced to this ratio when a wall is hit while flying
 
         //public const string SONG = "afln_s_gdc-1.wav";    // the song to play, over, and over, and over again. NEVER STOP THE PARTY!

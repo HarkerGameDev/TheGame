@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PipelineBuildEvent xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <SourceFile>C:/Users/Nikita/Desktop/Nikita/Projects/Monogame/TheGame/Source/Content/Fonts/ScoreBig.spritefont</SourceFile>
-  <SourceTime>2015-10-13T23:09:06.4170122-07:00</SourceTime>
-  <DestFile>C:/Users/Nikita/Desktop/Nikita/Projects/Monogame/TheGame/Source/Content/bin/Windows/Fonts/ScoreBig.xnb</DestFile>
-  <DestTime>2015-12-01T12:52:43.0426481-08:00</DestTime>
+  <SourceFile>C:/Users/nkoso/Dropbox/Documents/Monogame Projects/TheGame/Source/Content/Fonts/ScoreBig.spritefont</SourceFile>
+  <SourceTime>2015-12-06T11:24:54-08:00</SourceTime>
+  <DestFile>C:/Users/nkoso/Dropbox/Documents/Monogame Projects/TheGame/Source/Content/bin/Windows/Fonts/ScoreBig.xnb</DestFile>
+  <DestTime>2016-02-07T20:22:01.0007439-08:00</DestTime>
   <Importer>FontDescriptionImporter</Importer>
   <ImporterTime>2015-04-29T10:14:44-07:00</ImporterTime>
   <Processor>FontDescriptionProcessor</Processor>

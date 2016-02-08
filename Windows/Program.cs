@@ -2,7 +2,6 @@
 using System.IO;
 using System.Reflection;
 using System.Diagnostics;
-using Microsoft.Deployment.WindowsInstaller;
 
 namespace Game
 {
