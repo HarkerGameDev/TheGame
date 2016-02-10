@@ -33,6 +33,8 @@ namespace Source
 
         public const float JUMP_SPEED = 18f; // m/s -- the initial upwards velocity when player jumps
         public const float JUMP_TIME = 0.2f;  // s -- can hold jump for this long and still have upwards velocity
+        public const float WALL_JUMP_Y = 12f;   // m/s -- vertical jump off a wall
+        public const float WALL_JUMP_X = 16f;   // m/s -- horizontal jump off a wall
         //public const float JETPACK_ACCEL = 7f;  // m/s^2 -- upwards acceleration while jetpacking
         //public const float JETPACK_SPEED = 14f; // m/s -- upwards speed while using jetpack
         //public const float JETPACK_REGEN = 10f; // jetpack will be refilled in this time

@@ -21,6 +21,7 @@ namespace Source.Collisions
         public State CurrentState;
         public float StunTime;
         public float JumpTime;
+        public Jump WallJump;
         public float TargetVelocity;
         public bool Ability1;
         public bool Ability2;
@@ -38,6 +39,11 @@ namespace Source.Collisions
             Jumping=0, Walking=1, Stunned=5, Flying=6
         }
 
+        public enum Jump
+        {
+            None, Right, Left
+        }
+
         public AnimatedSprite Sprite;
 
         public void ResetValues()
@@ -45,6 +51,7 @@ namespace Source.Collisions
             CurrentState = State.Jumping;
             StunTime = 0;
             TargetVelocity = 0;
+            WallJump = Jump.None;
             Ability1 = false;
             Ability2 = false;
             Ability3 = false;
@@ -84,6 +91,9 @@ namespace Source.Collisions
             {
                 if (CurrentState == State.Jumping)
                     JumpTime -= deltaTime;
+
+                if (WallJump == Jump.Left && Velocity.X < 0 || WallJump == Jump.Right && Velocity.X > 0)
+                    WallJump = Jump.None;
 
                 float diff = Velocity.X - TargetVelocity;
                 if (Math.Abs(diff) < GameData.MIN_VELOCITY)

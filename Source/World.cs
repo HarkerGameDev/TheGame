@@ -192,7 +192,24 @@ namespace Source.Collisions
                         //else if (player.CurrentState == Player.State.Climbing)
                         //    player.CurrentState = Player.State.Walking;
 
-                        if (translation.Y != 0)
+                        if (translation.X == 0)     // Vertical collision
+                        {
+                            player.Velocity.Y = 0;
+                            if (translation.Y > 0 && player.InAir)
+                                player.CurrentState = Player.State.Walking;
+                        }
+                        else if (translation.Y == 0)    // Horizontal collision
+                        {
+                            player.Velocity.X = 0;
+                            if (player.InAir/* && player.JumpTime < 0*/)
+                            {
+                                if (translation.X > 0)
+                                    player.WallJump = Player.Jump.Left;
+                                else
+                                    player.WallJump = Player.Jump.Right;
+                            }
+                        }
+                        else        // Diagonal collision
                         {
                             player.Velocity.Y = 0;
                             if (translation.Y > 0 && player.InAir)

@@ -672,7 +672,16 @@ namespace Source
             {
                 if (controls.Jump)     // jump
                 {
-                    if (player.CanJump)
+                    if (player.WallJump != Player.Jump.None)
+                    {
+                        player.Velocity.Y = -GameData.WALL_JUMP_Y;
+                        if (player.WallJump == Player.Jump.Left)
+                            player.Velocity.X = -GameData.WALL_JUMP_X;
+                        else
+                            player.Velocity.X = GameData.WALL_JUMP_X;
+                        player.WallJump = Player.Jump.None;
+                    }
+                    else if (player.CanJump)
                     {
                         player.Velocity.Y = -GameData.JUMP_SPEED;
                         player.TargetVelocity = player.TargetVelocity * GameData.JUMP_SLOW;
