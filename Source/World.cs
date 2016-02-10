@@ -99,8 +99,18 @@ namespace Source.Collisions
                     }
                 }
 
+                if (player.SpawnedPlatform != null)
+                {
+                    player.PlatformTime -= deltaTime;
+                    if (player.PlatformTime < 0)
+                    {
+                        game.platforms.Remove(player.SpawnedPlatform);
+                        player.SpawnedPlatform = null;
+                    }
+                }
+
                 float gravity = GameData.GRAVITY * deltaTime;
-                if (player.WallJump != Player.Jump.None)
+                if (player.WallJump != Player.Jump.None && player.Velocity.Y > 0)
                     gravity *= GameData.WALL_SLIDE_SCALE;
                 player.Velocity.Y += gravity;
                 int playerStep = Math.Max((int)Math.Ceiling(deltaTime * player.Velocity.Y / player.Size.Y / 1.5f),
@@ -204,9 +214,9 @@ namespace Source.Collisions
                         else if (translation.Y == 0)    // Horizontal collision
                         {
                             player.Velocity.X = 0;
-                            if (player.InAir/* && player.JumpTime < 0*/)
+                            if (player.InAir && player.JumpTime <= 0)
                             {
-                                if (player.WallJump == Player.Jump.None)
+                                if (player.WallJump == Player.Jump.None && player.Velocity.Y > 0)
                                     player.Velocity.Y *= GameData.WALL_STICK_SCALE;
                                 if (translation.X > 0)
                                     player.WallJump = Player.Jump.Left;

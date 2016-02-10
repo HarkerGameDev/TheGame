@@ -31,7 +31,8 @@ namespace Source
         public static Color DARK_COLOR = new Color(new Vector3(0.1f));  // color mask for non-lit areas
         public static Color LIGHT_COLOR = Color.Wheat;
 
-        public const float JUMP_SPEED = 18f; // m/s -- the initial upwards velocity when player jumps
+        public const float JUMP_SPEED = 16f; // m/s -- the initial upwards velocity when player jumps
+        public const float JUMP_ACCEL = GRAVITY + 3f;   // m/s^2 -- acceleration when holding jump
         public const float JUMP_TIME = 0.2f;  // s -- can hold jump for this long and still have upwards velocity
         public const float WALL_JUMP_Y = 12f;   // m/s -- vertical jump off a wall
         public const float WALL_JUMP_X = 16f;   // m/s -- horizontal jump off a wall
@@ -109,6 +110,7 @@ namespace Source
         public const float PLATFORM_WIDTH = 10f;    // width of platform
         public const float PLATFORM_HEIGHT = 1f;    // height of platform
         public const float PLATFORM_COOLDOWN = 5f;  // cooldown for platform ability
+        public const float PLATFORM_LIFE = 1.2f;      // how long the platform lasts before despawning
 
         //public const int NUM_WORLDS = 3;    // number of worlds to load
         // format of WORLD_LAYERS is:
@@ -155,7 +157,7 @@ namespace Source
 
         public enum ControlKey
         {
-            Special1, Special2, Special3, Left, Right, Jump, Action
+            Special1, Special2, Special3, Left, Right, Jump, JumpHeld, Action
         }
 
         public interface Controls
@@ -165,7 +167,7 @@ namespace Source
             bool Special3 { get; }  // toggle
             bool Left { get; }     // hold
             bool Right { get; }     // hold
-            bool Jump { get; }      // toggle
+            bool JumpHeld { get; }  // hold
             bool Action { get; }     // toggle
 
             string ToString();
@@ -179,6 +181,7 @@ namespace Source
             public bool Left { get; set; }
             public bool Right { get; set; }
             public bool Jump { get; set; }
+            public bool JumpHeld { get; set; }
             public bool Action { get; set; }
 
             public SimulatedControls(Game1 game)
@@ -189,6 +192,7 @@ namespace Source
                 Left = false;
                 Right = false;
                 Jump = false;
+                JumpHeld = false;
                 Action = false;
             }
         }
@@ -201,6 +205,7 @@ namespace Source
             public bool Left { get { return Keyboard.GetState().IsKeyDown(left); } }
             public bool Right { get { return Keyboard.GetState().IsKeyDown(right); } }
             public bool Jump { get { return game.ToggleKey(jump); } }
+            public bool JumpHeld { get { return Keyboard.GetState().IsKeyDown(jump); } }
             public bool Action { get { return game.ToggleKey(action); } }
 
             private Game1 game;
@@ -240,7 +245,7 @@ namespace Source
             public bool Special3 { get { return game.ToggleButton(playerIndex, special3); } }
             public bool Left { get { return GamePad.GetState(playerIndex, GamePadDeadZone.Circular).IsButtonDown(left); } }
             public bool Right { get { return GamePad.GetState(playerIndex, GamePadDeadZone.Circular).IsButtonDown(right); } }
-            public bool Jump { get { return game.ToggleButton(playerIndex, jump); } }
+            public bool JumpHeld { get { return GamePad.GetState(playerIndex, GamePadDeadZone.Circular).IsButtonDown(jump); } }
             public bool Action { get { return game.ToggleButton(playerIndex, action); } }
 
             private Game1 game;

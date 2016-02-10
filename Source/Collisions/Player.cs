@@ -21,13 +21,15 @@ namespace Source.Collisions
         public State CurrentState;
         public float StunTime;
         public float JumpTime;
+        public bool PrevJump;
         public float AbilityOneTime;
         public Jump WallJump;
         public float TargetVelocity;
-        //public bool Ability1;
-        //public bool Ability2;
-        //public bool Ability3;
         public Character CurrentCharacter;
+
+        // Character-specific variables
+        public Platform SpawnedPlatform;
+        public float PlatformTime;
 
         public List<Projectile> Projectiles;
 
@@ -52,12 +54,10 @@ namespace Source.Collisions
             CurrentState = State.Jumping;
             StunTime = 0;
             JumpTime = 0;
+            PrevJump = false;
             AbilityOneTime = 0;
             TargetVelocity = 0;
             WallJump = Jump.None;
-            //Ability1 = false;
-            //Ability2 = false;
-            //Ability3 = false;
 
             Projectiles = new List<Projectile>();
             Velocity = Vector2.Zero;
@@ -68,6 +68,7 @@ namespace Source.Collisions
         {
             Color = character.Color;
             CurrentCharacter = character;
+            SpawnedPlatform = null;
 
             ResetValues();
 

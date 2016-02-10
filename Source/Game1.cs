@@ -88,6 +88,7 @@ namespace Source
         List<float> times;
         List<GameData.ControlKey> keys;
         //int randSeed, randLevelSeed;
+        bool prevJumpHeld = false;
         bool prevLeft = false;
         bool prevRight = false;
         bool simulating = false;
@@ -520,6 +521,9 @@ namespace Source
                                     case GameData.ControlKey.Jump:
                                         control.Jump = true;
                                         break;
+                                    case GameData.ControlKey.JumpHeld:
+                                        control.JumpHeld = !control.JumpHeld;
+                                        break;
                                     case GameData.ControlKey.Action:
                                         control.Action = true;
                                         break;
@@ -648,10 +652,16 @@ namespace Source
                     times.Add(totalTime);
                     keys.Add(GameData.ControlKey.Action);
                 }
-                if (controls.Jump)
+                //if (controls.Jump)
+                //{
+                //    times.Add(totalTime);
+                //    keys.Add(GameData.ControlKey.Jump);
+                //}
+                if (controls.JumpHeld != prevJumpHeld)
                 {
                     times.Add(totalTime);
-                    keys.Add(GameData.ControlKey.Jump);
+                    prevJumpHeld = !prevJumpHeld;
+                    keys.Add(GameData.ControlKey.JumpHeld);
                 }
                 if (controls.Left != prevLeft)
                 {
@@ -669,40 +679,50 @@ namespace Source
 
             if (player.CurrentState != Player.State.Stunned)
             {
-                if (controls.Jump)
+                if (controls.JumpHeld)
                 {
-                    if (player.WallJump != Player.Jump.None)    // wall jump
+                    if (!player.PrevJump)
                     {
-                        player.Velocity.Y = -GameData.WALL_JUMP_Y;
-                        if (player.WallJump == Player.Jump.Left)
-                            player.Velocity.X = -GameData.WALL_JUMP_X;
-                        else
-                            player.Velocity.X = GameData.WALL_JUMP_X;
-                        player.WallJump = Player.Jump.None;
-                    }
-                    else if (player.CanJump)    // normal jump
-                    {
-                        player.Velocity.Y = -GameData.JUMP_SPEED;
-                        player.TargetVelocity = player.TargetVelocity * GameData.JUMP_SLOW;
-                        player.CurrentState = Player.State.Jumping;
-                        player.JumpTime = GameData.JUMP_TIME;
-                    }
-                    else if (player.JumpTime > 0)   // hold jump in air
-                        player.Velocity.Y = -GameData.JUMP_SPEED;
-                    else if (player.AbilityOneTime < 0)        // jump abilities
-                    {
-                        switch (player.CurrentCharacter.Ability1)
+                        if (player.WallJump != Player.Jump.None)    // wall jump
                         {
-                            case Character.AbilityOne.Platform:
-                                platforms.Add(new Platform(whiteRect, player.Position + new Vector2(0, GameData.PLATFORM_DIST),
-                                    new Vector2(GameData.PLATFORM_WIDTH, GameData.PLATFORM_HEIGHT)));
-                                player.AbilityOneTime = GameData.PLATFORM_COOLDOWN;
-                                break;
+                            player.Velocity.Y = -GameData.WALL_JUMP_Y;
+                            if (player.WallJump == Player.Jump.Left)
+                                player.Velocity.X = -GameData.WALL_JUMP_X;
+                            else
+                                player.Velocity.X = GameData.WALL_JUMP_X;
+                            player.WallJump = Player.Jump.None;
+                        }
+                        else if (player.CanJump)    // normal jump
+                        {
+                            player.Velocity.Y = -GameData.JUMP_SPEED;
+                            player.TargetVelocity = player.TargetVelocity * GameData.JUMP_SLOW;
+                            player.CurrentState = Player.State.Jumping;
+                            player.JumpTime = GameData.JUMP_TIME;
+                        }
+                        else if (player.AbilityOneTime < 0)        // jump abilities
+                        {
+                            switch (player.CurrentCharacter.Ability1)
+                            {
+                                case Character.AbilityOne.Platform:
+                                    Platform plat = new Platform(whiteRect, player.Position + new Vector2(0, GameData.PLATFORM_DIST),
+                                        new Vector2(GameData.PLATFORM_WIDTH, GameData.PLATFORM_HEIGHT));
+                                    platforms.Add(plat);
+                                    player.AbilityOneTime = GameData.PLATFORM_COOLDOWN;
+                                    player.PlatformTime = GameData.PLATFORM_LIFE;
+                                    player.SpawnedPlatform = plat;
+                                    break;
+                            }
                         }
                     }
+                    else if (player.JumpTime > 0)   // hold jump in air
+                    {
+                        player.Velocity.Y -= GameData.JUMP_ACCEL * deltaTime;
+                    }
                 }
-                else if (player.JumpTime > 0)
+                else        // not jumping
+                {
                     player.JumpTime = 0;
+                }
 
                 if (controls.Right)     // move
                     player.TargetVelocity = GameData.RUN_VELOCITY;
@@ -726,6 +746,7 @@ namespace Source
                 //if (controls.Special3)
                 //    player.Ability3 = !player.Ability3;
             }
+            player.PrevJump = controls.JumpHeld;
         }
 
         private void wobbleScreen(float amplifier)
