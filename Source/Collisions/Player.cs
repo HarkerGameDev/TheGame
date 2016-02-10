@@ -21,11 +21,12 @@ namespace Source.Collisions
         public State CurrentState;
         public float StunTime;
         public float JumpTime;
+        public float AbilityOneTime;
         public Jump WallJump;
         public float TargetVelocity;
-        public bool Ability1;
-        public bool Ability2;
-        public bool Ability3;
+        //public bool Ability1;
+        //public bool Ability2;
+        //public bool Ability3;
         public Character CurrentCharacter;
 
         public List<Projectile> Projectiles;
@@ -50,11 +51,13 @@ namespace Source.Collisions
         {
             CurrentState = State.Jumping;
             StunTime = 0;
+            JumpTime = 0;
+            AbilityOneTime = 0;
             TargetVelocity = 0;
             WallJump = Jump.None;
-            Ability1 = false;
-            Ability2 = false;
-            Ability3 = false;
+            //Ability1 = false;
+            //Ability2 = false;
+            //Ability3 = false;
 
             Projectiles = new List<Projectile>();
             Velocity = Vector2.Zero;
@@ -89,10 +92,13 @@ namespace Source.Collisions
             }
             else
             {
+                AbilityOneTime -= deltaTime;
+                // TODO -- delete platform after some time
+
                 if (CurrentState == State.Jumping)
                     JumpTime -= deltaTime;
 
-                if (WallJump == Jump.Left && Velocity.X < 0 || WallJump == Jump.Right && Velocity.X > 0)
+                if (WallJump == Jump.Left && Velocity.X < -GameData.WALL_JUMP_LEWAY || WallJump == Jump.Right && Velocity.X > GameData.WALL_JUMP_LEWAY)
                     WallJump = Jump.None;
 
                 float diff = Velocity.X - TargetVelocity;
@@ -120,9 +126,6 @@ namespace Source.Collisions
             Velocity = Vector2.Zero;
             MoveToPosition(GameData.PLAYER_START);
             Projectiles.Clear();
-            Ability1 = false;
-            Ability2 = false;
-            Ability3 = false;
         }
     }
 }

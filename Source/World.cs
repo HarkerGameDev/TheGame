@@ -99,7 +99,10 @@ namespace Source.Collisions
                     }
                 }
 
-                player.Velocity.Y += GameData.GRAVITY * deltaTime;
+                float gravity = GameData.GRAVITY * deltaTime;
+                if (player.WallJump != Player.Jump.None)
+                    gravity *= GameData.WALL_SLIDE_SCALE;
+                player.Velocity.Y += gravity;
                 int playerStep = Math.Max((int)Math.Ceiling(deltaTime * player.Velocity.Y / player.Size.Y / 1.5f),
                                             (int)Math.Ceiling(deltaTime * player.Velocity.X / player.Size.X / 1.5f));
                 if (playerStep < 1) playerStep = 1;
@@ -111,12 +114,12 @@ namespace Source.Collisions
                 CheckPlatforms(player);
                 CheckObstacles(player);
 
-                if (player.Ability1)
-                    PerformSpecial1(player, deltaTime);
-                if (player.Ability2)
-                    PerformSpecial2(player, deltaTime);
-                if (player.Ability3)
-                    PerformSpecial3(player, deltaTime);
+                //if (player.Ability1)
+                //    PerformSpecial1(player, deltaTime);
+                //if (player.Ability2)
+                //    PerformSpecial2(player, deltaTime);
+                //if (player.Ability3)
+                //    PerformSpecial3(player, deltaTime);
             }
         }
 
@@ -203,6 +206,8 @@ namespace Source.Collisions
                             player.Velocity.X = 0;
                             if (player.InAir/* && player.JumpTime < 0*/)
                             {
+                                if (player.WallJump == Player.Jump.None)
+                                    player.Velocity.Y *= GameData.WALL_STICK_SCALE;
                                 if (translation.X > 0)
                                     player.WallJump = Player.Jump.Left;
                                 else
@@ -326,7 +331,7 @@ namespace Source.Collisions
             }
         }
 
-        private void PerformSpecial1(Player player, float deltaTime)
+        public void PerformSpecial1(Player player, float deltaTime)
         {
             switch (player.CurrentCharacter.Ability1)
             {
@@ -342,25 +347,25 @@ namespace Source.Collisions
             }
         }
 
-        private void PerformSpecial2(Player player, float deltaTime)
+        public void PerformSpecial2(Player player, float deltaTime)
         {
             switch (player.CurrentCharacter.Ability2)
             {
-                case Character.AbilityTwo.Explosive:
-                    game.drops.Add(new Drop(player, Game1.whiteRect, player.Position, 0.16f, Drop.Type.Bomb));
-                    player.Ability2 = false;
-                    break;
+                //case Character.AbilityTwo.Explosive:
+                //    game.drops.Add(new Drop(player, Game1.whiteRect, player.Position, 0.16f, Drop.Type.Bomb));
+                //    player.Ability2 = false;
+                //    break;
             }
         }
 
-        private void PerformSpecial3(Player player, float deltaTime)
+        public void PerformSpecial3(Player player, float deltaTime)
         {
             switch (player.CurrentCharacter.Ability3)
             {
-                case Character.AbilityThree.Singularity:
-                    game.drops.Add(new Drop(player, Game1.whiteRect, player.Position, 0.08f, Drop.Type.Singularity));
-                    player.Ability3 = false;
-                    break;
+                //case Character.AbilityThree.Singularity:
+                //    game.drops.Add(new Drop(player, Game1.whiteRect, player.Position, 0.08f, Drop.Type.Singularity));
+                //    player.Ability3 = false;
+                //    break;
             }
         }
 

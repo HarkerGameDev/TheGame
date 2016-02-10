@@ -35,6 +35,9 @@ namespace Source
         public const float JUMP_TIME = 0.2f;  // s -- can hold jump for this long and still have upwards velocity
         public const float WALL_JUMP_Y = 12f;   // m/s -- vertical jump off a wall
         public const float WALL_JUMP_X = 16f;   // m/s -- horizontal jump off a wall
+        public const float WALL_JUMP_LEWAY = 1f;    // m/s -- horizontal speed at which player can no longer wall jump
+        public const float WALL_STICK_SCALE = 0.5f; // -- scale of vertical velocity when beginning to wall slide
+        public const float WALL_SLIDE_SCALE = 0.2f; // -- gravity scale when sliding on the wall
         //public const float JETPACK_ACCEL = 7f;  // m/s^2 -- upwards acceleration while jetpacking
         //public const float JETPACK_SPEED = 14f; // m/s -- upwards speed while using jetpack
         //public const float JETPACK_REGEN = 10f; // jetpack will be refilled in this time
@@ -101,6 +104,12 @@ namespace Source
         public const float BUTTON_WIDTH = 0.4f;  // width of a button in proportion of screen
         public const float BUTTON_HEIGHT = 0.12f;    // height of button in proportion
 
+        // Character constants
+        public const float PLATFORM_DIST = 1.5f;    // distance from player to y center of platform
+        public const float PLATFORM_WIDTH = 10f;    // width of platform
+        public const float PLATFORM_HEIGHT = 1f;    // height of platform
+        public const float PLATFORM_COOLDOWN = 5f;  // cooldown for platform ability
+
         //public const int NUM_WORLDS = 3;    // number of worlds to load
         // format of WORLD_LAYERS is:
         //  first array is each individual world
@@ -156,7 +165,7 @@ namespace Source
             bool Special3 { get; }  // toggle
             bool Left { get; }     // hold
             bool Right { get; }     // hold
-            bool Jump { get; }      // hold
+            bool Jump { get; }      // toggle
             bool Action { get; }     // toggle
 
             string ToString();
@@ -191,7 +200,7 @@ namespace Source
             public bool Special3 { get { return game.ToggleKey(special3); } }
             public bool Left { get { return Keyboard.GetState().IsKeyDown(left); } }
             public bool Right { get { return Keyboard.GetState().IsKeyDown(right); } }
-            public bool Jump { get { return Keyboard.GetState().IsKeyDown(jump); } }
+            public bool Jump { get { return game.ToggleKey(jump); } }
             public bool Action { get { return game.ToggleKey(action); } }
 
             private Game1 game;
@@ -231,7 +240,7 @@ namespace Source
             public bool Special3 { get { return game.ToggleButton(playerIndex, special3); } }
             public bool Left { get { return GamePad.GetState(playerIndex, GamePadDeadZone.Circular).IsButtonDown(left); } }
             public bool Right { get { return GamePad.GetState(playerIndex, GamePadDeadZone.Circular).IsButtonDown(right); } }
-            public bool Jump { get { return GamePad.GetState(playerIndex, GamePadDeadZone.Circular).IsButtonDown(jump); } }
+            public bool Jump { get { return game.ToggleButton(playerIndex, jump); } }
             public bool Action { get { return game.ToggleButton(playerIndex, action); } }
 
             private Game1 game;

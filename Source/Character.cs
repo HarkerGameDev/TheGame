@@ -11,12 +11,15 @@ namespace Source
     public struct Character
     {
         public static Character[] playerCharacters = {
-            new Character(Color.Yellow, "Alchemist", AbilityOne.Transmute, AbilityTwo.Explosive, AbilityThree.Singularity),
-            new Character(Color.WhiteSmoke, "Chronowalker", AbilityOne.Slowdown, AbilityTwo.Chronoshift, AbilityThree.LostTime),
-            new Character(Color.Purple, "Psychic", AbilityOne.Destroy, AbilityTwo.Move, AbilityThree.Swap),
-            new Character(Color.Peru, "Spectre", AbilityOne.PhaseShift, AbilityTwo.Hallucination, AbilityThree.Foresight),
-            new Character(Color.Green, "Graviton", AbilityOne.ReverseGravity, AbilityTwo.Attract, AbilityThree.Repel),
-            new Character(Color.RosyBrown, "Hunter", AbilityOne.Trap, AbilityTwo.Hookshot, AbilityThree.Nothing)
+            new Character(Color.Purple, "Psychic", AbilityOne.Platform, AbilityTwo.Invert, AbilityThree.Clone),
+            new Character(Color.ForestGreen, "Hunter", AbilityOne.Grapple, AbilityTwo.Trap, AbilityThree.Hook),
+            new Character(Color.GhostWhite, "Chronowalker", AbilityOne.Blink, AbilityTwo.Timewarp, AbilityThree.Swap)
+            //new Character(Color.Yellow, "Alchemist", AbilityOne.Transmute, AbilityTwo.Explosive, AbilityThree.Singularity),
+            //new Character(Color.WhiteSmoke, "Chronowalker", AbilityOne.Slowdown, AbilityTwo.Chronoshift, AbilityThree.LostTime),
+            //new Character(Color.Purple, "Psychic", AbilityOne.Destroy, AbilityTwo.Move, AbilityThree.Swap),
+            //new Character(Color.Peru, "Spectre", AbilityOne.PhaseShift, AbilityTwo.Hallucination, AbilityThree.Foresight),
+            //new Character(Color.Green, "Graviton", AbilityOne.ReverseGravity, AbilityTwo.Attract, AbilityThree.Repel),
+            //new Character(Color.RosyBrown, "Hunter", AbilityOne.Trap, AbilityTwo.Hookshot, AbilityThree.Nothing)
         };
 
         public readonly Color Color;
@@ -27,17 +30,20 @@ namespace Source
 
         public enum AbilityOne
         {
-            Transmute, Slowdown, Destroy, PhaseShift, ReverseGravity, Trap
+            Platform, Grapple, Blink
+            //Transmute, Slowdown, Destroy, PhaseShift, ReverseGravity, Trap
         }
 
         public enum AbilityTwo
         {
-            Explosive, Chronoshift, Move, Hallucination, Attract, Hookshot
+            Invert, Trap, Timewarp
+            //Explosive, Chronoshift, Move, Hallucination, Attract, Hookshot
         }
 
         public enum AbilityThree
         {
-            Singularity, LostTime, Swap, Foresight, Repel, Nothing
+            Clone, Hook, Swap
+            //Singularity, LostTime, Swap, Foresight, Repel, Nothing
         }
 
         public Character(Color color, string name, AbilityOne ability1, AbilityTwo ability2, AbilityThree ability3)

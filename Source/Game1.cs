@@ -90,7 +90,6 @@ namespace Source
         //int randSeed, randLevelSeed;
         bool prevLeft = false;
         bool prevRight = false;
-        bool prevJump = false;
         bool simulating = false;
         int simIndex = 0;
         int currentReplay = 0;
@@ -315,9 +314,9 @@ namespace Source
             players = new List<Player>();
             for (int i = 0; i < GameData.numPlayers; i++)
             {
-                // create a player with color specified in GameData and random color
-                //Vector2 spawnLoc = new Vector2(GameData.PLAYER_START, -rand.Next(GameData.MIN_SPAWN, GameData.MAX_SPAWN));
-				players.Add(new Player(Content.Load<Texture2D>("Art/GreenDude"), GameData.PLAYER_START, Character.playerCharacters[rand.Next(Character.playerCharacters.Length)]));
+                //int character = rand.Next(Character.playerCharacters.Length);
+                int character = 0;
+                players.Add(new Player(Content.Load<Texture2D>("Art/GreenDude"), GameData.PLAYER_START, Character.playerCharacters[character]));
             }
             platforms = new List<Platform>();
             particles = new List<Particle>();
@@ -519,7 +518,7 @@ namespace Source
                                         control.Right = !control.Right;
                                         break;
                                     case GameData.ControlKey.Jump:
-                                        control.Jump = !control.Jump;
+                                        control.Jump = true;
                                         break;
                                     case GameData.ControlKey.Action:
                                         control.Action = true;
@@ -539,6 +538,7 @@ namespace Source
                             control.Special2 = false;
                             control.Special3 = false;
                             control.Action = false;
+                            control.Jump = false;
                         }
 
                         CheckPlayer();
@@ -648,6 +648,11 @@ namespace Source
                     times.Add(totalTime);
                     keys.Add(GameData.ControlKey.Action);
                 }
+                if (controls.Jump)
+                {
+                    times.Add(totalTime);
+                    keys.Add(GameData.ControlKey.Jump);
+                }
                 if (controls.Left != prevLeft)
                 {
                     times.Add(totalTime);
@@ -660,19 +665,13 @@ namespace Source
                     prevRight = !prevRight;
                     keys.Add(GameData.ControlKey.Right);
                 }
-                if (controls.Jump != prevJump)
-                {
-                    times.Add(totalTime);
-                    prevJump = !prevJump;
-                    keys.Add(GameData.ControlKey.Jump);
-                }
             }
 
             if (player.CurrentState != Player.State.Stunned)
             {
-                if (controls.Jump)     // jump
+                if (controls.Jump)
                 {
-                    if (player.WallJump != Player.Jump.None)
+                    if (player.WallJump != Player.Jump.None)    // wall jump
                     {
                         player.Velocity.Y = -GameData.WALL_JUMP_Y;
                         if (player.WallJump == Player.Jump.Left)
@@ -681,15 +680,26 @@ namespace Source
                             player.Velocity.X = GameData.WALL_JUMP_X;
                         player.WallJump = Player.Jump.None;
                     }
-                    else if (player.CanJump)
+                    else if (player.CanJump)    // normal jump
                     {
                         player.Velocity.Y = -GameData.JUMP_SPEED;
                         player.TargetVelocity = player.TargetVelocity * GameData.JUMP_SLOW;
                         player.CurrentState = Player.State.Jumping;
                         player.JumpTime = GameData.JUMP_TIME;
                     }
-                    else if (player.JumpTime > 0)
+                    else if (player.JumpTime > 0)   // hold jump in air
                         player.Velocity.Y = -GameData.JUMP_SPEED;
+                    else if (player.AbilityOneTime < 0)        // jump abilities
+                    {
+                        switch (player.CurrentCharacter.Ability1)
+                        {
+                            case Character.AbilityOne.Platform:
+                                platforms.Add(new Platform(whiteRect, player.Position + new Vector2(0, GameData.PLATFORM_DIST),
+                                    new Vector2(GameData.PLATFORM_WIDTH, GameData.PLATFORM_HEIGHT)));
+                                player.AbilityOneTime = GameData.PLATFORM_COOLDOWN;
+                                break;
+                        }
+                    }
                 }
                 else if (player.JumpTime > 0)
                     player.JumpTime = 0;
@@ -709,12 +719,12 @@ namespace Source
                 //}
 
                 // activate (or toggle) special abilities
-                if (controls.Special1)
-                    player.Ability1 = !player.Ability1;
-                if (controls.Special2)
-                    player.Ability2 = !player.Ability2;
-                if (controls.Special3)
-                    player.Ability3 = !player.Ability3;
+                //if (controls.Special1)
+                //    player.Ability1 = !player.Ability1;
+                //if (controls.Special2)
+                //    player.Ability2 = !player.Ability2;
+                //if (controls.Special3)
+                //    player.Ability3 = !player.Ability3;
             }
         }
 
