@@ -24,8 +24,10 @@ namespace Source.Collisions
         public bool PrevJump;
         public float AbilityOneTime;
         public Jump WallJump;
+        public float WallJumpLeway;
         public float TargetVelocity;
         public Character CurrentCharacter;
+        public SpriteEffects flip;
 
         // Character-specific variables
         public Platform SpawnedPlatform;
@@ -58,6 +60,8 @@ namespace Source.Collisions
             AbilityOneTime = 0;
             TargetVelocity = 0;
             WallJump = Jump.None;
+            WallJumpLeway = 0;
+            flip = SpriteEffects.None;
 
             Projectiles = new List<Projectile>();
             Velocity = Vector2.Zero;
@@ -99,8 +103,24 @@ namespace Source.Collisions
                 if (CurrentState == State.Jumping)
                     JumpTime -= deltaTime;
 
-                if (WallJump == Jump.Left && Velocity.X < -GameData.WALL_JUMP_LEWAY || WallJump == Jump.Right && Velocity.X > GameData.WALL_JUMP_LEWAY)
-                    WallJump = Jump.None;
+                if (WallJump == Jump.Left || WallJump == Jump.Right)
+                {
+#if DEBUG
+                    Color = Color.White;
+#endif
+                    if (WallJumpLeway < 0)
+                        WallJump = Jump.None;
+                    WallJumpLeway -= deltaTime;
+                }
+#if DEBUG
+                else
+                    Color = Color.Black;
+#endif
+
+                if (Velocity.X > 0)
+                    flip = SpriteEffects.None;
+                else if (Velocity.X < 0)
+                    flip = SpriteEffects.FlipHorizontally;
 
                 float diff = Velocity.X - TargetVelocity;
                 if (Math.Abs(diff) < GameData.MIN_VELOCITY)

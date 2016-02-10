@@ -222,6 +222,7 @@ namespace Source.Collisions
                                     player.WallJump = Player.Jump.Left;
                                 else
                                     player.WallJump = Player.Jump.Right;
+                                player.WallJumpLeway = GameData.WALL_JUMP_LEWAY;
                             }
                         }
                         else        // Diagonal collision

@@ -36,7 +36,7 @@ namespace Source
         public const float JUMP_TIME = 0.2f;  // s -- can hold jump for this long and still have upwards velocity
         public const float WALL_JUMP_Y = 12f;   // m/s -- vertical jump off a wall
         public const float WALL_JUMP_X = 16f;   // m/s -- horizontal jump off a wall
-        public const float WALL_JUMP_LEWAY = 1f;    // m/s -- horizontal speed at which player can no longer wall jump
+        public const float WALL_JUMP_LEWAY = 0.3f;    // s -- time after which player can no longer wall jump after leaving a wall
         public const float WALL_STICK_SCALE = 0.5f; // -- scale of vertical velocity when beginning to wall slide
         public const float WALL_SLIDE_SCALE = 0.2f; // -- gravity scale when sliding on the wall
         //public const float JETPACK_ACCEL = 7f;  // m/s^2 -- upwards acceleration while jetpacking
