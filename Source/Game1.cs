@@ -316,7 +316,7 @@ namespace Source
             for (int i = 0; i < GameData.numPlayers; i++)
             {
                 //int character = rand.Next(Character.playerCharacters.Length);
-                int character = 0;
+                int character = i;
                 players.Add(new Player(Content.Load<Texture2D>("Art/GreenDude"), GameData.PLAYER_START, Character.playerCharacters[character]));
             }
             platforms = new List<Platform>();
@@ -711,6 +711,12 @@ namespace Source
                                     player.PlatformTime = GameData.PLATFORM_LIFE;
                                     player.SpawnedPlatform = plat;
                                     break;
+                                case Character.AbilityOne.Grapple:
+                                    // TODO raycast to find target
+                                    // TODO do a grapple animation
+                                    //player.GrappleTarget = player.Position + new Vector2(10f, -10f);
+                                    player.GrappleTarget = Raycast(player.Position, new Vector2(player.flip == SpriteEffects.None ? 1f : -1f, GameData.GRAPPLE_ANGLE));
+                                    break;
                             }
                         }
                     }
@@ -722,6 +728,7 @@ namespace Source
                 else        // not jumping
                 {
                     player.JumpTime = 0;
+                    player.GrappleTarget = Vector2.Zero;
                 }
 
                 if (controls.Right)     // move
@@ -747,6 +754,27 @@ namespace Source
                 //    player.Ability3 = !player.Ability3;
             }
             player.PrevJump = controls.JumpHeld;
+        }
+
+        /// <summary>
+        /// Casts a ray from start in the given direction, returning found point or Vector2.Zero
+        /// </summary>
+        /// <param name="start"></param>
+        /// <param name="dir"></param>
+        /// <returns>The nearest point of collision, or Vector2.Zero if nothing</returns>
+        private Vector2 Raycast(Vector2 start, Vector2 dir)
+        {
+            float minT = float.MaxValue;
+            foreach (Platform plat in platforms)
+            {
+                float t = plat.Raycast(start, dir);
+                if (t < minT)
+                    minT = t;
+            }
+            if (minT < GameData.MAX_GRAPPLE)
+                return start + dir * minT;
+            else
+                return Vector2.Zero;
         }
 
         private void wobbleScreen(float amplifier)

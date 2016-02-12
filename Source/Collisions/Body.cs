@@ -53,7 +53,7 @@ namespace Source.Collisions
             Edges = new Vector2[4];
             for (int x = 0; x < Edges.Length; x++)
             {
-                Edges[x] = new Vector2(Points[x].X - Points[(x + 1) % 4].X, Points[x].Y - Points[(x + 1) % 4].Y);
+                Edges[x] = new Vector2(Points[(x + 1) % 4].X - Points[x].X, Points[(x + 1) % 4].Y - Points[x].Y);
             }
         }
 
@@ -197,6 +197,29 @@ namespace Source.Collisions
             {
                 return minA - maxB;
             }
+        }
+
+        /// <summary>
+        /// Gets the parametric T value for the ray on start in direction dir, 0 if nothing
+        /// Based on http://ncase.me/sight-and-light/
+        /// </summary>
+        /// <param name="rayStart"></param>
+        /// <param name="rayDir"></param>
+        /// <returns></returns>
+        public float Raycast(Vector2 rayStart, Vector2 rayDir)
+        {
+            float minT1 = float.MaxValue;
+            for (int i=0; i<Points.Length; i++)
+            {
+                Vector2 segStart = Points[i];
+                Vector2 segDir = Edges[i];
+                float t2 = (rayDir.X * (segStart.Y - rayStart.Y) + rayDir.Y * (rayStart.X - segStart.X))
+                    / (segDir.X * rayDir.Y - segDir.Y * rayDir.X);
+                float t1 = (segStart.X + segDir.X * t2 - rayStart.X) / rayDir.X;
+                if (t1 > 0 && t1 < minT1 && t2 > 0 && t2 < 1)
+                    minT1 = t1;
+            }
+            return minT1;
         }
     }
 }

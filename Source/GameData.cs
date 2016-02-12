@@ -112,6 +112,10 @@ namespace Source
         public const float PLATFORM_COOLDOWN = 5f;  // cooldown for platform ability
         public const float PLATFORM_LIFE = 1.2f;      // how long the platform lasts before despawning
 
+        public const float GRAPPLE_HEIGHT = 3f;     // pixel height of grapple rope
+        public const float MAX_GRAPPLE = 20f;       // maximum grapple distance (in m)
+        public const float GRAPPLE_ANGLE = -1f;     // direction height of grapple assuming horizontal direction of 1
+
         //public const int NUM_WORLDS = 3;    // number of worlds to load
         // format of WORLD_LAYERS is:
         //  first array is each individual world
