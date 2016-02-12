@@ -323,7 +323,7 @@ namespace Source
             {
                 //int character = rand.Next(Character.playerCharacters.Length);
 #if DEBUG
-                int character = 2;
+                int character = 1;
 #else
                 int character = i;
 #endif
@@ -741,7 +741,9 @@ namespace Source
                                 case Character.AbilityOne.Grapple:
                                     // TODO do a grapple animation
                                     //player.GrappleTarget = player.Position + new Vector2(10f, -10f);
-                                    player.GrappleTarget = Raycast(player.Position, new Vector2(player.flip == SpriteEffects.None ? 1f : -1f, GameData.GRAPPLE_ANGLE));
+                                    player.GrappleTarget = Raycast(player.Position, new Vector2(player.Flip == SpriteEffects.None ? 1f : -1f, GameData.GRAPPLE_ANGLE));
+                                    player.TargetRadius = Vector2.Distance(player.Position, player.GrappleTarget);
+                                    player.GrappleRight = player.Flip == SpriteEffects.None;
                                     break;
                                 case Character.AbilityOne.Blink:
                                     player.AbilityOneTime = GameData.BLINK_COOLDOWN;

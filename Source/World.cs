@@ -112,7 +112,8 @@ namespace Source.Collisions
                 float gravity = GameData.GRAVITY * deltaTime;
                 if (player.WallJump != Player.Jump.None && player.Velocity.Y > 0)
                     gravity *= GameData.WALL_SLIDE_SCALE;
-                player.Velocity.Y += gravity;
+                if (player.GrappleTarget == Vector2.Zero)
+                    player.Velocity.Y += gravity;
 
                 if (player.Blink)
                 {
@@ -215,13 +216,7 @@ namespace Source.Collisions
                         //else if (player.CurrentState == Player.State.Climbing)
                         //    player.CurrentState = Player.State.Walking;
 
-                        if (translation.X == 0)     // Vertical collision
-                        {
-                            player.Velocity.Y = 0;
-                            if (translation.Y > 0 && player.InAir)
-                                player.CurrentState = Player.State.Walking;
-                        }
-                        else if (translation.Y == 0)    // Horizontal collision
+                        if (translation.Y == 0)    // Horizontal collision
                         {
                             player.Velocity.X = 0;
                             if (player.InAir && player.JumpTime <= 0)
@@ -235,8 +230,9 @@ namespace Source.Collisions
                                 player.WallJumpLeway = GameData.WALL_JUMP_LEWAY;
                             }
                         }
-                        else        // Diagonal collision
+                        else        // Vertocal or diagonal collision
                         {
+                            player.GrappleTarget = Vector2.Zero;
                             player.Velocity.Y = 0;
                             if (translation.Y > 0 && player.InAir)
                                 player.CurrentState = Player.State.Walking;

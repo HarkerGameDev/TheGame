@@ -27,12 +27,14 @@ namespace Source.Collisions
         public float WallJumpLeway;
         public float TargetVelocity;
         public Character CurrentCharacter;
-        public SpriteEffects flip;
+        public SpriteEffects Flip;
 
         // Character-specific variables
         public Platform SpawnedPlatform;
         public float PlatformTime;
         public Vector2 GrappleTarget;
+        public float TargetRadius;
+        public bool GrappleRight;
         public bool Blink;
 
         public List<Projectile> Projectiles;
@@ -63,7 +65,7 @@ namespace Source.Collisions
             TargetVelocity = 0;
             WallJump = Jump.None;
             WallJumpLeway = 0;
-            flip = SpriteEffects.None;
+            Flip = SpriteEffects.None;
 
             Projectiles = new List<Projectile>();
             Velocity = Vector2.Zero;
@@ -104,6 +106,7 @@ namespace Source.Collisions
                 if (CurrentState == State.Jumping)
                     JumpTime -= deltaTime;
 
+                // stop wall sliding
                 if (WallJump == Jump.Left || WallJump == Jump.Right)
                 {
                     if (WallJumpLeway < 0)
@@ -111,11 +114,13 @@ namespace Source.Collisions
                     WallJumpLeway -= deltaTime;
                 }
 
+                // face left and right
                 if (Velocity.X > 0)
-                    flip = SpriteEffects.None;
+                    Flip = SpriteEffects.None;
                 else if (Velocity.X < 0)
-                    flip = SpriteEffects.FlipHorizontally;
+                    Flip = SpriteEffects.FlipHorizontally;
 
+                // accelerate to target velocity
                 float diff = Velocity.X - TargetVelocity;
                 if (Math.Abs(diff) < GameData.MIN_VELOCITY)
                     Velocity.X = TargetVelocity;
@@ -125,6 +130,29 @@ namespace Source.Collisions
                     Velocity.X -= Math.Sign(diff) * deltaTime * GameData.MAX_ACCEL;
             }
             base.Move(deltaTime);
+
+            // swing on grapple
+            if (GrappleTarget != Vector2.Zero)
+            {
+                Vector2 prevPosition = Position;
+                Vector2 dist = GrappleTarget - prevPosition;
+                float angle = (float)Math.Atan2(dist.Y, dist.X);
+
+                if (GrappleRight)
+                    angle -= GameData.GRAPPLE_SPEED * deltaTime;
+                else
+                    angle += GameData.GRAPPLE_SPEED * deltaTime;
+
+                // move towards TargetRadius
+                float radius = (dist.Length() + TargetRadius) / 2f;
+                MoveToPosition(new Vector2(GrappleTarget.X - (float)Math.Cos(angle) * radius,
+                    GrappleTarget.Y - (float)Math.Sin(angle) * radius));
+                Velocity = (Position - prevPosition) / deltaTime;
+
+                //Console.WriteLine("Velocity: " + Velocity);
+                //Console.WriteLine("prevPosition: " + prevPosition + "\tPosition: " + Position);
+                //Console.WriteLine("X: " + -Math.Cos(angle) + "\tY: " + Math.Sin(angle));
+            }
         }
 
         public override void Draw(SpriteBatch spriteBatch)
