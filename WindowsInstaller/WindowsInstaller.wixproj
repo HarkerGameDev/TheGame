@@ -21,7 +21,7 @@
     <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
     <SuppressPdbOutput>True</SuppressPdbOutput>
     <LeaveTemporaryFiles>False</LeaveTemporaryFiles>
-    <DefineConstants>SourceFilesDir=$(SolutionDir)Windows\bin\WindowsGL\$(Configuration)</DefineConstants>
+    <DefineConstants>SourceFilesDir=$(SolutionDir)Windows\bin\Windows\$(Configuration)</DefineConstants>
     <WixVariables>
     </WixVariables>
     <Cultures>en-US</Cultures>
@@ -48,7 +48,7 @@
     <PostBuildEvent />
   </PropertyGroup>
   <PropertyGroup>
-    <PreBuildEvent>"$(WIX)bin\heat.exe" dir "$(SolutionDir)Windows\bin\WindowsGL\$(Configuration)" -cg GameFiles -ag -scom -sreg -sfrag -srd -dr INSTALLDIR -var var.SourceFilesDir -out "$(ProjectDir)SourceFiles.wxs"</PreBuildEvent>
+    <PreBuildEvent>"$(WIX)bin\heat.exe" dir "$(SolutionDir)Windows\bin\Windows\$(Configuration)" -cg GameFiles -ag -scom -sreg -sfrag -srd -dr INSTALLDIR -var var.SourceFilesDir -out "$(ProjectDir)SourceFiles.wxs"</PreBuildEvent>
   </PropertyGroup>
   <!--
 	To modify your build process, add your task inside one of the targets below and uncomment it.

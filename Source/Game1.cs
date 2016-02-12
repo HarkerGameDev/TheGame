@@ -241,6 +241,8 @@ namespace Source
                     result.AsyncWaitHandle.Close();
 
                     string directory = "Replays";
+                    container.CreateDirectory(directory);
+
                     string filename = directory + @"\replay";
                     filename += container.GetFileNames(filename + "*").Length + ".rep";
 
@@ -399,11 +401,10 @@ namespace Source
 
         private void LoadLevel(int loadLevel)
         {
-            // TODO load level
             platforms.Clear();
             obstacles.Clear();
             drops.Clear();
-            using (BinaryReader file = new BinaryReader(File.Open("Levels/level" + loadLevel, FileMode.Open)))
+            using (BinaryReader file = new BinaryReader(File.Open("Levels/level" + loadLevel, FileMode.Open, FileAccess.Read)))
             {
                 GameData.PLAYER_START = new Vector2(file.ReadSingle(), file.ReadSingle());
                 while (file.BaseStream.Position != file.BaseStream.Length)
@@ -417,9 +418,24 @@ namespace Source
 
         private void SaveLevel(int saveLevel)
         {
-            // TODO save level
-            using (BinaryWriter file = new BinaryWriter(File.Open("Levels/level" + saveLevel, FileMode.Create)))
+            IAsyncResult result = StorageDevice.BeginShowSelector(null, null);
+            result.AsyncWaitHandle.WaitOne();
+            StorageDevice device = StorageDevice.EndShowSelector(result);
+            result.AsyncWaitHandle.Close();
+            if (device != null && device.IsConnected)
             {
+                result = device.BeginOpenContainer("Game", null, null);
+                result.AsyncWaitHandle.WaitOne();
+                StorageContainer container = device.EndOpenContainer(result);
+                result.AsyncWaitHandle.Close();
+
+                string directory = "Levels";
+                container.CreateDirectory(directory);
+
+                string filename = directory + @"\level" + saveLevel;
+                //filename += container.GetFileNames(filename + "*").Length + ".rep";
+
+                BinaryWriter file = new BinaryWriter(container.OpenFile(filename, FileMode.Create));
                 file.Write(GameData.PLAYER_START.X);
                 file.Write(GameData.PLAYER_START.Y);
                 foreach (Platform plat in platforms)
@@ -429,6 +445,9 @@ namespace Source
                     file.Write(plat.Size.X);
                     file.Write(plat.Size.Y);
                 }
+
+                file.Close();
+                container.Dispose();
             }
         }
 
