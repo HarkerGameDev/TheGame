@@ -113,15 +113,25 @@ namespace Source.Collisions
                 if (player.WallJump != Player.Jump.None && player.Velocity.Y > 0)
                     gravity *= GameData.WALL_SLIDE_SCALE;
                 player.Velocity.Y += gravity;
-                int playerStep = Math.Max((int)Math.Ceiling(deltaTime * player.Velocity.Y / player.Size.Y / 1.5f),
-                                            (int)Math.Ceiling(deltaTime * player.Velocity.X / player.Size.X / 1.5f));
+
+                if (player.Blink)
+                {
+                    deltaTime += GameData.BLINK_TIME;
+                    player.Blink = false;
+                }
+
+                int playerStep = Math.Max((int)Math.Ceiling(deltaTime * Math.Abs(player.Velocity.Y) / player.Size.Y * 1.5f),
+                                            (int)Math.Ceiling(deltaTime * Math.Abs(player.Velocity.X) / player.Size.X * 1.5f));
                 if (playerStep < 1) playerStep = 1;
+
+                if (playerStep > 1)
+                    Console.WriteLine("Player step: " + playerStep);
 
                 for (int i = 0; i < playerStep; i++)
                 {
                     player.Move(deltaTime / playerStep);
+                    CheckPlatforms(player);
                 }
-                CheckPlatforms(player);
                 CheckObstacles(player);
 
                 //if (player.Ability1)

@@ -33,6 +33,7 @@ namespace Source.Collisions
         public Platform SpawnedPlatform;
         public float PlatformTime;
         public Vector2 GrappleTarget;
+        public bool Blink;
 
         public List<Projectile> Projectiles;
 
@@ -105,17 +106,10 @@ namespace Source.Collisions
 
                 if (WallJump == Jump.Left || WallJump == Jump.Right)
                 {
-#if DEBUG
-                    Color = Color.White;
-#endif
                     if (WallJumpLeway < 0)
                         WallJump = Jump.None;
                     WallJumpLeway -= deltaTime;
                 }
-#if DEBUG
-                else
-                    Color = Color.Black;
-#endif
 
                 if (Velocity.X > 0)
                     flip = SpriteEffects.None;

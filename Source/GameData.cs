@@ -16,7 +16,7 @@ namespace Source
 #if DEBUG
         public const int numPlayers = 1;
 #else
-        public const int numPlayers = 2;            // number of players
+        public const int numPlayers = 3;            // number of players
 #endif
 
         public static Vector2 PLAYER_START = new Vector2(1f, -10f);
@@ -115,6 +115,9 @@ namespace Source
         public const float GRAPPLE_HEIGHT = 3f;     // pixel height of grapple rope
         public const float MAX_GRAPPLE = 20f;       // maximum grapple distance (in m)
         public const float GRAPPLE_ANGLE = -1f;     // direction height of grapple assuming horizontal direction of 1
+
+        public const float BLINK_COOLDOWN = 2.8f;     // cooldown for blink ability
+        public const float BLINK_TIME = 0.5f;       // when blinking, player will move this many seconds in 1 tick
 
         //public const int NUM_WORLDS = 3;    // number of worlds to load
         // format of WORLD_LAYERS is:

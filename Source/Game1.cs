@@ -126,7 +126,11 @@ namespace Source
             graphics.PreferredDepthStencilFormat = DepthFormat.Depth24Stencil8;
             e.GraphicsDeviceInformation.PresentationParameters.MultiSampleCount = 16;
 
+#if DEBUG
+            IsFixedTimeStep = false;
+#else
             IsFixedTimeStep = true;
+#endif
             graphics.SynchronizeWithVerticalRetrace = false;
         }
 
@@ -165,7 +169,7 @@ namespace Source
                 playerControls = new GameData.Controls[] {
                                                        new GameData.KeyboardControls(this, Keys.OemComma, Keys.OemPeriod, Keys.OemQuestion, Keys.Left, Keys.Right, Keys.Up, Keys.Left),
                                                        new GameData.KeyboardControls(this, Keys.D1, Keys.D2, Keys.D3, Keys.A, Keys.D, Keys.W, Keys.A),
-                                                       new GameData.GamePadControls(this, PlayerIndex.One, Buttons.X, Buttons.B, Buttons.Y, Buttons.LeftThumbstickLeft, Buttons.LeftThumbstickRight, Buttons.RightTrigger, Buttons.A)
+                                                       new GameData.GamePadControls(this, PlayerIndex.One, Buttons.X, Buttons.B, Buttons.Y, Buttons.LeftThumbstickLeft, Buttons.LeftThumbstickRight, Buttons.A, Buttons.RightTrigger)
                                                   };
             }
 
@@ -281,7 +285,7 @@ namespace Source
             else
             {
                 simIndex = 0;
-                playerControls = new GameData.Controls[] { new GameData.SimulatedControls(this), new GameData.SimulatedControls(this) };
+                playerControls = new GameData.Controls[] { new GameData.SimulatedControls(this), new GameData.SimulatedControls(this), new GameData.SimulatedControls(this) };
                 //simulating = false;
             }
         }
@@ -316,7 +320,11 @@ namespace Source
             for (int i = 0; i < GameData.numPlayers; i++)
             {
                 //int character = rand.Next(Character.playerCharacters.Length);
+#if DEBUG
+                int character = 2;
+#else
                 int character = i;
+#endif
                 players.Add(new Player(Content.Load<Texture2D>("Art/GreenDude"), GameData.PLAYER_START, Character.playerCharacters[character]));
             }
             platforms = new List<Platform>();
@@ -712,10 +720,13 @@ namespace Source
                                     player.SpawnedPlatform = plat;
                                     break;
                                 case Character.AbilityOne.Grapple:
-                                    // TODO raycast to find target
                                     // TODO do a grapple animation
                                     //player.GrappleTarget = player.Position + new Vector2(10f, -10f);
                                     player.GrappleTarget = Raycast(player.Position, new Vector2(player.flip == SpriteEffects.None ? 1f : -1f, GameData.GRAPPLE_ANGLE));
+                                    break;
+                                case Character.AbilityOne.Blink:
+                                    player.AbilityOneTime = GameData.BLINK_COOLDOWN;
+                                    player.Blink = true;    // this is used in World later
                                     break;
                             }
                         }
