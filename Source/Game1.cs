@@ -88,12 +88,15 @@ namespace Source
         List<float> times;
         List<GameData.ControlKey> keys;
         //int randSeed, randLevelSeed;
+        bool prevDown = false;
         bool prevJumpHeld = false;
         bool prevLeft = false;
         bool prevRight = false;
         bool simulating = false;
         int simIndex = 0;
         int currentReplay = 0;
+
+        float InvertControls = -1;
 
         public enum State
         {
@@ -167,8 +170,8 @@ namespace Source
             else
             {
                 playerControls = new GameData.Controls[] {
-                                                       new GameData.KeyboardControls(this, Keys.OemComma, Keys.OemPeriod, Keys.OemQuestion, Keys.Left, Keys.Right, Keys.Up, Keys.Left),
-                                                       new GameData.KeyboardControls(this, Keys.D1, Keys.D2, Keys.D3, Keys.A, Keys.D, Keys.W, Keys.A),
+                                                       new GameData.KeyboardControls(this, Keys.OemComma, Keys.OemPeriod, Keys.OemQuestion, Keys.Left, Keys.Right, Keys.Up, Keys.Down),
+                                                       new GameData.KeyboardControls(this, Keys.D1, Keys.D2, Keys.D3, Keys.A, Keys.D, Keys.W, Keys.S),
                                                        new GameData.GamePadControls(this, PlayerIndex.One, Buttons.X, Buttons.B, Buttons.Y, Buttons.LeftThumbstickLeft, Buttons.LeftThumbstickRight, Buttons.A, Buttons.RightTrigger)
                                                   };
             }
@@ -323,7 +326,7 @@ namespace Source
             {
                 //int character = rand.Next(Character.playerCharacters.Length);
 #if DEBUG
-                int character = 1;
+                int character = 0;
 #else
                 int character = i;
 #endif
@@ -545,14 +548,11 @@ namespace Source
                                     case GameData.ControlKey.Right:
                                         control.Right = !control.Right;
                                         break;
-                                    case GameData.ControlKey.Jump:
-                                        control.Jump = true;
-                                        break;
                                     case GameData.ControlKey.JumpHeld:
                                         control.JumpHeld = !control.JumpHeld;
                                         break;
-                                    case GameData.ControlKey.Action:
-                                        control.Action = true;
+                                    case GameData.ControlKey.Down:
+                                        control.Down = !control.Down;
                                         break;
                                 }
                                 simIndex++;
@@ -568,11 +568,10 @@ namespace Source
                             control.Special1 = false;
                             control.Special2 = false;
                             control.Special3 = false;
-                            control.Action = false;
-                            control.Jump = false;
                         }
 
                         CheckPlayer();
+                        InvertControls -= deltaTime;
                         totalTime += deltaTime;
                         world.Step(deltaTime);
                     }
@@ -674,16 +673,12 @@ namespace Source
                     times.Add(totalTime);
                     keys.Add(GameData.ControlKey.Special3);
                 }
-                if (controls.Action)
+                if (controls.Down != prevDown)
                 {
                     times.Add(totalTime);
-                    keys.Add(GameData.ControlKey.Action);
+                    prevDown = !prevDown;
+                    keys.Add(GameData.ControlKey.Down);
                 }
-                //if (controls.Jump)
-                //{
-                //    times.Add(totalTime);
-                //    keys.Add(GameData.ControlKey.Jump);
-                //}
                 if (controls.JumpHeld != prevJumpHeld)
                 {
                     times.Add(totalTime);
@@ -706,7 +701,7 @@ namespace Source
 
             if (player.CurrentState != Player.State.Stunned)
             {
-                if (controls.JumpHeld)
+                if (InvertControls < 0 && controls.JumpHeld || InvertControls >= 0 && controls.Down)
                 {
                     if (!player.PrevJump)
                     {
@@ -763,12 +758,24 @@ namespace Source
                     player.GrappleTarget = Vector2.Zero;
                 }
 
-                if (controls.Right)     // move
-                    player.TargetVelocity = GameData.RUN_VELOCITY;
-                else if (controls.Left)
-                    player.TargetVelocity = -GameData.RUN_VELOCITY;
+                if (InvertControls < 0)     // move
+                {
+                    if (controls.Right)
+                        player.TargetVelocity = GameData.RUN_VELOCITY;
+                    else if (controls.Left)
+                        player.TargetVelocity = -GameData.RUN_VELOCITY;
+                    else
+                        player.TargetVelocity = 0;
+                }
                 else
-                    player.TargetVelocity = 0;
+                {
+                    if (controls.Left)
+                        player.TargetVelocity = GameData.RUN_VELOCITY;
+                    else if (controls.Right)
+                        player.TargetVelocity = -GameData.RUN_VELOCITY;
+                    else
+                        player.TargetVelocity = 0;
+                }
                 //else
                 //{
                 //    if (player.CurrentState == Player.State.Jumping && controls.Jump && player.JumpTime > GameData.JETPACK_CUTOFF)      // jetpack
@@ -778,14 +785,18 @@ namespace Source
                 //}
 
                 // activate (or toggle) special abilities
-                //if (controls.Special1)
-                //    player.Ability1 = !player.Ability1;
-                //if (controls.Special2)
-                //    player.Ability2 = !player.Ability2;
-                //if (controls.Special3)
-                //    player.Ability3 = !player.Ability3;
+                if (player.AbilityTwoTime < 0 && (InvertControls < 0 && controls.Special1 || InvertControls >= 0 && controls.Special2))
+                {
+                    switch (player.CurrentCharacter.Ability2)
+                    {
+                        case Character.AbilityTwo.Invert:
+                            player.AbilityTwoTime = GameData.INVERT_COOLDOWN;
+                            InvertControls = GameData.INVERT_TIME;
+                            break;
+                    }
+                }
             }
-            player.PrevJump = controls.JumpHeld;
+            player.PrevJump = InvertControls < 0 ? controls.JumpHeld : controls.Down;
         }
 
         /// <summary>

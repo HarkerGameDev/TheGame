@@ -22,7 +22,7 @@ namespace Source.Collisions
         public float StunTime;
         public float JumpTime;
         public bool PrevJump;
-        public float AbilityOneTime;
+        public float AbilityOneTime, AbilityTwoTime, AbilityThreeTime;
         public Jump WallJump;
         public float WallJumpLeway;
         public float TargetVelocity;
@@ -32,9 +32,11 @@ namespace Source.Collisions
         // Character-specific variables
         public Platform SpawnedPlatform;
         public float PlatformTime;
+
         public Vector2 GrappleTarget;
         public float TargetRadius;
         public bool GrappleRight;
+
         public bool Blink;
 
         public List<Projectile> Projectiles;
@@ -62,6 +64,8 @@ namespace Source.Collisions
             JumpTime = 0;
             PrevJump = false;
             AbilityOneTime = 0;
+            AbilityTwoTime = 0;
+            AbilityThreeTime = 0;
             TargetVelocity = 0;
             WallJump = Jump.None;
             WallJumpLeway = 0;
@@ -102,6 +106,8 @@ namespace Source.Collisions
             else
             {
                 AbilityOneTime -= deltaTime;
+                AbilityTwoTime -= deltaTime;
+                AbilityThreeTime -= deltaTime;
 
                 if (CurrentState == State.Jumping)
                     JumpTime -= deltaTime;

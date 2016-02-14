@@ -111,6 +111,8 @@ namespace Source
         public const float PLATFORM_HEIGHT = 1f;    // height of platform
         public const float PLATFORM_COOLDOWN = 5f;  // cooldown for platform ability
         public const float PLATFORM_LIFE = 1.2f;      // how long the platform lasts before despawning
+        public const float INVERT_TIME = 3f;        // time during which controls will be inverted
+        public const float INVERT_COOLDOWN = 13f;   // cooldown for casting invert
 
         public const float GRAPPLE_HEIGHT = 3f;     // pixel height of grapple rope
         public const float MAX_GRAPPLE = 20f;       // maximum grapple distance (in m)
@@ -118,7 +120,7 @@ namespace Source
         public const float GRAPPLE_SPEED = 2f;      // player swings this many radians per second
 
         public const float BLINK_COOLDOWN = 2.8f;     // cooldown for blink ability
-        public const float BLINK_TIME = 0.5f;       // when blinking, player will move this many seconds in 1 tick
+        public const float BLINK_TIME = 0.65f;       // when blinking, player will move this many seconds in 1 tick
 
         //public const int NUM_WORLDS = 3;    // number of worlds to load
         // format of WORLD_LAYERS is:
@@ -165,7 +167,7 @@ namespace Source
 
         public enum ControlKey
         {
-            Special1, Special2, Special3, Left, Right, Jump, JumpHeld, Action
+            Special1, Special2, Special3, Left, Right, JumpHeld, Down
         }
 
         public interface Controls
@@ -176,7 +178,7 @@ namespace Source
             bool Left { get; }     // hold
             bool Right { get; }     // hold
             bool JumpHeld { get; }  // hold
-            bool Action { get; }     // toggle
+            bool Down { get; }     // hold
 
             string ToString();
         }
@@ -188,9 +190,8 @@ namespace Source
             public bool Special3 { get; set; }
             public bool Left { get; set; }
             public bool Right { get; set; }
-            public bool Jump { get; set; }
             public bool JumpHeld { get; set; }
-            public bool Action { get; set; }
+            public bool Down { get; set; }
 
             public SimulatedControls(Game1 game)
             {
@@ -199,9 +200,8 @@ namespace Source
                 Special3 = false;
                 Left = false;
                 Right = false;
-                Jump = false;
                 JumpHeld = false;
-                Action = false;
+                Down = false;
             }
         }
 
@@ -214,12 +214,12 @@ namespace Source
             public bool Right { get { return Keyboard.GetState().IsKeyDown(right); } }
             public bool Jump { get { return game.ToggleKey(jump); } }
             public bool JumpHeld { get { return Keyboard.GetState().IsKeyDown(jump); } }
-            public bool Action { get { return game.ToggleKey(action); } }
+            public bool Down { get { return Keyboard.GetState().IsKeyDown(down); } }
 
             private Game1 game;
-            private Keys special1, special2, special3, left, right, jump, action;
+            private Keys special1, special2, special3, left, right, jump, down;
 
-            public KeyboardControls(Game1 game, Keys special1, Keys special2, Keys special3, Keys left, Keys right, Keys jump, Keys action)
+            public KeyboardControls(Game1 game, Keys special1, Keys special2, Keys special3, Keys left, Keys right, Keys jump, Keys down)
             {
                 this.game = game;
                 this.special1 = special1;
@@ -228,7 +228,7 @@ namespace Source
                 this.left = left;
                 this.right = right;
                 this.jump = jump;
-                this.action = action;
+                this.down = down;
             }
 
             public override string ToString()
@@ -237,7 +237,7 @@ namespace Source
                 builder.AppendLine("Left = " + left)
                     .AppendLine("Right = " + right)
                     .AppendLine("Jump = " + jump)
-                    .AppendLine("Action = " + action)
+                    .AppendLine("Action = " + down)
                     .AppendLine("Special1 = " + special1)
                     .AppendLine("Special2 = " + special2)
                     .AppendLine("Special3 = " + special3);
@@ -254,13 +254,13 @@ namespace Source
             public bool Left { get { return GamePad.GetState(playerIndex, GamePadDeadZone.Circular).IsButtonDown(left); } }
             public bool Right { get { return GamePad.GetState(playerIndex, GamePadDeadZone.Circular).IsButtonDown(right); } }
             public bool JumpHeld { get { return GamePad.GetState(playerIndex, GamePadDeadZone.Circular).IsButtonDown(jump); } }
-            public bool Action { get { return game.ToggleButton(playerIndex, action); } }
+            public bool Down { get { return GamePad.GetState(playerIndex, GamePadDeadZone.Circular).IsButtonDown(down); } }
 
             private Game1 game;
             private PlayerIndex playerIndex;
-            private Buttons special1, special2, special3, left, right, jump, action;
+            private Buttons special1, special2, special3, left, right, jump, down;
 
-            public GamePadControls(Game1 game, PlayerIndex playerIndex, Buttons special1, Buttons special2, Buttons special3, Buttons left, Buttons right, Buttons jump, Buttons action)
+            public GamePadControls(Game1 game, PlayerIndex playerIndex, Buttons special1, Buttons special2, Buttons special3, Buttons left, Buttons right, Buttons jump, Buttons down)
             {
                 this.game = game;
                 this.playerIndex = playerIndex;
@@ -270,7 +270,7 @@ namespace Source
                 this.left = left;
                 this.right = right;
                 this.jump = jump;
-                this.action = action;
+                this.down = down;
             }
 
             public override string ToString()
@@ -279,7 +279,7 @@ namespace Source
                 builder.AppendLine("Left = " + left)
                     .AppendLine("Right = " + right)
                     .AppendLine("Jump = " + jump)
-                    .AppendLine("Action = " + action)
+                    .AppendLine("Action = " + down)
                     .AppendLine("Special1 = " + special1)
                     .AppendLine("Special2 = " + special2)
                     .AppendLine("Special3 = " + special3);

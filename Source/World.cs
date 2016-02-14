@@ -348,44 +348,6 @@ namespace Source.Collisions
             }
         }
 
-        public void PerformSpecial1(Player player, float deltaTime)
-        {
-            switch (player.CurrentCharacter.Ability1)
-            {
-                //case Character.AbilityOne.Transmute:
-                //    Projectile 
-
-                //case Character.AbilityOne.GravityPull:
-                //    ApplyGravity(-GameData.GRAVITY_FORCE, player, player.Position, deltaTime);
-                //    break;
-                //case Character.AbilityOne.GravityPush:
-                //    ApplyGravity(GameData.GRAVITY_FORCE, player, player.Position, deltaTime);
-                //    break;
-            }
-        }
-
-        public void PerformSpecial2(Player player, float deltaTime)
-        {
-            switch (player.CurrentCharacter.Ability2)
-            {
-                //case Character.AbilityTwo.Explosive:
-                //    game.drops.Add(new Drop(player, Game1.whiteRect, player.Position, 0.16f, Drop.Type.Bomb));
-                //    player.Ability2 = false;
-                //    break;
-            }
-        }
-
-        public void PerformSpecial3(Player player, float deltaTime)
-        {
-            switch (player.CurrentCharacter.Ability3)
-            {
-                //case Character.AbilityThree.Singularity:
-                //    game.drops.Add(new Drop(player, Game1.whiteRect, player.Position, 0.08f, Drop.Type.Singularity));
-                //    player.Ability3 = false;
-                //    break;
-            }
-        }
-
         private void ApplyGravity(float scale, Body player, Vector2 position, float deltaTime)
         {
             foreach (Particle part in game.particles)
