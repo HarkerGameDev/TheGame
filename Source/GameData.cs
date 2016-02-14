@@ -121,6 +121,7 @@ namespace Source
 
         public const float BLINK_COOLDOWN = 2.8f;     // cooldown for blink ability
         public const float BLINK_TIME = 0.65f;       // when blinking, player will move this many seconds in 1 tick
+        public const float SWAP_COOLDOWN = 10f;     // cooldown for swap ability
 
         //public const int NUM_WORLDS = 3;    // number of worlds to load
         // format of WORLD_LAYERS is:

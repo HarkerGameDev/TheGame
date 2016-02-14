@@ -795,6 +795,25 @@ namespace Source
                             break;
                     }
                 }
+                if (player.AbilityThreeTime < 0 && (InvertControls < 0 && controls.Special2 || InvertControls >= 0 && controls.Special1))
+                {
+                    switch (player.CurrentCharacter.Ability3)
+                    {
+                        case Character.AbilityThree.Swap:
+                            player.AbilityThreeTime = GameData.SWAP_COOLDOWN;
+                            Player first = players[rand.Next(players.Count)];
+                            Player second = players[rand.Next(players.Count)];
+                            Vector2 tempPos = first.Position;
+                            Vector2 tempVel = first.Velocity;
+
+                            // TODO somehow indicate to the player that they have switched
+                            first.MoveToPosition(second.Position);
+                            first.Velocity = second.Velocity;
+                            second.MoveToPosition(tempPos);
+                            second.Velocity = tempVel;
+                            break;
+                    }
+                }
             }
             player.PrevJump = InvertControls < 0 ? controls.JumpHeld : controls.Down;
         }
@@ -919,13 +938,13 @@ namespace Source
                     currentPlatform = null;
                 }
                 else if (keyboard.IsKeyDown(Keys.Up))           // Move platform
-                    currentPlatform.MovePosition(-Vector2.UnitY);
+                    currentPlatform.MoveByPosition(-Vector2.UnitY);
                 else if (keyboard.IsKeyDown(Keys.Left))
-                    currentPlatform.MovePosition(-Vector2.UnitX);
+                    currentPlatform.MoveByPosition(-Vector2.UnitX);
                 else if (keyboard.IsKeyDown(Keys.Right))
-                    currentPlatform.MovePosition(Vector2.UnitX);
+                    currentPlatform.MoveByPosition(Vector2.UnitX);
                 else if (keyboard.IsKeyDown(Keys.Down))
-                    currentPlatform.MovePosition(Vector2.UnitY);
+                    currentPlatform.MoveByPosition(Vector2.UnitY);
                 else if (keyboard.IsKeyDown(Keys.Enter))        // Deselect platform
                     currentPlatform = null;
                 else if (ToggleKey(Keys.F))

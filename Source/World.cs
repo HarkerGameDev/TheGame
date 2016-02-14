@@ -73,7 +73,7 @@ namespace Source.Collisions
                         Vector2 translation = target.Intersects(drop);
                         if (translation != Vector2.Zero)
                         {
-                            drop.MovePosition(translation);
+                            drop.MoveByPosition(translation);
                             drop.Velocity.X -= drop.Velocity.X * GameData.DROP_FRICTION * deltaTime;
                             if (translation.Y == 0)
                                 drop.Velocity.X = 0;
@@ -237,7 +237,7 @@ namespace Source.Collisions
                             if (translation.Y > 0 && player.InAir)
                                 player.CurrentState = Player.State.Walking;
                         }
-                        player.MovePosition(-translation);
+                        player.MoveByPosition(-translation);
                     }
                     //else        // player is Slamming or Stunned
                     //{
@@ -340,7 +340,7 @@ namespace Source.Collisions
                     }
                     else if (translation.Y > 0) // hitting from top
                     {
-                        player.MovePosition(-translation);
+                        player.MoveByPosition(-translation);
                         player.Velocity.Y = 0;
                         player.CurrentState = Player.State.Walking;
                     }
