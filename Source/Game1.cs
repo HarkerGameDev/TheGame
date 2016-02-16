@@ -393,7 +393,7 @@ namespace Source
                 fontSmall, "Back", Color.Chartreuse));
 
             // Load the level stored in LEVEL_FILE
-            LoadLevel(0);
+            LoadLevel(GameData.LEVEL_FILE);
 
             //// Load the song
             //Song song = Content.Load<Song>("Music/" + GameData.SONG);
@@ -966,11 +966,11 @@ namespace Source
             {
                 if (ToggleKey(Keys.S))
                 {
-                    SaveLevel(0);
+                    SaveLevel(GameData.LEVEL_FILE);
                 }
                 else if (ToggleKey(Keys.O))
                 {
-                    LoadLevel(0);
+                    LoadLevel(GameData.LEVEL_FILE);
                 }
             }
         }
@@ -1118,7 +1118,7 @@ namespace Source
 
             // Draw all objects
             spriteBatch.Begin(transformMatrix: view);
-            spriteBatch.Draw(whiteRect, new Rectangle(-(int)view.Translation.X, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height), Color.LightGray);
+            //spriteBatch.Draw(whiteRect, new Rectangle(-(int)view.Translation.X, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height), Color.LightGray);
             foreach (Platform platform in platforms)
                 platform.Draw(spriteBatch);
             foreach (Obstacle obstacle in obstacles)

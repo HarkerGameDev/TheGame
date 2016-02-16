@@ -19,6 +19,7 @@ namespace Source
         public const int numPlayers = 3;            // number of players
 #endif
 
+        public const int LEVEL_FILE = 1;
         public static Vector2 PLAYER_START = new Vector2(1f, -10f);
 
         public const float ZOOM_STEP = 1.5f;       // scale by which zoom is changed with + and -
@@ -115,9 +116,9 @@ namespace Source
         public const float INVERT_COOLDOWN = 13f;   // cooldown for casting invert
 
         public const float GRAPPLE_HEIGHT = 3f;     // pixel height of grapple rope
-        public const float MAX_GRAPPLE = 20f;       // maximum grapple distance (in m)
+        public const float MAX_GRAPPLE = 12f;       // maximum grapple distance (in m)
         public const float GRAPPLE_ANGLE = -1f;     // direction height of grapple assuming horizontal direction of 1
-        public const float GRAPPLE_SPEED = 2f;      // player swings this many radians per second
+        public const float GRAPPLE_ELASTICITY = 0.3f;      // elasticity of grapple rope, where 1 = does nothing, and 0 = infinitely rigid
 
         public const float BLINK_COOLDOWN = 2.8f;     // cooldown for blink ability
         public const float BLINK_TIME = 0.65f;       // when blinking, player will move this many seconds in 1 tick

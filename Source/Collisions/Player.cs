@@ -135,22 +135,24 @@ namespace Source.Collisions
                 else
                     Velocity.X -= Math.Sign(diff) * deltaTime * GameData.MAX_ACCEL;
             }
-            base.Move(deltaTime);
 
             // swing on grapple
             if (GrappleTarget != Vector2.Zero)
             {
                 Vector2 prevPosition = Position;
-                Vector2 dist = GrappleTarget - prevPosition;
+
+                base.Move(deltaTime);
+
+                //if (GrappleRight)
+                //    angle -= GameData.GRAPPLE_SPEED * deltaTime;
+                //else
+                //    angle += GameData.GRAPPLE_SPEED * deltaTime;
+
+                Vector2 dist = GrappleTarget - Position;
                 float angle = (float)Math.Atan2(dist.Y, dist.X);
 
-                if (GrappleRight)
-                    angle -= GameData.GRAPPLE_SPEED * deltaTime;
-                else
-                    angle += GameData.GRAPPLE_SPEED * deltaTime;
-
                 // move towards TargetRadius
-                float radius = (dist.Length() + TargetRadius) / 2f;
+                float radius = dist.Length() * GameData.GRAPPLE_ELASTICITY + TargetRadius * (1 - GameData.GRAPPLE_ELASTICITY);
                 MoveToPosition(new Vector2(GrappleTarget.X - (float)Math.Cos(angle) * radius,
                     GrappleTarget.Y - (float)Math.Sin(angle) * radius));
                 Velocity = (Position - prevPosition) / deltaTime;
@@ -159,6 +161,8 @@ namespace Source.Collisions
                 //Console.WriteLine("prevPosition: " + prevPosition + "\tPosition: " + Position);
                 //Console.WriteLine("X: " + -Math.Cos(angle) + "\tY: " + Math.Sin(angle));
             }
+            else        // normal move (non-grapple)
+                base.Move(deltaTime);
         }
 
         public override void Draw(SpriteBatch spriteBatch)

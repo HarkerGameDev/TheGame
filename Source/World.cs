@@ -16,7 +16,7 @@ namespace Source.Collisions
     public class World
     {
         //private static float SLOPE_JUMP = (float)Math.Atan2(Source.GameData.JUMP_SPEED, Source.GameData.RUN_VELOCITY);
-        public const float BOTTOM = -0.8f;        // bottom of the level
+        public const float BOTTOM = 100f;        // bottom of the level
 
         private Game1 game;
 
@@ -112,8 +112,8 @@ namespace Source.Collisions
                 float gravity = GameData.GRAVITY * deltaTime;
                 if (player.WallJump != Player.Jump.None && player.Velocity.Y > 0)
                     gravity *= GameData.WALL_SLIDE_SCALE;
-                if (player.GrappleTarget == Vector2.Zero)
-                    player.Velocity.Y += gravity;
+
+                player.Velocity.Y += gravity;
 
                 if (player.Blink)
                 {
@@ -232,10 +232,12 @@ namespace Source.Collisions
                         }
                         else        // Vertocal or diagonal collision
                         {
-                            player.GrappleTarget = Vector2.Zero;
                             player.Velocity.Y = 0;
                             if (translation.Y > 0 && player.InAir)
+                            {
                                 player.CurrentState = Player.State.Walking;
+                                player.GrappleTarget = Vector2.Zero;
+                            }
                         }
                         player.MoveByPosition(-translation);
                     }
