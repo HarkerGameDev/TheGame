@@ -898,16 +898,25 @@ namespace Source
                         }
                         else if (keyboard.IsKeyDown(Keys.LeftAlt) && currentPlatform != null)
                         {                                           // Resize selected platform
-                            // TODO make resizing work
-                            float rotation = currentPlatform.Rotation;
-                            Vector2 center = currentPlatform.Position;
-                            float width = currentPlatform.Size.X;
-                            Vector2 offset = new Vector2(width * (float)Math.Cos(rotation), width * (float)Math.Sin(rotation)) / 2;
-                            if (offset.X < 0) offset *= -1;
-                            if (mouseSimPosRound.X > center.X)
-                                startDraw = center - offset;
+                            Vector2 topLeft = currentPlatform.Position - currentPlatform.Size / 2f;
+                            Vector2 botRight = currentPlatform.Position + currentPlatform.Size / 2f;
+
+                            // calculate the starting drawing pivot (which should be on opposite corner of click)
+                            if (Math.Abs(topLeft.X - mouseSimPos.X) < Math.Abs(botRight.X - mouseSimPos.X))
+                            {
+                                if (Math.Abs(topLeft.Y - mouseSimPos.Y) < Math.Abs(botRight.Y - mouseSimPos.Y))     // top left
+                                    startDraw = botRight;
+                                else                                    // bottom left
+                                    startDraw = new Vector2(botRight.X, topLeft.Y);
+                            }
                             else
-                                startDraw = center + offset;
+                            {
+                                if (Math.Abs(topLeft.Y - mouseSimPos.Y) < Math.Abs(botRight.Y - mouseSimPos.Y))     // top right
+                                    startDraw = new Vector2(topLeft.X, botRight.Y);
+                                else                                    // bottom right
+                                    startDraw = topLeft;
+                            }
+
                             endDraw = mouseSimPosRound;
                             platforms.Remove(currentPlatform);
                             currentPlatform = null;
@@ -922,10 +931,25 @@ namespace Source
             }
             else if (editingPlatform)                                  // Make the platform
             {
-                if (startDraw != endDraw)
+                if (startDraw.X != endDraw.X && startDraw.Y != endDraw.Y)
                 {
-                    Vector2 size = endDraw - startDraw;
-                    currentPlatform = new Platform(whiteRect, startDraw + size / 2f, size);
+                    Vector2 topLeft, size;
+                    if (startDraw.X > endDraw.X && startDraw.Y < endDraw.Y)     // bottom left
+                    {
+                        topLeft = new Vector2(endDraw.X, startDraw.Y);
+                        size = new Vector2(startDraw.X - endDraw.X, endDraw.Y - startDraw.Y);
+                    }
+                    else if (startDraw.X < endDraw.X && startDraw.Y > endDraw.Y)    // top right
+                    {
+                        topLeft = new Vector2(startDraw.X, endDraw.Y);
+                        size = new Vector2(endDraw.X - startDraw.X, startDraw.Y - endDraw.Y);
+                    }
+                    else
+                    {
+                        topLeft = startDraw;
+                        size = endDraw - startDraw;
+                    }
+                    currentPlatform = new Platform(whiteRect, topLeft + size / 2f, size);
                     platforms.Add(currentPlatform);
                 }
                 editingPlatform = false;
@@ -1129,9 +1153,24 @@ namespace Source
                 DrawRect(currentPlatform.Position, Color.Green, currentPlatform.Rotation, currentPlatform.Origin, currentPlatform.Size);
             if (editingPlatform)
             {
-                Vector2 dist = endDraw - startDraw;
+                Vector2 topLeft, size;
+                if (startDraw.X > endDraw.X && startDraw.Y < endDraw.Y)     // bottom left
+                {
+                    topLeft = new Vector2(endDraw.X, startDraw.Y);
+                    size = new Vector2(startDraw.X - endDraw.X, endDraw.Y - startDraw.Y);
+                }
+                else if (startDraw.X < endDraw.X && startDraw.Y > endDraw.Y)    // top right
+                {
+                    topLeft = new Vector2(startDraw.X, endDraw.Y);
+                    size = new Vector2(endDraw.X - startDraw.X, startDraw.Y - endDraw.Y);
+                }
+                else
+                {
+                    topLeft = startDraw;
+                    size = endDraw - startDraw;
+                }
                 Vector2 origin = new Vector2(0.5f, 0.5f);
-                DrawRect(startDraw + dist / 2, Color.Azure, 0, origin, dist);
+                DrawRect(topLeft + size / 2, Color.Azure, 0, origin, size);
             }
             if (editLevel)
                 DrawRect(Vector2.Zero, Color.LightGreen, 0f, new Vector2(0.5f, 0.5f), new Vector2(1, 1));
