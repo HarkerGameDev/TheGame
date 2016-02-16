@@ -43,6 +43,7 @@ namespace Source
         KeyboardState prevKeyState;
         GamePadState[] prevPadStates;
         MouseState prevMouseState;
+        int editScroll;
 
         GameData.Controls[] playerControls;
 
@@ -65,6 +66,8 @@ namespace Source
         bool editingPlatform;
         Vector2 startDraw;
         Vector2 endDraw;
+        bool lockedX = false;
+        bool lockedY = false;
 
         State state = State.MainMenu;
         float totalTime = 0;
@@ -275,12 +278,10 @@ namespace Source
                 player.MoveToPosition(GameData.PLAYER_START);
                 player.ResetValues();
             }
-            platforms.Clear();
-            particles.Clear();
-            obstacles.Clear();
-            drops.Clear();
             //levelEnd = 0;
             totalTime = 0;
+
+            //LoadLevel(GameData.LEVEL_FILE);
 
             if (!simulating)
             {
@@ -503,7 +504,10 @@ namespace Source
                             currentZoom = GameData.PIXEL_METER;
                         }
                         else
+                        {
                             currentZoom = GameData.PIXEL_METER_EDIT;
+                            editScroll = Mouse.GetState().ScrollWheelValue;
+                        }
                         ConvertUnits.SetDisplayUnitToSimUnitRatio(currentZoom);
                     }
 
@@ -878,13 +882,19 @@ namespace Source
             {
                 if (editingPlatform)                                   // Draw the platform
                 {
-                    endDraw = mouseSimPosRound;
+                    if (lockedY)
+                        endDraw.Y = mouseSimPosRound.Y;
+                    else if (lockedX)
+                        endDraw.X = mouseSimPosRound.X;
+                    else
+                        endDraw = mouseSimPosRound;
                 }
                 else
                 {
                     if (keyboard.IsKeyDown(Keys.LeftControl))       // Start drawing a platform
                     {
                         editingPlatform = true;
+                        lockedX = lockedY = false;
                         startDraw = mouseSimPosRound;
                         endDraw = mouseSimPosRound;
                     }
@@ -898,26 +908,84 @@ namespace Source
                         }
                         else if (keyboard.IsKeyDown(Keys.LeftAlt) && currentPlatform != null)
                         {                                           // Resize selected platform
+                            float slopeX = currentPlatform.Size.Y / currentPlatform.Size.X * (mouseSimPos.X - currentPlatform.Position.X);
+                            float yMax = currentPlatform.Position.Y + slopeX;
+                            float yMin = currentPlatform.Position.Y - slopeX;
+
+                            if (yMax < yMin)
+                            {
+                                float temp = yMax;
+                                yMax = yMin;
+                                yMin = temp;
+                            }
+
+                            Console.WriteLine("yMin: {0}\tyMax: {1}\tmouseY: {2}", yMin, yMax, mouseSimPos.Y);
+
+                            lockedX = false;
+                            lockedY = false;
+                            if (yMin < mouseSimPos.Y && mouseSimPos.Y < yMax)
+                                lockedX = true;
+                            else
+                                lockedY = true;
+
                             Vector2 topLeft = currentPlatform.Position - currentPlatform.Size / 2f;
                             Vector2 botRight = currentPlatform.Position + currentPlatform.Size / 2f;
 
-                            // calculate the starting drawing pivot (which should be on opposite corner of click)
-                            if (Math.Abs(topLeft.X - mouseSimPos.X) < Math.Abs(botRight.X - mouseSimPos.X))
+                            if (lockedX)
                             {
-                                if (Math.Abs(topLeft.Y - mouseSimPos.Y) < Math.Abs(botRight.Y - mouseSimPos.Y))     // top left
+                                if (Math.Abs(topLeft.X - mouseSimPos.X) < Math.Abs(botRight.X - mouseSimPos.X))     // left
+                                {
                                     startDraw = botRight;
-                                else                                    // bottom left
-                                    startDraw = new Vector2(botRight.X, topLeft.Y);
-                            }
-                            else
-                            {
-                                if (Math.Abs(topLeft.Y - mouseSimPos.Y) < Math.Abs(botRight.Y - mouseSimPos.Y))     // top right
-                                    startDraw = new Vector2(topLeft.X, botRight.Y);
-                                else                                    // bottom right
+                                    endDraw = new Vector2(mouseSimPosRound.X, topLeft.Y);
+                                }
+                                else                // right
+                                {
                                     startDraw = topLeft;
+                                    endDraw = new Vector2(mouseSimPosRound.X, botRight.Y);
+                                }
+                            }
+                            else if (lockedY)
+                            {
+                                if (Math.Abs(topLeft.Y - mouseSimPos.Y) < Math.Abs(botRight.Y - mouseSimPos.Y))     // top
+                                {
+                                    startDraw = botRight;
+                                    endDraw = new Vector2(topLeft.X, mouseSimPosRound.Y);
+                                }
+                                else            // bottom
+                                {
+                                    startDraw = topLeft;
+                                    endDraw = new Vector2(botRight.X, mouseSimPosRound.Y);
+                                }
                             }
 
-                            endDraw = mouseSimPosRound;
+                            // calculate the starting drawing pivot (which should be on opposite corner of click)
+                            //if (Math.Abs(topLeft.X - mouseSimPos.X) < Math.Abs(botRight.X - mouseSimPos.X))
+                            //{
+                            //    if (Math.Abs(topLeft.Y - mouseSimPos.Y) < Math.Abs(botRight.Y - mouseSimPos.Y))     // top left
+                            //    {
+                            //        startDraw = botRight;
+                            //        if (lockedX)
+                            //            endDraw = new Vector2(mouseSimPosRound.X, topLeft.Y);
+                            //        else if (lockedY)
+                            //            endDraw = new Vector2(topLeft.X, mouseSimPosRound.Y);
+                            //    }
+                            //    else                                    // bottom left
+                            //    {
+                            //        startDraw = new Vector2(botRight.X, topLeft.Y);
+                            //        if (lockedX)
+                            //            endDraw = new Vector2(mouseSimPosRound.X, botRight.Y);
+                            //        else if (lockedY)
+                            //            endDraw = new Vector2(topLeft.X, mouseSimPosRound.Y);
+                            //    }
+                            //}
+                            //else
+                            //{
+                            //    if (Math.Abs(topLeft.Y - mouseSimPos.Y) < Math.Abs(botRight.Y - mouseSimPos.Y))     // top right
+                            //        startDraw = new Vector2(topLeft.X, botRight.Y);
+                            //    else                                    // bottom right
+                            //        startDraw = topLeft;
+                            //}
+
                             platforms.Remove(currentPlatform);
                             currentPlatform = null;
                             editingPlatform = true;
@@ -956,7 +1024,7 @@ namespace Source
             }
             else if (currentPlatform != null)
             {                                                       // Delete selected platform
-                if (keyboard.IsKeyDown(Keys.Back))
+                if (keyboard.IsKeyDown(Keys.Back) || mouse.RightButton == ButtonState.Pressed)
                 {
                     platforms.Remove(currentPlatform);
                     currentPlatform = null;
@@ -985,6 +1053,21 @@ namespace Source
             {
                 currentZoom /= GameData.ZOOM_STEP;
                 ConvertUnits.SetDisplayUnitToSimUnitRatio(currentZoom);
+            }
+            else
+            {
+                if (mouse.ScrollWheelValue > editScroll)
+                {
+                    currentZoom *= (mouse.ScrollWheelValue - editScroll) / GameData.SCROLL_STEP;
+                    editScroll = mouse.ScrollWheelValue;
+                    ConvertUnits.SetDisplayUnitToSimUnitRatio(currentZoom);
+                }
+                else if (mouse.ScrollWheelValue < editScroll)
+                {
+                    currentZoom /= (editScroll - mouse.ScrollWheelValue) / GameData.SCROLL_STEP;
+                    editScroll = mouse.ScrollWheelValue;
+                    ConvertUnits.SetDisplayUnitToSimUnitRatio(currentZoom);
+                }
             }
             if (keyboard.IsKeyDown(Keys.LeftControl))           // TODO save and load level
             {
