@@ -19,7 +19,7 @@ namespace Source
         public const int numPlayers = 3;            // number of players
 #endif
 
-        public const int LEVEL_FILE = 1;
+        public const int LEVEL_FILE = 0;
         public static Vector2 PLAYER_START = new Vector2(1f, -10f);
 
         public const float SCROLL_STEP = 90f;      // scale for zooming using the scroll wheel
@@ -33,11 +33,11 @@ namespace Source
         public static Color DARK_COLOR = new Color(new Vector3(0.1f));  // color mask for non-lit areas
         public static Color LIGHT_COLOR = Color.Wheat;
 
-        public const float JUMP_SPEED = 12f; // m/s -- the initial upwards velocity when player jumps
-        public const float JUMP_ACCEL = GRAVITY + 3f;   // m/s^2 -- acceleration when holding jump
-        public const float JUMP_TIME = 0.2f;  // s -- can hold jump for this long and still have upwards velocity
-        public const float WALL_JUMP_Y = 9f;   // m/s -- vertical jump off a wall
-        public const float WALL_JUMP_X = 12f;   // m/s -- horizontal jump off a wall
+        public const float JUMP_SPEED = 16f; // m/s -- the initial upwards velocity when player jumps
+        public const float JUMP_ACCEL = GRAVITY + 5f;   // m/s^2 -- acceleration when holding jump
+        public const float JUMP_TIME = 0.3f;  // s -- can hold jump for this long and still have upwards velocity
+        public const float WALL_JUMP_Y = 12f;   // m/s -- vertical jump off a wall
+        public const float WALL_JUMP_X = 16f;   // m/s -- horizontal jump off a wall
         public const float WALL_JUMP_LEWAY = 0.3f;    // s -- time after which player can no longer wall jump after leaving a wall
         public const float WALL_STICK_SCALE = 0.5f; // -- scale of vertical velocity when beginning to wall slide
         public const float WALL_SLIDE_SCALE = 0.2f; // -- gravity scale when sliding on the wall
@@ -45,14 +45,14 @@ namespace Source
         //public const float JETPACK_SPEED = 14f; // m/s -- upwards speed while using jetpack
         //public const float JETPACK_REGEN = 10f; // jetpack will be refilled in this time
 
-        public const float GRAVITY = 27f;   // m/s^2 -- gravity for players
-        public const float GRAVITY_PART = 11f; // m/s^2 -- gravity for particles
+        public const float GRAVITY = 36f;   // m/s^2 -- gravity for players
+        public const float GRAVITY_PART = 15f; // m/s^2 -- gravity for particles
 
         public const float MIN_VELOCITY = 1f;  // m/s -- what can be considered target velocity
-        public const float RUN_VELOCITY = 15f; // m/s -- maximum horizontal velocity for player
-        public const float MAX_ACCEL = 20f;   // m/s^2 -- acceleration applied when reaching TargetVelocity
-        public const float AIR_ACCEL = 11f;   // m/s^2 -- acceleration while in air
-        public const float OBSTACLE_JUMP = 18f; // m/s -- initial upwards velocity after vaulting off of an obstacle succesfully
+        public const float RUN_VELOCITY = 22f; // m/s -- maximum horizontal velocity for player
+        public const float MAX_ACCEL = 30f;   // m/s^2 -- acceleration applied when reaching TargetVelocity
+        public const float AIR_ACCEL = 15f;   // m/s^2 -- acceleration while in air
+        public const float OBSTACLE_JUMP = 25f; // m/s -- initial upwards velocity after vaulting off of an obstacle succesfully
         //public const float CLIMB_SPEED = 8f;     // m/s -- speed of climbing onto a ledge
 
         public const float PROJ_WIDTH = 1f;     // width of a projectile in m
@@ -120,9 +120,12 @@ namespace Source
         public const float MAX_GRAPPLE = 12f;       // maximum grapple distance (in m)
         public const float GRAPPLE_ANGLE = -1f;     // direction height of grapple assuming horizontal direction of 1
         public const float GRAPPLE_ELASTICITY = 0.3f;      // elasticity of grapple rope, where 1 = does nothing, and 0 = infinitely rigid
+        public const float GRAPPLE_BOOST = 1.4f;      // boost in momentum after releasing a rope
+        //public const float GRAPPLE_HELP = 10f;      // help to push player when no manual input
+        public const float GRAPPLE_HELP_MIN = 3f;  // minimum length of velocity while swinging
 
         public const float BLINK_COOLDOWN = 2.8f;     // cooldown for blink ability
-        public const float BLINK_TIME = 0.65f;       // when blinking, player will move this many seconds in 1 tick
+        public const float BLINK_TIME = 0.75f;       // when blinking, player will move this many seconds in 1 tick
         public const float SWAP_COOLDOWN = 10f;     // cooldown for swap ability
 
         //public const int NUM_WORLDS = 3;    // number of worlds to load

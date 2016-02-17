@@ -113,6 +113,12 @@ namespace Source.Collisions
                 if (player.WallJump != Player.Jump.None && player.Velocity.Y > 0)
                     gravity *= GameData.WALL_SLIDE_SCALE;
 
+                //if (player.TargetVelocity == 0 && player.GrappleTarget != Vector2.Zero)
+                //{
+                //    float dist = Math.Abs(player.GrappleTarget.X - player.Position.X);
+                //    if (dist > 0.1f)
+                //        gravity *= player.TargetRadius / dist;
+                //}
                 player.Velocity.Y += gravity;
 
                 if (player.Blink)

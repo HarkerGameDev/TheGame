@@ -132,11 +132,7 @@ namespace Source
             graphics.PreferredDepthStencilFormat = DepthFormat.Depth24Stencil8;
             e.GraphicsDeviceInformation.PresentationParameters.MultiSampleCount = 16;
 
-#if DEBUG
-            IsFixedTimeStep = false;
-#else
             IsFixedTimeStep = true;
-#endif
             graphics.SynchronizeWithVerticalRetrace = false;
         }
 
@@ -740,7 +736,12 @@ namespace Source
                                 case Character.AbilityOne.Grapple:
                                     // TODO do a grapple animation
                                     //player.GrappleTarget = player.Position + new Vector2(10f, -10f);
-                                    player.GrappleTarget = Raycast(player.Position, new Vector2(player.Flip == SpriteEffects.None ? 1f : -1f, GameData.GRAPPLE_ANGLE));
+                                    bool facingRight;
+                                    if (player.TargetVelocity == 0)
+                                        facingRight = player.Flip == SpriteEffects.None;
+                                    else
+                                        facingRight = player.TargetVelocity > 0;
+                                    player.GrappleTarget = Raycast(player.Position, new Vector2(facingRight ? 1f : -1f, GameData.GRAPPLE_ANGLE));
                                     player.TargetRadius = Vector2.Distance(player.Position, player.GrappleTarget);
                                     player.GrappleRight = player.Flip == SpriteEffects.None;
                                     break;
@@ -759,7 +760,12 @@ namespace Source
                 else        // not jumping
                 {
                     player.JumpTime = 0;
-                    player.GrappleTarget = Vector2.Zero;
+                    if (player.GrappleTarget != Vector2.Zero)
+                    {
+                        // TODO boost more for lower speeds and less for higher speeds
+                        player.Velocity *= GameData.GRAPPLE_BOOST;
+                        player.GrappleTarget = Vector2.Zero;
+                    }
                 }
 
                 if (InvertControls < 0)     // move
