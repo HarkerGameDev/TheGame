@@ -323,7 +323,7 @@ namespace Source
             {
                 //int character = rand.Next(Character.playerCharacters.Length);
 #if DEBUG
-                int character = 0;
+                int character = 1;
 #else
                 int character = i;
 #endif
@@ -418,6 +418,10 @@ namespace Source
 
         private void SaveLevel(int saveLevel)
         {
+#if DEBUG
+            //Console.WriteLine("Dir: " + Directory.GetFiles(@"..\..\..\..\Source\Levels")[0]);
+            BinaryWriter file = new BinaryWriter(File.Open(@"..\..\..\..\Source\Levels\level" + saveLevel, FileMode.Open, FileAccess.Write));
+#else
             IAsyncResult result = StorageDevice.BeginShowSelector(null, null);
             result.AsyncWaitHandle.WaitOne();
             StorageDevice device = StorageDevice.EndShowSelector(result);
@@ -436,6 +440,7 @@ namespace Source
                 //filename += container.GetFileNames(filename + "*").Length + ".rep";
 
                 BinaryWriter file = new BinaryWriter(container.OpenFile(filename, FileMode.Create));
+#endif
                 file.Write(GameData.PLAYER_START.X);
                 file.Write(GameData.PLAYER_START.Y);
                 foreach (Platform plat in platforms)
@@ -447,8 +452,10 @@ namespace Source
                 }
 
                 file.Close();
+#if !DEBUG
                 container.Dispose();
             }
+#endif
         }
 
         /// <summary>
@@ -1030,7 +1037,7 @@ namespace Source
             }
             else if (currentPlatform != null)
             {                                                       // Delete selected platform
-                if (keyboard.IsKeyDown(Keys.Back) || mouse.RightButton == ButtonState.Pressed)
+                if (keyboard.IsKeyDown(Keys.Back))
                 {
                     platforms.Remove(currentPlatform);
                     currentPlatform = null;
@@ -1064,15 +1071,32 @@ namespace Source
             {
                 if (mouse.ScrollWheelValue > editScroll)
                 {
+                    float prevZoom = currentZoom;
                     currentZoom *= (mouse.ScrollWheelValue - editScroll) / GameData.SCROLL_STEP;
                     editScroll = mouse.ScrollWheelValue;
                     ConvertUnits.SetDisplayUnitToSimUnitRatio(currentZoom);
+
+                    Vector2 mousePos = ConvertUnits.ToDisplayUnits(mouseSimPos - averagePos) + cameraBounds.Center.ToVector2() + screenOffset;
+                    screenOffset -= mousePos - prevMouseState.Position.ToVector2();
+                    Console.WriteLine("Screen offset: " + screenOffset);
                 }
                 else if (mouse.ScrollWheelValue < editScroll)
                 {
+                    float prevZoom = currentZoom;
                     currentZoom /= (editScroll - mouse.ScrollWheelValue) / GameData.SCROLL_STEP;
                     editScroll = mouse.ScrollWheelValue;
                     ConvertUnits.SetDisplayUnitToSimUnitRatio(currentZoom);
+
+                    Vector2 mousePos = ConvertUnits.ToDisplayUnits(mouseSimPos - averagePos) + cameraBounds.Center.ToVector2() + screenOffset;
+                    screenOffset -= mousePos - prevMouseState.Position.ToVector2();
+                }
+            }
+            if (mouse.RightButton == ButtonState.Pressed && prevMouseState.RightButton == ButtonState.Released)
+            {
+                screenOffset = Vector2.Zero;
+                foreach (Player player in players)
+                {
+                    player.MoveToPosition(mouseSimPos);
                 }
             }
             if (keyboard.IsKeyDown(Keys.LeftControl))           // TODO save and load level

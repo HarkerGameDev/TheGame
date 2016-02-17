@@ -167,8 +167,6 @@ namespace Source.Collisions
 
         public override void Draw(SpriteBatch spriteBatch)
         {
-            Sprite.Draw(spriteBatch);
-
             if (GrappleTarget != Vector2.Zero)
             {
                 Vector2 dist = GrappleTarget - Position;
@@ -177,6 +175,9 @@ namespace Source.Collisions
                 Vector2 scale = new Vector2(ConvertUnits.ToDisplayUnits(dist.Length()), GameData.GRAPPLE_HEIGHT);
                 spriteBatch.Draw(Game1.whiteRect, ConvertUnits.ToDisplayUnits(Position), null, Color.Brown, rot, origin, scale, SpriteEffects.None, 0f);
             }
+
+            Sprite.Draw(spriteBatch);
+            
             //Vector2 pos = new Vector2(Position.X - BAR_WIDTH / 2, Position.Y - Size.Y * 0.7f);
             //Game1.DrawRectangle(spriteBatch, pos, Color.LightSalmon, new Vector2(BAR_WIDTH, BAR_HEIGHT));
             //Game1.DrawRectangle(spriteBatch, pos, Color.Crimson, new Vector2(BAR_WIDTH * BoostTime / GameData.BOOST_LENGTH, BAR_HEIGHT));

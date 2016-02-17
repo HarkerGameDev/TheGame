@@ -16,7 +16,7 @@ namespace Source.Collisions
     public class World
     {
         //private static float SLOPE_JUMP = (float)Math.Atan2(Source.GameData.JUMP_SPEED, Source.GameData.RUN_VELOCITY);
-        public const float BOTTOM = 100f;        // bottom of the level
+        public const float BOTTOM = 10000f;        // bottom of the level
 
         private Game1 game;
 
@@ -113,13 +113,16 @@ namespace Source.Collisions
                 if (player.WallJump != Player.Jump.None && player.Velocity.Y > 0)
                     gravity *= GameData.WALL_SLIDE_SCALE;
 
-                //if (player.TargetVelocity == 0 && player.GrappleTarget != Vector2.Zero)
+                //if (player.GrappleTarget != Vector2.Zero)
                 //{
-                //    float dist = Math.Abs(player.GrappleTarget.X - player.Position.X);
-                //    if (dist > 0.1f)
-                //        gravity *= player.TargetRadius / dist;
+                //    Vector2 dist = player.GrappleTarget - player.Position;
+                //    float angle = (float)Math.Atan2(dist.X, dist.Y);
+                //    float oppAngle = MathHelper.PiOver2 - angle;
+                //    float component = gravity * (float)Math.Sin(angle);
+                //    player.Velocity += new Vector2(component * (float)Math.Sin(oppAngle), component * (float)Math.Cos(oppAngle));
                 //}
-                player.Velocity.Y += gravity;
+                //else
+                    player.Velocity.Y += gravity;
 
                 if (player.Blink)
                 {
@@ -128,7 +131,8 @@ namespace Source.Collisions
                 }
 
                 int playerStep = Math.Max((int)Math.Ceiling(deltaTime * Math.Abs(player.Velocity.Y) / player.Size.Y * 1.5f),
-                                            (int)Math.Ceiling(deltaTime * Math.Abs(player.Velocity.X) / player.Size.X * 1.5f));
+                                            (int)Math.Ceiling(deltaTime * Math.Abs(player.Velocity.X) / player.Size.X * 1.5f))
+                                            / 4;
                 if (playerStep < 1) playerStep = 1;
 
                 if (playerStep > 1)

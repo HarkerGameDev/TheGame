@@ -19,7 +19,7 @@ namespace Source
         public const int numPlayers = 3;            // number of players
 #endif
 
-        public const int LEVEL_FILE = 0;
+        public const int LEVEL_FILE = 1;
         public static Vector2 PLAYER_START = new Vector2(1f, -10f);
 
         public const float SCROLL_STEP = 90f;      // scale for zooming using the scroll wheel
@@ -34,8 +34,8 @@ namespace Source
         public static Color LIGHT_COLOR = Color.Wheat;
 
         public const float JUMP_SPEED = 16f; // m/s -- the initial upwards velocity when player jumps
-        public const float JUMP_ACCEL = GRAVITY + 5f;   // m/s^2 -- acceleration when holding jump
-        public const float JUMP_TIME = 0.3f;  // s -- can hold jump for this long and still have upwards velocity
+        public const float JUMP_ACCEL = GRAVITY + 3f;   // m/s^2 -- acceleration when holding jump
+        public const float JUMP_TIME = 0.2f;  // s -- can hold jump for this long and still have upwards velocity
         public const float WALL_JUMP_Y = 12f;   // m/s -- vertical jump off a wall
         public const float WALL_JUMP_X = 16f;   // m/s -- horizontal jump off a wall
         public const float WALL_JUMP_LEWAY = 0.3f;    // s -- time after which player can no longer wall jump after leaving a wall
@@ -81,8 +81,8 @@ namespace Source
         public const float CAMERA_SCALE_Y = 20f;        // vertical speed of camera
         public const float MAX_CAMERA_SPEED_X = 1f;    // maximum x speed of camera
         public const float MAX_CAMERA_SPEED_Y = 3f;    // maximum y speed of camera
-        public const float SCREEN_LEFT = 0.2f;         // defines how far left the player can be on wobble-screen
-        public const float SCREEN_RIGHT = 0.35f;       // defines the right limit of the player on wobble-screen
+        public const float SCREEN_LEFT = 0.3f;         // defines how far left the player can be on wobble-screen
+        public const float SCREEN_RIGHT = 0.7f;       // defines the right limit of the player on wobble-screen
         public const float SCREEN_SPACE = 0.45f;        // camera will begin zooming out when the player are SCREEN_SPACE % of the screen apart from each other
         public const float SCREEN_TOP = 0.3f;          // defines the distance from the top or bottom of the screen for the player in wobble-screen
         public const float DEAD_DIST = 240f;            // players this distance or more behind the average x will move to the maximum player (in pixels)
@@ -119,7 +119,7 @@ namespace Source
         public const float GRAPPLE_HEIGHT = 3f;     // pixel height of grapple rope
         public const float MAX_GRAPPLE = 12f;       // maximum grapple distance (in m)
         public const float GRAPPLE_ANGLE = -1f;     // direction height of grapple assuming horizontal direction of 1
-        public const float GRAPPLE_ELASTICITY = 0.3f;      // elasticity of grapple rope, where 1 = does nothing, and 0 = infinitely rigid
+        public const float GRAPPLE_ELASTICITY = 0.6f;      // elasticity of grapple rope, where 1 = does nothing, and 0 = infinitely rigid
         public const float GRAPPLE_BOOST = 1.4f;      // boost in momentum after releasing a rope
         //public const float GRAPPLE_HELP = 10f;      // help to push player when no manual input
         public const float GRAPPLE_HELP_MIN = 3f;  // minimum length of velocity while swinging
