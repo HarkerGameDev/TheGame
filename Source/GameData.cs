@@ -24,7 +24,7 @@ namespace Source
 
         public const float SCROLL_STEP = 90f;      // scale for zooming using the scroll wheel
         public const float ZOOM_STEP = 1.5f;       // scale by which zoom is changed with + and -
-        public const float PIXEL_METER = 24f;      // pixels per meter for normal game
+        public const float PIXEL_METER = 16f;      // pixels per meter for normal game
         public const float PIXEL_METER_EDIT = 8f;  // pixels per meter when in edit mode for level
         public const int VIEW_WIDTH = 1280;        // width of unscaled screen in pixels
         public const int VIEW_HEIGHT = 720;        // height of unscaled screen in pixels
@@ -119,7 +119,7 @@ namespace Source
         public const float GRAPPLE_HEIGHT = 3f;     // pixel height of grapple rope
         public const float MAX_GRAPPLE = 12f;       // maximum grapple distance (in m)
         public const float GRAPPLE_ANGLE = -1f;     // direction height of grapple assuming horizontal direction of 1
-        public const float GRAPPLE_ELASTICITY = 0.6f;      // elasticity of grapple rope, where 1 = does nothing, and 0 = infinitely rigid
+        public const float GRAPPLE_ELASTICITY = 4f;      // scale of elasticity, where higher values = more rigid
         public const float GRAPPLE_BOOST = 1.4f;      // boost in momentum after releasing a rope
         //public const float GRAPPLE_HELP = 10f;      // help to push player when no manual input
         public const float GRAPPLE_HELP_MIN = 3f;  // minimum length of velocity while swinging

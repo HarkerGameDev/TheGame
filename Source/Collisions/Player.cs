@@ -76,7 +76,7 @@ namespace Source.Collisions
         }
 
         public Player(Texture2D texture, Vector2 position, Character character)
-            : base(texture, position, new Vector2(0.6f, 1.8f))
+            : base(texture, position, new Vector2(0.9f, 2.8f))
         {
             Color = character.Color;
             CurrentCharacter = character;
@@ -86,7 +86,7 @@ namespace Source.Collisions
 
             int[] animationFrames = { 4, 4, 2, 4, 2, 1, 1 };
             Origin = new Vector2(Origin.X / animationFrames.Max(), Origin.Y / animationFrames.Length);
-            float textureScale = 1.8f / Origin.Y / 2f * (20f / 18f);
+            float textureScale = 2.8f / Origin.Y / 2f * (20f / 18f);
             Sprite = new AnimatedSprite(texture, this, animationFrames, textureScale);
         }
 
@@ -152,7 +152,8 @@ namespace Source.Collisions
                 float angle = (float)Math.Atan2(dist.Y, dist.X);
 
                 // move towards TargetRadius
-                float radius = dist.Length() * GameData.GRAPPLE_ELASTICITY + TargetRadius * (1 - GameData.GRAPPLE_ELASTICITY);
+                float radius = dist.Length();
+                radius -= (radius - TargetRadius) * GameData.GRAPPLE_ELASTICITY * deltaTime;
                 MoveToPosition(new Vector2(GrappleTarget.X - (float)Math.Cos(angle) * radius,
                     GrappleTarget.Y - (float)Math.Sin(angle) * radius));
                 Velocity = (Position - prevPosition) / deltaTime;
