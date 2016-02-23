@@ -28,6 +28,7 @@ namespace Source.Collisions
         public float TargetVelocity;
         public Character CurrentCharacter;
         public SpriteEffects Flip;
+        public bool FacingRight { get { return TargetVelocity == 0 ? Flip == SpriteEffects.None : TargetVelocity > 0; } }
 
         // Character-specific variables
         public Platform SpawnedPlatform;
@@ -36,8 +37,6 @@ namespace Source.Collisions
         public Vector2 GrappleTarget;
         public float TargetRadius;
         public bool GrappleRight;
-
-        public bool Blink;
 
         public List<Projectile> Projectiles;
 
@@ -76,7 +75,7 @@ namespace Source.Collisions
         }
 
         public Player(Texture2D texture, Vector2 position, Character character)
-            : base(texture, position, new Vector2(0.9f, 2.8f))
+            : base(texture, position, new Vector2(0.6f, 1.8f))
         {
             Color = character.Color;
             CurrentCharacter = character;
@@ -86,7 +85,7 @@ namespace Source.Collisions
 
             int[] animationFrames = { 4, 4, 2, 4, 2, 1, 1 };
             Origin = new Vector2(Origin.X / animationFrames.Max(), Origin.Y / animationFrames.Length);
-            float textureScale = 2.8f / Origin.Y / 2f * (20f / 18f);
+            float textureScale = 1.8f / Origin.Y / 2f * (20f / 18f);
             Sprite = new AnimatedSprite(texture, this, animationFrames, textureScale);
         }
 

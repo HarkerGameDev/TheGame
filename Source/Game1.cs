@@ -52,6 +52,8 @@ namespace Source
         float fadeTime;
         public SpriteFont fontSmall, fontBig;
 
+        RenderTarget2D screen;
+
         public Random rand;
         //Random randLevel;
         World world;
@@ -99,7 +101,7 @@ namespace Source
         int simIndex = 0;
         int currentReplay = 0;
 
-        float InvertControls = -1;
+        float InvertScreen = -1;
 
         public enum State
         {
@@ -300,6 +302,9 @@ namespace Source
         {
             Content.RootDirectory = "Content";
             spriteBatch = new SpriteBatch(GraphicsDevice);
+            
+            // Initialize screen render target
+            screen = new RenderTarget2D(GraphicsDevice, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
 
             // Load menus
             SpriteFont font = Content.Load<SpriteFont>("Fonts/Segoe_UI_15_Bold");
@@ -578,7 +583,7 @@ namespace Source
                         }
 
                         CheckPlayer();
-                        InvertControls -= deltaTime;
+                        InvertScreen -= deltaTime;
                         totalTime += deltaTime;
                         world.Step(deltaTime);
                     }
@@ -649,9 +654,17 @@ namespace Source
             //screenCenter.Y = MathHelper.Clamp(screenCenter.Y, cameraBounds.Top, cameraBounds.Bottom);
 
             if (ToggleKey(Keys.R))                        // reset
-            {
                 Reset();
-            }
+            else if (ToggleKey(Keys.D1))
+                players[0] = new Player(Content.Load<Texture2D>("Art/GreenDude"), GameData.PLAYER_START, Character.playerCharacters[0]);
+            else if (ToggleKey(Keys.D2))
+                players[0] = new Player(Content.Load<Texture2D>("Art/GreenDude"), GameData.PLAYER_START, Character.playerCharacters[1]);
+            else if (ToggleKey(Keys.D3))
+                players[0] = new Player(Content.Load<Texture2D>("Art/GreenDude"), GameData.PLAYER_START, Character.playerCharacters[2]);
+            else if (ToggleKey(Keys.D4))
+                players[0] = new Player(Content.Load<Texture2D>("Art/GreenDude"), GameData.PLAYER_START, Character.playerCharacters[3]);
+            else if (ToggleKey(Keys.D5))
+                players[0] = new Player(Content.Load<Texture2D>("Art/GreenDude"), GameData.PLAYER_START, Character.playerCharacters[4]);
         }
 
         /// <summary>
@@ -708,7 +721,7 @@ namespace Source
 
             if (player.CurrentState != Player.State.Stunned)
             {
-                if (InvertControls < 0 && controls.JumpHeld || InvertControls >= 0 && controls.Down)
+                if (controls.JumpHeld)
                 {
                     if (!player.PrevJump)
                     {
@@ -743,18 +756,14 @@ namespace Source
                                 case Character.AbilityOne.Grapple:
                                     // TODO do a grapple animation
                                     //player.GrappleTarget = player.Position + new Vector2(10f, -10f);
-                                    bool facingRight;
-                                    if (player.TargetVelocity == 0)
-                                        facingRight = player.Flip == SpriteEffects.None;
-                                    else
-                                        facingRight = player.TargetVelocity > 0;
-                                    player.GrappleTarget = Raycast(player.Position, new Vector2(facingRight ? 1f : -1f, GameData.GRAPPLE_ANGLE));
+                                    player.GrappleTarget = Raycast(player.Position, new Vector2(player.FacingRight ? 1f : -1f, GameData.GRAPPLE_ANGLE));
                                     player.TargetRadius = Vector2.Distance(player.Position, player.GrappleTarget);
                                     player.GrappleRight = player.Flip == SpriteEffects.None;
                                     break;
                                 case Character.AbilityOne.Blink:
                                     player.AbilityOneTime = GameData.BLINK_COOLDOWN;
-                                    player.Blink = true;    // this is used in World later
+                                    player.MoveByPosition(new Vector2(player.FacingRight ? GameData.BLINK_DIST : -GameData.BLINK_DIST, 0));
+                                    // TODO maybe do some validation to make sure the person isn't 'cheating'
                                     break;
                             }
                         }
@@ -775,24 +784,12 @@ namespace Source
                     }
                 }
 
-                if (InvertControls < 0)     // move
-                {
-                    if (controls.Right)
-                        player.TargetVelocity = GameData.RUN_VELOCITY;
-                    else if (controls.Left)
-                        player.TargetVelocity = -GameData.RUN_VELOCITY;
-                    else
-                        player.TargetVelocity = 0;
-                }
+                if (controls.Right)
+                    player.TargetVelocity = GameData.RUN_VELOCITY;
+                else if (controls.Left)
+                    player.TargetVelocity = -GameData.RUN_VELOCITY;
                 else
-                {
-                    if (controls.Left)
-                        player.TargetVelocity = GameData.RUN_VELOCITY;
-                    else if (controls.Right)
-                        player.TargetVelocity = -GameData.RUN_VELOCITY;
-                    else
-                        player.TargetVelocity = 0;
-                }
+                    player.TargetVelocity = 0;
                 //else
                 //{
                 //    if (player.CurrentState == Player.State.Jumping && controls.Jump && player.JumpTime > GameData.JETPACK_CUTOFF)      // jetpack
@@ -802,37 +799,37 @@ namespace Source
                 //}
 
                 // activate (or toggle) special abilities
-                if (player.AbilityTwoTime < 0 && (InvertControls < 0 && controls.Special1 || InvertControls >= 0 && controls.Special2))
+                if (player.AbilityTwoTime < 0 && controls.Special1)
                 {
                     switch (player.CurrentCharacter.Ability2)
                     {
                         case Character.AbilityTwo.Invert:
                             player.AbilityTwoTime = GameData.INVERT_COOLDOWN;
-                            InvertControls = GameData.INVERT_TIME;
+                            InvertScreen = GameData.INVERT_TIME;
                             break;
                     }
                 }
-                if (player.AbilityThreeTime < 0 && (InvertControls < 0 && controls.Special2 || InvertControls >= 0 && controls.Special1))
+                if (player.AbilityThreeTime < 0 && controls.Special2)
                 {
                     switch (player.CurrentCharacter.Ability3)
                     {
-                        case Character.AbilityThree.Swap:
-                            player.AbilityThreeTime = GameData.SWAP_COOLDOWN;
-                            Player first = players[rand.Next(players.Count)];
-                            Player second = players[rand.Next(players.Count)];
-                            Vector2 tempPos = first.Position;
-                            Vector2 tempVel = first.Velocity;
+                        //case Character.AbilityThree.Swap:
+                        //    player.AbilityThreeTime = GameData.SWAP_COOLDOWN;
+                        //    Player first = players[rand.Next(players.Count)];
+                        //    Player second = players[rand.Next(players.Count)];
+                        //    Vector2 tempPos = first.Position;
+                        //    Vector2 tempVel = first.Velocity;
 
-                            // TODO somehow indicate to the player that they have switched
-                            first.MoveToPosition(second.Position);
-                            first.Velocity = second.Velocity;
-                            second.MoveToPosition(tempPos);
-                            second.Velocity = tempVel;
-                            break;
+                        //    // TODO somehow indicate to the player that they have switched
+                        //    first.MoveToPosition(second.Position);
+                        //    first.Velocity = second.Velocity;
+                        //    second.MoveToPosition(tempPos);
+                        //    second.Velocity = tempVel;
+                        //    break;
                     }
                 }
             }
-            player.PrevJump = InvertControls < 0 ? controls.JumpHeld : controls.Down;
+            player.PrevJump = controls.JumpHeld;
         }
 
         /// <summary>
@@ -1190,6 +1187,7 @@ namespace Source
         private void DrawGame(double deltaTime)
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
+            GraphicsDevice.SetRenderTarget(screen);
 
             // Find average position across all players
             Vector2 averagePos = Vector2.Zero;
@@ -1206,6 +1204,14 @@ namespace Source
             ConvertUnits.SetDisplayUnitToSimUnitRatio(zoom);
 
             DrawScene(deltaTime, ConvertUnits.ToDisplayUnits(averagePos));
+
+            GraphicsDevice.SetRenderTarget(null);
+            spriteBatch.Begin();
+            if (InvertScreen > 0)
+                spriteBatch.Draw(screen, GraphicsDevice.Viewport.Bounds, null, Color.White, 0f, Vector2.Zero, SpriteEffects.FlipVertically | SpriteEffects.FlipHorizontally, 0f);
+            else
+                spriteBatch.Draw(screen, GraphicsDevice.Viewport.Bounds, Color.White);
+            spriteBatch.End();
         }
 
         //private void DrawCasters(LightArea lightArea, Vector2 averagePos)

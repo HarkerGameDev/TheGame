@@ -16,7 +16,7 @@ namespace Source
 #if DEBUG
         public const int numPlayers = 1;
 #else
-        public const int numPlayers = 3;            // number of players
+        public const int numPlayers = 2;            // number of players
 #endif
 
         public const int LEVEL_FILE = 1;
@@ -24,7 +24,7 @@ namespace Source
 
         public const float SCROLL_STEP = 90f;      // scale for zooming using the scroll wheel
         public const float ZOOM_STEP = 1.5f;       // scale by which zoom is changed with + and -
-        public const float PIXEL_METER = 16f;      // pixels per meter for normal game
+        public const float PIXEL_METER = 24f;      // pixels per meter for normal game
         public const float PIXEL_METER_EDIT = 8f;  // pixels per meter when in edit mode for level
         public const int VIEW_WIDTH = 1280;        // width of unscaled screen in pixels
         public const int VIEW_HEIGHT = 720;        // height of unscaled screen in pixels
@@ -113,8 +113,8 @@ namespace Source
         public const float PLATFORM_HEIGHT = 1f;    // height of platform
         public const float PLATFORM_COOLDOWN = 5f;  // cooldown for platform ability
         public const float PLATFORM_LIFE = 1.2f;      // how long the platform lasts before despawning
-        public const float INVERT_TIME = 3f;        // time during which controls will be inverted
-        public const float INVERT_COOLDOWN = 13f;   // cooldown for casting invert
+        public const float INVERT_TIME = 10f;        // time during which controls will be inverted
+        public const float INVERT_COOLDOWN = 30f;   // cooldown for casting invert
 
         public const float GRAPPLE_HEIGHT = 3f;     // pixel height of grapple rope
         public const float MAX_GRAPPLE = 12f;       // maximum grapple distance (in m)
@@ -125,7 +125,7 @@ namespace Source
         public const float GRAPPLE_HELP_MIN = 3f;  // minimum length of velocity while swinging
 
         public const float BLINK_COOLDOWN = 2.8f;     // cooldown for blink ability
-        public const float BLINK_TIME = 0.75f;       // when blinking, player will move this many seconds in 1 tick
+        public const float BLINK_DIST = 14f;       // when blinking, player will move this many meters
         public const float SWAP_COOLDOWN = 10f;     // cooldown for swap ability
 
         //public const int NUM_WORLDS = 3;    // number of worlds to load

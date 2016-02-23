@@ -124,15 +124,10 @@ namespace Source.Collisions
                 //else
                     player.Velocity.Y += gravity;
 
-                if (player.Blink)
-                {
-                    deltaTime += GameData.BLINK_TIME;
-                    player.Blink = false;
-                }
-
+                // TODO this doesn't work perfectly
                 int playerStep = Math.Max((int)Math.Ceiling(deltaTime * Math.Abs(player.Velocity.Y) / player.Size.Y * 1.5f),
                                             (int)Math.Ceiling(deltaTime * Math.Abs(player.Velocity.X) / player.Size.X * 1.5f))
-                                            / 4;
+                                            / 2;
                 if (playerStep < 1) playerStep = 1;
 
                 if (playerStep > 1)
