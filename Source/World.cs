@@ -51,7 +51,7 @@ namespace Source.Collisions
                 drop.LiveTime -= deltaTime;
                 if (drop.LiveTime < 0)
                 {
-                    if (drop.type == Drop.Type.Bomb)
+                    if (drop.Type == Drop.Types.Bomb)
                     {
                         ApplyGravity(GameData.BOMB_FORCE, drop.Player, drop.Position, 1);
                         foreach (Player player in game.players)
@@ -82,7 +82,7 @@ namespace Source.Collisions
                                 drop.Velocity.Y = 0;
                         }
                     }
-                    if (drop.type == Drop.Type.Singularity)
+                    if (drop.Type == Drop.Types.Singularity)
                         ApplyGravity(-GameData.GRAVITY_FORCE, drop.Player, drop.Position, deltaTime);
                 }
             }

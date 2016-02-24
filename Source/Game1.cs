@@ -823,6 +823,10 @@ namespace Source
                             player.AbilityTwoTime = GameData.INVERT_COOLDOWN;
                             InvertScreen = GameData.INVERT_TIME;
                             break;
+                        case Character.AbilityTwo.Trap:
+                            player.AbilityTwoTime = GameData.TRAP_COOLDOWN;
+                            drops.Add(new Drop(player, whiteRect, player.Position, 1f, Drop.Types.Trap, Color.Red));
+                            break;
                     }
                 }
                 if (player.AbilityThreeTime < 0 && controls.Special2)

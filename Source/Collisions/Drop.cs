@@ -12,20 +12,21 @@ namespace Source.Collisions
     public class Drop : Body
     {
         public float LiveTime;
-        public Type type;
+        public Types Type;
         public Player Player;
 
-        public enum Type
+        public enum Types
         {
-            Singularity, Bomb
+            Singularity, Bomb, Trap
         }
 
-        public Drop(Player player, Texture2D texture, Vector2 position, float radius, Type type)
+        public Drop(Player player, Texture2D texture, Vector2 position, float radius, Types type, Color color)
             : base(texture, position, new Vector2(radius * 2))
         {
+            Color = color;
             LiveTime = GameData.DROP_LIVE;
             Velocity = player.Velocity + new Vector2(GameData.DROP_SPEED_X, GameData.DROP_SPEED_Y);
-            this.type = type;
+            this.Type = type;
             this.Player = player;
         }
     }

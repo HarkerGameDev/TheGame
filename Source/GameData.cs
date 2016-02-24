@@ -15,7 +15,7 @@ namespace Source
     {
 #if DEBUG
         public const int numPlayers = 1;
-        public const int CHARACTER = 4;
+        public const int CHARACTER = 1;
 #else
         public const int numPlayers = 2;            // number of players
 #endif
@@ -58,10 +58,10 @@ namespace Source
         public const float PROJ_SPEED = 45f;    // speed of a projectile
         public const float PROJ_LIVE = 1.0f;     // lifetime of a projectile in s
 
-        public const float DROP_LIVE = 1f;      // lifetime of a drop
-        public const float DROP_SPEED_X = 6f;   // initial x speed of drop
+        public const float DROP_LIVE = 10f;      // lifetime of a drop
+        public const float DROP_SPEED_X = 0f;   // initial x speed of drop
         public const float DROP_SPEED_Y = -11f;  // initial y speed of drop
-        public const float DROP_FRICTION = 0.6f; // ratio of speed lost per second for drop
+        public const float DROP_FRICTION = 3f; // ratio of speed lost per second for drop
 
         public const float GRAVITY_FORCE = 112f;  // G (in physics) in essence
         public const float BOMB_FORCE = 150f;        // force in m/s when a bomb explodes
@@ -111,7 +111,7 @@ namespace Source
         public const float PLATFORM_WIDTH = 10f;    // width of platform
         public const float PLATFORM_HEIGHT = 1f;    // height of platform
         public const float PLATFORM_COOLDOWN = 5f;  // cooldown for platform ability
-        public const float PLATFORM_LIFE = 1.2f;      // how long the platform lasts before despawning
+        public const float PLATFORM_LIFE = 1.7f;      // how long the platform lasts before despawning
         public const float INVERT_TIME = 10f;        // time during which controls will be inverted
         public const float INVERT_COOLDOWN = 30f;   // cooldown for casting invert
 
@@ -122,6 +122,7 @@ namespace Source
         public const float GRAPPLE_BOOST = 1.4f;      // boost in momentum after releasing a rope
         //public const float GRAPPLE_HELP = 10f;      // help to push player when no manual input
         public const float GRAPPLE_HELP_MIN = 3f;  // minimum length of velocity while swinging
+        public const float TRAP_COOLDOWN = 1f;     // cooldown for dropping a trap
 
         public const float BLINK_COOLDOWN = 2.8f;     // cooldown for blink ability
         public const float BLINK_DIST = 14f;       // when blinking, player will move this many meters
