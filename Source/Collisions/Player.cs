@@ -152,7 +152,8 @@ namespace Source.Collisions
 
                 // move towards TargetRadius
                 float radius = dist.Length();
-                radius -= (radius - TargetRadius) * GameData.GRAPPLE_ELASTICITY * deltaTime;
+                if (radius > TargetRadius)
+                    radius -= (radius - TargetRadius) * GameData.GRAPPLE_ELASTICITY * deltaTime;
                 MoveToPosition(new Vector2(GrappleTarget.X - (float)Math.Cos(angle) * radius,
                     GrappleTarget.Y - (float)Math.Sin(angle) * radius));
                 Velocity = (Position - prevPosition) / deltaTime;
