@@ -33,6 +33,8 @@ namespace Source.Collisions
         // Character-specific variables
         public Platform SpawnedPlatform;
         public float PlatformTime;
+        public float JetpackTime;
+        public bool JetpackEnabled;
 
         public Vector2 GrappleTarget;
         public float TargetRadius;

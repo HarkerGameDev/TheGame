@@ -14,7 +14,7 @@ namespace Source
     internal static class GameData
     {
 #if DEBUG
-        public const int numPlayers = 2;
+        public const int numPlayers = 1;
 #else
         public const int numPlayers = 2;            // number of players
 #endif
@@ -41,9 +41,6 @@ namespace Source
         public const float WALL_JUMP_LEWAY = 0.3f;    // s -- time after which player can no longer wall jump after leaving a wall
         public const float WALL_STICK_SCALE = 0.5f; // -- scale of vertical velocity when beginning to wall slide
         public const float WALL_SLIDE_SCALE = 0.2f; // -- gravity scale when sliding on the wall
-        //public const float JETPACK_ACCEL = 7f;  // m/s^2 -- upwards acceleration while jetpacking
-        //public const float JETPACK_SPEED = 14f; // m/s -- upwards speed while using jetpack
-        //public const float JETPACK_REGEN = 10f; // jetpack will be refilled in this time
 
         public const float GRAVITY = 36f;   // m/s^2 -- gravity for players
         public const float GRAVITY_PART = 15f; // m/s^2 -- gravity for particles
@@ -127,7 +124,11 @@ namespace Source
 
         public const float BLINK_COOLDOWN = 2.8f;     // cooldown for blink ability
         public const float BLINK_DIST = 14f;       // when blinking, player will move this many meters
-        public const float SWAP_COOLDOWN = 10f;     // cooldown for swap ability
+
+        public const float JETPACK_ACCEL_UP = 15f + GRAVITY;  // m/s^2 -- upwards acceleration while jetpacking and going up
+        public const float JETPACK_ACCEL_DOWN = 60f + GRAVITY;  // m/s^2 -- updwards acceleration while jetpacking and going down
+        public const float JETPACK_TIME = 0.9f; // jetpack lasts for this long without touching ground
+        public const float JETPACK_PARTICLES = 1 / 40f; // number of particles spawned by jetpack per second
 
         //public const int NUM_WORLDS = 3;    // number of worlds to load
         // format of WORLD_LAYERS is:

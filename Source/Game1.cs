@@ -330,7 +330,7 @@ namespace Source
             {
                 //int character = rand.Next(Character.playerCharacters.Length);
 #if DEBUG
-                int character = 1;
+                int character = 3;
 #else
                 int character = i;
 #endif
@@ -727,7 +727,14 @@ namespace Source
                 {
                     if (!player.PrevJump)
                     {
-                        if (player.WallJump != Player.Jump.None)    // wall jump
+                        if (player.CanJump)    // normal jump
+                        {
+                            player.Velocity.Y = -GameData.JUMP_SPEED;
+                            player.TargetVelocity = player.TargetVelocity * GameData.JUMP_SLOW;
+                            player.CurrentState = Player.State.Jumping;
+                            player.JumpTime = GameData.JUMP_TIME;
+                        }
+                        else if (player.WallJump != Player.Jump.None)    // wall jump
                         {
                             player.Velocity.Y = -GameData.WALL_JUMP_Y;
                             if (player.WallJump == Player.Jump.Left)
@@ -735,13 +742,6 @@ namespace Source
                             else
                                 player.Velocity.X = GameData.WALL_JUMP_X;
                             player.WallJump = Player.Jump.None;
-                        }
-                        else if (player.CanJump)    // normal jump
-                        {
-                            player.Velocity.Y = -GameData.JUMP_SPEED;
-                            player.TargetVelocity = player.TargetVelocity * GameData.JUMP_SLOW;
-                            player.CurrentState = Player.State.Jumping;
-                            player.JumpTime = GameData.JUMP_TIME;
                         }
                         else if (player.AbilityOneTime < 0)        // jump abilities
                         {
@@ -768,6 +768,7 @@ namespace Source
                                     // TODO maybe do some validation to make sure the person isn't 'cheating'
                                     break;
                                 case Character.AbilityOne.Jetpack:
+                                    player.JetpackEnabled = true;
                                     break;
                                 case Character.AbilityOne.Jump:
                                     break;
@@ -777,6 +778,19 @@ namespace Source
                     else if (player.JumpTime > 0)   // hold jump in air
                     {
                         player.Velocity.Y -= GameData.JUMP_ACCEL * deltaTime;
+                    }
+                    else if (player.JetpackEnabled)
+                    {
+                        if (player.JetpackTime > 0)
+                        {
+                            float prevTime = player.JetpackTime;
+                            player.JetpackTime -= deltaTime;
+                            int particles = (int)(Math.Truncate(prevTime / GameData.JETPACK_PARTICLES) - Math.Truncate(player.JetpackTime / GameData.JETPACK_PARTICLES));
+                            //Console.WriteLine("Prev: {0}\tCurr: {1}", prevTime / GameData.JETPACK_PARTICLES, player.JetpackTime / GameData.JETPACK_PARTICLES);
+                            world.MakeParticles(player.Position, whiteRect, particles, 0, 1, Color.WhiteSmoke);
+                            player.Velocity.Y -= (player.Velocity.Y > 0 ? GameData.JETPACK_ACCEL_DOWN : GameData.JETPACK_ACCEL_UP) * deltaTime;
+                            //Console.WriteLine("Jetpacking: {0} at time: {1}", player.Velocity.Y, player.JetpackTime);
+                        }
                     }
                 }
                 else        // not jumping
@@ -788,6 +802,7 @@ namespace Source
                         player.Velocity *= GameData.GRAPPLE_BOOST;
                         player.GrappleTarget = Vector2.Zero;
                     }
+                    player.JetpackEnabled = false;
                 }
 
                 if (controls.Right)
@@ -796,13 +811,6 @@ namespace Source
                     player.TargetVelocity = -GameData.RUN_VELOCITY;
                 else
                     player.TargetVelocity = 0;
-                //else
-                //{
-                //    if (player.CurrentState == Player.State.Jumping && controls.Jump && player.JumpTime > GameData.JETPACK_CUTOFF)      // jetpack
-                //    {
-                //        player.Velocity.Y -= GameData.JETPACK_ACCEL * deltaTime;
-                //    }
-                //}
 
                 // activate (or toggle) special abilities
                 if (player.AbilityTwoTime < 0 && controls.Special1)

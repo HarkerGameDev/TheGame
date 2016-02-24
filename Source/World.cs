@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 
 using Source.Graphics;
 
@@ -188,15 +189,16 @@ namespace Source.Collisions
         /// 
         /// </summary>
         /// <param name="pos"></param>
-        /// <param name="source"></param>
+        /// <param name="texture"></param>
         /// <param name="amount"></param>
         /// <param name="x">0 is left and right, 1 is right, -1 is left</param>
         /// <param name="y">0 is up and down, 1 is down, -1 is up</param>
-        private void MakeParticles(Vector2 pos, Body source, int amount, int x, int y)
+        /// <param name="color"></param>
+        public void MakeParticles(Vector2 pos, Texture2D texture, int amount, int x, int y, Color color)
         {
             for (int i = 0; i < amount; i++)
                 game.particles.Add(new Particle(pos, new Vector2(GameData.PARTICLE_WIDTH),
-                    source.texture, 0f, rand(x, y, new Vector2(GameData.PARTICLE_X, GameData.PARTICLE_Y)), 0f, GameData.PARTICLE_LIFETIME, source.Color));
+                    texture, 0f, rand(x, y, new Vector2(GameData.PARTICLE_X, GameData.PARTICLE_Y)), 0f, GameData.PARTICLE_LIFETIME, color));
         }
 
         private void CheckPlatforms(Player player)
@@ -234,13 +236,15 @@ namespace Source.Collisions
                                 player.WallJumpLeway = GameData.WALL_JUMP_LEWAY;
                             }
                         }
-                        else        // Vertocal or diagonal collision
+                        else        // Vertical or diagonal collision
                         {
                             player.Velocity.Y = 0;
                             if (translation.Y > 0 && player.InAir)
                             {
                                 player.CurrentState = Player.State.Walking;
                                 player.GrappleTarget = Vector2.Zero;
+                                player.JetpackTime = GameData.JETPACK_TIME;
+                                player.JetpackEnabled = false;
                             }
                         }
                         player.MoveByPosition(-translation);
@@ -342,7 +346,7 @@ namespace Source.Collisions
                         player.CurrentState = Player.State.Stunned;
                         player.StunTime = GameData.OBSTACLE_HIT_STUN;
                         game.obstacles.RemoveAt(i);
-                        MakeParticles(obstacle.Position, obstacle, GameData.NUM_PART_OBSTACLE, 0, 0);
+                        MakeParticles(obstacle.Position, obstacle.texture, GameData.NUM_PART_OBSTACLE, 0, 0, obstacle.Color);
                     }
                     else if (translation.Y > 0) // hitting from top
                     {
