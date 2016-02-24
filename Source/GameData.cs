@@ -15,6 +15,7 @@ namespace Source
     {
 #if DEBUG
         public const int numPlayers = 1;
+        public const int CHARACTER = 4;
 #else
         public const int numPlayers = 2;            // number of players
 #endif
@@ -129,6 +130,9 @@ namespace Source
         public const float JETPACK_ACCEL_DOWN = 60f + GRAVITY;  // m/s^2 -- updwards acceleration while jetpacking and going down
         public const float JETPACK_TIME = 0.9f; // jetpack lasts for this long without touching ground
         public const float JETPACK_PARTICLES = 1 / 40f; // number of particles spawned by jetpack per second
+
+        public const int TOTAL_JUMPS = 3;       // number jumps the acrobat can do in total (including intial jump)
+        public const float AIR_JUMP_SPEED = JUMP_SPEED + 4f;    // velocity of jump when acrobat
 
         //public const int NUM_WORLDS = 3;    // number of worlds to load
         // format of WORLD_LAYERS is:

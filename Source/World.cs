@@ -245,6 +245,7 @@ namespace Source.Collisions
                                 player.GrappleTarget = Vector2.Zero;
                                 player.JetpackTime = GameData.JETPACK_TIME;
                                 player.JetpackEnabled = false;
+                                player.JumpsLeft = GameData.TOTAL_JUMPS;
                             }
                         }
                         player.MoveByPosition(-translation);

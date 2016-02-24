@@ -330,7 +330,7 @@ namespace Source
             {
                 //int character = rand.Next(Character.playerCharacters.Length);
 #if DEBUG
-                int character = 3;
+                int character = GameData.CHARACTER;
 #else
                 int character = i;
 #endif
@@ -768,9 +768,11 @@ namespace Source
                                     // TODO maybe do some validation to make sure the person isn't 'cheating'
                                     break;
                                 case Character.AbilityOne.Jetpack:
-                                    player.JetpackEnabled = true;
+                                    player.JetpackEnabled = true;   // Jetpack is handled below
                                     break;
                                 case Character.AbilityOne.Jump:
+                                    if (--player.JumpsLeft > 0)
+                                        player.Velocity.Y = -GameData.AIR_JUMP_SPEED;
                                     break;
                             }
                         }
