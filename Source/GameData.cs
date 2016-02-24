@@ -83,7 +83,7 @@ namespace Source
         public const float MAX_CAMERA_SPEED_Y = 3f;    // maximum y speed of camera
         public const float SCREEN_LEFT = 0.3f;         // defines how far left the player can be on wobble-screen
         public const float SCREEN_RIGHT = 0.7f;       // defines the right limit of the player on wobble-screen
-        public const float SCREEN_SPACE = 0.45f;        // camera will begin zooming out when the player are SCREEN_SPACE % of the screen apart from each other
+        public const float SCREEN_SPACE = 0.25f;        // camera will begin zooming out when the player are SCREEN_SPACE % of the screen apart from each other
         public const float SCREEN_TOP = 0.3f;          // defines the distance from the top or bottom of the screen for the player in wobble-screen
         public const float SPLIT_HEIGHT = 5f;        // heigh in pixels of separator for split-screen
         public const float DEAD_DIST = 240f;            // players this distance or more behind the average x will move to the maximum player (in pixels)

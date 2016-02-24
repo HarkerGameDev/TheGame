@@ -1200,7 +1200,19 @@ namespace Source
             //Vector2 averagePos = ConvertUnits.ToDisplayUnits(averagePos);
 
             // TODO don't always splitscreen
-            bool splitScreen = true;
+            float maxX = ConvertUnits.ToSimUnits(GraphicsDevice.Viewport.Width) * GameData.SCREEN_SPACE;
+            float maxY = ConvertUnits.ToSimUnits(GraphicsDevice.Viewport.Height) * GameData.SCREEN_SPACE;
+            bool splitScreen = false;
+            foreach (Player player in players)
+            {
+                Vector2 dist = player.Position - averagePos;
+                if (Math.Abs(dist.X) > maxX || Math.Abs(dist.Y) > maxY)
+                {
+                    splitScreen = true;
+                    break;
+                }
+            }
+
 
             if (splitScreen)
             {
@@ -1211,8 +1223,8 @@ namespace Source
                     Player player = players[i];
                     Vector2 dist = averagePos - player.Position;
                     dist.Normalize();
-                    dist.X *= ConvertUnits.ToSimUnits(0.25f * GraphicsDevice.Viewport.Width);
-                    dist.Y *= ConvertUnits.ToSimUnits(0.25f * GraphicsDevice.Viewport.Height);
+                    dist.X *= ConvertUnits.ToSimUnits(GameData.SCREEN_SPACE * GraphicsDevice.Viewport.Width);
+                    dist.Y *= ConvertUnits.ToSimUnits(GameData.SCREEN_SPACE * GraphicsDevice.Viewport.Height);
                     Vector2 pos = player.Position + dist;
                     //Console.WriteLine("Real pos_" + i + " = " + player.Position + "\tPos = " + pos + "\tDist = " + dist);
 
@@ -1241,7 +1253,6 @@ namespace Source
             GraphicsDevice.SetRenderTarget(null);
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
-            // TODO implement splitscreen
             if (splitScreen)
             {
                 for (int i = 0; i < GameData.numPlayers; i++)
