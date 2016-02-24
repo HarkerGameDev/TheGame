@@ -14,7 +14,7 @@ namespace Source
     internal static class GameData
     {
 #if DEBUG
-        public const int numPlayers = 1;
+        public const int numPlayers = 2;
 #else
         public const int numPlayers = 2;            // number of players
 #endif
@@ -51,7 +51,7 @@ namespace Source
         public const float MIN_VELOCITY = 1f;  // m/s -- what can be considered target velocity
         public const float RUN_VELOCITY = 22f; // m/s -- maximum horizontal velocity for player
         public const float MAX_ACCEL = 30f;   // m/s^2 -- acceleration applied when reaching TargetVelocity
-        public const float AIR_ACCEL = 15f;   // m/s^2 -- acceleration while in air
+        public const float AIR_ACCEL = 25f;   // m/s^2 -- acceleration while in air
         public const float OBSTACLE_JUMP = 25f; // m/s -- initial upwards velocity after vaulting off of an obstacle succesfully
         //public const float CLIMB_SPEED = 8f;     // m/s -- speed of climbing onto a ledge
 
@@ -85,6 +85,7 @@ namespace Source
         public const float SCREEN_RIGHT = 0.7f;       // defines the right limit of the player on wobble-screen
         public const float SCREEN_SPACE = 0.45f;        // camera will begin zooming out when the player are SCREEN_SPACE % of the screen apart from each other
         public const float SCREEN_TOP = 0.3f;          // defines the distance from the top or bottom of the screen for the player in wobble-screen
+        public const float SPLIT_HEIGHT = 5f;        // heigh in pixels of separator for split-screen
         public const float DEAD_DIST = 240f;            // players this distance or more behind the average x will move to the maximum player (in pixels)
         public const double DEAD_TIME = 3;             // respawn time when a player gets behind the cutoff
         public const double PHASE_TIME = 1;            // the point at which the player will be visible again after dying to get the player prepared

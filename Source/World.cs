@@ -202,7 +202,6 @@ namespace Source.Collisions
         private void CheckPlatforms(Player player)
         {
             // TODO this seems kinda janky if player falls from great height
-            // TODO make collisions work for horizontal and vertical collisions
             int totalCollisions = 0;
             foreach (Platform platform in game.platforms)
             {

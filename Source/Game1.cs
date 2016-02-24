@@ -52,7 +52,7 @@ namespace Source
         float fadeTime;
         public SpriteFont fontSmall, fontBig;
 
-        RenderTarget2D screen;
+        RenderTarget2D[] playerScreens;
 
         public Random rand;
         //Random randLevel;
@@ -302,9 +302,11 @@ namespace Source
         {
             Content.RootDirectory = "Content";
             spriteBatch = new SpriteBatch(GraphicsDevice);
-            
+
             // Initialize screen render target
-            screen = new RenderTarget2D(GraphicsDevice, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
+            playerScreens = new RenderTarget2D[GameData.numPlayers];
+            for (int i=0; i<GameData.numPlayers; i++)
+                playerScreens[i] = new RenderTarget2D(GraphicsDevice, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
 
             // Load menus
             SpriteFont font = Content.Load<SpriteFont>("Fonts/Segoe_UI_15_Bold");
@@ -765,6 +767,10 @@ namespace Source
                                     player.MoveByPosition(new Vector2(player.FacingRight ? GameData.BLINK_DIST : -GameData.BLINK_DIST, 0));
                                     // TODO maybe do some validation to make sure the person isn't 'cheating'
                                     break;
+                                case Character.AbilityOne.Jetpack:
+                                    break;
+                                case Character.AbilityOne.Jump:
+                                    break;
                             }
                         }
                     }
@@ -1096,7 +1102,7 @@ namespace Source
                     player.MoveToPosition(mouseSimPos);
                 }
             }
-            if (keyboard.IsKeyDown(Keys.LeftControl))           // TODO save and load level
+            if (keyboard.IsKeyDown(Keys.LeftControl))           // TODO save and load level from UI
             {
                 if (ToggleKey(Keys.S))
                 {
@@ -1177,18 +1183,15 @@ namespace Source
             //        max.Score += GameData.WIN_SCORE;
             //}
 
-            float dist = maxY - minY;
-            if (dist * currentZoom / GameData.SCREEN_SPACE > GraphicsDevice.Viewport.Height)
-                ConvertUnits.SetDisplayUnitToSimUnitRatio(GraphicsDevice.Viewport.Height * GameData.SCREEN_SPACE / dist);
-            else
-                ConvertUnits.SetDisplayUnitToSimUnitRatio(currentZoom);
+            //float dist = maxY - minY;
+            //if (dist * currentZoom / GameData.SCREEN_SPACE > GraphicsDevice.Viewport.Height)
+            //    ConvertUnits.SetDisplayUnitToSimUnitRatio(GraphicsDevice.Viewport.Height * GameData.SCREEN_SPACE / dist);
+            //else
+            //    ConvertUnits.SetDisplayUnitToSimUnitRatio(currentZoom);
         }
 
         private void DrawGame(double deltaTime)
         {
-            GraphicsDevice.Clear(Color.CornflowerBlue);
-            GraphicsDevice.SetRenderTarget(screen);
-
             // Find average position across all players
             Vector2 averagePos = Vector2.Zero;
             foreach (Player player in players)
@@ -1196,22 +1199,139 @@ namespace Source
             averagePos /= players.Count;
             //Vector2 averagePos = ConvertUnits.ToDisplayUnits(averagePos);
 
-            float zoom = ConvertUnits.ToDisplayUnits(1);
-            ConvertUnits.SetDisplayUnitToSimUnitRatio(GameData.SHADOW_SCALE);
+            // TODO don't always splitscreen
+            bool splitScreen = true;
 
-            // Draw background
-            DrawBackground(ConvertUnits.ToDisplayUnits(averagePos));
-            ConvertUnits.SetDisplayUnitToSimUnitRatio(zoom);
+            if (splitScreen)
+            {
+                for (int i = 0; i < GameData.numPlayers; i++)
+                {
+                    GraphicsDevice.SetRenderTarget(playerScreens[i]);
 
-            DrawScene(deltaTime, ConvertUnits.ToDisplayUnits(averagePos));
+                    Player player = players[i];
+                    Vector2 dist = averagePos - player.Position;
+                    dist.Normalize();
+                    dist.X *= ConvertUnits.ToSimUnits(0.25f * GraphicsDevice.Viewport.Width);
+                    dist.Y *= ConvertUnits.ToSimUnits(0.25f * GraphicsDevice.Viewport.Height);
+                    Vector2 pos = player.Position + dist;
+                    //Console.WriteLine("Real pos_" + i + " = " + player.Position + "\tPos = " + pos + "\tDist = " + dist);
+
+                    // Draw background
+                    float zoom = ConvertUnits.ToDisplayUnits(1);
+                    ConvertUnits.SetDisplayUnitToSimUnitRatio(GameData.SHADOW_SCALE);
+                    DrawBackground(ConvertUnits.ToDisplayUnits(pos));
+                    ConvertUnits.SetDisplayUnitToSimUnitRatio(zoom);
+
+                    DrawScene(deltaTime, ConvertUnits.ToDisplayUnits(pos));
+                }
+            }
+            else
+            {
+                GraphicsDevice.SetRenderTarget(playerScreens[0]);
+
+                // Draw background
+                float zoom = ConvertUnits.ToDisplayUnits(1);
+                ConvertUnits.SetDisplayUnitToSimUnitRatio(GameData.SHADOW_SCALE);
+                DrawBackground(ConvertUnits.ToDisplayUnits(averagePos));
+                ConvertUnits.SetDisplayUnitToSimUnitRatio(zoom);
+
+                DrawScene(deltaTime, ConvertUnits.ToDisplayUnits(averagePos));
+            }
 
             GraphicsDevice.SetRenderTarget(null);
-            spriteBatch.Begin();
-            if (InvertScreen > 0)
-                spriteBatch.Draw(screen, GraphicsDevice.Viewport.Bounds, null, Color.White, 0f, Vector2.Zero, SpriteEffects.FlipVertically | SpriteEffects.FlipHorizontally, 0f);
+            GraphicsDevice.Clear(Color.CornflowerBlue);
+
+            // TODO implement splitscreen
+            if (splitScreen)
+            {
+                for (int i = 0; i < GameData.numPlayers; i++)
+                {
+                    BasicEffect effect = new BasicEffect(graphics.GraphicsDevice);
+                    effect.World = Matrix.Identity;
+                    effect.TextureEnabled = true;
+                    effect.Texture = playerScreens[i];
+
+                    Player player = players[i];
+                    Vector2 dist = averagePos - player.Position;
+                    dist = new Vector2(dist.Y, dist.X);
+                    dist /= -Math.Max(Math.Abs(dist.X), Math.Abs(dist.Y));
+                    Vector2 tex = new Vector2(dist.X / 2f + 0.5f, -dist.Y / 2f + 0.5f);
+                    //Console.WriteLine("Dist_" + i + " = " + dist + "\tTex = " + tex);
+
+                    // for Position, (-1,-1) is bottom-left and (1,1) is top-right
+                    // for TextureCoordinate, (0,0) is top-left and (1,1) is bottom-right
+                    VertexPositionTexture[] vertices = new VertexPositionTexture[4];
+
+                    if (Math.Abs(dist.Y) == 1)
+                    {
+                        vertices[0].Position = new Vector3(dist, 0f);
+                        vertices[1].Position = new Vector3(dist.Y, dist.Y, 0f);
+                        vertices[2].Position = new Vector3(-dist, 0f);
+                        vertices[3].Position = new Vector3(dist.Y, -dist.Y, 0f);
+                    }
+                    else
+                    {
+                        vertices[0].Position = new Vector3(dist, 0f);
+                        vertices[1].Position = new Vector3(dist.X, -dist.X, 0f);
+                        vertices[2].Position = new Vector3(-dist, 0f);
+                        vertices[3].Position = new Vector3(-dist.X, -dist.X, 0f);
+                    }
+
+                    //vertices[0].Position = new Vector3(-1f, -1f, 0f);
+                    //vertices[1].Position = new Vector3(1f, 1f, 0f);
+                    //vertices[2].Position = new Vector3(1f, -1f, 0f);
+
+                    for (int j = 0; j < vertices.Length; j++)
+                    {
+                        vertices[j].TextureCoordinate = new Vector2(vertices[j].Position.X / 2f + 0.5f, -vertices[j].Position.Y / 2f + 0.5f);
+                        if (InvertScreen > 0)
+                            vertices[j].TextureCoordinate *= -1;
+                        //if (InvertScreen > 0)
+                        //{
+                        //    vertices[0].TextureCoordinate = new Vector2(1f, 0f);
+                        //    vertices[1].TextureCoordinate = new Vector2(0f, 1f);
+                        //    vertices[2].TextureCoordinate = new Vector2(0f, 0f);
+                        //}
+                        //else
+                        //{
+                        //    vertices[0].TextureCoordinate = new Vector2(0f, 1f);
+                        //    vertices[1].TextureCoordinate = new Vector2(1f, 0f);
+                        //    vertices[2].TextureCoordinate = new Vector2(1f, 1f);
+                        //}
+                    }
+
+                    foreach (EffectPass pass in effect.CurrentTechnique.Passes)
+                    {
+                        pass.Apply();
+
+                        GraphicsDevice.DrawUserPrimitives<VertexPositionTexture>(PrimitiveType.TriangleStrip, vertices, 0, 2);
+                    }
+
+                    spriteBatch.Begin();
+                    float rot = MathHelper.PiOver2 + (float)Math.Atan2(dist.X * GraphicsDevice.Viewport.Width, dist.Y * GraphicsDevice.Viewport.Height);
+                    Vector2 origin = new Vector2(0.5f, 0.5f);
+                    Vector2 scale = new Vector2(GraphicsDevice.Viewport.Width + GraphicsDevice.Viewport.Height, GameData.SPLIT_HEIGHT);
+                    spriteBatch.Draw(Game1.whiteRect, GraphicsDevice.Viewport.Bounds.Center.ToVector2(), null, Color.Black, rot, origin, scale, SpriteEffects.None, 0f);
+                    spriteBatch.End();
+                }
+            }
             else
-                spriteBatch.Draw(screen, GraphicsDevice.Viewport.Bounds, Color.White);
+            {
+                spriteBatch.Begin();
+                spriteBatch.Draw(playerScreens[0], GraphicsDevice.Viewport.Bounds, null, Color.White, 0f, Vector2.Zero,
+                    InvertScreen > 0 ? SpriteEffects.FlipVertically | SpriteEffects.FlipHorizontally : SpriteEffects.None, 0f);
+                spriteBatch.End();
+            }
+
+#if DEBUG
+            spriteBatch.Begin();
+            for (int i = 0; i < GameData.numPlayers; i++)
+            {
+                spriteBatch.Draw(playerScreens[i], new Rectangle(GraphicsDevice.Viewport.Width / 10 * i, 0, GraphicsDevice.Viewport.Width / 10, GraphicsDevice.Viewport.Height / 10), Color.White);
+                spriteBatch.Draw(whiteRect, new Rectangle(GraphicsDevice.Viewport.Width / 10 * i, 0, 10, GraphicsDevice.Viewport.Height / 10), Color.Black);
+            }
             spriteBatch.End();
+#endif
         }
 
         //private void DrawCasters(LightArea lightArea, Vector2 averagePos)
