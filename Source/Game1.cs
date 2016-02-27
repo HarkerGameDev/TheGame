@@ -801,6 +801,7 @@ namespace Source
                     if (player.GrappleTarget != Vector2.Zero)
                     {
                         // TODO boost more for lower speeds and less for higher speeds
+                        // TODO fix when player mashes grapple to get super-speed
                         player.Velocity *= GameData.GRAPPLE_BOOST;
                         player.GrappleTarget = Vector2.Zero;
                     }

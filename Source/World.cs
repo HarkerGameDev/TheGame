@@ -28,6 +28,7 @@ namespace Source.Collisions
 
         public void Step(float deltaTime)
         {
+            // Handle particles
             for (int i = game.particles.Count - 1; i >= 0; i--)
             {
                 Particle part = game.particles[i];
@@ -48,48 +49,75 @@ namespace Source.Collisions
                 }
             }
 
+            // Handle drops
             for (int i = game.drops.Count - 1; i >= 0; i--)
             {
                 Drop drop = game.drops[i];
-                drop.LiveTime -= deltaTime;
-                if (drop.LiveTime < 0)
+
+                drop.Velocity.Y += GameData.GRAVITY * deltaTime;
+                drop.Move(deltaTime);
+                foreach (Body target in game.platforms)
                 {
-                    if (drop.Type == Drop.Types.Bomb)
+                    Vector2 translation = target.Intersects(drop);
+                    if (translation != Vector2.Zero)
                     {
-                        ApplyGravity(GameData.BOMB_FORCE, drop.Player, drop.Position, 1);
-                        foreach (Player player in game.players)
+                        drop.MoveByPosition(translation);
+                        drop.Velocity.X -= drop.Velocity.X * GameData.DROP_FRICTION * deltaTime;
+                        if (translation.Y == 0)
+                            drop.Velocity.X = 0;
+                        if (translation.X == 0)
+                            drop.Velocity.Y = 0;
+                    }
+                }
+
+                drop.LiveTime -= deltaTime;
+                switch (drop.Type)
+                {
+                    case Drop.Types.Bomb:
+                        if (drop.LiveTime < 0)
                         {
-                            if (player != drop.Player && (player.Position - drop.Position).LengthSquared() < GameData.STUN_RADIUS)
+                            ApplyImpulse(GameData.BOMB_FORCE, drop.Player, drop.Position);
+                            foreach (Player player in game.players)
                             {
-                                player.CurrentState = Player.State.Stunned;
-                                player.StunTime = GameData.STUN_TIME;
+                                if (player != drop.Player && (player.Position - drop.Position).LengthSquared() < GameData.STUN_RADIUS)
+                                {
+                                    player.CurrentState = Player.State.Stunned;
+                                    player.StunTime = GameData.STUN_TIME;
+                                }
+                            }
+                            game.drops.RemoveAt(i);
+                        }
+                        break;
+                    case Drop.Types.Singularity:
+                        if (drop.LiveTime < 0)
+                            game.drops.RemoveAt(i);
+                        else
+                            ApplyForce(-GameData.GRAVITY_FORCE, drop.Player, drop.Position, deltaTime);
+                        break;
+                    case Drop.Types.Trap:
+                        if (drop.LiveTime < 0)
+                        {
+                            ApplyImpulse(GameData.TRAP_FORCE, drop.Player, drop.Position);
+                            MakeParticles(drop.Position, drop.texture, GameData.TRAP_PARTICLES, 0, 0, drop.Color);
+                            game.drops.RemoveAt(i);
+                        }
+                        else
+                        {
+                            foreach (Player player in game.players)
+                            {
+                                if (player != drop.Player && player.Intersects(drop) != Vector2.Zero)
+                                {
+                                    player.CurrentState = Player.State.Stunned;
+                                    player.StunTime = GameData.STUN_TIME;
+                                    drop.LiveTime = 0;
+                                }
                             }
                         }
-                    }
-                    game.drops.RemoveAt(i);
-                }
-                else
-                {
-                    drop.Velocity.Y += GameData.GRAVITY * deltaTime;
-                    drop.Move(deltaTime);
-                    foreach (Body target in game.platforms)
-                    {
-                        Vector2 translation = target.Intersects(drop);
-                        if (translation != Vector2.Zero)
-                        {
-                            drop.MoveByPosition(translation);
-                            drop.Velocity.X -= drop.Velocity.X * GameData.DROP_FRICTION * deltaTime;
-                            if (translation.Y == 0)
-                                drop.Velocity.X = 0;
-                            if (translation.X == 0)
-                                drop.Velocity.Y = 0;
-                        }
-                    }
-                    if (drop.Type == Drop.Types.Singularity)
-                        ApplyGravity(-GameData.GRAVITY_FORCE, drop.Player, drop.Position, deltaTime);
+                        break;
                 }
             }
 
+            // Handle players and their projectiles
             int projStep = (int)Math.Ceiling(deltaTime * GameData.PROJ_SPEED / GameData.PROJ_WIDTH);
             float projDeltaTime = deltaTime / projStep;
             foreach (Player player in game.players)
@@ -199,6 +227,7 @@ namespace Source.Collisions
         /// <param name="color"></param>
         public void MakeParticles(Vector2 pos, Texture2D texture, int amount, int x, int y, Color color)
         {
+            // TODO make particles more general (ex: jetpack vs trap)
             for (int i = 0; i < amount; i++)
                 game.particles.Add(new Particle(pos, new Vector2(GameData.PARTICLE_WIDTH),
                     texture, 0f, rand(x, y, new Vector2(GameData.PARTICLE_X, GameData.PARTICLE_Y)), 0f, GameData.PARTICLE_LIFETIME, color));
@@ -213,19 +242,21 @@ namespace Source.Collisions
                 Vector2 translation = player.Intersects(platform);
                 if (translation != Vector2.Zero)
                 {
-                    if (player.CurrentState != Player.State.Stunned && player.CurrentState != Player.State.Flying)
+                    totalCollisions++;
+
+                    //if (Math.Abs(translation.X) > Math.Abs(translation.Y)/* && !player.WallAbove*/)
+                    //{
+                    //    player.CurrentState = Player.State.Climbing;
+                    //    //player.Velocity.Y = player.ActionTime > 0 ? -GameData.CLIMB_SPEED_FAST : -GameData.CLIMB_SPEED;
+                    //}
+                    //else if (player.CurrentState == Player.State.Climbing)
+                    //    player.CurrentState = Player.State.Walking;
+
+                    if (translation.Y == 0)    // Horizontal collision
                     {
-                        totalCollisions++;
-
-                        //if (Math.Abs(translation.X) > Math.Abs(translation.Y)/* && !player.WallAbove*/)
-                        //{
-                        //    player.CurrentState = Player.State.Climbing;
-                        //    //player.Velocity.Y = player.ActionTime > 0 ? -GameData.CLIMB_SPEED_FAST : -GameData.CLIMB_SPEED;
-                        //}
-                        //else if (player.CurrentState == Player.State.Climbing)
-                        //    player.CurrentState = Player.State.Walking;
-
-                        if (translation.Y == 0)    // Horizontal collision
+                        if (player.CurrentState == Player.State.Stunned)
+                            player.Velocity.X *= -1;
+                        else
                         {
                             player.Velocity.X = 0;
                             if (player.InAir && player.JumpTime <= 0)
@@ -239,7 +270,12 @@ namespace Source.Collisions
                                 player.WallJumpLeway = GameData.WALL_JUMP_LEWAY;
                             }
                         }
-                        else        // Vertical or diagonal collision
+                    }
+                    else        // Vertical or diagonal collision
+                    {
+                        if (player.CurrentState == Player.State.Stunned)
+                            player.Velocity.Y *= -1;
+                        else
                         {
                             player.Velocity.Y = 0;
                             if (translation.Y > 0 && player.InAir)
@@ -251,33 +287,33 @@ namespace Source.Collisions
                                 player.JumpsLeft = GameData.TOTAL_JUMPS;
                             }
                         }
-                        player.MoveByPosition(-translation);
                     }
-                    //else        // player is Slamming or Stunned
-                    //{
-                    //    if (platform.Rotation != 0)
-                    //    {
-                    //        MakeParticles(player.Position, platform, GameData.NUM_PART_FLOOR, 0, 1);
-                    //    }
-                    //    else
-                    //    {
-                    //        MakeParticles(player.Position, platform, GameData.NUM_PART_FLOOR, 0, 1);
-
-                    //        float newFloorX = platform.Position.X + player.Position.X;
-                    //        float sizeDiff = platform.Size.X / 2 + GameData.FLOOR_HOLE / 2;
-                    //        float halfWidth = platform.Size.X / 2 - GameData.FLOOR_HOLE / 2;
-                    //        float playerDist = player.Position.X - platform.Position.X;
-
-                    //        if (halfWidth + playerDist > GameData.MIN_FLOOR_WIDTH)
-                    //            game.platforms.Add(new Platform(platform.texture, new Vector2((newFloorX - sizeDiff) / 2, platform.Position.Y), halfWidth + playerDist));
-                    //        if (halfWidth - playerDist > GameData.MIN_FLOOR_WIDTH)
-                    //            game.platforms.Add(new Platform(platform.texture, new Vector2((newFloorX + sizeDiff) / 2, platform.Position.Y), halfWidth - playerDist));
-                    //    }
-
-                    //    game.platforms.Remove(platform);
-                    //    break;
-                    //}
+                    player.MoveByPosition(-translation);
                 }
+                //else        // player is Slamming or Stunned
+                //{
+                //    if (platform.Rotation != 0)
+                //    {
+                //        MakeParticles(player.Position, platform, GameData.NUM_PART_FLOOR, 0, 1);
+                //    }
+                //    else
+                //    {
+                //        MakeParticles(player.Position, platform, GameData.NUM_PART_FLOOR, 0, 1);
+
+                //        float newFloorX = platform.Position.X + player.Position.X;
+                //        float sizeDiff = platform.Size.X / 2 + GameData.FLOOR_HOLE / 2;
+                //        float halfWidth = platform.Size.X / 2 - GameData.FLOOR_HOLE / 2;
+                //        float playerDist = player.Position.X - platform.Position.X;
+
+                //        if (halfWidth + playerDist > GameData.MIN_FLOOR_WIDTH)
+                //            game.platforms.Add(new Platform(platform.texture, new Vector2((newFloorX - sizeDiff) / 2, platform.Position.Y), halfWidth + playerDist));
+                //        if (halfWidth - playerDist > GameData.MIN_FLOOR_WIDTH)
+                //            game.platforms.Add(new Platform(platform.texture, new Vector2((newFloorX + sizeDiff) / 2, platform.Position.Y), halfWidth - playerDist));
+                //    }
+
+                //    game.platforms.Remove(platform);
+                //    break;
+                //}
             }
 
 			if (player.Position.Y > BOTTOM) {  // bottom of the level
@@ -362,7 +398,33 @@ namespace Source.Collisions
             }
         }
 
-        private void ApplyGravity(float scale, Body player, Vector2 position, float deltaTime)
+        private void ApplyImpulse(float scale, Body player, Vector2 position)
+        {
+            foreach (Player body in game.players)
+            {
+                if (body != player)
+                {
+                    //Console.WriteLine(body.Velocity + "\t\t" + player.Velocity);
+                    Vector2 dist = body.Position - position;
+                    float length = dist.Length();
+                    if (length != 0)
+                    {
+                        Vector2 force = scale * dist / (length * length);
+                        if (force.Length() > GameData.MAX_FORCE)
+                        {
+                            force.Normalize();
+                            force *= GameData.MAX_FORCE;
+                            //Console.WriteLine("Applying impulse: " + force);
+                            body.Velocity = force; // 1/r for gravity
+                        }
+                        else
+                            body.Velocity += force;
+                    }
+                }
+            }
+        }
+
+        private void ApplyForce(float scale, Body player, Vector2 position, float deltaTime)
         {
             foreach (Particle part in game.particles)
             {

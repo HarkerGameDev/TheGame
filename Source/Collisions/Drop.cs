@@ -25,7 +25,7 @@ namespace Source.Collisions
         {
             Color = color;
             LiveTime = GameData.DROP_LIVE;
-            Velocity = player.Velocity + new Vector2(GameData.DROP_SPEED_X, GameData.DROP_SPEED_Y);
+            Velocity = player.Velocity * GameData.DROP_SCALE + new Vector2(GameData.DROP_SPEED_X, GameData.DROP_SPEED_Y);
             this.Type = type;
             this.Player = player;
         }

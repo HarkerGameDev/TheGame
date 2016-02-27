@@ -14,7 +14,7 @@ namespace Source
     internal static class GameData
     {
 #if DEBUG
-        public const int numPlayers = 1;
+        public const int numPlayers = 2;
         public const int CHARACTER = 1;
 #else
         public const int numPlayers = 2;            // number of players
@@ -58,14 +58,15 @@ namespace Source
         public const float PROJ_SPEED = 45f;    // speed of a projectile
         public const float PROJ_LIVE = 1.0f;     // lifetime of a projectile in s
 
-        public const float DROP_LIVE = 10f;      // lifetime of a drop
+        public const float DROP_SCALE = 0.4f;   // velocity scale of host when dropping a drop
+        public const float DROP_LIVE = 3f;      // lifetime of a drop
         public const float DROP_SPEED_X = 0f;   // initial x speed of drop
-        public const float DROP_SPEED_Y = -11f;  // initial y speed of drop
-        public const float DROP_FRICTION = 3f; // ratio of speed lost per second for drop
+        public const float DROP_SPEED_Y = -7f;  // initial y speed of drop
+        public const float DROP_FRICTION = 4.7f; // ratio of speed lost per second for drop
 
         public const float GRAVITY_FORCE = 112f;  // G (in physics) in essence
         public const float BOMB_FORCE = 150f;        // force in m/s when a bomb explodes
-        public const float MAX_FORCE = 30f;    // maximum (m/s^2)^2 for a gravity force
+        public const float MAX_FORCE = 35f;    // maximum (m/s^2)^2 for a gravity force
 
         public const float JUMP_SLOW = 0.85f;   // -- x velocity is scaled by this when jumping
         public const float OBSTACLE_SLOW = 0.2f;    // -- player speed is reduced to this ratio when an obstacle is hit incorrectly
@@ -98,7 +99,7 @@ namespace Source
         //public const int NUM_PART_FLOOR = 5;        // number of particles to spawn when slamming and a hole is made
         public const int NUM_PART_OBSTACLE = 3;     // number of particles to spawn when an obstacle is hit or destroyed
 
-        public const float STUN_TIME = 0.5f;    // time of stun
+        public const float STUN_TIME = 0.9f;    // time of stun
         public const float OBSTACLE_STUN = 0.5f;    // time of stun after vaulting off obstacle
         public const float OBSTACLE_HIT_STUN = 0.4f;    // time of stun after hitting an obstacle
         public const float STUN_RADIUS = 3.3f;    // radius within which a player will be stuned from an explosion (in m)
@@ -110,19 +111,21 @@ namespace Source
         public const float PLATFORM_DIST = 1.5f;    // distance from player to y center of platform
         public const float PLATFORM_WIDTH = 10f;    // width of platform
         public const float PLATFORM_HEIGHT = 1f;    // height of platform
-        public const float PLATFORM_COOLDOWN = 5f;  // cooldown for platform ability
-        public const float PLATFORM_LIFE = 1.7f;      // how long the platform lasts before despawning
+        public const float PLATFORM_COOLDOWN = 4f;  // cooldown for platform ability
+        public const float PLATFORM_LIFE = 2.2f;      // how long the platform lasts before despawning
         public const float INVERT_TIME = 10f;        // time during which controls will be inverted
-        public const float INVERT_COOLDOWN = 30f;   // cooldown for casting invert
+        public const float INVERT_COOLDOWN = 22f;   // cooldown for casting invert
 
         public const float GRAPPLE_HEIGHT = 3f;     // pixel height of grapple rope
         public const float MAX_GRAPPLE = 12f;       // maximum grapple distance (in m)
-        public const float GRAPPLE_ANGLE = -1f;     // direction height of grapple assuming horizontal direction of 1
+        public const float GRAPPLE_ANGLE = -1f;     // direction height of grapple assuming horizontal direction of +1
         public const float GRAPPLE_ELASTICITY = 4f;      // scale of elasticity, where higher values = more rigid
         public const float GRAPPLE_BOOST = 1.4f;      // boost in momentum after releasing a rope
         //public const float GRAPPLE_HELP = 10f;      // help to push player when no manual input
-        public const float GRAPPLE_HELP_MIN = 3f;  // minimum length of velocity while swinging
-        public const float TRAP_COOLDOWN = 1f;     // cooldown for dropping a trap
+        //public const float GRAPPLE_HELP_MIN = 3f;  // minimum length of velocity while swinging
+        public const float TRAP_COOLDOWN = 4f;     // cooldown for dropping a trap
+        public const float TRAP_FORCE = 90f;       // force when trap expires and explodes
+        public const int TRAP_PARTICLES = 20;    // number of particles when trap explodes
 
         public const float BLINK_COOLDOWN = 2.8f;     // cooldown for blink ability
         public const float BLINK_DIST = 14f;       // when blinking, player will move this many meters
