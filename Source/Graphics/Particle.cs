@@ -77,6 +77,7 @@ namespace Source.Graphics
                     break;
 
                 case Type.Texture:
+                    //Console.WriteLine("Part color: " + Color);
                     spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(Position), null, Color, Angle, new Vector2(texture.Width / 2.0f, texture.Height / 2.0f), ConvertUnits.ToDisplayUnits(Size) / new Vector2(texture.Width / 2.0f, texture.Height / 2.0f), SpriteEffects.None, 0f);
                     break;
             }

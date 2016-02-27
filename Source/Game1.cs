@@ -789,7 +789,7 @@ namespace Source
                             player.JetpackTime -= deltaTime;
                             int particles = (int)(Math.Truncate(prevTime / GameData.JETPACK_PARTICLES) - Math.Truncate(player.JetpackTime / GameData.JETPACK_PARTICLES));
                             //Console.WriteLine("Prev: {0}\tCurr: {1}", prevTime / GameData.JETPACK_PARTICLES, player.JetpackTime / GameData.JETPACK_PARTICLES);
-                            world.MakeParticles(player.Position, whiteRect, particles, 0, 1, Color.WhiteSmoke);
+                            world.MakeParticles(new Vector2(player.Position.X, player.Position.Y + player.Size.Y / 2f), whiteRect, particles, 0, 1, Color.WhiteSmoke);
                             player.Velocity.Y -= (player.Velocity.Y > 0 ? GameData.JETPACK_ACCEL_DOWN : GameData.JETPACK_ACCEL_UP) * deltaTime;
                             //Console.WriteLine("Jetpacking: {0} at time: {1}", player.Velocity.Y, player.JetpackTime);
                         }
@@ -1442,7 +1442,7 @@ namespace Source
 
 
             // Draw all particles and dead wall
-            spriteBatch.Begin(transformMatrix: view);
+            spriteBatch.Begin(transformMatrix: view, blendState: BlendState.NonPremultiplied);
             foreach (Particle part in particles)
                 part.Draw(spriteBatch);
             spriteBatch.End();

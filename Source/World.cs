@@ -32,6 +32,9 @@ namespace Source.Collisions
             {
                 Particle part = game.particles[i];
                 part.LiveTime -= deltaTime;
+                float alpha = part.LiveTime / GameData.PARTICLE_LIFETIME;
+                part.Color.A = (byte)(alpha * alpha * 256);
+                //Console.WriteLine("Alpha: " + part.Color.A);
                 if (part.LiveTime < 0)
                     game.particles.RemoveAt(i);
                 else if(part.type == Particle.Type.Texture)
