@@ -36,6 +36,7 @@ namespace Source.Collisions
         public float JetpackTime;
         public bool JetpackEnabled;
         public int JumpsLeft;
+        public List<Tuple<Vector2, Vector2>> PrevStates;     // Position, Velocity
 
         public Vector2 GrappleTarget;
         public float TargetRadius;
@@ -73,6 +74,7 @@ namespace Source.Collisions
             WallJumpLeway = 0;
             Flip = SpriteEffects.None;
 
+            PrevStates = new List<Tuple<Vector2, Vector2>>();
             Projectiles = new List<Projectile>();
             Velocity = Vector2.Zero;
         }

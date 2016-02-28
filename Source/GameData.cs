@@ -14,8 +14,8 @@ namespace Source
     internal static class GameData
     {
 #if DEBUG
-        public const int numPlayers = 2;
-        public const int CHARACTER = 1;
+        public const int numPlayers = 1;
+        public const int CHARACTER = 2;
 #else
         public const int numPlayers = 2;            // number of players
 #endif
@@ -129,6 +129,8 @@ namespace Source
 
         public const float BLINK_COOLDOWN = 2.8f;     // cooldown for blink ability
         public const float BLINK_DIST = 14f;       // when blinking, player will move this many meters
+        public const float TIMEWARP_TIME = 2f;      // how many seconds should be reversed
+        public const float TIMEWARP_COOLDOWN = 5f;  // cooldown for timewarp ability
 
         public const float JETPACK_ACCEL_UP = 15f + GRAVITY;  // m/s^2 -- upwards acceleration while jetpacking and going up
         public const float JETPACK_ACCEL_DOWN = 60f + GRAVITY;  // m/s^2 -- updwards acceleration while jetpacking and going down
@@ -221,7 +223,7 @@ namespace Source
             }
         }
 
-        public struct KeyboardControls : Controls
+        public class KeyboardControls : Controls
         {
             public bool Special1 { get { return game.ToggleKey(special1); } }
             public bool Special2 { get { return game.ToggleKey(special2); } }
@@ -262,7 +264,7 @@ namespace Source
             }
         }
 
-        public struct GamePadControls : Controls
+        public class GamePadControls : Controls
         {
             public bool Special1 { get { return game.ToggleButton(playerIndex, special1); } }
             public bool Special2 { get { return game.ToggleButton(playerIndex, special2); } }

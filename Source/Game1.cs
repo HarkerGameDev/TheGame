@@ -90,7 +90,7 @@ namespace Source
         int nativeScreenWidth;
         int nativeScreenHeight;
 
-        List<float> times;
+        List<float> simTimes;
         List<GameData.ControlKey> keys;
         //int randSeed, randLevelSeed;
         bool prevDown = false;
@@ -102,6 +102,7 @@ namespace Source
         int currentReplay = 0;
 
         float InvertScreen = -1;
+        List<float> times;
 
         public enum State
         {
@@ -154,8 +155,9 @@ namespace Source
             //randLevelSeed = GameData.GetSeed;
 
             // Set variables
-            times = new List<float>();
+            simTimes = new List<float>();
             keys = new List<GameData.ControlKey>();
+            times = new List<float>();
 
             // Initialize previous keyboard and gamepad states
             prevKeyState = new KeyboardState();
@@ -211,9 +213,9 @@ namespace Source
                 //randLevelSeed = file.ReadInt32();
                 while (file.BaseStream.Position != file.BaseStream.Length)
                 {
-                    times.Add(file.ReadSingle());
+                    simTimes.Add(file.ReadSingle());
                     keys.Add((GameData.ControlKey)file.ReadByte());
-                    Console.WriteLine("Loading: " + times[times.Count - 1]);
+                    Console.WriteLine("Loading: " + simTimes[simTimes.Count - 1]);
                 }
                 Console.WriteLine("Loaded replay" + replay + ".rep");
                 //Console.WriteLine("Loading\trandSeed: " + randSeed + "\trandLevelSeed: " + randLevelSeed);
@@ -253,9 +255,9 @@ namespace Source
                     BinaryWriter file = new BinaryWriter(container.OpenFile(filename, FileMode.Create));
                     //file.Write(randSeed);
                     //file.Write(randLevelSeed);
-                    for (int i = 0; i < times.Count; i++)
+                    for (int i = 0; i < simTimes.Count; i++)
                     {
-                        file.Write(times[i]);
+                        file.Write(simTimes[i]);
                         file.Write((byte)keys[i]);
                     }
 
@@ -283,7 +285,7 @@ namespace Source
 
             if (!simulating)
             {
-                times.Clear();
+                simTimes.Clear();
                 keys.Clear();
             }
             else
@@ -538,11 +540,11 @@ namespace Source
 
                         if (simulating)
                         {
-                            while (simIndex < times.Count && times[simIndex] - totalTime <= 0)
+                            while (simIndex < simTimes.Count && simTimes[simIndex] - totalTime <= 0)
                             {
                                 //deltaTime += diff;
-                                Console.Write("Sim: " + totalTime + "\t\tReplay: " + times[simIndex] +
-                                    "\t\tDelta: " + deltaTime + "\t\tDiff: " + (times[simIndex] - totalTime) + "\t\t");
+                                Console.Write("Sim: " + totalTime + "\t\tReplay: " + simTimes[simIndex] +
+                                    "\t\tDelta: " + deltaTime + "\t\tDiff: " + (simTimes[simIndex] - totalTime) + "\t\t");
                                 GameData.SimulatedControls control = (GameData.SimulatedControls)playerControls[0];
                                 GameData.ControlKey key = keys[simIndex];
                                 switch (key)
@@ -588,6 +590,11 @@ namespace Source
                         InvertScreen -= deltaTime;
                         totalTime += deltaTime;
                         world.Step(deltaTime);
+
+                        // TODO store previous locations of players
+                        foreach (Player player in players)
+                            player.PrevStates.Add(Tuple.Create(player.Position, player.Velocity));
+                        times.Add(totalTime);
                     }
                     if (ToggleKey(Keys.Space))
                         state = State.Paused;
@@ -682,40 +689,40 @@ namespace Source
             {
                 if (controls.Special1)
                 {
-                    times.Add(totalTime);
+                    simTimes.Add(totalTime);
                     keys.Add(GameData.ControlKey.Special1);
                 }
                 if (controls.Special2)
                 {
-                    times.Add(totalTime);
+                    simTimes.Add(totalTime);
                     keys.Add(GameData.ControlKey.Special2);
                 }
                 if (controls.Special3)
                 {
-                    times.Add(totalTime);
+                    simTimes.Add(totalTime);
                     keys.Add(GameData.ControlKey.Special3);
                 }
                 if (controls.Down != prevDown)
                 {
-                    times.Add(totalTime);
+                    simTimes.Add(totalTime);
                     prevDown = !prevDown;
                     keys.Add(GameData.ControlKey.Down);
                 }
                 if (controls.JumpHeld != prevJumpHeld)
                 {
-                    times.Add(totalTime);
+                    simTimes.Add(totalTime);
                     prevJumpHeld = !prevJumpHeld;
                     keys.Add(GameData.ControlKey.JumpHeld);
                 }
                 if (controls.Left != prevLeft)
                 {
-                    times.Add(totalTime);
+                    simTimes.Add(totalTime);
                     prevLeft = !prevLeft;
                     keys.Add(GameData.ControlKey.Left);
                 }
                 if (controls.Right != prevRight)
                 {
-                    times.Add(totalTime);
+                    simTimes.Add(totalTime);
                     prevRight = !prevRight;
                     keys.Add(GameData.ControlKey.Right);
                 }
@@ -827,6 +834,23 @@ namespace Source
                         case Character.AbilityTwo.Trap:
                             player.AbilityTwoTime = GameData.TRAP_COOLDOWN;
                             drops.Add(new Drop(player, whiteRect, player.Position, 1f, Drop.Types.Trap, Color.Red));
+                            break;
+                        case Character.AbilityTwo.Timewarp:
+                            player.AbilityTwoTime = GameData.TIMEWARP_COOLDOWN;
+                            int i = times.Count - 1;
+                            while (i >= 0 && times[i] + GameData.TIMEWARP_TIME >= totalTime)
+                                i--;
+                            Console.WriteLine("Found time: {0}\tCurrent time: {1}", times[i], totalTime);
+                            if (i >= 0)
+                            {
+                                // TODO animate the transition for super-awesome effect
+                                foreach (Player target in players)
+                                {
+                                    Tuple<Vector2, Vector2> state = target.PrevStates[i];
+                                    target.MoveToPosition(state.Item1);
+                                    target.Velocity = state.Item2;
+                                }
+                            }
                             break;
                     }
                 }
