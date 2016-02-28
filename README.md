@@ -28,6 +28,9 @@ git clone https://github.com/HarkerGameDev/TheGame.git
 ## Running on mac
 * Somehow managed to fix the god-awful Mac issues based on [this link](https://github.com/mono/MonoGame/issues/3790#issuecomment-128841617)
 
+## A note about mac
+* As of the current version of the mono framework, monogame on mac cannot read the generic file types like spritefonts that the windows version uses. This means that when any content is added to the game, a built .xnb file must be added to the mac content folder. I understand this is ugly, and I hate just as much as the next person, but as of right now that is all we can do.
+
 ## Adding content
 * Make a change
 * *TEST IT*

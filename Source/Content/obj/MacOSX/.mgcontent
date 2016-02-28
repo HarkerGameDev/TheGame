@@ -4,10 +4,10 @@
   <Platform>MacOSX</Platform>
   <Config />
   <SourceFiles>
-    <File>C:/Users/Nikita/Dropbox/Documents/Monogame Projects/TheGame/Source/Content/Fonts/Score.spritefont</File>
+    <File>../../Fonts/Score.spritefont</File>
     <File>C:/Users/Nikita/Dropbox/Documents/Monogame Projects/TheGame/Source/Content/Fonts/ScoreBig.spritefont</File>
     <File>C:/Users/Nikita/Dropbox/Documents/Monogame Projects/TheGame/Source/Content/Art/GreenDude.png</File>
-    <File>C:/Users/Nikita/Dropbox/Documents/Monogame Projects/TheGame/Source/Content/Fonts/Segoe_UI_15_Bold.spritefont</File>
+    <File>../../../../Mac/Content/Fonts/Segoe_UI_15_Bold.spritefont</File>
     <File>C:/Users/Nikita/Dropbox/Documents/Monogame Projects/TheGame/Source/Content/Fonts/Segoe_UI_9_Bold.spritefont</File>
     <File>C:/Users/Nikita/Dropbox/Documents/Monogame Projects/TheGame/Source/Content/Fonts/Segoe_UI_30_Bold.spritefont</File>
     <File>C:/Users/Nikita/Dropbox/Documents/Monogame Projects/TheGame/Source/Content/Effects/reductionEffect.fx</File>

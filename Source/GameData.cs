@@ -11,7 +11,7 @@ using Source.Collisions;
 
 namespace Source
 {
-    internal static class GameData
+    public static class GameData
     {
 #if DEBUG
         public const int numPlayers = 2;

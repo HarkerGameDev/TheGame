@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework;
 
 namespace Source.Collisions
 {
-    static class ConvertUnits
+    public static class ConvertUnits
     {
         private static float Ratio;
 
