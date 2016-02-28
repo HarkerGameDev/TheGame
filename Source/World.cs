@@ -191,16 +191,57 @@ namespace Source.Collisions
         private bool CalculateProjectile(Player player, float deltaTime, int projIndex)
         {
             Projectile proj = player.Projectiles[projIndex];
+            switch (proj.Type)
+            {
+                case Projectile.Types.Rocket:
+                    float prevTime = proj.LiveTime;
+                    proj.LiveTime -= deltaTime;
+                    proj.Velocity.Y += GameData.ROCKET_GRAVITY * deltaTime;
+                    int particles = (int)(Math.Truncate(prevTime / GameData.ROCKET_PARTICLES) - Math.Truncate(proj.LiveTime / GameData.ROCKET_PARTICLES));
+                    MakeParticles(new Vector2(proj.Position.X - proj.Size.X / 2f, proj.Position.Y), Game1.whiteRect, particles, 0, 1, Color.WhiteSmoke);
+                    break;
+                default:
+                    proj.LiveTime -= deltaTime;
+                    break;
+            }
             proj.Move(deltaTime);
-            if (proj.LiveTime > GameData.PROJ_LIVE)
+
+            if (proj.LiveTime < 0)
             {
                 player.Projectiles.RemoveAt(projIndex);
                 return false;
+            }
+
+            foreach (Player target in game.players)
+            {
+                if (target != player && proj.Intersects(target) != Vector2.Zero)
+                {
+                    switch (proj.Type)
+                    {
+                        case Projectile.Types.Rocket:
+                            ApplyImpulse(GameData.ROCKET_FORCE, player, proj.Position);
+                            MakeParticles(proj.Position, Game1.whiteRect, GameData.ROCKET_EXPLODE_PART, 0, 0, Color.Firebrick);
+                            target.StunTime = GameData.STUN_TIME;
+                            target.CurrentState = Player.State.Stunned;
+                            break;
+                    }
+
+                    player.Projectiles.RemoveAt(projIndex);
+                    return false;
+                }
             }
             foreach (Platform platform in game.platforms)
             {
                 if (proj.Intersects(platform) != Vector2.Zero)
                 {
+                    switch (proj.Type)
+                    {
+                        case Projectile.Types.Rocket:
+                            ApplyImpulse(GameData.ROCKET_FORCE, player, proj.Position);
+                            MakeParticles(proj.Position, Game1.whiteRect, GameData.ROCKET_EXPLODE_PART, 0, 0, Color.Firebrick);
+                            break;
+                    }
+
                     player.Projectiles.RemoveAt(projIndex);
                     return false;
                 }

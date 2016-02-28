@@ -21,19 +21,14 @@ namespace Source.Collisions
             Rocket, Hook, Boomerang
         }
 
-        public Projectile(Texture2D texture, Vector2 position, Color color, Types type)
+        public Projectile(Texture2D texture, Vector2 position, Color color, Types type, Vector2 velocity)
             : base(texture, position, new Vector2(GameData.PROJ_WIDTH, GameData.PROJ_HEIGHT))
         {
             this.Color = color;
             Type = type;
+            Velocity = velocity;
 
-            Velocity = new Vector2(GameData.PROJ_SPEED * (float)Math.Cos(Rotation), GameData.PROJ_SPEED * (float)Math.Sin(Rotation));
-            LiveTime = 0f;
-        }
-
-        public override void Move(float deltaTime) {
-            base.Move(deltaTime);
-            LiveTime += deltaTime;
+            LiveTime = GameData.PROJ_LIVE;
         }
     }
 }

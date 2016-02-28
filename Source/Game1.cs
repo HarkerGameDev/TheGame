@@ -840,17 +840,27 @@ namespace Source
                             int i = times.Count - 1;
                             while (i >= 0 && times[i] + GameData.TIMEWARP_TIME >= totalTime)
                                 i--;
-                            Console.WriteLine("Found time: {0}\tCurrent time: {1}", times[i], totalTime);
+                            //Console.WriteLine("Found time: {0}\tCurrent time: {1}", times[i], totalTime);
                             if (i >= 0)
                             {
                                 // TODO animate the transition for super-awesome effect
                                 foreach (Player target in players)
                                 {
-                                    Tuple<Vector2, Vector2> state = target.PrevStates[i];
-                                    target.MoveToPosition(state.Item1);
-                                    target.Velocity = state.Item2;
+                                    if (target != player)
+                                    {
+                                        Tuple<Vector2, Vector2> state = target.PrevStates[i];
+                                        target.MoveToPosition(state.Item1);
+                                        target.Velocity = state.Item2;
+                                    }
                                 }
                             }
+                            break;
+                        case Character.AbilityTwo.Rocket:
+                            // TODO tweak rocket so it's better
+                            player.AbilityTwoTime = GameData.ROCKET_COOLDOWN;
+                            Vector2 vel = new Vector2(player.FacingRight ? GameData.ROCKET_X : -GameData.ROCKET_X, -GameData.ROCKET_Y);
+                            vel += player.Velocity * GameData.ROCKET_SCALE;
+                            player.Projectiles.Add(new Projectile(whiteRect, player.Position, Color.DarkOliveGreen, Projectile.Types.Rocket, vel));
                             break;
                     }
                 }

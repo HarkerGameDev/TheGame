@@ -14,8 +14,7 @@ namespace Source
     internal static class GameData
     {
 #if DEBUG
-        public const int numPlayers = 1;
-        public const int CHARACTER = 2;
+        public const int numPlayers = 2;
 #else
         public const int numPlayers = 2;            // number of players
 #endif
@@ -56,7 +55,7 @@ namespace Source
         public const float PROJ_WIDTH = 1f;     // width of a projectile in m
         public const float PROJ_HEIGHT = 0.25f; // height of a projectile in m
         public const float PROJ_SPEED = 45f;    // speed of a projectile
-        public const float PROJ_LIVE = 1.0f;     // lifetime of a projectile in s
+        public const float PROJ_LIVE = 3.0f;     // lifetime of a projectile in s
 
         public const float DROP_SCALE = 0.4f;   // velocity scale of host when dropping a drop
         public const float DROP_LIVE = 3f;      // lifetime of a drop
@@ -108,6 +107,10 @@ namespace Source
         public const float BUTTON_HEIGHT = 0.12f;    // height of button in proportion
 
         // Character constants
+#if DEBUG
+        public const int CHARACTER = 3;
+#endif
+
         public const float PLATFORM_DIST = 1.5f;    // distance from player to y center of platform
         public const float PLATFORM_WIDTH = 10f;    // width of platform
         public const float PLATFORM_HEIGHT = 1f;    // height of platform
@@ -136,6 +139,14 @@ namespace Source
         public const float JETPACK_ACCEL_DOWN = 60f + GRAVITY;  // m/s^2 -- updwards acceleration while jetpacking and going down
         public const float JETPACK_TIME = 0.9f; // jetpack lasts for this long without touching ground
         public const float JETPACK_PARTICLES = 1 / 40f; // number of particles spawned by jetpack per second
+        public const float ROCKET_COOLDOWN = 6f;    // cooldown for rocket explosive ability
+        public const float ROCKET_X = 25f;          // initial x velocity of rocket (w/o player)
+        public const float ROCKET_Y = 3f;          // initial y velocity of rocket (w/o player)
+        public const float ROCKET_SCALE = 0.2f;     // scale of player's velocity in rocket when firing
+        public const float ROCKET_GRAVITY = 10f;    // gravity for rocket
+        public const float ROCKET_PARTICLES = 1 / 60f; // number of particles spawned by rocket per second
+        public const int ROCKET_EXPLODE_PART = 20; // number of particles when rocket explodes
+        public const float ROCKET_FORCE = 130f;    // force when rocket hits something and explodes
 
         public const int TOTAL_JUMPS = 3;       // number jumps the acrobat can do in total (including intial jump)
         public const float AIR_JUMP_SPEED = JUMP_SPEED + 4f;    // velocity of jump when acrobat
