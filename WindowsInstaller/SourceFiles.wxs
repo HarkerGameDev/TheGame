@@ -32,6 +32,9 @@
             <Component Id="cmp43B6E20384786FCCC834919101544DDE" Guid="*">
                 <File Id="fil0658C12B126BC5169E73C289D2BC5FBB" KeyPath="yes" Source="$(var.SourceFilesDir)\Game.vshost.exe.config" />
             </Component>
+            <Component Id="cmpD672AC6093B252514879260B93A5A63B" Guid="*">
+                <File Id="fil6B9D8B4A55A053ABE8EA440DBA65873F" KeyPath="yes" Source="$(var.SourceFilesDir)\Game.vshost.exe.manifest" />
+            </Component>
             <Component Id="cmp4E757CE1E25D9772FA17C804B3F76DD6" Guid="*">
                 <File Id="filE296055AE9DC681223CE83B5A75FED17" KeyPath="yes" Source="$(var.SourceFilesDir)\GameUILibrary.dll" />
             </Component>
@@ -164,6 +167,9 @@
                 <Component Id="cmpBC7BE241DEF2F71DF1E498CEF8CC0EA9" Guid="*">
                     <File Id="fil109BFC8FEA5E27904842849C692B0389" KeyPath="yes" Source="$(var.SourceFilesDir)\Levels\level0" />
                 </Component>
+                <Component Id="cmp85F5441A1D91B42317F2E88AB338FC05" Guid="*">
+                    <File Id="fil89ECA6C594017E31CEB09E0FA9B0C660" KeyPath="yes" Source="$(var.SourceFilesDir)\Levels\level1" />
+                </Component>
             </Directory>
         </DirectoryRef>
     </Fragment>
@@ -179,6 +185,7 @@
             <ComponentRef Id="cmpA1E5623C69D1EE284019560C04CCEDA9" />
             <ComponentRef Id="cmp092292E169838EB08640D820B53C5FFB" />
             <ComponentRef Id="cmp43B6E20384786FCCC834919101544DDE" />
+            <ComponentRef Id="cmpD672AC6093B252514879260B93A5A63B" />
             <ComponentRef Id="cmp4E757CE1E25D9772FA17C804B3F76DD6" />
             <ComponentRef Id="cmpB4FDB10DC123A4E9B60D698EFDE83DA7" />
             <ComponentRef Id="cmpA4E2315F34E39171C2343F76EA85A474" />
@@ -218,6 +225,7 @@
             <ComponentRef Id="cmpAA06DA05C7471BB75916F74F71D8607D" />
             <ComponentRef Id="cmp6FD0F26434D86EBC405D5931314E75EF" />
             <ComponentRef Id="cmpBC7BE241DEF2F71DF1E498CEF8CC0EA9" />
+            <ComponentRef Id="cmp85F5441A1D91B42317F2E88AB338FC05" />
         </ComponentGroup>
     </Fragment>
 </Wix>
