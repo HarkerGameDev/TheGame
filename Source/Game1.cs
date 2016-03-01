@@ -840,9 +840,9 @@ namespace Source
                             int i = times.Count - 1;
                             while (i >= 0 && times[i] + GameData.TIMEWARP_TIME >= totalTime)
                                 i--;
-                            //Console.WriteLine("Found time: {0}\tCurrent time: {1}", times[i], totalTime);
                             if (i >= 0)
                             {
+                                Console.WriteLine("Found time: {0}\tCurrent time: {1}", times[i], totalTime);
                                 // TODO animate the transition for super-awesome effect
                                 foreach (Player target in players)
                                 {
@@ -861,6 +861,12 @@ namespace Source
                             Vector2 vel = new Vector2(player.FacingRight ? GameData.ROCKET_X : -GameData.ROCKET_X, -GameData.ROCKET_Y);
                             vel += player.Velocity * GameData.ROCKET_SCALE;
                             player.Projectiles.Add(new Projectile(whiteRect, player.Position, Color.DarkOliveGreen, Projectile.Types.Rocket, vel));
+                            break;
+                        case Character.AbilityTwo.Boomerang:
+                            player.AbilityTwoTime = GameData.BOOMERANG_COOLDOWN;
+                            vel = new Vector2(player.FacingRight ? GameData.BOOMERANG_X : -GameData.BOOMERANG_X, -GameData.BOOMERANG_Y);
+                            vel += player.Velocity * GameData.BOOMERANG_SCALE;
+                            player.Projectiles.Add(new Projectile(whiteRect, player.Position, Color.YellowGreen, Projectile.Types.Boomerang, vel));
                             break;
                     }
                 }

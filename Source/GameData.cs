@@ -55,7 +55,7 @@ namespace Source
         public const float PROJ_WIDTH = 1f;     // width of a projectile in m
         public const float PROJ_HEIGHT = 0.25f; // height of a projectile in m
         public const float PROJ_SPEED = 45f;    // speed of a projectile
-        public const float PROJ_LIVE = 3.0f;     // lifetime of a projectile in s
+        public const float PROJ_LIVE = 20.0f;     // lifetime of a projectile in s
 
         public const float DROP_SCALE = 0.4f;   // velocity scale of host when dropping a drop
         public const float DROP_LIVE = 3f;      // lifetime of a drop
@@ -65,7 +65,6 @@ namespace Source
 
         public const float GRAVITY_FORCE = 112f;  // G (in physics) in essence
         public const float BOMB_FORCE = 150f;        // force in m/s when a bomb explodes
-        public const float MAX_FORCE = 35f;    // maximum (m/s^2)^2 for a gravity force
 
         public const float JUMP_SLOW = 0.85f;   // -- x velocity is scaled by this when jumping
         public const float OBSTACLE_SLOW = 0.2f;    // -- player speed is reduced to this ratio when an obstacle is hit incorrectly
@@ -108,7 +107,7 @@ namespace Source
 
         // Character constants
 #if DEBUG
-        public const int CHARACTER = 3;
+        public const int CHARACTER = 4;
 #endif
 
         public const float PLATFORM_DIST = 1.5f;    // distance from player to y center of platform
@@ -139,17 +138,27 @@ namespace Source
         public const float JETPACK_ACCEL_DOWN = 60f + GRAVITY;  // m/s^2 -- updwards acceleration while jetpacking and going down
         public const float JETPACK_TIME = 0.9f; // jetpack lasts for this long without touching ground
         public const float JETPACK_PARTICLES = 1 / 40f; // number of particles spawned by jetpack per second
-        public const float ROCKET_COOLDOWN = 6f;    // cooldown for rocket explosive ability
+        public const float ROCKET_COOLDOWN = 4f;    // cooldown for rocket explosive ability
         public const float ROCKET_X = 25f;          // initial x velocity of rocket (w/o player)
         public const float ROCKET_Y = 3f;          // initial y velocity of rocket (w/o player)
-        public const float ROCKET_SCALE = 0.2f;     // scale of player's velocity in rocket when firing
+        public const float ROCKET_SCALE = 0.3f;     // scale of player's velocity in rocket when firing
         public const float ROCKET_GRAVITY = 10f;    // gravity for rocket
         public const float ROCKET_PARTICLES = 1 / 60f; // number of particles spawned by rocket per second
         public const int ROCKET_EXPLODE_PART = 20; // number of particles when rocket explodes
         public const float ROCKET_FORCE = 130f;    // force when rocket hits something and explodes
 
-        public const int TOTAL_JUMPS = 3;       // number jumps the acrobat can do in total (including intial jump)
-        public const float AIR_JUMP_SPEED = JUMP_SPEED + 4f;    // velocity of jump when acrobat
+        public const int TOTAL_JUMPS = 3;       // number of jumps the acrobat can do in total (including intial jump)
+        public const float AIR_JUMP_SPEED = JUMP_SPEED + 4f;    // velocity of jump when acrobat jumping in air
+        public const float BOOMERANG_COOLDOWN = 6f;    // cooldown for boomerang throw ability
+        public const float BOOMERANG_X = 20f;          // initial x velocity of boomerang (w/o player)
+        public const float BOOMERANG_Y = 18f;          // initial y velocity of boomerang (w/o player)
+        public const float BOOMERANG_SCALE = 0.1f;     // scale of player's velocity in boomerang when throwing
+        public const float BOOMERANG_ATTRACT = 90;    // attraction of boomerang back to player (constant with regards to distance)
+        //public const float BOOMERANG_GRAVITY = 1f;    // gravity for boomerang
+        public const float BOOMERANG_FORCE = 580f;    // force with which boomerang pulls other things inside
+        public const float BOOMERANG_ANTIGRAV = 7f;    // m radius after which player is "sucked in" and loses all control
+        public const float MAX_FORCE = 105f;        // maximum (m/s^2)^2 for a gravity force
+        public const float BOOMERANG_LIFE_CUTOFF = PROJ_LIVE - 1f;  // leway time during which boomerang is leaving player's hands
 
         //public const int NUM_WORLDS = 3;    // number of worlds to load
         // format of WORLD_LAYERS is:

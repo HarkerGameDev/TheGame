@@ -200,6 +200,19 @@ namespace Source.Collisions
                     int particles = (int)(Math.Truncate(prevTime / GameData.ROCKET_PARTICLES) - Math.Truncate(proj.LiveTime / GameData.ROCKET_PARTICLES));
                     MakeParticles(new Vector2(proj.Position.X - proj.Size.X / 2f, proj.Position.Y), Game1.whiteRect, particles, 0, 1, Color.WhiteSmoke);
                     break;
+                case Projectile.Types.Boomerang:
+                    proj.LiveTime -= deltaTime;
+                    Vector2 dist = proj.Position - player.Position;
+                    if (dist != Vector2.Zero)
+                    {
+                        float radius = dist.Length();
+                        dist /= radius;
+                        //proj.Velocity.Y += GameData.BOOMERANG_GRAVITY * deltaTime * radius;
+                        proj.Velocity -= dist * GameData.BOOMERANG_ATTRACT * deltaTime / radius;
+                        //Console.WriteLine("Proj Velocity: {0}", proj.Velocity);
+                        ApplyForce(-GameData.BOOMERANG_FORCE, player, proj.Position, deltaTime);
+                    }
+                    break;
                 default:
                     proj.LiveTime -= deltaTime;
                     break;
@@ -214,20 +227,31 @@ namespace Source.Collisions
 
             foreach (Player target in game.players)
             {
-                if (target != player && proj.Intersects(target) != Vector2.Zero)
+                if (proj.Intersects(target) != Vector2.Zero)
                 {
-                    switch (proj.Type)
+                    if (proj.Type == Projectile.Types.Boomerang)
                     {
-                        case Projectile.Types.Rocket:
-                            ApplyImpulse(GameData.ROCKET_FORCE, player, proj.Position);
-                            MakeParticles(proj.Position, Game1.whiteRect, GameData.ROCKET_EXPLODE_PART, 0, 0, Color.Firebrick);
-                            target.StunTime = GameData.STUN_TIME;
-                            target.CurrentState = Player.State.Stunned;
-                            break;
+                        if (target == player && proj.LiveTime < GameData.BOOMERANG_LIFE_CUTOFF)
+                        {
+                            player.Projectiles.RemoveAt(projIndex);
+                            player.AbilityTwoTime = 0;
+                            return false;
+                        }
                     }
-
-                    player.Projectiles.RemoveAt(projIndex);
-                    return false;
+                    else if (target != player)
+                    {
+                        switch (proj.Type)
+                        {
+                            case Projectile.Types.Rocket:
+                                ApplyImpulse(GameData.ROCKET_FORCE, player, proj.Position);
+                                MakeParticles(proj.Position, Game1.whiteRect, GameData.ROCKET_EXPLODE_PART, 0, 0, Color.Firebrick);
+                                target.StunTime = GameData.STUN_TIME;
+                                target.CurrentState = Player.State.Stunned;
+                                break;
+                        }
+                        player.Projectiles.RemoveAt(projIndex);
+                        return false;
+                    }
                 }
             }
             foreach (Platform platform in game.platforms)
@@ -441,6 +465,7 @@ namespace Source.Collisions
 
         private void ApplyImpulse(float scale, Body player, Vector2 position)
         {
+            // Impulse drops off as 1/r
             foreach (Player body in game.players)
             {
                 if (body != player)
@@ -467,6 +492,7 @@ namespace Source.Collisions
 
         private void ApplyForce(float scale, Body player, Vector2 position, float deltaTime)
         {
+            // Force drops off as 1/r for objects and 1/r^2 for players
             foreach (Particle part in game.particles)
             {
                 Vector2 dist = part.Position - position;
@@ -479,7 +505,7 @@ namespace Source.Collisions
                         force.Normalize();
                         force *= GameData.MAX_FORCE;
                     }
-                    part.Velocity += force * deltaTime; // 1/r for gravity
+                    part.Velocity += force * deltaTime;
                 }
             }
             foreach (Drop drop in game.drops)
@@ -494,7 +520,7 @@ namespace Source.Collisions
                         force.Normalize();
                         force *= GameData.MAX_FORCE;
                     }
-                    drop.Velocity += force * deltaTime; // 1/r for gravity
+                    drop.Velocity += force * deltaTime;
                 }
             }
             foreach (Player body in game.players)
@@ -512,8 +538,17 @@ namespace Source.Collisions
                             force.Normalize();
                             force *= GameData.MAX_FORCE;
                         }
-                        //Console.WriteLine("Applying force: " + force);
+                        Console.WriteLine("Applying force: " + force);
                         body.Velocity += force * deltaTime; // 1/r for gravity
+
+                        // User basically loses control if they are closer than the threshold
+                        if (length < GameData.BOOMERANG_ANTIGRAV)
+                        {
+                            if (force.X * body.Velocity.X > 0)      // Velocity.X and force are in same direction
+                                body.TargetVelocity = body.Velocity.X;
+                            body.Velocity.Y -= GameData.GRAVITY * deltaTime;
+                        }
+                        //Console.WriteLine("TargetVelocity: {0}", body.TargetVelocity);
                     }
                 }
             }
