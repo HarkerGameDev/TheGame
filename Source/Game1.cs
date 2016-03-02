@@ -13,6 +13,7 @@ using Microsoft.Xna.Framework.GamerServices;
 using Source.Collisions;
 using Source.Graphics;
 
+using GameUILibrary;
 using EmptyKeys.UserInterface;
 using EmptyKeys.UserInterface.Generated;
 
@@ -85,6 +86,7 @@ namespace Source
         List<Button> optionsMenu;
         List<Button> controlsMenu;
 
+        BasicUIViewModel viewModel;
         MainMenu mainMenu;
 
         int nativeScreenWidth;
@@ -174,7 +176,7 @@ namespace Source
             {
                 playerControls = new GameData.Controls[] {
                                                        new GameData.KeyboardControls(this, Keys.OemComma, Keys.OemPeriod, Keys.OemQuestion, Keys.Left, Keys.Right, Keys.Up, Keys.Down),
-                                                       new GameData.KeyboardControls(this, Keys.D1, Keys.D2, Keys.D3, Keys.A, Keys.D, Keys.W, Keys.S),
+                                                       new GameData.KeyboardControls(this, Keys.LeftControl, Keys.LeftShift, Keys.Z, Keys.A, Keys.D, Keys.W, Keys.S),
                                                        new GameData.GamePadControls(this, PlayerIndex.One, Buttons.X, Buttons.B, Buttons.Y, Buttons.LeftThumbstickLeft, Buttons.LeftThumbstickRight, Buttons.A, Buttons.RightTrigger)
                                                   };
             }
@@ -296,6 +298,30 @@ namespace Source
             }
         }
 
+        private void LoadUI()
+        {
+            SpriteFont font = Content.Load<SpriteFont>("Fonts/Segoe_UI_15_Bold");
+            FontManager.DefaultFont = Engine.Instance.Renderer.CreateFont(font);
+
+            mainMenu = new MainMenu(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
+
+            viewModel = new BasicUIViewModel();
+            mainMenu.DataContext = viewModel;
+
+            FontManager.Instance.LoadFonts(Content, "Fonts");
+
+            EmptyKeys.UserInterface.Input.RelayCommand command = new EmptyKeys.UserInterface.Input.RelayCommand(new Action<object>(ExitEvent));
+            EmptyKeys.UserInterface.Input.KeyBinding keyBinding = new EmptyKeys.UserInterface.Input.KeyBinding(command, EmptyKeys.UserInterface.Input.KeyCode.Escape, EmptyKeys.UserInterface.Input.ModifierKeys.None);
+            mainMenu.InputBindings.Add(keyBinding);
+        }
+
+        private void ExitEvent(object obj)
+        {
+            Exit();
+        }
+
+
+
         /// <summary>
         /// LoadContent will be called once per game and is the place to load
         /// all of your content.
@@ -305,16 +331,12 @@ namespace Source
             Content.RootDirectory = "Content";
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
+            LoadUI();
+
             // Initialize screen render target
             playerScreens = new RenderTarget2D[GameData.numPlayers];
             for (int i=0; i<GameData.numPlayers; i++)
                 playerScreens[i] = new RenderTarget2D(GraphicsDevice, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
-
-            // Load menus
-            SpriteFont font = Content.Load<SpriteFont>("Fonts/Segoe_UI_15_Bold");
-            FontManager.DefaultFont = Engine.Instance.Renderer.CreateFont(font);
-            mainMenu = new MainMenu();
-            FontManager.Instance.LoadFonts(Content, "Fonts");
 
             // Use this to draw any rectangles
             whiteRect = new Texture2D(GraphicsDevice, 1, 1);
@@ -609,10 +631,23 @@ namespace Source
                 case State.MainMenu:
                     mainMenu.UpdateInput(gameTime.ElapsedGameTime.TotalMilliseconds);
                     mainMenu.UpdateLayout(gameTime.ElapsedGameTime.TotalMilliseconds);
-                    if (ToggleKey(Keys.Enter))
-                        state = State.Running;
-                    else if (ToggleKey(Keys.Escape))
-                        Exit();
+                    switch (viewModel.ButtonResult)
+                    {
+                        case "Start":
+                            state = State.Running;
+                            break;
+                        case "Options":
+                            state = State.Options;
+                            break;
+                        case "Exit":
+                            ExitEvent(null);
+                            break;
+                    }
+                    viewModel.ButtonResult = null;
+                    //if (ToggleKey(Keys.Enter))
+                    //    state = State.Running;
+                    //else if (ToggleKey(Keys.Escape))
+                    //    Exit();
                     break;
                 case State.Options:
                     HandleMenu(optionsMenu);

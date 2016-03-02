@@ -107,7 +107,7 @@ namespace Source
 
         // Character constants
 #if DEBUG
-        public const int CHARACTER = 4;
+        public const int CHARACTER = 1;
 #endif
 
         public const float PLATFORM_DIST = 1.5f;    // distance from player to y center of platform
@@ -153,7 +153,7 @@ namespace Source
         public const float BOOMERANG_X = 20f;          // initial x velocity of boomerang (w/o player)
         public const float BOOMERANG_Y = 18f;          // initial y velocity of boomerang (w/o player)
         public const float BOOMERANG_SCALE = 0.1f;     // scale of player's velocity in boomerang when throwing
-        public const float BOOMERANG_ATTRACT = 90;    // attraction of boomerang back to player (constant with regards to distance)
+        public const float BOOMERANG_ATTRACT = 90f;    // attraction of boomerang back to player (constant with regards to distance)
         //public const float BOOMERANG_GRAVITY = 1f;    // gravity for boomerang
         public const float BOOMERANG_FORCE = 580f;    // force with which boomerang pulls other things inside
         public const float BOOMERANG_ANTIGRAV = 7f;    // m radius after which player is "sucked in" and loses all control
