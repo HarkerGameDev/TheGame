@@ -21,17 +21,11 @@
         </Grid.RowDefinitions>
         <!--Creates a TextBlock saying paused-->
         <TextBlock Text="Paused" FontSize="40" FontWeight="Bold" TextAlignment="Center" HorizontalAlignment="Center" Width="800"/>
-        <!--Creates a Button saying continue-->
-        <Button Width="165" Height="80" Grid.Row="2">
-            <TextBlock Text="Continue" FontSize="20" FontWeight="Bold"/>
-        </Button>
-        <!--Creates a Button saying options-->
-        <Button Width="165" Height="80" Grid.Row="4">
-            <TextBlock Text="Options" FontSize="20" FontWeight="Bold"/>
-        </Button>
-        <!--Creates a Button saying quit-->
-        <Button Width="165" Height="80" Grid.Row="6" FontWeight="Bold">
-            <TextBlock Text="Quit" FontSize="20"/>
-        </Button>
+        <Button Width="165" Height="80" Grid.Row="2" Content="Continue" FontSize="20" FontWeight="Bold"
+                Command="{Binding ButtonCommand}" CommandParameter="Start" TabIndex="1" />
+        <Button Width="165" Height="80" Grid.Row="4" Content="Options" FontSize="20" FontWeight="Bold"
+                Command="{Binding ButtonCommand}" CommandParameter="Options" TabIndex="2" />
+        <Button Width="165" Height="80" Grid.Row="6" Content="Quit" FontSize="20" FontWeight="Bold"
+                Command="{Binding ButtonCommand}" CommandParameter="Exit" TabIndex="3" />
     </Grid>
 </ek:UIRoot>

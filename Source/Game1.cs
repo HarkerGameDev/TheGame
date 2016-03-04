@@ -82,12 +82,12 @@ namespace Source
         public List<Obstacle> obstacles;
         public List<Drop> drops;
 
-        List<Button> pauseMenu;
-        List<Button> optionsMenu;
-        List<Button> controlsMenu;
+        //List<Button> pauseMenu;
+        //List<Button> optionsMenu;
+        //List<Button> controlsMenu;
 
         BasicUIViewModel viewModel;
-        MainMenu mainMenu;
+        EmptyKeys.UserInterface.Controls.UIRoot menu;
 
         int nativeScreenWidth;
         int nativeScreenHeight;
@@ -111,6 +111,11 @@ namespace Source
             Running, Paused, MainMenu, Options, Controls
         }
 
+        enum Menu
+        {
+            Main, Options, Controls, Pause
+        }
+
         public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
@@ -126,14 +131,16 @@ namespace Source
 
         private void graphics_PreparingDeviceSettings(object sender, PreparingDeviceSettingsEventArgs e)
         {
-            nativeScreenWidth = graphics.PreferredBackBufferWidth;
-            nativeScreenHeight = graphics.PreferredBackBufferHeight;
+            //nativeScreenWidth = graphics.PreferredBackBufferWidth;
+            //nativeScreenHeight = graphics.PreferredBackBufferHeight;
+            nativeScreenWidth = 1920;
+            nativeScreenHeight = 1080;
+            Console.WriteLine("Width: {0}\tHeight: {1}", nativeScreenWidth, nativeScreenHeight);
 
             graphics.PreferredBackBufferWidth = GameData.VIEW_WIDTH;
             graphics.PreferredBackBufferHeight = GameData.VIEW_HEIGHT;
             graphics.PreferMultiSampling = true;
             graphics.GraphicsProfile = GraphicsProfile.HiDef;
-            graphics.SynchronizeWithVerticalRetrace = true;
             graphics.PreferredDepthStencilFormat = DepthFormat.Depth24Stencil8;
             e.GraphicsDeviceInformation.PresentationParameters.MultiSampleCount = 16;
 
@@ -298,21 +305,46 @@ namespace Source
             }
         }
 
-        private void LoadUI()
+        private void LoadUI(Menu type)
         {
-            SpriteFont font = Content.Load<SpriteFont>("Fonts/Segoe_UI_15_Bold");
-            FontManager.DefaultFont = Engine.Instance.Renderer.CreateFont(font);
+            switch (type)
+            {
+                case Menu.Main:
+                    state = State.MainMenu;
+                    menu = new MainMenu(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
+                    EmptyKeys.UserInterface.Input.RelayCommand command = new EmptyKeys.UserInterface.Input.RelayCommand(new Action<object>(ExitEvent));
+                    EmptyKeys.UserInterface.Input.KeyBinding keyBinding = new EmptyKeys.UserInterface.Input.KeyBinding(command, EmptyKeys.UserInterface.Input.KeyCode.Escape, EmptyKeys.UserInterface.Input.ModifierKeys.None);
+                    menu.InputBindings.Add(keyBinding);
+                    break;
+                case Menu.Controls:
+                    state = State.Controls;
+                    menu = new ControlsMenu(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
+                    command = new EmptyKeys.UserInterface.Input.RelayCommand(new Action<object>(CloseControls));
+                    keyBinding = new EmptyKeys.UserInterface.Input.KeyBinding(command, EmptyKeys.UserInterface.Input.KeyCode.Escape, EmptyKeys.UserInterface.Input.ModifierKeys.None);
+                    menu.InputBindings.Add(keyBinding);
+                    break;
+                case Menu.Options:
+                    state = State.Options;
+                    menu = new OptionsMenu(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
+                    command = new EmptyKeys.UserInterface.Input.RelayCommand(new Action<object>(CloseOptions));
+                    keyBinding = new EmptyKeys.UserInterface.Input.KeyBinding(command, EmptyKeys.UserInterface.Input.KeyCode.Escape, EmptyKeys.UserInterface.Input.ModifierKeys.None);
+                    menu.InputBindings.Add(keyBinding);
+                    break;
+                case Menu.Pause:
+                    state = State.Paused;
+                    menu = new PauseMenu(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
+                    command = new EmptyKeys.UserInterface.Input.RelayCommand(new Action<object>(ResumeGame));
+                    keyBinding = new EmptyKeys.UserInterface.Input.KeyBinding(command, EmptyKeys.UserInterface.Input.KeyCode.Escape, EmptyKeys.UserInterface.Input.ModifierKeys.None);
+                    menu.InputBindings.Add(keyBinding);
+                    break;
+            }
 
-            mainMenu = new MainMenu(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
+            menu.DataContext = viewModel;
+        }
 
-            viewModel = new BasicUIViewModel();
-            mainMenu.DataContext = viewModel;
-
-            FontManager.Instance.LoadFonts(Content, "Fonts");
-
-            EmptyKeys.UserInterface.Input.RelayCommand command = new EmptyKeys.UserInterface.Input.RelayCommand(new Action<object>(ExitEvent));
-            EmptyKeys.UserInterface.Input.KeyBinding keyBinding = new EmptyKeys.UserInterface.Input.KeyBinding(command, EmptyKeys.UserInterface.Input.KeyCode.Escape, EmptyKeys.UserInterface.Input.ModifierKeys.None);
-            mainMenu.InputBindings.Add(keyBinding);
+        private void CloseOptions(object obj)
+        {
+            LoadUI(Menu.Pause);
         }
 
         private void ExitEvent(object obj)
@@ -320,7 +352,15 @@ namespace Source
             Exit();
         }
 
+        private void ResumeGame(object obj)
+        {
+            state = State.Running;
+        }
 
+        private void CloseControls(object obj)
+        {
+            LoadUI(Menu.Options);
+        }
 
         /// <summary>
         /// LoadContent will be called once per game and is the place to load
@@ -331,7 +371,13 @@ namespace Source
             Content.RootDirectory = "Content";
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            LoadUI();
+            // Set up user interface
+            SpriteFont font = Content.Load<SpriteFont>("Fonts/Segoe_UI_15_Bold");
+            FontManager.DefaultFont = Engine.Instance.Renderer.CreateFont(font);
+            viewModel = new BasicUIViewModel();
+            FontManager.Instance.LoadFonts(Content, "Fonts");
+
+            LoadUI(Menu.Main);
 
             // Initialize screen render target
             playerScreens = new RenderTarget2D[GameData.numPlayers];
@@ -380,45 +426,45 @@ namespace Source
             float left = (width - buttonWidth) / 2f;
             float centerY = (height - buttonHeight) / 2f;
 
-            pauseMenu = new List<Button>();
-            pauseMenu.Add(new Button(whiteRect, new Vector2(left, buttonHeight), new Vector2(buttonWidth, buttonHeight),
-                delegate() { state = State.Running; }, Color.RoyalBlue,
-                fontSmall, "Continue", Color.Red));
-            pauseMenu.Add(new Button(whiteRect, new Vector2(left, centerY), new Vector2(buttonWidth, buttonHeight),
-                delegate() { state = State.Options; }, Color.RoyalBlue,
-                fontSmall, "Options", Color.Red));
-            pauseMenu.Add(new Button(whiteRect, new Vector2(left, height - buttonHeight * 2), new Vector2(buttonWidth, buttonHeight),
-                delegate() { Exit(); }, Color.RoyalBlue,
-                fontSmall, "Exit", Color.Red));
+            //pauseMenu = new List<Button>();
+            //pauseMenu.Add(new Button(whiteRect, new Vector2(left, buttonHeight), new Vector2(buttonWidth, buttonHeight),
+            //    delegate() { state = State.Running; }, Color.RoyalBlue,
+            //    fontSmall, "Continue", Color.Red));
+            //pauseMenu.Add(new Button(whiteRect, new Vector2(left, centerY), new Vector2(buttonWidth, buttonHeight),
+            //    delegate() { state = State.Options; }, Color.RoyalBlue,
+            //    fontSmall, "Options", Color.Red));
+            //pauseMenu.Add(new Button(whiteRect, new Vector2(left, height - buttonHeight * 2), new Vector2(buttonWidth, buttonHeight),
+            //    delegate() { Exit(); }, Color.RoyalBlue,
+            //    fontSmall, "Exit", Color.Red));
 
-            optionsMenu = new List<Button>();
-            optionsMenu.Add(new Button(whiteRect, new Vector2(left, buttonHeight), new Vector2(buttonWidth, buttonHeight),
-                delegate() {
-                    state = State.Controls;
-                }, Color.Maroon, fontSmall, "Controls", Color.Chartreuse));
-            optionsMenu.Add(new Button(whiteRect, new Vector2(left, centerY), new Vector2(buttonWidth, buttonHeight),
-                delegate() {
-                    simulating = true;
-                    currentReplay = int.MaxValue;
-                    LoadReplay(currentReplay);
-                    Reset();
-                    state = State.Running;
-                }, Color.Maroon,
-                fontSmall, "Instant replay", Color.Chartreuse));
-            optionsMenu.Add(new Button(whiteRect, new Vector2(left, height - buttonHeight * 2), new Vector2(buttonWidth, buttonHeight),
-                delegate() { state = State.Paused; }, Color.Maroon,
-                fontSmall, "Back", Color.Chartreuse));
+            //optionsMenu = new List<Button>();
+            //optionsMenu.Add(new Button(whiteRect, new Vector2(left, buttonHeight), new Vector2(buttonWidth, buttonHeight),
+            //    delegate() {
+            //        state = State.Controls;
+            //    }, Color.Maroon, fontSmall, "Controls", Color.Chartreuse));
+            //optionsMenu.Add(new Button(whiteRect, new Vector2(left, centerY), new Vector2(buttonWidth, buttonHeight),
+            //    delegate() {
+            //        simulating = true;
+            //        currentReplay = int.MaxValue;
+            //        LoadReplay(currentReplay);
+            //        Reset();
+            //        state = State.Running;
+            //    }, Color.Maroon,
+            //    fontSmall, "Instant replay", Color.Chartreuse));
+            //optionsMenu.Add(new Button(whiteRect, new Vector2(left, height - buttonHeight * 2), new Vector2(buttonWidth, buttonHeight),
+            //    delegate() { state = State.Paused; }, Color.Maroon,
+            //    fontSmall, "Back", Color.Chartreuse));
 
-            controlsMenu = new List<Button>();
-            controlsMenu.Add(new Button(whiteRect, new Vector2(buttonHeight, 0), new Vector2(width / 2f - buttonHeight + 1, height - buttonHeight * 3),
-                delegate() { }, Color.DarkGray,
-                fontSmall, "Player 1 controls\n" + playerControls[0], Color.Chartreuse));
-            controlsMenu.Add(new Button(whiteRect, new Vector2(width / 2f, 0), new Vector2(width / 2f - buttonHeight, height - buttonHeight * 3),
-                delegate() { }, Color.DarkGray,
-                fontSmall, "Player 2 controls\n" + playerControls[1], Color.Chartreuse));
-            controlsMenu.Add(new Button(whiteRect, new Vector2(left, height - buttonHeight * 2), new Vector2(buttonWidth, buttonHeight),
-                delegate() { state = State.Options; }, Color.DarkGray,
-                fontSmall, "Back", Color.Chartreuse));
+            //controlsMenu = new List<Button>();
+            //controlsMenu.Add(new Button(whiteRect, new Vector2(buttonHeight, 0), new Vector2(width / 2f - buttonHeight + 1, height - buttonHeight * 3),
+            //    delegate() { }, Color.DarkGray,
+            //    fontSmall, "Player 1 controls\n" + playerControls[0], Color.Chartreuse));
+            //controlsMenu.Add(new Button(whiteRect, new Vector2(width / 2f, 0), new Vector2(width / 2f - buttonHeight, height - buttonHeight * 3),
+            //    delegate() { }, Color.DarkGray,
+            //    fontSmall, "Player 2 controls\n" + playerControls[1], Color.Chartreuse));
+            //controlsMenu.Add(new Button(whiteRect, new Vector2(left, height - buttonHeight * 2), new Vector2(buttonWidth, buttonHeight),
+            //    delegate() { state = State.Options; }, Color.DarkGray,
+            //    fontSmall, "Back", Color.Chartreuse));
 
             // Load the level stored in LEVEL_FILE
             LoadLevel(GameData.LEVEL_FILE);
@@ -618,46 +664,17 @@ namespace Source
                             player.PrevStates.Add(Tuple.Create(player.Position, player.Velocity));
                         times.Add(totalTime);
                     }
-                    if (ToggleKey(Keys.Space))
-                        state = State.Paused;
+                    if (ToggleKey(Keys.Escape))
+                        LoadUI(Menu.Pause);
                     break;
                 case State.Paused:
-                    HandleMenu(pauseMenu);
-                    if (ToggleKey(Keys.Space))
-                        state = State.Running;
-                    else if (ToggleKey(Keys.Escape))
-                        Exit();
-                    break;
-                case State.MainMenu:
-                    mainMenu.UpdateInput(gameTime.ElapsedGameTime.TotalMilliseconds);
-                    mainMenu.UpdateLayout(gameTime.ElapsedGameTime.TotalMilliseconds);
-                    switch (viewModel.ButtonResult)
-                    {
-                        case "Start":
-                            state = State.Running;
-                            break;
-                        case "Options":
-                            state = State.Options;
-                            break;
-                        case "Exit":
-                            ExitEvent(null);
-                            break;
-                    }
-                    viewModel.ButtonResult = null;
-                    //if (ToggleKey(Keys.Enter))
-                    //    state = State.Running;
-                    //else if (ToggleKey(Keys.Escape))
-                    //    Exit();
-                    break;
                 case State.Options:
-                    HandleMenu(optionsMenu);
-                    if (ToggleKey(Keys.Escape))
-                        state = State.MainMenu;
-                    break;
                 case State.Controls:
-                    HandleMenu(controlsMenu);
-                    if (ToggleKey(Keys.Escape))
-                        state = State.Options;
+                case State.MainMenu:
+                    menu.UpdateInput(gameTime.ElapsedGameTime.TotalMilliseconds);
+                    menu.UpdateLayout(gameTime.ElapsedGameTime.TotalMilliseconds);
+                    ParseButtons();
+                    viewModel.ButtonResult = null;
                     break;
             }
 
@@ -667,6 +684,49 @@ namespace Source
                 prevPadStates[i] = GamePad.GetState((PlayerIndex)i, GamePadDeadZone.Circular);
 
             base.Update(gameTime);
+        }
+
+        private void ParseButtons()
+        {
+            switch (viewModel.ButtonResult)
+            {
+                case "Start":
+                    ResumeGame(null);
+                    break;
+                case "Options":
+                    LoadUI(Menu.Options);
+                    break;
+                case "Exit":
+                    ExitEvent(null);
+                    break;
+                case "Fullscreen":
+                    // TODO toggle fullscreen
+                    //graphics.ToggleFullScreen();
+
+                    //if (graphics.IsFullScreen)
+                    //{
+                    //    graphics.PreferredBackBufferWidth = GameData.VIEW_WIDTH;
+                    //    graphics.PreferredBackBufferHeight = GameData.VIEW_HEIGHT;
+                    //    graphics.IsFullScreen = false;
+                    //    graphics.ApplyChanges();
+                    //}
+                    //else
+                    //{
+                    //    graphics.PreferredBackBufferWidth = nativeScreenWidth;
+                    //    graphics.PreferredBackBufferHeight = nativeScreenHeight;
+                    //    graphics.IsFullScreen = true;
+                    //    graphics.ApplyChanges();
+                    //}
+
+                    //LoadUI(Menu.Options);
+                    break;
+                case "Controls":
+                    LoadUI(Menu.Controls);
+                    break;
+                case "Pause":
+                    LoadUI(Menu.Pause);
+                    break;
+            }
         }
 
         /// <summary>
@@ -1600,29 +1660,11 @@ namespace Source
                     DrawGame(deltaTime);
                     break;
                 case State.Paused:
-                    GraphicsDevice.Clear(Color.Yellow);
-                    spriteBatch.Begin();
-                    foreach (Button button in pauseMenu)
-                        button.Draw(spriteBatch);
-                    spriteBatch.End();
-                    break;
-                case State.MainMenu:
-                    GraphicsDevice.Clear(Color.Turquoise);
-                    mainMenu.Draw(gameTime.ElapsedGameTime.TotalMilliseconds);
-                    break;
                 case State.Options:
-                    GraphicsDevice.Clear(Color.Chocolate);
-                    spriteBatch.Begin();
-                    foreach (Button button in optionsMenu)
-                        button.Draw(spriteBatch);
-                    spriteBatch.End();
-                    break;
                 case State.Controls:
-                    GraphicsDevice.Clear(Color.Plum);
-                    spriteBatch.Begin();
-                    foreach (Button button in controlsMenu)
-                        button.Draw(spriteBatch);
-                    spriteBatch.End();
+                case State.MainMenu:
+                    //GraphicsDevice.Clear(Color.Turquoise);
+                    menu.Draw(gameTime.ElapsedGameTime.TotalMilliseconds);
                     break;
             }
 

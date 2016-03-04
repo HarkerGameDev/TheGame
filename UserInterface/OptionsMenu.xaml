@@ -19,19 +19,12 @@
             <RowDefinition Height="1*" />
             <RowDefinition Height="1*" />
         </Grid.RowDefinitions>
-        <!--Creates a TextBlock saying options-->
-        <TextBlock Text ="Options" HorizontalAlignment="Center" VerticalAlignment="Top" FontSize="40" FontWeight="Bold" TextAlignment="Center"/>
-        <!--Creates a Button saying toggle fullscreen-->
-        <Button Width="165" Height="80" Grid.Row="2">
-            <TextBlock Text="Toggle Fullscreen" FontSize="20" FontWeight="Bold"/>
-        </Button>
-        <!--Creates a Button saying controls-->
-        <Button Width="165" Height="80" Grid.Row="4">
-            <TextBlock Text="Controls" FontSize="20" FontWeight="Bold"/>
-        </Button>
-        <!--Creates a Button saying back-->
-        <Button Width="165" Height="80" Grid.Row="6">
-            <TextBlock Text="Back" FontSize="20" FontWeight="Bold"/>
-        </Button>
+        <TextBlock Text="Options" FontSize="40" FontWeight="Bold" TextAlignment="Center" HorizontalAlignment="Center" Width="800"/>
+        <Button Width="165" Height="80" Grid.Row="2" Content="Toggle Fullscreen" FontSize="20" FontWeight="Bold"
+                Command="{Binding ButtonCommand}" CommandParameter="Fullscreen" TabIndex="1" />
+        <Button Width="165" Height="80" Grid.Row="4" Content="Controls" FontSize="20" FontWeight="Bold"
+                Command="{Binding ButtonCommand}" CommandParameter="Controls" TabIndex="2" />
+        <Button Width="165" Height="80" Grid.Row="6" Content="Back" FontSize="20" FontWeight="Bold"
+                Command="{Binding ButtonCommand}" CommandParameter="Pause" TabIndex="3" />
     </Grid>
 </ek:UIRoot>

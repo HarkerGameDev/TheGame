@@ -30,11 +30,11 @@ namespace EmptyKeys.UserInterface.Generated {
         
         private TextBlock e_1;
         
+        private Button Start;
+        
         private Button e_2;
         
         private Button e_3;
-        
-        private Button e_4;
         
         public MainMenu() : 
                 base() {
@@ -95,18 +95,32 @@ namespace EmptyKeys.UserInterface.Generated {
             this.e_1.TextAlignment = TextAlignment.Center;
             this.e_1.FontSize = 40F;
             this.e_1.FontStyle = FontStyle.Bold;
+            // Start element
+            this.Start = new Button();
+            this.e_0.Children.Add(this.Start);
+            this.Start.Name = "Start";
+            this.Start.Height = 80F;
+            this.Start.Width = 165F;
+            this.Start.TabIndex = 1;
+            this.Start.FontSize = 20F;
+            this.Start.FontStyle = FontStyle.Bold;
+            this.Start.Content = "Start";
+            this.Start.CommandParameter = "Start";
+            Grid.SetRow(this.Start, 2);
+            Binding binding_Start_Command = new Binding("ButtonCommand");
+            this.Start.SetBinding(Button.CommandProperty, binding_Start_Command);
             // e_2 element
             this.e_2 = new Button();
             this.e_0.Children.Add(this.e_2);
             this.e_2.Name = "e_2";
             this.e_2.Height = 80F;
             this.e_2.Width = 165F;
-            this.e_2.TabIndex = 1;
+            this.e_2.TabIndex = 2;
             this.e_2.FontSize = 20F;
             this.e_2.FontStyle = FontStyle.Bold;
-            this.e_2.Content = "Start";
-            this.e_2.CommandParameter = "Start";
-            Grid.SetRow(this.e_2, 2);
+            this.e_2.Content = "Options";
+            this.e_2.CommandParameter = "Options";
+            Grid.SetRow(this.e_2, 4);
             Binding binding_e_2_Command = new Binding("ButtonCommand");
             this.e_2.SetBinding(Button.CommandProperty, binding_e_2_Command);
             // e_3 element
@@ -115,28 +129,14 @@ namespace EmptyKeys.UserInterface.Generated {
             this.e_3.Name = "e_3";
             this.e_3.Height = 80F;
             this.e_3.Width = 165F;
-            this.e_3.TabIndex = 2;
+            this.e_3.TabIndex = 3;
             this.e_3.FontSize = 20F;
             this.e_3.FontStyle = FontStyle.Bold;
-            this.e_3.Content = "Options";
-            this.e_3.CommandParameter = "Options";
-            Grid.SetRow(this.e_3, 4);
+            this.e_3.Content = "Quit";
+            this.e_3.CommandParameter = "Exit";
+            Grid.SetRow(this.e_3, 6);
             Binding binding_e_3_Command = new Binding("ButtonCommand");
             this.e_3.SetBinding(Button.CommandProperty, binding_e_3_Command);
-            // e_4 element
-            this.e_4 = new Button();
-            this.e_0.Children.Add(this.e_4);
-            this.e_4.Name = "e_4";
-            this.e_4.Height = 80F;
-            this.e_4.Width = 165F;
-            this.e_4.TabIndex = 3;
-            this.e_4.FontSize = 20F;
-            this.e_4.FontStyle = FontStyle.Bold;
-            this.e_4.Content = "Quit";
-            this.e_4.CommandParameter = "Quit";
-            Grid.SetRow(this.e_4, 6);
-            Binding binding_e_4_Command = new Binding("ButtonCommand");
-            this.e_4.SetBinding(Button.CommandProperty, binding_e_4_Command);
             FontManager.Instance.AddFont("Segoe UI", 40F, FontStyle.Bold, "Segoe_UI_30_Bold");
             FontManager.Instance.AddFont("Segoe UI", 20F, FontStyle.Bold, "Segoe_UI_15_Bold");
         }
