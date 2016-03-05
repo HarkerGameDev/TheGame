@@ -131,12 +131,12 @@ namespace Source
 
         private void graphics_PreparingDeviceSettings(object sender, PreparingDeviceSettingsEventArgs e)
         {
-            //nativeScreenWidth = graphics.PreferredBackBufferWidth;
-            //nativeScreenHeight = graphics.PreferredBackBufferHeight;
-            nativeScreenWidth = 1920;
-            nativeScreenHeight = 1080;
+            nativeScreenWidth = graphics.PreferredBackBufferWidth;
+            nativeScreenHeight = graphics.PreferredBackBufferHeight;
+//            nativeScreenWidth = 1920;
+//            nativeScreenHeight = 1080;
             Console.WriteLine("Width: {0}\tHeight: {1}", nativeScreenWidth, nativeScreenHeight);
-
+			Console.WriteLine("RealWidth: {0}\tRealHeight: {1}", GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width, GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height);
             graphics.PreferredBackBufferWidth = GameData.VIEW_WIDTH;
             graphics.PreferredBackBufferHeight = GameData.VIEW_HEIGHT;
             graphics.PreferMultiSampling = true;
@@ -1416,8 +1416,15 @@ namespace Source
                     Vector2 dist = averagePos - player.Position;
                     dist = new Vector2(dist.Y, dist.X);
                     dist /= -Math.Max(Math.Abs(dist.X), Math.Abs(dist.Y));
-                    Vector2 tex = new Vector2(dist.X / 2f + 0.5f, -dist.Y / 2f + 0.5f);
-                    //Console.WriteLine("Dist_" + i + " = " + dist + "\tTex = " + tex);
+					if (dist.Y > 0.999)
+						dist.Y = 1;
+					else if (dist.Y < -0.999)
+						dist.Y = -1;
+					if (dist.X > 0.999)
+						dist.X = 1;
+					else if (dist.X < -0.9999)
+						dist.X = -1;
+                    Console.WriteLine("Dist_" + i + " = " + dist);
 
                     // for Position, (-1,-1) is bottom-left and (1,1) is top-right
                     // for TextureCoordinate, (0,0) is top-left and (1,1) is bottom-right
@@ -1701,7 +1708,7 @@ namespace Source
             foreach (Button button in menu)
             {
                 MouseState mouse = Mouse.GetState();
-                if (button.TestPoint(mouse.Position))
+				if (button.TestPoint(mouse.Position))
                 {
                     if (mouse.LeftButton == ButtonState.Pressed && prevMouseState.LeftButton == ButtonState.Released)
                     {
