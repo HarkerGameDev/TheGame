@@ -7,7 +7,7 @@
              mc:Ignorable="d" 
              d:DesignHeight="640" d:DesignWidth="800">
     <!--Creates a Grid to nest items. Only 1 content allowed in ek:UIRoot-->
-    <Grid>
+    <Grid HorizontalAlignment="Center" Width="800" Height="640">
         <!--Defines 8 equally sized rows-->
         <Grid.RowDefinitions>
             <RowDefinition Height="1*" />
@@ -19,7 +19,7 @@
             <RowDefinition Height="1*" />
             <RowDefinition Height="1*" />
         </Grid.RowDefinitions>
-        <TextBlock Text="Options" FontSize="40" FontWeight="Bold" TextAlignment="Center" HorizontalAlignment="Center" Width="800"/>
+        <TextBlock Text="Options" FontSize="40" FontWeight="Bold" TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center" Width="Auto"/>
         <Button Width="165" Height="80" Grid.Row="2" Content="Toggle Fullscreen" FontSize="20" FontWeight="Bold"
                 Command="{Binding ButtonCommand}" CommandParameter="Fullscreen" TabIndex="1" />
         <Button Width="165" Height="80" Grid.Row="4" Content="Controls" FontSize="20" FontWeight="Bold"

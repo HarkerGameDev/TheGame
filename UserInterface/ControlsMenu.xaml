@@ -8,19 +8,16 @@
              d:DesignHeight="640" d:DesignWidth="800">
     <!--Creates a Grid to nest items. Only 1 content is allowed in each ek:UIRoot-->
     <Grid HorizontalAlignment="Center" Width="800" Height="640">
-        <!--Defines 8 equally sized rows-->
         <Grid.RowDefinitions>
-            <RowDefinition Height="1*" />
-            <RowDefinition Height="1*" />
-            <RowDefinition Height="1*" />
-            <RowDefinition Height="1*" />
-            <RowDefinition Height="1*" />
-            <RowDefinition Height="1*" />
-            <RowDefinition Height="1*" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="1*" />
         </Grid.RowDefinitions>
-        <!--Creates a TextBlock saying controls-->
-        <TextBlock Text="Controls" FontSize="40" FontWeight="Bold" TextAlignment="Center" HorizontalAlignment="Center" Width="800"/>
-        <TextBlock Text="{Binding ButtonResult}" Grid.Row="2" FontSize="40" FontWeight="Bold" TextAlignment="Center" HorizontalAlignment="Center" Width="800"/>
+
+        <TextBlock Text="Controls" FontSize="40" FontWeight="Bold" TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center" Width="Auto"/>
+        <Button Width="165" Height="80" Content="Back" FontSize="20" FontWeight="Bold" HorizontalAlignment="Left" VerticalAlignment="Center"
+                Command="{Binding ButtonCommand}" CommandParameter="Options" TabIndex="2" />
+        <ScrollViewer Grid.Row="1">
+            <TextBlock Text="{Binding ControlsText}" FontSize="40" FontWeight="Bold" TextAlignment="Center" HorizontalAlignment="Center" Padding="20"/>
+        </ScrollViewer>
     </Grid>
 </ek:UIRoot>

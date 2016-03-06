@@ -14,7 +14,7 @@ namespace Source.Collisions
     public static class ConvertUnits
     {
         private static float Ratio;
-        private static float MouseScale = 1;
+        private static float ResolutionScale = 1;
 
         public static void SetDisplayUnitToSimUnitRatio(float displayToSimRatio) {
             Ratio = displayToSimRatio;
@@ -25,40 +25,35 @@ namespace Source.Collisions
             return Ratio;
         }
 
-        public static float GetMouseScale()
+        public static float GetResolutionScale()
         {
-            return MouseScale;
+            return ResolutionScale;
         }
 
         public static Vector2 ToDisplayUnits(Vector2 vector)
         {
-            return vector * Ratio * MouseScale;
+            return vector * Ratio * ResolutionScale;
         }
 
         public static Vector2 ToSimUnits(Vector2 vector)
         {
-            return vector / Ratio / MouseScale;
+            return vector / Ratio / ResolutionScale;
         }
 
         public static float ToDisplayUnits(float num)
         {
-            return num * Ratio * MouseScale;
+            return num * Ratio * ResolutionScale;
         }
 
         public static float ToSimUnits(float num)
         {
-            return num / Ratio / MouseScale;
+            return num / Ratio / ResolutionScale;
         }
 
-        public static void SetMouseScale(float scale)
+        public static void SetResolutionScale(float scale)
         {
-            MouseScale = scale;
-            Console.WriteLine("Mouse Scale: " + scale);
-        }
-
-        public static Vector2 GetMousePos(MouseState mouse)
-        {
-            return mouse.Position.ToVector2() / MouseScale;
+            ResolutionScale = scale;
+            Console.WriteLine("Resolution Scale: " + scale);
         }
     }
 }

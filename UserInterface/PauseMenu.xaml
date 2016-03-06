@@ -20,7 +20,7 @@
             <RowDefinition Height="1*" />
         </Grid.RowDefinitions>
         <!--Creates a TextBlock saying paused-->
-        <TextBlock Text="Paused" FontSize="40" FontWeight="Bold" TextAlignment="Center" HorizontalAlignment="Center" Width="800"/>
+        <TextBlock Text="Paused" FontSize="40" FontWeight="Bold" TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center" Width="Auto"/>
         <Button Width="165" Height="80" Grid.Row="2" Content="Continue" FontSize="20" FontWeight="Bold"
                 Command="{Binding ButtonCommand}" CommandParameter="Start" TabIndex="1" />
         <Button Width="165" Height="80" Grid.Row="4" Content="Options" FontSize="20" FontWeight="Bold"

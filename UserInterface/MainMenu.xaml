@@ -19,7 +19,7 @@
             <RowDefinition Height="1*" />
             <RowDefinition Height="1*" />
         </Grid.RowDefinitions>
-        <TextBlock Text="Game" FontSize="40" FontWeight="Bold" TextAlignment="Center" HorizontalAlignment="Center" Width="800"/>
+        <TextBlock Text="Game" FontSize="40" FontWeight="Bold" TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center" Width="Auto"/>
         <Button Width="165" Height="80" Grid.Row="2" Content="Start" FontSize="20" FontWeight="Bold" Name="Start"
                 Command="{Binding ButtonCommand}" CommandParameter="Start" TabIndex="1" />
         <Button Width="165" Height="80" Grid.Row="4" Content="Options" FontSize="20" FontWeight="Bold"

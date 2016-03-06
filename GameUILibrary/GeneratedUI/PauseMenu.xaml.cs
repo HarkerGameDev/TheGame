@@ -89,8 +89,9 @@ namespace EmptyKeys.UserInterface.Generated {
             this.e_1 = new TextBlock();
             this.e_0.Children.Add(this.e_1);
             this.e_1.Name = "e_1";
-            this.e_1.Width = 800F;
+            this.e_1.Width = float.NaN;
             this.e_1.HorizontalAlignment = HorizontalAlignment.Center;
+            this.e_1.VerticalAlignment = VerticalAlignment.Center;
             this.e_1.Text = "Paused";
             this.e_1.TextAlignment = TextAlignment.Center;
             this.e_1.FontSize = 40F;

@@ -58,6 +58,9 @@ namespace EmptyKeys.UserInterface.Generated {
             this.e_0 = new Grid();
             this.Content = this.e_0;
             this.e_0.Name = "e_0";
+            this.e_0.Height = 640F;
+            this.e_0.Width = 800F;
+            this.e_0.HorizontalAlignment = HorizontalAlignment.Center;
             RowDefinition row_e_0_0 = new RowDefinition();
             row_e_0_0.Height = new GridLength(1F, GridUnitType.Star);
             this.e_0.RowDefinitions.Add(row_e_0_0);
@@ -86,8 +89,9 @@ namespace EmptyKeys.UserInterface.Generated {
             this.e_1 = new TextBlock();
             this.e_0.Children.Add(this.e_1);
             this.e_1.Name = "e_1";
-            this.e_1.Width = 800F;
+            this.e_1.Width = float.NaN;
             this.e_1.HorizontalAlignment = HorizontalAlignment.Center;
+            this.e_1.VerticalAlignment = VerticalAlignment.Center;
             this.e_1.Text = "Options";
             this.e_1.TextAlignment = TextAlignment.Center;
             this.e_1.FontSize = 40F;

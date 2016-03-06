@@ -28,6 +28,8 @@ namespace Source
         public const float PIXEL_METER_EDIT = 8f;  // pixels per meter when in edit mode for level
         public const int VIEW_WIDTH = 1280;        // width of unscaled screen in pixels
         public const int VIEW_HEIGHT = 720;        // height of unscaled screen in pixels
+        public const int WINDOW_WIDTH = 1280;       // default width of window
+        public const int WINDOW_HEIGHT = 720;       // default height of window
 
         public const float SHADOW_SCALE = PIXEL_METER / 3.4f; // what light calculations will be normalized to (smaller scale = larger light)
         public static Color DARK_COLOR = new Color(new Vector3(0.1f));  // color mask for non-lit areas

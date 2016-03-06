@@ -17,7 +17,7 @@ namespace GameUILibrary
     public class BasicUIViewModel : ViewModelBase
     {
         private string buttonResult;
-        private string textBoxText;
+        private string controlsText;
         private bool buttonEnabled;
         private float progressValue;
         private float sliderValue;
@@ -51,15 +51,15 @@ namespace GameUILibrary
         }
 
         /// <summary>
-        /// Gets or sets the text box text.
+        /// Gets or sets the text for player controls.
         /// </summary>
         /// <value>
-        /// The text box text.
+        /// The player controls.
         /// </value>
-        public string TextBoxText
+        public string ControlsText
         {
-            get { return textBoxText; }
-            set { SetProperty(ref textBoxText, value); }
+            get { return controlsText; }
+            set { SetProperty(ref controlsText, value); }
         }
 
         /// <summary>

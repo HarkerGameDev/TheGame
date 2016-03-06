@@ -16,6 +16,7 @@ using Source.Graphics;
 using GameUILibrary;
 using EmptyKeys.UserInterface;
 using EmptyKeys.UserInterface.Generated;
+using System.Text;
 
 namespace Source
 {
@@ -131,10 +132,8 @@ namespace Source
 
         private void graphics_PreparingDeviceSettings(object sender, PreparingDeviceSettingsEventArgs e)
         {
-            //nativeScreenWidth = 1280;
-            //nativeScreenHeight = 720;
-            nativeScreenWidth = 1920;
-            nativeScreenHeight = 1080;
+            nativeScreenWidth = GameData.WINDOW_WIDTH;
+            nativeScreenHeight = GameData.WINDOW_HEIGHT;
             graphics.PreferredBackBufferWidth = nativeScreenWidth;
             graphics.PreferredBackBufferHeight = nativeScreenHeight;
             graphics.PreferMultiSampling = true;
@@ -158,7 +157,7 @@ namespace Source
         {
             // Sets how many pixels is a meter
             ConvertUnits.SetDisplayUnitToSimUnitRatio(currentZoom);
-            ConvertUnits.SetMouseScale((float)Window.ClientBounds.Width / GameData.VIEW_WIDTH);
+            ConvertUnits.SetResolutionScale((float)Window.ClientBounds.Width / GameData.VIEW_WIDTH);
 
             // Set seed for a scheduled random level (minutes since Jan 1, 2015)
             //randSeed = DateTime.Now.Millisecond;
@@ -323,7 +322,6 @@ namespace Source
                     menu = new OptionsMenu();
                     break;
                 case Menu.Pause:
-                    Console.WriteLine("Pausing");
                     state = State.Paused;
                     menu = new PauseMenu();
                     break;
@@ -346,6 +344,16 @@ namespace Source
             FontManager.DefaultFont = Engine.Instance.Renderer.CreateFont(font);
             viewModel = new BasicUIViewModel();
             FontManager.Instance.LoadFonts(Content, "Fonts");
+
+            StringBuilder builder = new StringBuilder();
+            for (int i = 0; i < GameData.numPlayers; i++)
+            {
+                builder.Append("Player ").AppendLine(i.ToString())
+                    .AppendLine(playerControls[i].ToString());
+            }
+            viewModel.ControlsText = builder.ToString();
+            Console.WriteLine(builder.ToString());
+            //viewModel.ControlsText = "Hello!\nWhoo!!";
 
             LoadUI(Menu.Main);
 
@@ -663,7 +671,7 @@ namespace Source
                     graphics.IsFullScreen = !graphics.IsFullScreen;
                     graphics.ApplyChanges();
 
-                    ConvertUnits.SetMouseScale((float)Window.ClientBounds.Width / GameData.VIEW_WIDTH);
+                    ConvertUnits.SetResolutionScale((float)Window.ClientBounds.Width / GameData.VIEW_WIDTH);
                     //Window.BeginScreenDeviceChange(true);
                     //Console.WriteLine("Fullscreen: {0}\tEngine: {1}", graphics.IsFullScreen, Engine.Instance.Renderer.IsFullScreen);
                     Engine.Instance.Renderer.ResetNativeSize();
@@ -675,7 +683,7 @@ namespace Source
                     Console.WriteLine("Backbuffer: {{{0}, {1}}}", graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight);
                     //GraphicsDevice.Viewport = new Viewport(0, 0, nativeScreenWidth, nativeScreenHeight);
 
-                    //LoadUI(Menu.Options);
+                    menu.Resize(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
                     break;
                 case "Controls":
                     LoadUI(Menu.Controls);
@@ -998,7 +1006,7 @@ namespace Source
             averagePos /= players.Count;
 
             // Snap the mouse position to 1x1 meter grid
-            Vector2 mouseSimPos = ConvertUnits.ToSimUnits(ConvertUnits.GetMousePos(mouse) - cameraBounds.Center.ToVector2() - screenOffset) + averagePos;
+            Vector2 mouseSimPos = ConvertUnits.ToSimUnits(mouse.Position.ToVector2() - cameraBounds.Center.ToVector2() - screenOffset) + averagePos;
             Vector2 mouseSimPosRound = new Vector2((float)Math.Round(mouseSimPos.X), (float)Math.Round(mouseSimPos.Y));
 
             if (mouse.LeftButton == ButtonState.Pressed)
@@ -1042,7 +1050,7 @@ namespace Source
                                 yMin = temp;
                             }
 
-                            Console.WriteLine("yMin: {0}\tyMax: {1}\tmouseY: {2}", yMin, yMax, mouseSimPos.Y);
+                            //Console.WriteLine("yMin: {0}\tyMax: {1}\tmouseY: {2}", yMin, yMax, mouseSimPos.Y);
 
                             lockedX = false;
                             lockedY = false;
@@ -1115,7 +1123,7 @@ namespace Source
                         }
                         else                                        // Move camera
                         {
-                            screenOffset += ConvertUnits.GetMousePos(mouse) - ConvertUnits.GetMousePos(prevMouseState);
+                            screenOffset += mouse.Position.ToVector2() - prevMouseState.Position.ToVector2();
                         }
                     }
                 }
@@ -1187,7 +1195,7 @@ namespace Source
                     ConvertUnits.SetDisplayUnitToSimUnitRatio(currentZoom);
 
                     Vector2 mousePos = ConvertUnits.ToDisplayUnits(mouseSimPos - averagePos) + cameraBounds.Center.ToVector2() + screenOffset;
-                    screenOffset -= mousePos - ConvertUnits.GetMousePos(prevMouseState);
+                    screenOffset -= mousePos - prevMouseState.Position.ToVector2();
                     Console.WriteLine("Screen offset: " + screenOffset);
                 }
                 else if (mouse.ScrollWheelValue < editScroll)
@@ -1198,7 +1206,7 @@ namespace Source
                     ConvertUnits.SetDisplayUnitToSimUnitRatio(currentZoom);
 
                     Vector2 mousePos = ConvertUnits.ToDisplayUnits(mouseSimPos - averagePos) + cameraBounds.Center.ToVector2() + screenOffset;
-                    screenOffset -= mousePos - ConvertUnits.GetMousePos(prevMouseState);
+                    screenOffset -= mousePos - prevMouseState.Position.ToVector2();
                 }
             }
             if (mouse.RightButton == ButtonState.Pressed && prevMouseState.RightButton == ButtonState.Released)
@@ -1381,7 +1389,7 @@ namespace Source
 						dist.X = 1;
 					else if (dist.X < -0.9999)
 						dist.X = -1;
-                    Console.WriteLine("Dist_" + i + " = " + dist);
+                    //Console.WriteLine("Dist_" + i + " = " + dist);
 
                     // for Position, (-1,-1) is bottom-left and (1,1) is top-right
                     // for TextureCoordinate, (0,0) is top-left and (1,1) is bottom-right
@@ -1594,7 +1602,7 @@ namespace Source
                 Texture2D tex = layer.Item1;
                 float speed = layer.Item2;
                 float center = layer.Item3;
-                float size = layer.Item4 * ConvertUnits.GetMouseScale();
+                float size = layer.Item4 * ConvertUnits.GetResolutionScale();
                 spriteBatch.Draw(tex, new Vector2(0, height * center),
                     new Rectangle((int)(averagePos.X * speed), 0, (int)(width / size), tex.Height),
                     Color.White, 0f, new Vector2(0, tex.Height / 2), size, SpriteEffects.None, 0f);
@@ -1635,7 +1643,7 @@ namespace Source
 #if DEBUG
             spriteBatch.Begin();
             EmptyKeys.UserInterface.Input.MouseStateBase mouse = Engine.Instance.InputDevice.MouseState;
-            spriteBatch.DrawString(fontSmall, "Mouse -- " + ConvertUnits.GetMousePos(prevMouseState), new Vector2(10, GraphicsDevice.Viewport.Height - 40), Color.White);
+            spriteBatch.DrawString(fontSmall, "Mouse -- " + prevMouseState.Position.ToVector2(), new Vector2(10, GraphicsDevice.Viewport.Height - 40), Color.White);
             spriteBatch.DrawString(fontSmall, "Mouse -- {" + mouse.NormalizedX + "," + mouse.NormalizedY + "}", new Vector2(10, GraphicsDevice.Viewport.Height - 80), Color.White);
             spriteBatch.End();
 #endif
