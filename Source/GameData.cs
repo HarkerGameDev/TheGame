@@ -28,10 +28,10 @@ namespace Source
         public const float PIXEL_METER_EDIT = 8f;  // pixels per meter when in edit mode for level
         public const int VIEW_WIDTH = 1280;        // width of unscaled screen in pixels
         public const int VIEW_HEIGHT = 720;        // height of unscaled screen in pixels
-        //public const int WINDOW_WIDTH = 1280;       // default width of window
-        //public const int WINDOW_HEIGHT = 720;       // default height of window
-        public const int WINDOW_WIDTH = 1600;       // default width of window
-        public const int WINDOW_HEIGHT = 900;       // default height of window
+        public const int WINDOW_WIDTH = 1280;       // default width of window
+        public const int WINDOW_HEIGHT = 720;       // default height of window
+        //public const int WINDOW_WIDTH = 1600;       // default width of window
+        //public const int WINDOW_HEIGHT = 900;       // default height of window
         //public const int WINDOW_WIDTH = 1920;       // default width of window
         //public const int WINDOW_HEIGHT = 1080;       // default height of window
 
