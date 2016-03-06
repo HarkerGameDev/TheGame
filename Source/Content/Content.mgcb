@@ -142,3 +142,21 @@
 /processorParam:TextureFormat=Color
 /build:Backgrounds/Background2/layer3.png
 
+#begin Music/Air Skate.mp3
+/importer:Mp3Importer
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Music/Air Skate.mp3
+
+#begin Music/Character Select.mp3
+/importer:Mp3Importer
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Music/Character Select.mp3
+
+#begin Music/Main Menu.mp3
+/importer:Mp3Importer
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Music/Main Menu.mp3
+

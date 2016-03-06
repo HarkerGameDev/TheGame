@@ -73,8 +73,7 @@ namespace Source
         //public const float WINDOW_SLOW = 0.2f;    // -- player speed is reduced to this ratio when a window is hit
         //public const float WALL_SLOW = 0.2f;    // -- player speed is reduced to this ratio when a wall is hit while flying
 
-        //public const string SONG = "afln_s_gdc-1.wav";    // the song to play, over, and over, and over again. NEVER STOP THE PARTY!
-        //public const float VOLUME = 0.0f;                // volume for song
+        public const float VOLUME = 0.8f;                // volume for songs
 
         public const float CAMERA_SCALE_X = 4f;         // how fast the camera moves
         public const float CAMERA_SCALE_Y = 20f;        // vertical speed of camera

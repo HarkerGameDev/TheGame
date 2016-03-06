@@ -53,6 +53,7 @@ namespace Source
         Tuple<Texture2D, float, float, float>[] prevBackground, background;
         float fadeTime;
         public SpriteFont fontSmall, fontBig;
+        List<Song> songs;
 
         RenderTarget2D[] playerScreens;
 
@@ -311,6 +312,7 @@ namespace Source
             {
                 case Menu.Main:
                     state = State.MainMenu;
+                    MediaPlayer.Play(songs[1]);
                     menu = new MainMenu();
                     break;
                 case Menu.Controls:
@@ -338,6 +340,14 @@ namespace Source
         {
             Content.RootDirectory = "Content";
             spriteBatch = new SpriteBatch(GraphicsDevice);
+
+            // Load the songs
+            songs = new List<Song>();
+            songs.Add(Content.Load<Song>("Music/Air Skate"));
+            songs.Add(Content.Load<Song>("Music/Main Menu"));
+            songs.Add(Content.Load<Song>("Music/Character Select"));
+            MediaPlayer.IsRepeating = true;
+            MediaPlayer.Volume = GameData.VOLUME;
 
             // Set up user interface
             SpriteFont font = Content.Load<SpriteFont>("Fonts/Segoe_UI_15_Bold");
@@ -406,12 +416,6 @@ namespace Source
 
             // Load the level stored in LEVEL_FILE
             LoadLevel(GameData.LEVEL_FILE);
-
-            //// Load the song
-            //Song song = Content.Load<Song>("Music/" + GameData.SONG);
-            //MediaPlayer.IsRepeating = true;
-            //MediaPlayer.Volume = GameData.VOLUME;
-            //MediaPlayer.Play(song);
         }
 
         private void LoadLevel(int loadLevel)
@@ -513,7 +517,10 @@ namespace Source
             switch (state) {
                 case State.Running:
                     if (ToggleKey(Keys.Escape))
+                    {
                         LoadUI(Menu.Pause);
+                        MediaPlayer.Play(songs[2]);
+                    }
                     if (ToggleKey(Keys.E))
                     {
                         editLevel = !editLevel;
@@ -607,7 +614,10 @@ namespace Source
                     break;
                 case State.Paused:
                     if (ToggleKey(Keys.Escape))
+                    {
                         state = State.Running;
+                        MediaPlayer.Play(songs[0]);
+                    }
                     UpdateMenu(gameTime.ElapsedGameTime.TotalMilliseconds);
                     break;
                 case State.Options:
@@ -649,6 +659,7 @@ namespace Source
             {
                 case "Start":
                     state = State.Running;
+                    MediaPlayer.Play(songs[0]);
                     break;
                 case "Options":
                     LoadUI(Menu.Options);
@@ -691,6 +702,13 @@ namespace Source
                 case "Pause":
                     LoadUI(Menu.Pause);
                     break;
+                case "Music":
+                    MediaPlayer.IsMuted = !MediaPlayer.IsMuted;
+                    break;
+                case null:
+                    break;
+                default:
+                    throw new NotImplementedException("Button command " + viewModel.ButtonResult + " is not implemented.");
             }
         }
 

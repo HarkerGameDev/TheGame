@@ -32,9 +32,13 @@ namespace EmptyKeys.UserInterface.Generated {
         
         private Button e_2;
         
-        private Button e_3;
+        private StackPanel e_3;
         
         private Button e_4;
+        
+        private Button e_5;
+        
+        private Button e_6;
         
         public OptionsMenu() : 
                 base() {
@@ -62,29 +66,11 @@ namespace EmptyKeys.UserInterface.Generated {
             this.e_0.Width = 800F;
             this.e_0.HorizontalAlignment = HorizontalAlignment.Center;
             RowDefinition row_e_0_0 = new RowDefinition();
-            row_e_0_0.Height = new GridLength(1F, GridUnitType.Star);
+            row_e_0_0.Height = new GridLength(1F, GridUnitType.Auto);
             this.e_0.RowDefinitions.Add(row_e_0_0);
             RowDefinition row_e_0_1 = new RowDefinition();
             row_e_0_1.Height = new GridLength(1F, GridUnitType.Star);
             this.e_0.RowDefinitions.Add(row_e_0_1);
-            RowDefinition row_e_0_2 = new RowDefinition();
-            row_e_0_2.Height = new GridLength(1F, GridUnitType.Star);
-            this.e_0.RowDefinitions.Add(row_e_0_2);
-            RowDefinition row_e_0_3 = new RowDefinition();
-            row_e_0_3.Height = new GridLength(1F, GridUnitType.Star);
-            this.e_0.RowDefinitions.Add(row_e_0_3);
-            RowDefinition row_e_0_4 = new RowDefinition();
-            row_e_0_4.Height = new GridLength(1F, GridUnitType.Star);
-            this.e_0.RowDefinitions.Add(row_e_0_4);
-            RowDefinition row_e_0_5 = new RowDefinition();
-            row_e_0_5.Height = new GridLength(1F, GridUnitType.Star);
-            this.e_0.RowDefinitions.Add(row_e_0_5);
-            RowDefinition row_e_0_6 = new RowDefinition();
-            row_e_0_6.Height = new GridLength(1F, GridUnitType.Star);
-            this.e_0.RowDefinitions.Add(row_e_0_6);
-            RowDefinition row_e_0_7 = new RowDefinition();
-            row_e_0_7.Height = new GridLength(1F, GridUnitType.Star);
-            this.e_0.RowDefinitions.Add(row_e_0_7);
             // e_1 element
             this.e_1 = new TextBlock();
             this.e_0.Children.Add(this.e_1);
@@ -102,42 +88,62 @@ namespace EmptyKeys.UserInterface.Generated {
             this.e_2.Name = "e_2";
             this.e_2.Height = 80F;
             this.e_2.Width = 165F;
-            this.e_2.TabIndex = 1;
+            this.e_2.HorizontalAlignment = HorizontalAlignment.Left;
+            this.e_2.VerticalAlignment = VerticalAlignment.Center;
+            this.e_2.TabIndex = 3;
             this.e_2.FontSize = 20F;
             this.e_2.FontStyle = FontStyle.Bold;
-            this.e_2.Content = "Toggle Fullscreen";
-            this.e_2.CommandParameter = "Fullscreen";
-            Grid.SetRow(this.e_2, 2);
+            this.e_2.Content = "Back";
+            this.e_2.CommandParameter = "Pause";
             Binding binding_e_2_Command = new Binding("ButtonCommand");
             this.e_2.SetBinding(Button.CommandProperty, binding_e_2_Command);
             // e_3 element
-            this.e_3 = new Button();
+            this.e_3 = new StackPanel();
             this.e_0.Children.Add(this.e_3);
             this.e_3.Name = "e_3";
-            this.e_3.Height = 80F;
-            this.e_3.Width = 165F;
-            this.e_3.TabIndex = 2;
-            this.e_3.FontSize = 20F;
-            this.e_3.FontStyle = FontStyle.Bold;
-            this.e_3.Content = "Controls";
-            this.e_3.CommandParameter = "Controls";
-            Grid.SetRow(this.e_3, 4);
-            Binding binding_e_3_Command = new Binding("ButtonCommand");
-            this.e_3.SetBinding(Button.CommandProperty, binding_e_3_Command);
+            Grid.SetRow(this.e_3, 1);
             // e_4 element
             this.e_4 = new Button();
-            this.e_0.Children.Add(this.e_4);
+            this.e_3.Children.Add(this.e_4);
             this.e_4.Name = "e_4";
             this.e_4.Height = 80F;
             this.e_4.Width = 165F;
-            this.e_4.TabIndex = 3;
+            this.e_4.Margin = new Thickness(20F, 20F, 20F, 20F);
+            this.e_4.TabIndex = 2;
             this.e_4.FontSize = 20F;
             this.e_4.FontStyle = FontStyle.Bold;
-            this.e_4.Content = "Back";
-            this.e_4.CommandParameter = "Pause";
-            Grid.SetRow(this.e_4, 6);
+            this.e_4.Content = "Controls";
+            this.e_4.CommandParameter = "Controls";
             Binding binding_e_4_Command = new Binding("ButtonCommand");
             this.e_4.SetBinding(Button.CommandProperty, binding_e_4_Command);
+            // e_5 element
+            this.e_5 = new Button();
+            this.e_3.Children.Add(this.e_5);
+            this.e_5.Name = "e_5";
+            this.e_5.Height = 80F;
+            this.e_5.Width = 165F;
+            this.e_5.Margin = new Thickness(20F, 20F, 20F, 20F);
+            this.e_5.TabIndex = 1;
+            this.e_5.FontSize = 20F;
+            this.e_5.FontStyle = FontStyle.Bold;
+            this.e_5.Content = "Toggle Fullscreen";
+            this.e_5.CommandParameter = "Fullscreen";
+            Binding binding_e_5_Command = new Binding("ButtonCommand");
+            this.e_5.SetBinding(Button.CommandProperty, binding_e_5_Command);
+            // e_6 element
+            this.e_6 = new Button();
+            this.e_3.Children.Add(this.e_6);
+            this.e_6.Name = "e_6";
+            this.e_6.Height = 80F;
+            this.e_6.Width = 165F;
+            this.e_6.Margin = new Thickness(20F, 20F, 20F, 20F);
+            this.e_6.TabIndex = 1;
+            this.e_6.FontSize = 20F;
+            this.e_6.FontStyle = FontStyle.Bold;
+            this.e_6.Content = "Toggle Music";
+            this.e_6.CommandParameter = "Music";
+            Binding binding_e_6_Command = new Binding("ButtonCommand");
+            this.e_6.SetBinding(Button.CommandProperty, binding_e_6_Command);
             FontManager.Instance.AddFont("Segoe UI", 40F, FontStyle.Bold, "Segoe_UI_30_Bold");
             FontManager.Instance.AddFont("Segoe UI", 20F, FontStyle.Bold, "Segoe_UI_15_Bold");
         }
