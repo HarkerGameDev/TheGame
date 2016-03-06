@@ -158,7 +158,8 @@ namespace Source
         {
             // Sets how many pixels is a meter
             ConvertUnits.SetDisplayUnitToSimUnitRatio(currentZoom);
-            ConvertUnits.SetResolutionScale((float)Window.ClientBounds.Width / GameData.VIEW_WIDTH);
+            ConvertUnits.SetMouseScale(graphics.IsFullScreen, (float)Window.ClientBounds.Width / GameData.VIEW_WIDTH);
+            ConvertUnits.SetResolutionScale((float)nativeScreenWidth / GameData.VIEW_WIDTH);
 
             // Set seed for a scheduled random level (minutes since Jan 1, 2015)
             //randSeed = DateTime.Now.Millisecond;
@@ -682,7 +683,8 @@ namespace Source
                     graphics.IsFullScreen = !graphics.IsFullScreen;
                     graphics.ApplyChanges();
 
-                    ConvertUnits.SetResolutionScale((float)Window.ClientBounds.Width / GameData.VIEW_WIDTH);
+                    ConvertUnits.SetMouseScale(graphics.IsFullScreen, (float)Window.ClientBounds.Width / nativeScreenWidth);
+                    //ConvertUnits.SetResolutionScale((float)nativeScreenWidth / GameData.VIEW_WIDTH);
                     //Window.BeginScreenDeviceChange(true);
                     //Console.WriteLine("Fullscreen: {0}\tEngine: {1}", graphics.IsFullScreen, Engine.Instance.Renderer.IsFullScreen);
                     Engine.Instance.Renderer.ResetNativeSize();
@@ -1024,7 +1026,7 @@ namespace Source
             averagePos /= players.Count;
 
             // Snap the mouse position to 1x1 meter grid
-            Vector2 mouseSimPos = ConvertUnits.ToSimUnits(mouse.Position.ToVector2() - cameraBounds.Center.ToVector2() - screenOffset) + averagePos;
+            Vector2 mouseSimPos = ConvertUnits.ToSimUnits(ConvertUnits.GetMousePos(mouse) - cameraBounds.Center.ToVector2() - screenOffset) + averagePos;
             Vector2 mouseSimPosRound = new Vector2((float)Math.Round(mouseSimPos.X), (float)Math.Round(mouseSimPos.Y));
 
             if (mouse.LeftButton == ButtonState.Pressed)
@@ -1141,7 +1143,7 @@ namespace Source
                         }
                         else                                        // Move camera
                         {
-                            screenOffset += mouse.Position.ToVector2() - prevMouseState.Position.ToVector2();
+                            screenOffset += ConvertUnits.GetMousePos(mouse) - ConvertUnits.GetMousePos(prevMouseState);
                         }
                     }
                 }
@@ -1213,7 +1215,7 @@ namespace Source
                     ConvertUnits.SetDisplayUnitToSimUnitRatio(currentZoom);
 
                     Vector2 mousePos = ConvertUnits.ToDisplayUnits(mouseSimPos - averagePos) + cameraBounds.Center.ToVector2() + screenOffset;
-                    screenOffset -= mousePos - prevMouseState.Position.ToVector2();
+                    screenOffset -= mousePos - ConvertUnits.GetMousePos(prevMouseState);
                     Console.WriteLine("Screen offset: " + screenOffset);
                 }
                 else if (mouse.ScrollWheelValue < editScroll)
@@ -1224,7 +1226,7 @@ namespace Source
                     ConvertUnits.SetDisplayUnitToSimUnitRatio(currentZoom);
 
                     Vector2 mousePos = ConvertUnits.ToDisplayUnits(mouseSimPos - averagePos) + cameraBounds.Center.ToVector2() + screenOffset;
-                    screenOffset -= mousePos - prevMouseState.Position.ToVector2();
+                    screenOffset -= mousePos - ConvertUnits.GetMousePos(prevMouseState);
                 }
             }
             if (mouse.RightButton == ButtonState.Pressed && prevMouseState.RightButton == ButtonState.Released)
@@ -1661,7 +1663,7 @@ namespace Source
 #if DEBUG
             spriteBatch.Begin();
             EmptyKeys.UserInterface.Input.MouseStateBase mouse = Engine.Instance.InputDevice.MouseState;
-            spriteBatch.DrawString(fontSmall, "Mouse -- " + prevMouseState.Position.ToVector2(), new Vector2(10, GraphicsDevice.Viewport.Height - 40), Color.White);
+            spriteBatch.DrawString(fontSmall, "Mouse -- " + ConvertUnits.GetMousePos(prevMouseState), new Vector2(10, GraphicsDevice.Viewport.Height - 40), Color.White);
             spriteBatch.DrawString(fontSmall, "Mouse -- {" + mouse.NormalizedX + "," + mouse.NormalizedY + "}", new Vector2(10, GraphicsDevice.Viewport.Height - 80), Color.White);
             spriteBatch.End();
 #endif

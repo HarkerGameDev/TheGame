@@ -15,6 +15,7 @@ namespace Source.Collisions
     {
         private static float Ratio;
         private static float ResolutionScale = 1;
+        private static float MouseScale = 1;
 
         public static void SetDisplayUnitToSimUnitRatio(float displayToSimRatio) {
             Ratio = displayToSimRatio;
@@ -54,6 +55,17 @@ namespace Source.Collisions
         {
             ResolutionScale = scale;
             Console.WriteLine("Resolution Scale: " + scale);
+        }
+
+        public static void SetMouseScale(bool fullscreen, float scale)
+        {
+            MouseScale = fullscreen ? scale : 1;
+            Console.WriteLine("Mouse Scale: " + scale);
+        }
+
+        public static Vector2 GetMousePos(MouseState mouse)
+        {
+            return mouse.Position.ToVector2() / MouseScale;
         }
     }
 }
