@@ -131,14 +131,12 @@ namespace Source
 
         private void graphics_PreparingDeviceSettings(object sender, PreparingDeviceSettingsEventArgs e)
         {
-            nativeScreenWidth = graphics.PreferredBackBufferWidth;
-            nativeScreenHeight = graphics.PreferredBackBufferHeight;
-//            nativeScreenWidth = 1920;
-//            nativeScreenHeight = 1080;
-            Console.WriteLine("Width: {0}\tHeight: {1}", nativeScreenWidth, nativeScreenHeight);
-			Console.WriteLine("RealWidth: {0}\tRealHeight: {1}", GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width, GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height);
-            graphics.PreferredBackBufferWidth = GameData.VIEW_WIDTH;
-            graphics.PreferredBackBufferHeight = GameData.VIEW_HEIGHT;
+            //nativeScreenWidth = 1280;
+            //nativeScreenHeight = 720;
+            nativeScreenWidth = 1920;
+            nativeScreenHeight = 1080;
+            graphics.PreferredBackBufferWidth = nativeScreenWidth;
+            graphics.PreferredBackBufferHeight = nativeScreenHeight;
             graphics.PreferMultiSampling = true;
             graphics.GraphicsProfile = GraphicsProfile.HiDef;
             graphics.PreferredDepthStencilFormat = DepthFormat.Depth24Stencil8;
@@ -146,6 +144,8 @@ namespace Source
 
             IsFixedTimeStep = true;
             graphics.SynchronizeWithVerticalRetrace = false;
+            graphics.IsFullScreen = false;
+            Window.IsBorderless = false;
         }
 
         /// <summary>
@@ -158,6 +158,7 @@ namespace Source
         {
             // Sets how many pixels is a meter
             ConvertUnits.SetDisplayUnitToSimUnitRatio(currentZoom);
+            ConvertUnits.SetMouseScale((float)Window.ClientBounds.Width / GameData.VIEW_WIDTH);
 
             // Set seed for a scheduled random level (minutes since Jan 1, 2015)
             //randSeed = DateTime.Now.Millisecond;
@@ -311,55 +312,24 @@ namespace Source
             {
                 case Menu.Main:
                     state = State.MainMenu;
-                    menu = new MainMenu(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
-                    EmptyKeys.UserInterface.Input.RelayCommand command = new EmptyKeys.UserInterface.Input.RelayCommand(new Action<object>(ExitEvent));
-                    EmptyKeys.UserInterface.Input.KeyBinding keyBinding = new EmptyKeys.UserInterface.Input.KeyBinding(command, EmptyKeys.UserInterface.Input.KeyCode.Escape, EmptyKeys.UserInterface.Input.ModifierKeys.None);
-                    menu.InputBindings.Add(keyBinding);
+                    menu = new MainMenu();
                     break;
                 case Menu.Controls:
                     state = State.Controls;
-                    menu = new ControlsMenu(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
-                    command = new EmptyKeys.UserInterface.Input.RelayCommand(new Action<object>(CloseControls));
-                    keyBinding = new EmptyKeys.UserInterface.Input.KeyBinding(command, EmptyKeys.UserInterface.Input.KeyCode.Escape, EmptyKeys.UserInterface.Input.ModifierKeys.None);
-                    menu.InputBindings.Add(keyBinding);
+                    menu = new ControlsMenu();
                     break;
                 case Menu.Options:
                     state = State.Options;
-                    menu = new OptionsMenu(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
-                    command = new EmptyKeys.UserInterface.Input.RelayCommand(new Action<object>(CloseOptions));
-                    keyBinding = new EmptyKeys.UserInterface.Input.KeyBinding(command, EmptyKeys.UserInterface.Input.KeyCode.Escape, EmptyKeys.UserInterface.Input.ModifierKeys.None);
-                    menu.InputBindings.Add(keyBinding);
+                    menu = new OptionsMenu();
                     break;
                 case Menu.Pause:
+                    Console.WriteLine("Pausing");
                     state = State.Paused;
-                    menu = new PauseMenu(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
-                    command = new EmptyKeys.UserInterface.Input.RelayCommand(new Action<object>(ResumeGame));
-                    keyBinding = new EmptyKeys.UserInterface.Input.KeyBinding(command, EmptyKeys.UserInterface.Input.KeyCode.Escape, EmptyKeys.UserInterface.Input.ModifierKeys.None);
-                    menu.InputBindings.Add(keyBinding);
+                    menu = new PauseMenu();
                     break;
             }
 
             menu.DataContext = viewModel;
-        }
-
-        private void CloseOptions(object obj)
-        {
-            LoadUI(Menu.Pause);
-        }
-
-        private void ExitEvent(object obj)
-        {
-            Exit();
-        }
-
-        private void ResumeGame(object obj)
-        {
-            state = State.Running;
-        }
-
-        private void CloseControls(object obj)
-        {
-            LoadUI(Menu.Options);
         }
 
         /// <summary>
@@ -425,46 +395,6 @@ namespace Source
             float buttonHeight = height * GameData.BUTTON_HEIGHT;
             float left = (width - buttonWidth) / 2f;
             float centerY = (height - buttonHeight) / 2f;
-
-            //pauseMenu = new List<Button>();
-            //pauseMenu.Add(new Button(whiteRect, new Vector2(left, buttonHeight), new Vector2(buttonWidth, buttonHeight),
-            //    delegate() { state = State.Running; }, Color.RoyalBlue,
-            //    fontSmall, "Continue", Color.Red));
-            //pauseMenu.Add(new Button(whiteRect, new Vector2(left, centerY), new Vector2(buttonWidth, buttonHeight),
-            //    delegate() { state = State.Options; }, Color.RoyalBlue,
-            //    fontSmall, "Options", Color.Red));
-            //pauseMenu.Add(new Button(whiteRect, new Vector2(left, height - buttonHeight * 2), new Vector2(buttonWidth, buttonHeight),
-            //    delegate() { Exit(); }, Color.RoyalBlue,
-            //    fontSmall, "Exit", Color.Red));
-
-            //optionsMenu = new List<Button>();
-            //optionsMenu.Add(new Button(whiteRect, new Vector2(left, buttonHeight), new Vector2(buttonWidth, buttonHeight),
-            //    delegate() {
-            //        state = State.Controls;
-            //    }, Color.Maroon, fontSmall, "Controls", Color.Chartreuse));
-            //optionsMenu.Add(new Button(whiteRect, new Vector2(left, centerY), new Vector2(buttonWidth, buttonHeight),
-            //    delegate() {
-            //        simulating = true;
-            //        currentReplay = int.MaxValue;
-            //        LoadReplay(currentReplay);
-            //        Reset();
-            //        state = State.Running;
-            //    }, Color.Maroon,
-            //    fontSmall, "Instant replay", Color.Chartreuse));
-            //optionsMenu.Add(new Button(whiteRect, new Vector2(left, height - buttonHeight * 2), new Vector2(buttonWidth, buttonHeight),
-            //    delegate() { state = State.Paused; }, Color.Maroon,
-            //    fontSmall, "Back", Color.Chartreuse));
-
-            //controlsMenu = new List<Button>();
-            //controlsMenu.Add(new Button(whiteRect, new Vector2(buttonHeight, 0), new Vector2(width / 2f - buttonHeight + 1, height - buttonHeight * 3),
-            //    delegate() { }, Color.DarkGray,
-            //    fontSmall, "Player 1 controls\n" + playerControls[0], Color.Chartreuse));
-            //controlsMenu.Add(new Button(whiteRect, new Vector2(width / 2f, 0), new Vector2(width / 2f - buttonHeight, height - buttonHeight * 3),
-            //    delegate() { }, Color.DarkGray,
-            //    fontSmall, "Player 2 controls\n" + playerControls[1], Color.Chartreuse));
-            //controlsMenu.Add(new Button(whiteRect, new Vector2(left, height - buttonHeight * 2), new Vector2(buttonWidth, buttonHeight),
-            //    delegate() { state = State.Options; }, Color.DarkGray,
-            //    fontSmall, "Back", Color.Chartreuse));
 
             // Load the level stored in LEVEL_FILE
             LoadLevel(GameData.LEVEL_FILE);
@@ -574,6 +504,8 @@ namespace Source
         {
             switch (state) {
                 case State.Running:
+                    if (ToggleKey(Keys.Escape))
+                        LoadUI(Menu.Pause);
                     if (ToggleKey(Keys.E))
                     {
                         editLevel = !editLevel;
@@ -664,17 +596,26 @@ namespace Source
                             player.PrevStates.Add(Tuple.Create(player.Position, player.Velocity));
                         times.Add(totalTime);
                     }
-                    if (ToggleKey(Keys.Escape))
-                        LoadUI(Menu.Pause);
                     break;
                 case State.Paused:
+                    if (ToggleKey(Keys.Escape))
+                        state = State.Running;
+                    UpdateMenu(gameTime.ElapsedGameTime.TotalMilliseconds);
+                    break;
                 case State.Options:
+                    if (ToggleKey(Keys.Escape))
+                        LoadUI(Menu.Pause);
+                    UpdateMenu(gameTime.ElapsedGameTime.TotalMilliseconds);
+                    break;
                 case State.Controls:
+                    if (ToggleKey(Keys.Escape))
+                        LoadUI(Menu.Options);
+                    UpdateMenu(gameTime.ElapsedGameTime.TotalMilliseconds);
+                    break;
                 case State.MainMenu:
-                    menu.UpdateInput(gameTime.ElapsedGameTime.TotalMilliseconds);
-                    menu.UpdateLayout(gameTime.ElapsedGameTime.TotalMilliseconds);
-                    ParseButtons();
-                    viewModel.ButtonResult = null;
+                    if (ToggleKey(Keys.Escape))
+                        Exit();
+                    UpdateMenu(gameTime.ElapsedGameTime.TotalMilliseconds);
                     break;
             }
 
@@ -686,37 +627,53 @@ namespace Source
             base.Update(gameTime);
         }
 
+        private void UpdateMenu(double elapsedTime)
+        {
+            menu.UpdateInput(elapsedTime);
+            menu.UpdateLayout(elapsedTime);
+            ParseButtons();
+            viewModel.ButtonResult = null;
+        }
+
         private void ParseButtons()
         {
             switch (viewModel.ButtonResult)
             {
                 case "Start":
-                    ResumeGame(null);
+                    state = State.Running;
                     break;
                 case "Options":
                     LoadUI(Menu.Options);
                     break;
                 case "Exit":
-                    ExitEvent(null);
+                    Exit();
                     break;
                 case "Fullscreen":
                     // TODO toggle fullscreen
-                    //graphics.ToggleFullScreen();
+                    if (!graphics.IsFullScreen)
+                    {
+                        graphics.PreferredBackBufferWidth = GraphicsDevice.Adapter.CurrentDisplayMode.Width;
+                        graphics.PreferredBackBufferHeight = GraphicsDevice.Adapter.CurrentDisplayMode.Height;
+                    }
+                    else
+                    {
+                        graphics.PreferredBackBufferWidth = nativeScreenWidth;
+                        graphics.PreferredBackBufferHeight = nativeScreenHeight;
+                    }
+                    graphics.IsFullScreen = !graphics.IsFullScreen;
+                    graphics.ApplyChanges();
 
-                    //if (graphics.IsFullScreen)
-                    //{
-                    //    graphics.PreferredBackBufferWidth = GameData.VIEW_WIDTH;
-                    //    graphics.PreferredBackBufferHeight = GameData.VIEW_HEIGHT;
-                    //    graphics.IsFullScreen = false;
-                    //    graphics.ApplyChanges();
-                    //}
-                    //else
-                    //{
-                    //    graphics.PreferredBackBufferWidth = nativeScreenWidth;
-                    //    graphics.PreferredBackBufferHeight = nativeScreenHeight;
-                    //    graphics.IsFullScreen = true;
-                    //    graphics.ApplyChanges();
-                    //}
+                    ConvertUnits.SetMouseScale((float)Window.ClientBounds.Width / GameData.VIEW_WIDTH);
+                    //Window.BeginScreenDeviceChange(true);
+                    //Console.WriteLine("Fullscreen: {0}\tEngine: {1}", graphics.IsFullScreen, Engine.Instance.Renderer.IsFullScreen);
+                    Engine.Instance.Renderer.ResetNativeSize();
+                    Console.WriteLine("Native: {{{0}, {1}}}", nativeScreenWidth, nativeScreenHeight);
+                    Console.WriteLine("Window: " + Window.ClientBounds.Size);
+                    //Console.WriteLine("Screen: {{{0}, {1}}}", GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width, GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height);
+                    Console.WriteLine("Adapter: {{{0}, {1}}}", GraphicsDevice.Adapter.CurrentDisplayMode.Width, GraphicsDevice.Adapter.CurrentDisplayMode.Height);
+                    Console.WriteLine("Viewport: " + GraphicsDevice.Viewport.Bounds.Size);
+                    Console.WriteLine("Backbuffer: {{{0}, {1}}}", graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight);
+                    //GraphicsDevice.Viewport = new Viewport(0, 0, nativeScreenWidth, nativeScreenHeight);
 
                     //LoadUI(Menu.Options);
                     break;
@@ -1041,7 +998,7 @@ namespace Source
             averagePos /= players.Count;
 
             // Snap the mouse position to 1x1 meter grid
-            Vector2 mouseSimPos = ConvertUnits.ToSimUnits(mouse.Position.ToVector2() - cameraBounds.Center.ToVector2() - screenOffset) + averagePos;
+            Vector2 mouseSimPos = ConvertUnits.ToSimUnits(ConvertUnits.GetMousePos(mouse) - cameraBounds.Center.ToVector2() - screenOffset) + averagePos;
             Vector2 mouseSimPosRound = new Vector2((float)Math.Round(mouseSimPos.X), (float)Math.Round(mouseSimPos.Y));
 
             if (mouse.LeftButton == ButtonState.Pressed)
@@ -1158,7 +1115,7 @@ namespace Source
                         }
                         else                                        // Move camera
                         {
-                            screenOffset += mouse.Position.ToVector2() - prevMouseState.Position.ToVector2();
+                            screenOffset += ConvertUnits.GetMousePos(mouse) - ConvertUnits.GetMousePos(prevMouseState);
                         }
                     }
                 }
@@ -1230,7 +1187,7 @@ namespace Source
                     ConvertUnits.SetDisplayUnitToSimUnitRatio(currentZoom);
 
                     Vector2 mousePos = ConvertUnits.ToDisplayUnits(mouseSimPos - averagePos) + cameraBounds.Center.ToVector2() + screenOffset;
-                    screenOffset -= mousePos - prevMouseState.Position.ToVector2();
+                    screenOffset -= mousePos - ConvertUnits.GetMousePos(prevMouseState);
                     Console.WriteLine("Screen offset: " + screenOffset);
                 }
                 else if (mouse.ScrollWheelValue < editScroll)
@@ -1241,7 +1198,7 @@ namespace Source
                     ConvertUnits.SetDisplayUnitToSimUnitRatio(currentZoom);
 
                     Vector2 mousePos = ConvertUnits.ToDisplayUnits(mouseSimPos - averagePos) + cameraBounds.Center.ToVector2() + screenOffset;
-                    screenOffset -= mousePos - prevMouseState.Position.ToVector2();
+                    screenOffset -= mousePos - ConvertUnits.GetMousePos(prevMouseState);
                 }
             }
             if (mouse.RightButton == ButtonState.Pressed && prevMouseState.RightButton == ButtonState.Released)
@@ -1379,7 +1336,7 @@ namespace Source
                     //Console.WriteLine("Real pos_" + i + " = " + player.Position + "\tPos = " + pos + "\tDist = " + dist);
 
                     // Draw background
-                    float zoom = ConvertUnits.ToDisplayUnits(1);
+                    float zoom = ConvertUnits.GetRatio();
                     ConvertUnits.SetDisplayUnitToSimUnitRatio(GameData.SHADOW_SCALE);
                     DrawBackground(ConvertUnits.ToDisplayUnits(pos));
                     ConvertUnits.SetDisplayUnitToSimUnitRatio(zoom);
@@ -1392,7 +1349,7 @@ namespace Source
                 GraphicsDevice.SetRenderTarget(playerScreens[0]);
 
                 // Draw background
-                float zoom = ConvertUnits.ToDisplayUnits(1);
+                float zoom = ConvertUnits.GetRatio();
                 ConvertUnits.SetDisplayUnitToSimUnitRatio(GameData.SHADOW_SCALE);
                 DrawBackground(ConvertUnits.ToDisplayUnits(averagePos));
                 ConvertUnits.SetDisplayUnitToSimUnitRatio(zoom);
@@ -1637,7 +1594,7 @@ namespace Source
                 Texture2D tex = layer.Item1;
                 float speed = layer.Item2;
                 float center = layer.Item3;
-                float size = layer.Item4;
+                float size = layer.Item4 * ConvertUnits.GetMouseScale();
                 spriteBatch.Draw(tex, new Vector2(0, height * center),
                     new Rectangle((int)(averagePos.X * speed), 0, (int)(width / size), tex.Height),
                     Color.White, 0f, new Vector2(0, tex.Height / 2), size, SpriteEffects.None, 0f);
@@ -1675,6 +1632,14 @@ namespace Source
                     break;
             }
 
+#if DEBUG
+            spriteBatch.Begin();
+            EmptyKeys.UserInterface.Input.MouseStateBase mouse = Engine.Instance.InputDevice.MouseState;
+            spriteBatch.DrawString(fontSmall, "Mouse -- " + ConvertUnits.GetMousePos(prevMouseState), new Vector2(10, GraphicsDevice.Viewport.Height - 40), Color.White);
+            spriteBatch.DrawString(fontSmall, "Mouse -- {" + mouse.NormalizedX + "," + mouse.NormalizedY + "}", new Vector2(10, GraphicsDevice.Viewport.Height - 80), Color.White);
+            spriteBatch.End();
+#endif
+
             base.Draw(gameTime);
         }
 
@@ -1701,21 +1666,6 @@ namespace Source
         public static void DrawRectangle(SpriteBatch spriteBatch, Vector2 position, Color color, Vector2 scale)
         {
             spriteBatch.Draw(whiteRect, ConvertUnits.ToDisplayUnits(position), null, color, 0f, Vector2.Zero, ConvertUnits.ToDisplayUnits(scale), SpriteEffects.None, 0f);
-        }
-
-        private void HandleMenu(List<Button> menu)
-        {
-            foreach (Button button in menu)
-            {
-                MouseState mouse = Mouse.GetState();
-				if (button.TestPoint(mouse.Position))
-                {
-                    if (mouse.LeftButton == ButtonState.Pressed && prevMouseState.LeftButton == ButtonState.Released)
-                    {
-                        button.OnClick();
-                    }
-                }
-            }
         }
     }
 }

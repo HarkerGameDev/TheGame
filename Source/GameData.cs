@@ -164,7 +164,7 @@ namespace Source
         // format of WORLD_LAYERS is:
         //  first array is each individual world
         //  second array is the layers in the world (in order of back to front)
-        //  inner array is {speed, center, size} of layer respectively (must be size 3)
+        //  inner array is {speed, center, size} of layer respectively (must have all 3 elements)
         public static float[][][] WORLD_LAYERS =
         {
             new float[][]

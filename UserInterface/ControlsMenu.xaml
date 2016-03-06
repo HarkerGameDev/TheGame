@@ -21,5 +21,6 @@
         </Grid.RowDefinitions>
         <!--Creates a TextBlock saying controls-->
         <TextBlock Text="Controls" FontSize="40" FontWeight="Bold" TextAlignment="Center" HorizontalAlignment="Center" Width="800"/>
+        <TextBlock Text="{Binding ButtonResult}" Grid.Row="2" FontSize="40" FontWeight="Bold" TextAlignment="Center" HorizontalAlignment="Center" Width="800"/>
     </Grid>
 </ek:UIRoot>

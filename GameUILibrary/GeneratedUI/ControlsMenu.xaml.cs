@@ -30,6 +30,8 @@ namespace EmptyKeys.UserInterface.Generated {
         
         private TextBlock e_1;
         
+        private TextBlock e_2;
+        
         public ControlsMenu() : 
                 base() {
             this.Initialize();
@@ -89,6 +91,18 @@ namespace EmptyKeys.UserInterface.Generated {
             this.e_1.TextAlignment = TextAlignment.Center;
             this.e_1.FontSize = 40F;
             this.e_1.FontStyle = FontStyle.Bold;
+            // e_2 element
+            this.e_2 = new TextBlock();
+            this.e_0.Children.Add(this.e_2);
+            this.e_2.Name = "e_2";
+            this.e_2.Width = 800F;
+            this.e_2.HorizontalAlignment = HorizontalAlignment.Center;
+            this.e_2.TextAlignment = TextAlignment.Center;
+            this.e_2.FontSize = 40F;
+            this.e_2.FontStyle = FontStyle.Bold;
+            Grid.SetRow(this.e_2, 2);
+            Binding binding_e_2_Text = new Binding("ButtonResult");
+            this.e_2.SetBinding(TextBlock.TextProperty, binding_e_2_Text);
             FontManager.Instance.AddFont("Segoe UI", 40F, FontStyle.Bold, "Segoe_UI_30_Bold");
         }
     }
