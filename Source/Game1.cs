@@ -2,6 +2,7 @@
 using System.IO;
 using System.Runtime.Serialization;
 using System.Collections.Generic;
+using System.Text;
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -12,11 +13,11 @@ using Microsoft.Xna.Framework.GamerServices;
 
 using Source.Collisions;
 using Source.Graphics;
+using Source.Properties;
 
 using GameUILibrary;
 using EmptyKeys.UserInterface;
 using EmptyKeys.UserInterface.Generated;
-using System.Text;
 
 namespace Source
 {
@@ -120,7 +121,6 @@ namespace Source
 
         public Game1()
         {
-            LoadSettings();
             graphics = new GraphicsDeviceManager(this);
             graphics.DeviceCreated += graphics_DeviceCreated;
             graphics.PreparingDeviceSettings += graphics_PreparingDeviceSettings;
@@ -134,15 +134,15 @@ namespace Source
 
         private void graphics_PreparingDeviceSettings(object sender, PreparingDeviceSettingsEventArgs e)
         {
-            if (GameData.FULLSCREEN)
+            if (Settings.Default.Fullscreen)
             {
                 nativeScreenWidth = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width;
                 nativeScreenHeight = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height;
             }
             else
             {
-                nativeScreenWidth = GameData.WINDOW_WIDTH;
-                nativeScreenHeight = GameData.WINDOW_HEIGHT;
+                nativeScreenWidth = Settings.Default.WindowWidth;
+                nativeScreenHeight = Settings.Default.WindowHeight;
             }
             graphics.PreferredBackBufferWidth = nativeScreenWidth;
             graphics.PreferredBackBufferHeight = nativeScreenHeight;
@@ -153,10 +153,10 @@ namespace Source
             e.GraphicsDeviceInformation.PresentationParameters.MultiSampleCount = 16;
 
             IsFixedTimeStep = true;
-            graphics.SynchronizeWithVerticalRetrace = GameData.VSYNC;
-            graphics.IsFullScreen = GameData.FULLSCREEN;
+            graphics.SynchronizeWithVerticalRetrace = Settings.Default.VSync;
+            graphics.IsFullScreen = Settings.Default.Fullscreen;
 #if WINDOWS
-            Window.IsBorderless = GameData.BORDERLESS;
+            Window.IsBorderless = Settings.Default.Borderless;
 #endif
         }
 
@@ -207,79 +207,6 @@ namespace Source
             //randLevel = new Random(randLevelSeed);
 
             base.Initialize();      // This calls LoadContent()
-        }
-
-        private void SaveSettings()
-        {
-            IAsyncResult result = StorageDevice.BeginShowSelector(null, null);
-            result.AsyncWaitHandle.WaitOne();
-            StorageDevice device = StorageDevice.EndShowSelector(result);
-            result.AsyncWaitHandle.Close();
-            if (device != null && device.IsConnected)
-            {
-                result = device.BeginOpenContainer("Game", null, null);
-                result.AsyncWaitHandle.WaitOne();
-                StorageContainer container = device.EndOpenContainer(result);
-                result.AsyncWaitHandle.Close();
-
-                string filename = "settings.cfg";
-
-                BinaryWriter file = new BinaryWriter(container.OpenFile(filename, FileMode.Create));
-                file.Write(GameData.NUM_PLAYERS);
-                file.Write(GameData.WINDOW_WIDTH);
-                file.Write(GameData.WINDOW_HEIGHT);
-                file.Write(MediaPlayer.Volume);
-                file.Write(graphics.IsFullScreen);
-#if WINDOWS
-                file.Write(Window.IsBorderless);
-#else
-                file.Write(false);
-#endif
-                file.Write(MediaPlayer.IsMuted);
-                file.Write(graphics.SynchronizeWithVerticalRetrace);
-                Console.WriteLine("Saved settings");
-
-                file.Close();
-                container.Dispose();
-            }
-        }
-
-        private void LoadSettings()
-        {
-            IAsyncResult result = StorageDevice.BeginShowSelector(null, null);
-            result.AsyncWaitHandle.WaitOne();
-            StorageDevice device = StorageDevice.EndShowSelector(result);
-            result.AsyncWaitHandle.Close();
-            if (device != null && device.IsConnected)
-            {
-                result = device.BeginOpenContainer("Game", null, null);
-                result.AsyncWaitHandle.WaitOne();
-                StorageContainer container = device.EndOpenContainer(result);
-                result.AsyncWaitHandle.Close();
-
-                string filename = "settings.cfg";
-
-                try
-                {
-                    BinaryReader file = new BinaryReader(container.OpenFile(filename, FileMode.Open));
-                    GameData.NUM_PLAYERS = file.ReadInt32();
-                    GameData.WINDOW_WIDTH = file.ReadInt32();
-                    GameData.WINDOW_HEIGHT = file.ReadInt32();
-                    GameData.VOLUME = file.ReadSingle();
-                    GameData.FULLSCREEN = file.ReadBoolean();
-                    GameData.BORDERLESS = file.ReadBoolean();
-                    GameData.MUTED = file.ReadBoolean();
-                    GameData.VSYNC = file.ReadBoolean();
-                    Console.WriteLine("Loaded settings");
-                    file.Close();
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e.Message);
-                }
-
-                container.Dispose();
-            }
         }
 
         private void LoadReplay(int replay)
@@ -436,8 +363,8 @@ namespace Source
             Song song = Content.Load<Song>("Music/Air Skate");
             MediaPlayer.Play(song);
             MediaPlayer.IsRepeating = true;
-            MediaPlayer.Volume = GameData.VOLUME;
-            MediaPlayer.IsMuted = GameData.MUTED;
+            MediaPlayer.Volume = Settings.Default.Volume;
+            MediaPlayer.IsMuted = Settings.Default.Muted;
 
             // Set up user interface
             SpriteFont font = Content.Load<SpriteFont>("Fonts/Segoe_UI_15_Bold");
@@ -708,7 +635,7 @@ namespace Source
                     if (ToggleKey(Keys.Escape))
                     {
                         LoadUI(Menu.Pause);
-                        SaveSettings();
+                        Settings.Default.Save();
                     }
                     UpdateMenu(gameTime.ElapsedGameTime.TotalMilliseconds);
                     break;
@@ -763,8 +690,8 @@ namespace Source
                     }
                     else
                     {
-                        graphics.PreferredBackBufferWidth = GameData.WINDOW_WIDTH;
-                        graphics.PreferredBackBufferHeight = GameData.WINDOW_HEIGHT;
+                        graphics.PreferredBackBufferWidth = Settings.Default.WindowWidth;
+                        graphics.PreferredBackBufferHeight = Settings.Default.WindowHeight;
                     }
                     graphics.IsFullScreen = !graphics.IsFullScreen;
                     graphics.ApplyChanges();
@@ -783,6 +710,8 @@ namespace Source
                     //GraphicsDevice.Viewport = new Viewport(0, 0, nativeScreenWidth, nativeScreenHeight);
 
                     menu.Resize(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
+
+                    Settings.Default.Fullscreen = graphics.IsFullScreen;
                     break;
                 case "Controls":
                     LoadUI(Menu.Controls);
@@ -792,15 +721,17 @@ namespace Source
                     break;
                 case "ExitOptions":
                     LoadUI(Menu.Pause);
-                    SaveSettings();
+                    Settings.Default.Save();
                     break;
                 case "Music":
                     MediaPlayer.IsMuted = !MediaPlayer.IsMuted;
+                    Settings.Default.Muted = MediaPlayer.IsMuted;
                     //MediaPlayer.Resume();
                     break;
                 case "VSync":
                     graphics.SynchronizeWithVerticalRetrace = !graphics.SynchronizeWithVerticalRetrace;
                     graphics.ApplyChanges();
+                    Settings.Default.VSync = graphics.SynchronizeWithVerticalRetrace;
                     break;
                 case null:
                     break;

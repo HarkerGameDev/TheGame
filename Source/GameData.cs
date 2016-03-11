@@ -15,17 +15,10 @@ namespace Source
     {
         // Settings for user-defined values
 #if DEBUG
-        public static int NUM_PLAYERS = 2;
+        public const int NUM_PLAYERS = 2;
 #else
-        public static int NUM_PLAYERS = 2;            // number of players
+        public const int NUM_PLAYERS = 2;            // number of players
 #endif
-        public static int WINDOW_WIDTH = 1280;       // default width of window
-        public static int WINDOW_HEIGHT = 720;       // default height of window
-        public static float VOLUME = 0.8f;                // volume for songs
-        public static bool FULLSCREEN = false;       // whether the game is fullscreen
-        public static bool BORDERLESS = false;      // whether the game is in windowed borderless mode
-        public static bool MUTED = false;            // whether the game music is muted
-        public static bool VSYNC = true;
 
         public static int LEVEL_FILE = 1;
         public static Vector2 PLAYER_START = new Vector2(1f, -10f);
