@@ -40,6 +40,8 @@ namespace EmptyKeys.UserInterface.Generated {
         
         private Button e_6;
         
+        private Button e_7;
+        
         public OptionsMenu() : 
                 base() {
             this.Initialize();
@@ -94,7 +96,7 @@ namespace EmptyKeys.UserInterface.Generated {
             this.e_2.FontSize = 20F;
             this.e_2.FontStyle = FontStyle.Bold;
             this.e_2.Content = "Back";
-            this.e_2.CommandParameter = "Pause";
+            this.e_2.CommandParameter = "ExitOptions";
             Binding binding_e_2_Command = new Binding("ButtonCommand");
             this.e_2.SetBinding(Button.CommandProperty, binding_e_2_Command);
             // e_3 element
@@ -140,10 +142,24 @@ namespace EmptyKeys.UserInterface.Generated {
             this.e_6.TabIndex = 1;
             this.e_6.FontSize = 20F;
             this.e_6.FontStyle = FontStyle.Bold;
-            this.e_6.Content = "Toggle Music";
-            this.e_6.CommandParameter = "Music";
+            this.e_6.Content = "Toggle VSync";
+            this.e_6.CommandParameter = "VSync";
             Binding binding_e_6_Command = new Binding("ButtonCommand");
             this.e_6.SetBinding(Button.CommandProperty, binding_e_6_Command);
+            // e_7 element
+            this.e_7 = new Button();
+            this.e_3.Children.Add(this.e_7);
+            this.e_7.Name = "e_7";
+            this.e_7.Height = 80F;
+            this.e_7.Width = 165F;
+            this.e_7.Margin = new Thickness(20F, 20F, 20F, 20F);
+            this.e_7.TabIndex = 1;
+            this.e_7.FontSize = 20F;
+            this.e_7.FontStyle = FontStyle.Bold;
+            this.e_7.Content = "Toggle Music";
+            this.e_7.CommandParameter = "Music";
+            Binding binding_e_7_Command = new Binding("ButtonCommand");
+            this.e_7.SetBinding(Button.CommandProperty, binding_e_7_Command);
             FontManager.Instance.AddFont("Segoe UI", 40F, FontStyle.Bold, "Segoe_UI_30_Bold");
             FontManager.Instance.AddFont("Segoe UI", 20F, FontStyle.Bold, "Segoe_UI_15_Bold");
         }

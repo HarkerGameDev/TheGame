@@ -53,7 +53,7 @@ namespace Source
         Tuple<Texture2D, float, float, float>[] prevBackground, background;
         float fadeTime;
         public SpriteFont fontSmall, fontBig;
-        List<Song> songs;
+        //List<Song> songs;
 
         RenderTarget2D[] playerScreens;
 
@@ -120,6 +120,7 @@ namespace Source
 
         public Game1()
         {
+            LoadSettings();
             graphics = new GraphicsDeviceManager(this);
             graphics.DeviceCreated += graphics_DeviceCreated;
             graphics.PreparingDeviceSettings += graphics_PreparingDeviceSettings;
@@ -133,19 +134,30 @@ namespace Source
 
         private void graphics_PreparingDeviceSettings(object sender, PreparingDeviceSettingsEventArgs e)
         {
-            nativeScreenWidth = GameData.WINDOW_WIDTH;
-            nativeScreenHeight = GameData.WINDOW_HEIGHT;
+            if (GameData.FULLSCREEN)
+            {
+                nativeScreenWidth = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width;
+                nativeScreenHeight = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height;
+            }
+            else
+            {
+                nativeScreenWidth = GameData.WINDOW_WIDTH;
+                nativeScreenHeight = GameData.WINDOW_HEIGHT;
+            }
             graphics.PreferredBackBufferWidth = nativeScreenWidth;
             graphics.PreferredBackBufferHeight = nativeScreenHeight;
+
             graphics.PreferMultiSampling = true;
             graphics.GraphicsProfile = GraphicsProfile.HiDef;
             graphics.PreferredDepthStencilFormat = DepthFormat.Depth24Stencil8;
             e.GraphicsDeviceInformation.PresentationParameters.MultiSampleCount = 16;
 
             IsFixedTimeStep = true;
-            graphics.SynchronizeWithVerticalRetrace = false;
-            graphics.IsFullScreen = false;
-            Window.IsBorderless = false;
+            graphics.SynchronizeWithVerticalRetrace = GameData.VSYNC;
+            graphics.IsFullScreen = GameData.FULLSCREEN;
+#if WINDOWS
+            Window.IsBorderless = GameData.BORDERLESS;
+#endif
         }
 
         /// <summary>
@@ -158,7 +170,7 @@ namespace Source
         {
             // Sets how many pixels is a meter
             ConvertUnits.SetDisplayUnitToSimUnitRatio(currentZoom);
-            ConvertUnits.SetMouseScale(graphics.IsFullScreen, (float)Window.ClientBounds.Width / GameData.VIEW_WIDTH);
+            ConvertUnits.SetMouseScale(graphics.IsFullScreen, (float)Window.ClientBounds.Width / nativeScreenWidth);
             ConvertUnits.SetResolutionScale((float)nativeScreenWidth / GameData.VIEW_WIDTH);
 
             // Set seed for a scheduled random level (minutes since Jan 1, 2015)
@@ -195,6 +207,79 @@ namespace Source
             //randLevel = new Random(randLevelSeed);
 
             base.Initialize();      // This calls LoadContent()
+        }
+
+        private void SaveSettings()
+        {
+            IAsyncResult result = StorageDevice.BeginShowSelector(null, null);
+            result.AsyncWaitHandle.WaitOne();
+            StorageDevice device = StorageDevice.EndShowSelector(result);
+            result.AsyncWaitHandle.Close();
+            if (device != null && device.IsConnected)
+            {
+                result = device.BeginOpenContainer("Game", null, null);
+                result.AsyncWaitHandle.WaitOne();
+                StorageContainer container = device.EndOpenContainer(result);
+                result.AsyncWaitHandle.Close();
+
+                string filename = "settings.cfg";
+
+                BinaryWriter file = new BinaryWriter(container.OpenFile(filename, FileMode.Create));
+                file.Write(GameData.NUM_PLAYERS);
+                file.Write(GameData.WINDOW_WIDTH);
+                file.Write(GameData.WINDOW_HEIGHT);
+                file.Write(MediaPlayer.Volume);
+                file.Write(graphics.IsFullScreen);
+#if WINDOWS
+                file.Write(Window.IsBorderless);
+#else
+                file.Write(false);
+#endif
+                file.Write(MediaPlayer.IsMuted);
+                file.Write(graphics.SynchronizeWithVerticalRetrace);
+                Console.WriteLine("Saved settings");
+
+                file.Close();
+                container.Dispose();
+            }
+        }
+
+        private void LoadSettings()
+        {
+            IAsyncResult result = StorageDevice.BeginShowSelector(null, null);
+            result.AsyncWaitHandle.WaitOne();
+            StorageDevice device = StorageDevice.EndShowSelector(result);
+            result.AsyncWaitHandle.Close();
+            if (device != null && device.IsConnected)
+            {
+                result = device.BeginOpenContainer("Game", null, null);
+                result.AsyncWaitHandle.WaitOne();
+                StorageContainer container = device.EndOpenContainer(result);
+                result.AsyncWaitHandle.Close();
+
+                string filename = "settings.cfg";
+
+                try
+                {
+                    BinaryReader file = new BinaryReader(container.OpenFile(filename, FileMode.Open));
+                    GameData.NUM_PLAYERS = file.ReadInt32();
+                    GameData.WINDOW_WIDTH = file.ReadInt32();
+                    GameData.WINDOW_HEIGHT = file.ReadInt32();
+                    GameData.VOLUME = file.ReadSingle();
+                    GameData.FULLSCREEN = file.ReadBoolean();
+                    GameData.BORDERLESS = file.ReadBoolean();
+                    GameData.MUTED = file.ReadBoolean();
+                    GameData.VSYNC = file.ReadBoolean();
+                    Console.WriteLine("Loaded settings");
+                    file.Close();
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
+
+                container.Dispose();
+            }
         }
 
         private void LoadReplay(int replay)
@@ -313,7 +398,7 @@ namespace Source
             {
                 case Menu.Main:
                     state = State.MainMenu;
-                    MediaPlayer.Play(songs[1]);
+                    //MediaPlayer.Play(songs[1]);
                     menu = new MainMenu();
                     break;
                 case Menu.Controls:
@@ -342,13 +427,17 @@ namespace Source
             Content.RootDirectory = "Content";
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
+            // TODO figure out why multiple songs do not work well with muting
             // Load the songs
-            songs = new List<Song>();
-            songs.Add(Content.Load<Song>("Music/Air Skate"));
-            songs.Add(Content.Load<Song>("Music/Main Menu"));
-            songs.Add(Content.Load<Song>("Music/Character Select"));
+            //songs = new List<Song>();
+            //songs.Add(Content.Load<Song>("Music/Air Skate"));
+            //songs.Add(Content.Load<Song>("Music/Main Menu"));
+            //songs.Add(Content.Load<Song>("Music/Character Select"));
+            Song song = Content.Load<Song>("Music/Air Skate");
+            MediaPlayer.Play(song);
             MediaPlayer.IsRepeating = true;
             MediaPlayer.Volume = GameData.VOLUME;
+            MediaPlayer.IsMuted = GameData.MUTED;
 
             // Set up user interface
             SpriteFont font = Content.Load<SpriteFont>("Fonts/Segoe_UI_15_Bold");
@@ -357,7 +446,7 @@ namespace Source
             FontManager.Instance.LoadFonts(Content, "Fonts");
 
             StringBuilder builder = new StringBuilder();
-            for (int i = 0; i < GameData.numPlayers; i++)
+            for (int i = 0; i < GameData.NUM_PLAYERS; i++)
             {
                 builder.Append("Player ").AppendLine(i.ToString())
                     .AppendLine(playerControls[i].ToString());
@@ -369,8 +458,8 @@ namespace Source
             LoadUI(Menu.Main);
 
             // Initialize screen render target
-            playerScreens = new RenderTarget2D[GameData.numPlayers];
-            for (int i=0; i<GameData.numPlayers; i++)
+            playerScreens = new RenderTarget2D[GameData.NUM_PLAYERS];
+            for (int i=0; i<GameData.NUM_PLAYERS; i++)
                 playerScreens[i] = new RenderTarget2D(GraphicsDevice, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
 
             // Use this to draw any rectangles
@@ -385,7 +474,7 @@ namespace Source
 
             // Create objects
             players = new List<Player>();
-            for (int i = 0; i < GameData.numPlayers; i++)
+            for (int i = 0; i < GameData.NUM_PLAYERS; i++)
             {
                 //int character = rand.Next(Character.playerCharacters.Length);
 #if DEBUG
@@ -408,12 +497,6 @@ namespace Source
                 (int)(width * (GameData.SCREEN_RIGHT - GameData.SCREEN_LEFT)), (int)(height * (1 - 2 * GameData.SCREEN_TOP)));
             screenCenter = cameraBounds.Center.ToVector2();
             screenOffset = Vector2.Zero;
-
-            // Make menus
-            float buttonWidth = width * GameData.BUTTON_WIDTH;
-            float buttonHeight = height * GameData.BUTTON_HEIGHT;
-            float left = (width - buttonWidth) / 2f;
-            float centerY = (height - buttonHeight) / 2f;
 
             // Load the level stored in LEVEL_FILE
             LoadLevel(GameData.LEVEL_FILE);
@@ -520,7 +603,7 @@ namespace Source
                     if (ToggleKey(Keys.Escape))
                     {
                         LoadUI(Menu.Pause);
-                        MediaPlayer.Play(songs[2]);
+                        //MediaPlayer.Play(songs[2]);
                     }
                     if (ToggleKey(Keys.E))
                     {
@@ -617,13 +700,16 @@ namespace Source
                     if (ToggleKey(Keys.Escape))
                     {
                         state = State.Running;
-                        MediaPlayer.Play(songs[0]);
+                        //MediaPlayer.Play(songs[0]);
                     }
                     UpdateMenu(gameTime.ElapsedGameTime.TotalMilliseconds);
                     break;
                 case State.Options:
                     if (ToggleKey(Keys.Escape))
+                    {
                         LoadUI(Menu.Pause);
+                        SaveSettings();
+                    }
                     UpdateMenu(gameTime.ElapsedGameTime.TotalMilliseconds);
                     break;
                 case State.Controls:
@@ -660,7 +746,7 @@ namespace Source
             {
                 case "Start":
                     state = State.Running;
-                    MediaPlayer.Play(songs[0]);
+                    //MediaPlayer.Play(songs[0]);
                     break;
                 case "Options":
                     LoadUI(Menu.Options);
@@ -677,8 +763,8 @@ namespace Source
                     }
                     else
                     {
-                        graphics.PreferredBackBufferWidth = nativeScreenWidth;
-                        graphics.PreferredBackBufferHeight = nativeScreenHeight;
+                        graphics.PreferredBackBufferWidth = GameData.WINDOW_WIDTH;
+                        graphics.PreferredBackBufferHeight = GameData.WINDOW_HEIGHT;
                     }
                     graphics.IsFullScreen = !graphics.IsFullScreen;
                     graphics.ApplyChanges();
@@ -704,8 +790,17 @@ namespace Source
                 case "Pause":
                     LoadUI(Menu.Pause);
                     break;
+                case "ExitOptions":
+                    LoadUI(Menu.Pause);
+                    SaveSettings();
+                    break;
                 case "Music":
                     MediaPlayer.IsMuted = !MediaPlayer.IsMuted;
+                    //MediaPlayer.Resume();
+                    break;
+                case "VSync":
+                    graphics.SynchronizeWithVerticalRetrace = !graphics.SynchronizeWithVerticalRetrace;
+                    graphics.ApplyChanges();
                     break;
                 case null:
                     break;
@@ -1351,7 +1446,7 @@ namespace Source
 
             if (splitScreen)
             {
-                for (int i = 0; i < GameData.numPlayers; i++)
+                for (int i = 0; i < GameData.NUM_PLAYERS; i++)
                 {
                     GraphicsDevice.SetRenderTarget(playerScreens[i]);
 
@@ -1390,7 +1485,7 @@ namespace Source
 
             if (splitScreen)
             {
-                for (int i = 0; i < GameData.numPlayers; i++)
+                for (int i = 0; i < GameData.NUM_PLAYERS; i++)
                 {
                     BasicEffect effect = new BasicEffect(graphics.GraphicsDevice);
                     effect.World = Matrix.Identity;
@@ -1476,9 +1571,42 @@ namespace Source
                 spriteBatch.End();
             }
 
+            // Draw all HUD elements
+            spriteBatch.Begin();
+
+            // Display scores in the top left
+            //System.Text.StringBuilder text = new System.Text.StringBuilder();
+            //text.AppendLine("Scores");
+            //for (int i = 0; i < players.Count; i++)
+            //{
+            //    text.AppendLine(string.Format("Player {0}: {1}", i + 1, players[i].Score));
+            //}
+            //spriteBatch.DrawString(fontSmall, text, new Vector2(10, 10), Color.Green);
+
+            // Display frames per second in the top right
+            string frames = (1f / deltaTime).ToString("n2");
+            float leftX = GraphicsDevice.Viewport.Width - fontSmall.MeasureString(frames).X;
+            spriteBatch.DrawString(fontSmall, frames, new Vector2(leftX, 0f), Color.LightGray);
+
+            // Display current survived time
+            string time = totalTime.ToString("n1") + "s survived";
+            leftX = GraphicsDevice.Viewport.Width / 2f - fontSmall.MeasureString(time).X / 2f;
+            spriteBatch.DrawString(fontSmall, time, new Vector2(leftX, 0f), Color.LightSkyBlue);
+
+            // Display high score
+            string high = "High Score: " + highScore.ToString("n1");
+            leftX = GraphicsDevice.Viewport.Width / 2f - fontSmall.MeasureString(high).X / 2f;
+            spriteBatch.DrawString(fontSmall, high, new Vector2(leftX, 40f), Color.Yellow);
+
+            // Display version number
+            Vector2 botRight = new Vector2(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height) - fontSmall.MeasureString(GameData.Version);
+            spriteBatch.DrawString(fontSmall, GameData.Version, botRight, Color.LightSalmon);
+
+            spriteBatch.End();
+
 #if DEBUG
             spriteBatch.Begin();
-            for (int i = 0; i < GameData.numPlayers; i++)
+            for (int i = 0; i < GameData.NUM_PLAYERS; i++)
             {
                 spriteBatch.Draw(playerScreens[i], new Rectangle(GraphicsDevice.Viewport.Width / 10 * i, 0, GraphicsDevice.Viewport.Width / 10, GraphicsDevice.Viewport.Height / 10), Color.White);
                 spriteBatch.Draw(whiteRect, new Rectangle(GraphicsDevice.Viewport.Width / 10 * i, 0, 10, GraphicsDevice.Viewport.Height / 10), Color.Black);
@@ -1574,40 +1702,6 @@ namespace Source
             foreach (Particle part in particles)
                 part.Draw(spriteBatch);
             spriteBatch.End();
-
-
-            // Draw all HUD elements
-            spriteBatch.Begin();
-
-            // Display scores in the top left
-            //System.Text.StringBuilder text = new System.Text.StringBuilder();
-            //text.AppendLine("Scores");
-            //for (int i = 0; i < players.Count; i++)
-            //{
-            //    text.AppendLine(string.Format("Player {0}: {1}", i + 1, players[i].Score));
-            //}
-            //spriteBatch.DrawString(fontSmall, text, new Vector2(10, 10), Color.Green);
-
-            // Display frames per second in the top right
-            string frames = (1f / deltaTime).ToString("n2");
-            float leftX = GraphicsDevice.Viewport.Width - fontSmall.MeasureString(frames).X;
-            spriteBatch.DrawString(fontSmall, frames, new Vector2(leftX, 0f), Color.LightGray);
-
-            // Display current survived time
-            string time = totalTime.ToString("n1") + "s survived";
-            leftX = GraphicsDevice.Viewport.Width / 2f - fontSmall.MeasureString(time).X / 2f;
-            spriteBatch.DrawString(fontSmall, time, new Vector2(leftX, 0f), Color.LightSkyBlue);
-
-            // Display high score
-            string high = "High Score: " + highScore.ToString("n1");
-            leftX = GraphicsDevice.Viewport.Width / 2f - fontSmall.MeasureString(high).X / 2f;
-            spriteBatch.DrawString(fontSmall, high, new Vector2(leftX, 40f), Color.Yellow);
-
-            // Display version number
-            Vector2 pos = new Vector2(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height) - fontSmall.MeasureString(GameData.Version);
-            spriteBatch.DrawString(fontSmall, GameData.Version, pos, Color.LightSalmon);
-
-            spriteBatch.End();
         }
 
         private void DrawBackground(Vector2 averagePos)
@@ -1665,6 +1759,7 @@ namespace Source
             EmptyKeys.UserInterface.Input.MouseStateBase mouse = Engine.Instance.InputDevice.MouseState;
             spriteBatch.DrawString(fontSmall, "Mouse -- " + ConvertUnits.GetMousePos(prevMouseState), new Vector2(10, GraphicsDevice.Viewport.Height - 40), Color.White);
             spriteBatch.DrawString(fontSmall, "Mouse -- {" + mouse.NormalizedX + "," + mouse.NormalizedY + "}", new Vector2(10, GraphicsDevice.Viewport.Height - 80), Color.White);
+            spriteBatch.DrawString(fontSmall, "Music muted: " + MediaPlayer.IsMuted, new Vector2(10, GraphicsDevice.Viewport.Height - 120), Color.White);
             spriteBatch.End();
 #endif
 

@@ -13,13 +13,21 @@ namespace Source
 {
     public static class GameData
     {
+        // Settings for user-defined values
 #if DEBUG
-        public const int numPlayers = 2;
+        public static int NUM_PLAYERS = 2;
 #else
-        public const int numPlayers = 2;            // number of players
+        public static int NUM_PLAYERS = 2;            // number of players
 #endif
+        public static int WINDOW_WIDTH = 1280;       // default width of window
+        public static int WINDOW_HEIGHT = 720;       // default height of window
+        public static float VOLUME = 0.8f;                // volume for songs
+        public static bool FULLSCREEN = false;       // whether the game is fullscreen
+        public static bool BORDERLESS = false;      // whether the game is in windowed borderless mode
+        public static bool MUTED = false;            // whether the game music is muted
+        public static bool VSYNC = true;
 
-        public const int LEVEL_FILE = 1;
+        public static int LEVEL_FILE = 1;
         public static Vector2 PLAYER_START = new Vector2(1f, -10f);
 
         public const float SCROLL_STEP = 90f;      // scale for zooming using the scroll wheel
@@ -28,8 +36,6 @@ namespace Source
         public const float PIXEL_METER_EDIT = 8f;  // pixels per meter when in edit mode for level
         public const int VIEW_WIDTH = 1280;        // width of unscaled screen in pixels
         public const int VIEW_HEIGHT = 720;        // height of unscaled screen in pixels
-        public const int WINDOW_WIDTH = 1280;       // default width of window
-        public const int WINDOW_HEIGHT = 720;       // default height of window
         //public const int WINDOW_WIDTH = 1600;       // default width of window
         //public const int WINDOW_HEIGHT = 900;       // default height of window
         //public const int WINDOW_WIDTH = 1920;       // default width of window
@@ -77,8 +83,6 @@ namespace Source
         //public const float WINDOW_SLOW = 0.2f;    // -- player speed is reduced to this ratio when a window is hit
         //public const float WALL_SLOW = 0.2f;    // -- player speed is reduced to this ratio when a wall is hit while flying
 
-        public const float VOLUME = 0.8f;                // volume for songs
-
         public const float CAMERA_SCALE_X = 4f;         // how fast the camera moves
         public const float CAMERA_SCALE_Y = 20f;        // vertical speed of camera
         public const float MAX_CAMERA_SPEED_X = 1f;    // maximum x speed of camera
@@ -106,9 +110,6 @@ namespace Source
         public const float OBSTACLE_STUN = 0.5f;    // time of stun after vaulting off obstacle
         public const float OBSTACLE_HIT_STUN = 0.4f;    // time of stun after hitting an obstacle
         public const float STUN_RADIUS = 3.3f;    // radius within which a player will be stuned from an explosion (in m)
-
-        public const float BUTTON_WIDTH = 0.4f;  // width of a button in proportion of screen
-        public const float BUTTON_HEIGHT = 0.12f;    // height of button in proportion
 
         // Character constants
 #if DEBUG
