@@ -15,9 +15,9 @@ namespace Source
     {
         // Settings for user-defined values
 #if DEBUG
-        public const int NUM_PLAYERS = 2;
+        public static int[] PLAYERS = {2, 2};
 #else
-        public const int NUM_PLAYERS = 2;            // number of players
+        public static int[] PLAYERS = { 1, 2 };            // characters for the players
 #endif
 
         public static int LEVEL_FILE = 1;

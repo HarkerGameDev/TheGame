@@ -18,13 +18,12 @@ namespace GameUILibrary
     {
         private string buttonResult;
         private string controlsText;
+        private string playerText;
         private bool buttonEnabled;
         private float progressValue;
         private float sliderValue;
-        private ObservableCollection<WindowViewModel> windows;
         private float numericTextBoxValue;
         private string password;
-        private List<PointF> chartData;
 
         /// <summary>
         /// Gets or sets the button command.
@@ -60,6 +59,18 @@ namespace GameUILibrary
         {
             get { return controlsText; }
             set { SetProperty(ref controlsText, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the menu text to display when player is picking a character.
+        /// </summary>
+        /// <value>
+        /// The text to display.
+        /// </value>
+        public string PlayerText
+        {
+            get { return playerText; }
+            set { SetProperty(ref playerText, value); }
         }
 
         /// <summary>
@@ -99,18 +110,6 @@ namespace GameUILibrary
         }
 
         /// <summary>
-        /// Gets or sets the windows.
-        /// </summary>
-        /// <value>
-        /// The windows.
-        /// </value>
-        public ObservableCollection<WindowViewModel> Windows
-        {
-            get { return windows; }
-            set { SetProperty(ref windows, value); }
-        }
-
-        /// <summary>
         /// Gets or sets the numeric text box value.
         /// </summary>
         /// <value>
@@ -135,32 +134,11 @@ namespace GameUILibrary
         }
 
         /// <summary>
-        /// Gets or sets the chart data.
-        /// </summary>
-        /// <value>
-        /// The chart data.
-        /// </value>
-        public List<PointF> ChartData
-        {
-            get { return chartData; }
-            set { SetProperty(ref chartData, value); }
-        }
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="BasicUIViewModel"/> class.
         /// </summary>
         public BasicUIViewModel()
         {
             ButtonCommand = new RelayCommand(new Action<object>(OnButtonClick));
-
-            Windows = new ObservableCollection<WindowViewModel>();
-            //Windows.Add(new CustomWindow());
-
-            ChartData = new List<PointF>();
-            for (int i = 0; i < 10; i++)
-            {
-                ChartData.Add(new PointF(i, i * 40));
-            }
         }
 
         private void OnButtonClick(object obj)

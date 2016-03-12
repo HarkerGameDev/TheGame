@@ -55,6 +55,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="BasicUIViewModel.cs" />
+    <Compile Include="GeneratedUI\CharacterMenu.xaml.cs" />
     <Compile Include="GeneratedUI\ControlsMenu.xaml.cs" />
     <Compile Include="GeneratedUI\MainMenu.xaml.cs" />
     <Compile Include="GeneratedUI\OptionsMenu.xaml.cs" />

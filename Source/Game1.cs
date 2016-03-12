@@ -76,6 +76,9 @@ namespace Source
         bool lockedY = false;
 
         State state = State.MainMenu;
+        bool mainMenu = true;
+        int characterSelect = 0;
+        int playerSelect = 0;
         float totalTime = 0;
         float highScore = 0;
 
@@ -111,12 +114,12 @@ namespace Source
 
         public enum State
         {
-            Running, Paused, MainMenu, Options, Controls
+            Running, Paused, MainMenu, Options, Controls, Character
         }
 
         enum Menu
         {
-            Main, Options, Controls, Pause
+            Main, Options, Controls, Pause, Character
         }
 
         public Game1()
@@ -327,6 +330,7 @@ namespace Source
                     state = State.MainMenu;
                     //MediaPlayer.Play(songs[1]);
                     menu = new MainMenu();
+                    mainMenu = true;
                     break;
                 case Menu.Controls:
                     state = State.Controls;
@@ -340,9 +344,29 @@ namespace Source
                     state = State.Paused;
                     menu = new PauseMenu();
                     break;
+                case Menu.Character:
+                    state = State.Character;
+                    menu = new CharacterMenu();
+                    break;
             }
 
             menu.DataContext = viewModel;
+        }
+
+        private void InitializePlayers()
+        {
+            // Initialize screen render target
+            playerScreens = new RenderTarget2D[GameData.PLAYERS.Length];
+            for (int i = 0; i < GameData.PLAYERS.Length; i++)
+                playerScreens[i] = new RenderTarget2D(GraphicsDevice, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
+
+            players = new List<Player>();
+            for (int i = 0; i < GameData.PLAYERS.Length; i++)
+            {
+                //int character = rand.Next(Character.playerCharacters.Length);
+                int character = GameData.PLAYERS[i];
+                players.Add(new Player(Content.Load<Texture2D>("Art/GreenDude"), GameData.PLAYER_START, Character.playerCharacters[character]));
+            }
         }
 
         /// <summary>
@@ -373,9 +397,9 @@ namespace Source
             FontManager.Instance.LoadFonts(Content, "Fonts");
 
             StringBuilder builder = new StringBuilder();
-            for (int i = 0; i < GameData.NUM_PLAYERS; i++)
+            for (int i = 0; i < GameData.PLAYERS.Length; i++)
             {
-                builder.Append("Player ").AppendLine(i.ToString())
+                builder.Append("Player ").AppendLine((i + 1).ToString())
                     .AppendLine(playerControls[i].ToString());
             }
             viewModel.ControlsText = builder.ToString();
@@ -384,10 +408,7 @@ namespace Source
 
             LoadUI(Menu.Main);
 
-            // Initialize screen render target
-            playerScreens = new RenderTarget2D[GameData.NUM_PLAYERS];
-            for (int i=0; i<GameData.NUM_PLAYERS; i++)
-                playerScreens[i] = new RenderTarget2D(GraphicsDevice, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
+            //InitializePlayers();
 
             // Use this to draw any rectangles
             whiteRect = new Texture2D(GraphicsDevice, 1, 1);
@@ -400,17 +421,6 @@ namespace Source
             fontBig = Content.Load<SpriteFont>("Fonts/ScoreBig");
 
             // Create objects
-            players = new List<Player>();
-            for (int i = 0; i < GameData.NUM_PLAYERS; i++)
-            {
-                //int character = rand.Next(Character.playerCharacters.Length);
-#if DEBUG
-                int character = GameData.CHARACTER;
-#else
-                int character = i;
-#endif
-                players.Add(new Player(Content.Load<Texture2D>("Art/GreenDude"), GameData.PLAYER_START, Character.playerCharacters[character]));
-            }
             platforms = new List<Platform>();
             particles = new List<Particle>();
             obstacles = new List<Obstacle>();
@@ -634,7 +644,10 @@ namespace Source
                 case State.Options:
                     if (ToggleKey(Keys.Escape))
                     {
-                        LoadUI(Menu.Pause);
+                        if (mainMenu)
+                            LoadUI(Menu.Main);
+                        else
+                            LoadUI(Menu.Pause);
                         Settings.Default.Save();
                     }
                     UpdateMenu(gameTime.ElapsedGameTime.TotalMilliseconds);
@@ -649,6 +662,19 @@ namespace Source
                         Exit();
                     UpdateMenu(gameTime.ElapsedGameTime.TotalMilliseconds);
                     break;
+                case State.Character:
+                    if (ToggleKey(Keys.Enter))
+                        viewModel.ButtonResult = "NextPlayer";
+                    else if (ToggleKey(Keys.Left))
+                        characterSelect = characterSelect == 0 ? Character.playerCharacters.Length - 1 : characterSelect - 1;
+                    else if (ToggleKey(Keys.Right))
+                        characterSelect = (characterSelect + 1) % Character.playerCharacters.Length;
+                    else if (ToggleKey(Keys.Escape))
+                        LoadUI(Menu.Main);
+                    UpdateMenu(gameTime.ElapsedGameTime.TotalMilliseconds);
+                    break;
+                default:
+                    throw new NotImplementedException("Not processing input for state: " + state);
             }
 
             prevKeyState = Keyboard.GetState();
@@ -673,6 +699,7 @@ namespace Source
             {
                 case "Start":
                     state = State.Running;
+                    mainMenu = false;
                     //MediaPlayer.Play(songs[0]);
                     break;
                 case "Options":
@@ -680,6 +707,57 @@ namespace Source
                     break;
                 case "Exit":
                     Exit();
+                    break;
+                case "Controls":
+                    LoadUI(Menu.Controls);
+                    break;
+                case "Pause":
+                    LoadUI(Menu.Pause);
+                    break;
+                case "ExitOptions":
+                    if (mainMenu)
+                        LoadUI(Menu.Main);
+                    else
+                        LoadUI(Menu.Pause);
+                    Settings.Default.Save();
+                    break;
+                case "MainMenu":
+                    LoadUI(Menu.Main);
+                    break;
+                case "Character":
+                    LoadUI(Menu.Character);
+                    playerSelect = 0;
+                    characterSelect = 0;
+                    viewModel.PlayerText = "Player " + (playerSelect + 1);
+                    break;
+                case "Music":
+                    MediaPlayer.IsMuted = !MediaPlayer.IsMuted;
+                    Settings.Default.Muted = MediaPlayer.IsMuted;
+                    //MediaPlayer.Resume();
+                    break;
+                case "VSync":
+                    graphics.SynchronizeWithVerticalRetrace = !graphics.SynchronizeWithVerticalRetrace;
+                    graphics.ApplyChanges();
+                    Settings.Default.VSync = graphics.SynchronizeWithVerticalRetrace;
+                    break;
+                case "CharacterLeft":
+                    characterSelect = characterSelect == 0 ? Character.playerCharacters.Length - 1 : characterSelect - 1;
+                    break;
+                case "CharacterRight":
+                    characterSelect = (characterSelect + 1) % Character.playerCharacters.Length;
+                    break;
+                case "NextPlayer":
+                    GameData.PLAYERS[playerSelect] = characterSelect;
+                    if (++playerSelect >= GameData.PLAYERS.Length)
+                    {
+                        InitializePlayers();
+                        state = State.Running;
+                        mainMenu = false;
+                    }
+                    else
+                    {
+                        viewModel.PlayerText = "Player " + (playerSelect + 1);
+                    }
                     break;
                 case "Fullscreen":
                     // TODO toggle fullscreen
@@ -712,26 +790,6 @@ namespace Source
                     menu.Resize(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
 
                     Settings.Default.Fullscreen = graphics.IsFullScreen;
-                    break;
-                case "Controls":
-                    LoadUI(Menu.Controls);
-                    break;
-                case "Pause":
-                    LoadUI(Menu.Pause);
-                    break;
-                case "ExitOptions":
-                    LoadUI(Menu.Pause);
-                    Settings.Default.Save();
-                    break;
-                case "Music":
-                    MediaPlayer.IsMuted = !MediaPlayer.IsMuted;
-                    Settings.Default.Muted = MediaPlayer.IsMuted;
-                    //MediaPlayer.Resume();
-                    break;
-                case "VSync":
-                    graphics.SynchronizeWithVerticalRetrace = !graphics.SynchronizeWithVerticalRetrace;
-                    graphics.ApplyChanges();
-                    Settings.Default.VSync = graphics.SynchronizeWithVerticalRetrace;
                     break;
                 case null:
                     break;
@@ -1364,20 +1422,23 @@ namespace Source
             float maxX = ConvertUnits.ToSimUnits(GraphicsDevice.Viewport.Width) * GameData.SCREEN_SPACE;
             float maxY = ConvertUnits.ToSimUnits(GraphicsDevice.Viewport.Height) * GameData.SCREEN_SPACE;
             bool splitScreen = false;
-            foreach (Player player in players)
+            if (!editLevel)
             {
-                Vector2 dist = player.Position - averagePos;
-                if (Math.Abs(dist.X) > maxX || Math.Abs(dist.Y) > maxY)
+                foreach (Player player in players)
                 {
-                    splitScreen = true;
-                    break;
+                    Vector2 dist = player.Position - averagePos;
+                    if (Math.Abs(dist.X) > maxX || Math.Abs(dist.Y) > maxY)
+                    {
+                        splitScreen = true;
+                        break;
+                    }
                 }
             }
 
 
             if (splitScreen)
             {
-                for (int i = 0; i < GameData.NUM_PLAYERS; i++)
+                for (int i = 0; i < GameData.PLAYERS.Length; i++)
                 {
                     GraphicsDevice.SetRenderTarget(playerScreens[i]);
 
@@ -1416,7 +1477,7 @@ namespace Source
 
             if (splitScreen)
             {
-                for (int i = 0; i < GameData.NUM_PLAYERS; i++)
+                for (int i = 0; i < GameData.PLAYERS.Length; i++)
                 {
                     BasicEffect effect = new BasicEffect(graphics.GraphicsDevice);
                     effect.World = Matrix.Identity;
@@ -1537,7 +1598,7 @@ namespace Source
 
 #if DEBUG
             spriteBatch.Begin();
-            for (int i = 0; i < GameData.NUM_PLAYERS; i++)
+            for (int i = 0; i < GameData.PLAYERS.Length; i++)
             {
                 spriteBatch.Draw(playerScreens[i], new Rectangle(GraphicsDevice.Viewport.Width / 10 * i, 0, GraphicsDevice.Viewport.Width / 10, GraphicsDevice.Viewport.Height / 10), Color.White);
                 spriteBatch.Draw(whiteRect, new Rectangle(GraphicsDevice.Viewport.Width / 10 * i, 0, 10, GraphicsDevice.Viewport.Height / 10), Color.Black);
@@ -1664,6 +1725,19 @@ namespace Source
             spriteBatch.End();
         }
 
+        private void DrawCharacter()
+        {
+            int width = GraphicsDevice.Viewport.Width;
+            int height = GraphicsDevice.Viewport.Height;
+            
+            GraphicsDevice.Clear(Color.MidnightBlue);
+
+            spriteBatch.Begin();
+            // TODO draw current profile
+            spriteBatch.DrawString(fontBig, Character.playerCharacters[characterSelect].Name, new Vector2(300, 200), Character.playerCharacters[characterSelect].Color);
+            spriteBatch.End();
+        }
+
         /// <summary>
         /// This is called when the game should draw itself.
         /// </summary>
@@ -1676,6 +1750,11 @@ namespace Source
                 case State.Running:
                     DrawGame(deltaTime);
                     break;
+                case State.Character:
+                    DrawCharacter();
+                    menu.Draw(gameTime.ElapsedGameTime.TotalMilliseconds);
+                    break;
+                    //goto case State.MainMenu;
                 case State.Paused:
                 case State.Options:
                 case State.Controls:
@@ -1683,6 +1762,8 @@ namespace Source
                     //GraphicsDevice.Clear(Color.Turquoise);
                     menu.Draw(gameTime.ElapsedGameTime.TotalMilliseconds);
                     break;
+                default:
+                    throw new NotImplementedException("Not drawing state: " + state);
             }
 
 #if DEBUG
