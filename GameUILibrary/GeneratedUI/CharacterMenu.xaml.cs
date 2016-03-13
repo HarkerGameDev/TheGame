@@ -108,7 +108,7 @@ namespace EmptyKeys.UserInterface.Generated {
             this.e_3.VerticalAlignment = VerticalAlignment.Center;
             this.e_3.FontSize = 20F;
             this.e_3.FontStyle = FontStyle.Bold;
-            this.e_3.Content = "Next";
+            this.e_3.Content = "Pick Character";
             this.e_3.CommandParameter = "NextPlayer";
             Binding binding_e_3_Command = new Binding("ButtonCommand");
             this.e_3.SetBinding(Button.CommandProperty, binding_e_3_Command);
@@ -121,6 +121,7 @@ namespace EmptyKeys.UserInterface.Generated {
             this.e_4.Focusable = false;
             this.e_4.HorizontalAlignment = HorizontalAlignment.Left;
             this.e_4.VerticalAlignment = VerticalAlignment.Center;
+            this.e_4.Content = "Previous";
             this.e_4.CommandParameter = "CharacterLeft";
             Grid.SetRow(this.e_4, 1);
             Binding binding_e_4_Command = new Binding("ButtonCommand");
@@ -135,6 +136,7 @@ namespace EmptyKeys.UserInterface.Generated {
             this.e_5.HorizontalAlignment = HorizontalAlignment.Right;
             this.e_5.VerticalAlignment = VerticalAlignment.Center;
             this.e_5.TabIndex = 2;
+            this.e_5.Content = "Next";
             this.e_5.CommandParameter = "CharacterRight";
             Grid.SetRow(this.e_5, 1);
             Binding binding_e_5_Command = new Binding("ButtonCommand");
