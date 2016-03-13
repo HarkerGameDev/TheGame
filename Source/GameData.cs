@@ -13,15 +13,26 @@ namespace Source
 {
     public static class GameData
     {
-        // Settings for user-defined values
+        public static int MAX_PLAYERS = 8;
 #if DEBUG
         public static int[] PLAYERS = {2, 2};
 #else
         public static int[] PLAYERS = { 1, 2 };            // characters for the players
 #endif
 
+        // Settings for user-defined values
+        public static int WINDOW_WIDTH = 1280;       // default width of window		
+        public static int WINDOW_HEIGHT = 720;       // default height of window		
+        public static bool FULLSCREEN = false;       // whether the game is fullscreen		
+        public static bool BORDERLESS = false;      // whether the game is in windowed borderless mode		
+        public static bool VSYNC = true;            // if the vertical retrace should be syncrhonized
+        public static float VOLUME = 0.8f;                // volume for songs		
+        public static bool MUTED = true;            // whether the game music is muted
+
         public static int LEVEL_FILE = 1;
         public static Vector2 PLAYER_START = new Vector2(1f, -10f);
+
+        //public static int 
 
         public const float SCROLL_STEP = 90f;      // scale for zooming using the scroll wheel
         public const float ZOOM_STEP = 1.5f;       // scale by which zoom is changed with + and -

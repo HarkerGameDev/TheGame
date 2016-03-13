@@ -92,7 +92,7 @@ namespace EmptyKeys.UserInterface.Generated {
             this.e_2.Width = 165F;
             this.e_2.HorizontalAlignment = HorizontalAlignment.Left;
             this.e_2.VerticalAlignment = VerticalAlignment.Center;
-            this.e_2.TabIndex = 3;
+            this.e_2.TabIndex = 0;
             this.e_2.FontSize = 20F;
             this.e_2.FontStyle = FontStyle.Bold;
             this.e_2.Content = "Back";
@@ -111,7 +111,7 @@ namespace EmptyKeys.UserInterface.Generated {
             this.e_4.Height = 80F;
             this.e_4.Width = 165F;
             this.e_4.Margin = new Thickness(20F, 20F, 20F, 20F);
-            this.e_4.TabIndex = 2;
+            this.e_4.TabIndex = 1;
             this.e_4.FontSize = 20F;
             this.e_4.FontStyle = FontStyle.Bold;
             this.e_4.Content = "Controls";
@@ -125,7 +125,7 @@ namespace EmptyKeys.UserInterface.Generated {
             this.e_5.Height = 80F;
             this.e_5.Width = 165F;
             this.e_5.Margin = new Thickness(20F, 20F, 20F, 20F);
-            this.e_5.TabIndex = 1;
+            this.e_5.TabIndex = 2;
             this.e_5.FontSize = 20F;
             this.e_5.FontStyle = FontStyle.Bold;
             this.e_5.Content = "Toggle Fullscreen";
@@ -139,7 +139,7 @@ namespace EmptyKeys.UserInterface.Generated {
             this.e_6.Height = 80F;
             this.e_6.Width = 165F;
             this.e_6.Margin = new Thickness(20F, 20F, 20F, 20F);
-            this.e_6.TabIndex = 1;
+            this.e_6.TabIndex = 3;
             this.e_6.FontSize = 20F;
             this.e_6.FontStyle = FontStyle.Bold;
             this.e_6.Content = "Toggle VSync";
@@ -153,7 +153,7 @@ namespace EmptyKeys.UserInterface.Generated {
             this.e_7.Height = 80F;
             this.e_7.Width = 165F;
             this.e_7.Margin = new Thickness(20F, 20F, 20F, 20F);
-            this.e_7.TabIndex = 1;
+            this.e_7.TabIndex = 4;
             this.e_7.FontSize = 20F;
             this.e_7.FontStyle = FontStyle.Bold;
             this.e_7.Content = "Toggle Music";

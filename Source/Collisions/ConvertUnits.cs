@@ -57,10 +57,10 @@ namespace Source.Collisions
             Console.WriteLine("Resolution Scale: " + scale);
         }
 
-        public static void SetMouseScale(bool fullscreen, float scale)
+        public static void SetMouseScale(float scale)
         {
-            MouseScale = fullscreen ? scale : 1;
-            Console.WriteLine("Mouse Scale: " + scale);
+            MouseScale = scale;
+            Console.WriteLine("Mouse Scale: " + MouseScale);
         }
 
         public static Vector2 GetMousePos(MouseState mouse)

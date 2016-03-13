@@ -86,7 +86,7 @@ namespace EmptyKeys.UserInterface.Generated {
             this.e_2.Width = 165F;
             this.e_2.HorizontalAlignment = HorizontalAlignment.Left;
             this.e_2.VerticalAlignment = VerticalAlignment.Center;
-            this.e_2.TabIndex = 2;
+            this.e_2.TabIndex = 0;
             this.e_2.FontSize = 20F;
             this.e_2.FontStyle = FontStyle.Bold;
             this.e_2.Content = "Back";

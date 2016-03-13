@@ -13,11 +13,12 @@ using Microsoft.Xna.Framework.GamerServices;
 
 using Source.Collisions;
 using Source.Graphics;
-using Source.Properties;
 
 using GameUILibrary;
 using EmptyKeys.UserInterface;
 using EmptyKeys.UserInterface.Generated;
+
+using Ini;
 
 namespace Source
 {
@@ -124,6 +125,7 @@ namespace Source
 
         public Game1()
         {
+            LoadSettings();
             graphics = new GraphicsDeviceManager(this);
             graphics.DeviceCreated += graphics_DeviceCreated;
             graphics.PreparingDeviceSettings += graphics_PreparingDeviceSettings;
@@ -137,15 +139,15 @@ namespace Source
 
         private void graphics_PreparingDeviceSettings(object sender, PreparingDeviceSettingsEventArgs e)
         {
-            if (Settings.Default.Fullscreen)
+            if (GameData.FULLSCREEN)
             {
                 nativeScreenWidth = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width;
                 nativeScreenHeight = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height;
             }
             else
             {
-                nativeScreenWidth = Settings.Default.WindowWidth;
-                nativeScreenHeight = Settings.Default.WindowHeight;
+                nativeScreenWidth = GameData.WINDOW_WIDTH;
+                nativeScreenHeight = GameData.WINDOW_HEIGHT;
             }
             graphics.PreferredBackBufferWidth = nativeScreenWidth;
             graphics.PreferredBackBufferHeight = nativeScreenHeight;
@@ -156,10 +158,10 @@ namespace Source
             e.GraphicsDeviceInformation.PresentationParameters.MultiSampleCount = 16;
 
             IsFixedTimeStep = true;
-            graphics.SynchronizeWithVerticalRetrace = Settings.Default.VSync;
-            graphics.IsFullScreen = Settings.Default.Fullscreen;
+            graphics.SynchronizeWithVerticalRetrace = GameData.VSYNC;
+            graphics.IsFullScreen = GameData.FULLSCREEN;
 #if WINDOWS
-            Window.IsBorderless = Settings.Default.Borderless;
+            Window.IsBorderless = GameData.BORDERLESS;
 #endif
         }
 
@@ -173,12 +175,17 @@ namespace Source
         {
             // Sets how many pixels is a meter
             ConvertUnits.SetDisplayUnitToSimUnitRatio(currentZoom);
-            ConvertUnits.SetMouseScale(graphics.IsFullScreen, (float)Window.ClientBounds.Width / nativeScreenWidth);
+            ConvertUnits.SetMouseScale((float)Window.ClientBounds.Width / nativeScreenWidth);
             ConvertUnits.SetResolutionScale((float)nativeScreenWidth / GameData.VIEW_WIDTH);
 
             // Set seed for a scheduled random level (minutes since Jan 1, 2015)
             //randSeed = DateTime.Now.Millisecond;
             //randLevelSeed = GameData.GetSeed;
+
+            // Initialize screen render target
+            playerScreens = new RenderTarget2D[GameData.MAX_PLAYERS];
+            for (int i = 0; i < playerScreens.Length; i++)
+                playerScreens[i] = new RenderTarget2D(GraphicsDevice, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
 
             // Set variables
             simTimes = new List<float>();
@@ -210,6 +217,34 @@ namespace Source
             //randLevel = new Random(randLevelSeed);
 
             base.Initialize();      // This calls LoadContent()
+        }
+
+        private void LoadSettings()
+        {
+            //IniFile ini = new IniFile(Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location) + @"\Settings.ini");
+            IniFile ini = new IniFile("Settings.ini");
+            //Console.WriteLine("Ini read from {0}: {1}", ini.path, ini.IniReadValue("Video", "Test"));
+            GameData.WINDOW_WIDTH = Convert.ToInt32(ini.ReadValue("Video", "Width"));
+            GameData.WINDOW_HEIGHT = Convert.ToInt32(ini.ReadValue("Video", "Height"));
+            GameData.FULLSCREEN = Convert.ToBoolean(ini.ReadValue("Video", "Fullscreen"));
+            GameData.BORDERLESS = Convert.ToBoolean(ini.ReadValue("Video", "Borderless"));
+            GameData.VSYNC = Convert.ToBoolean(ini.ReadValue("Video", "VSync"));
+            GameData.VOLUME = Convert.ToSingle(ini.ReadValue("Audio", "Volume"));
+            GameData.MUTED = Convert.ToBoolean(ini.ReadValue("Audio", "Muted"));
+        }
+
+        private void SaveSettings()
+        {
+            IniFile ini = new IniFile("Settings.ini");
+            ini.WriteValue("Video", "Width", GameData.WINDOW_WIDTH);
+            ini.WriteValue("Video", "Height", GameData.WINDOW_HEIGHT);
+            ini.WriteValue("Video", "Fullscreen", graphics.IsFullScreen);
+#if WINDOWS
+            ini.WriteValue("Video", "Borderless", Window.IsBorderless);
+#endif
+            ini.WriteValue("Video", "VSync", graphics.SynchronizeWithVerticalRetrace);
+            ini.WriteValue("Audio", "Volume", MediaPlayer.Volume);
+            ini.WriteValue("Audio", "Muted", MediaPlayer.IsMuted);
         }
 
         private void LoadReplay(int replay)
@@ -355,11 +390,6 @@ namespace Source
 
         private void InitializePlayers()
         {
-            // Initialize screen render target
-            playerScreens = new RenderTarget2D[GameData.PLAYERS.Length];
-            for (int i = 0; i < GameData.PLAYERS.Length; i++)
-                playerScreens[i] = new RenderTarget2D(GraphicsDevice, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
-
             players = new List<Player>();
             for (int i = 0; i < GameData.PLAYERS.Length; i++)
             {
@@ -387,8 +417,8 @@ namespace Source
             Song song = Content.Load<Song>("Music/Air Skate");
             MediaPlayer.Play(song);
             MediaPlayer.IsRepeating = true;
-            MediaPlayer.Volume = Settings.Default.Volume;
-            MediaPlayer.IsMuted = Settings.Default.Muted;
+            MediaPlayer.Volume = GameData.VOLUME;
+            MediaPlayer.IsMuted = GameData.MUTED;
 
             // Set up user interface
             SpriteFont font = Content.Load<SpriteFont>("Fonts/Segoe_UI_15_Bold");
@@ -648,7 +678,7 @@ namespace Source
                             LoadUI(Menu.Main);
                         else
                             LoadUI(Menu.Pause);
-                        Settings.Default.Save();
+                        SaveSettings();
                     }
                     UpdateMenu(gameTime.ElapsedGameTime.TotalMilliseconds);
                     break;
@@ -719,7 +749,7 @@ namespace Source
                         LoadUI(Menu.Main);
                     else
                         LoadUI(Menu.Pause);
-                    Settings.Default.Save();
+                    SaveSettings();
                     break;
                 case "MainMenu":
                     LoadUI(Menu.Main);
@@ -732,13 +762,11 @@ namespace Source
                     break;
                 case "Music":
                     MediaPlayer.IsMuted = !MediaPlayer.IsMuted;
-                    Settings.Default.Muted = MediaPlayer.IsMuted;
                     //MediaPlayer.Resume();
                     break;
                 case "VSync":
                     graphics.SynchronizeWithVerticalRetrace = !graphics.SynchronizeWithVerticalRetrace;
                     graphics.ApplyChanges();
-                    Settings.Default.VSync = graphics.SynchronizeWithVerticalRetrace;
                     break;
                 case "CharacterLeft":
                     characterSelect = characterSelect == 0 ? Character.playerCharacters.Length - 1 : characterSelect - 1;
@@ -768,13 +796,14 @@ namespace Source
                     }
                     else
                     {
-                        graphics.PreferredBackBufferWidth = Settings.Default.WindowWidth;
-                        graphics.PreferredBackBufferHeight = Settings.Default.WindowHeight;
+                        graphics.PreferredBackBufferWidth = GameData.WINDOW_WIDTH;
+                        graphics.PreferredBackBufferHeight = GameData.WINDOW_HEIGHT;
                     }
                     graphics.IsFullScreen = !graphics.IsFullScreen;
                     graphics.ApplyChanges();
 
-                    ConvertUnits.SetMouseScale(graphics.IsFullScreen, (float)Window.ClientBounds.Width / nativeScreenWidth);
+                    Console.WriteLine("Fullscreen: " + graphics.IsFullScreen);
+                    ConvertUnits.SetMouseScale((float)Window.ClientBounds.Width / nativeScreenWidth);
                     //ConvertUnits.SetResolutionScale((float)nativeScreenWidth / GameData.VIEW_WIDTH);
                     //Window.BeginScreenDeviceChange(true);
                     //Console.WriteLine("Fullscreen: {0}\tEngine: {1}", graphics.IsFullScreen, Engine.Instance.Renderer.IsFullScreen);
@@ -788,8 +817,6 @@ namespace Source
                     //GraphicsDevice.Viewport = new Viewport(0, 0, nativeScreenWidth, nativeScreenHeight);
 
                     menu.Resize(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
-
-                    Settings.Default.Fullscreen = graphics.IsFullScreen;
                     break;
                 case null:
                     break;

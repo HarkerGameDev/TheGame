@@ -14,16 +14,16 @@
         </Grid.RowDefinitions>
         <TextBlock Text="Options" FontSize="40" FontWeight="Bold" TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center" Width="Auto"/>
         <Button Width="165" Height="80" Content="Back" FontSize="20" FontWeight="Bold" HorizontalAlignment="Left" VerticalAlignment="Center"
-                Command="{Binding ButtonCommand}" CommandParameter="ExitOptions" TabIndex="3" />
+                Command="{Binding ButtonCommand}" CommandParameter="ExitOptions" TabIndex="0" />
         <StackPanel Grid.Row="1">
             <Button Width="165" Height="80" Content="Controls" FontSize="20" FontWeight="Bold" Margin="20"
-                Command="{Binding ButtonCommand}" CommandParameter="Controls" TabIndex="2" />
+                Command="{Binding ButtonCommand}" CommandParameter="Controls" TabIndex="1" />
             <Button Width="165" Height="80" Content="Toggle Fullscreen" FontSize="20" FontWeight="Bold" Margin="20"
-                Command="{Binding ButtonCommand}" CommandParameter="Fullscreen" TabIndex="1" />
+                Command="{Binding ButtonCommand}" CommandParameter="Fullscreen" TabIndex="2" />
             <Button Width="165" Height="80" Content="Toggle VSync" FontSize="20" FontWeight="Bold" Margin="20"
-                Command="{Binding ButtonCommand}" CommandParameter="VSync" TabIndex="1" />
+                Command="{Binding ButtonCommand}" CommandParameter="VSync" TabIndex="3" />
             <Button Width="165" Height="80" Content="Toggle Music" FontSize="20" FontWeight="Bold" Margin="20"
-                Command="{Binding ButtonCommand}" CommandParameter="Music" TabIndex="1" />
+                Command="{Binding ButtonCommand}" CommandParameter="Music" TabIndex="4" />
         </StackPanel>
     </Grid>
 </ek:UIRoot>
