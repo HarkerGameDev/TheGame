@@ -65,6 +65,7 @@ namespace Source
 
         Rectangle cameraBounds; // limit of where the player can be on screen
         Vector2 screenCenter; // where the player is on the screen
+        Vector2 prevAveragePos;     // previous average position of players
         Vector2 screenOffset; // offset from mouse panning
         float currentZoom = GameData.PIXEL_METER;
 
@@ -397,6 +398,7 @@ namespace Source
                 int character = GameData.PLAYERS[i];
                 players.Add(new Player(Content.Load<Texture2D>("Art/GreenDude"), GameData.PLAYER_START, Character.playerCharacters[character]));
             }
+            prevAveragePos = GameData.PLAYER_START;
         }
 
         /// <summary>
@@ -842,7 +844,7 @@ namespace Source
                 averageVel += player.Velocity;
             averageVel /= players.Count;
 
-            // Calculate wobble-screen
+            // Calculate screen lag behind players
             //float deltaX = ((cameraBounds.Center.X - screenCenter.X) / cameraBounds.Width - averageVel.X / GameData.RUN_VELOCITY) * GameData.CAMERA_SCALE_X;
             //deltaX = MathHelper.Clamp(deltaX, -GameData.MAX_CAMERA_SPEED_X, GameData.MAX_CAMERA_SPEED_X);
             //screenCenter.X += deltaX * deltaTime;
@@ -1445,6 +1447,20 @@ namespace Source
             averagePos /= players.Count;
             //Vector2 averagePos = ConvertUnits.ToDisplayUnits(averagePos);
 
+            // move towards averagePos
+            Vector2 move = averagePos - prevAveragePos;
+            float length = move.Length();
+            if (length < GameData.CAMERA_SCALE * deltaTime)
+            {
+                prevAveragePos = averagePos;
+            }
+            else
+            {
+                prevAveragePos += move / length * (float)Math.Sqrt(length) * GameData.CAMERA_SCALE * (float)deltaTime;
+            }
+            Console.WriteLine(new StringBuilder().Append("Player Pos: ").Append(averagePos).Append("\tPrev Pos: ").Append(prevAveragePos));
+            screenCenter = cameraBounds.Center.ToVector2() + ConvertUnits.ToDisplayUnits(move);
+
             // TODO don't always splitscreen
             float maxX = ConvertUnits.ToSimUnits(GraphicsDevice.Viewport.Width) * GameData.SCREEN_SPACE;
             float maxY = ConvertUnits.ToSimUnits(GraphicsDevice.Viewport.Height) * GameData.SCREEN_SPACE;
@@ -1480,7 +1496,7 @@ namespace Source
                     // Draw background
                     float zoom = ConvertUnits.GetRatio();
                     ConvertUnits.SetDisplayUnitToSimUnitRatio(GameData.SHADOW_SCALE);
-                    DrawBackground(ConvertUnits.ToDisplayUnits(pos));
+                    DrawBackground(ConvertUnits.ToDisplayUnits(prevAveragePos));
                     ConvertUnits.SetDisplayUnitToSimUnitRatio(zoom);
 
                     DrawScene(deltaTime, ConvertUnits.ToDisplayUnits(pos));
@@ -1493,7 +1509,7 @@ namespace Source
                 // Draw background
                 float zoom = ConvertUnits.GetRatio();
                 ConvertUnits.SetDisplayUnitToSimUnitRatio(GameData.SHADOW_SCALE);
-                DrawBackground(ConvertUnits.ToDisplayUnits(averagePos));
+                DrawBackground(ConvertUnits.ToDisplayUnits(prevAveragePos));
                 ConvertUnits.SetDisplayUnitToSimUnitRatio(zoom);
 
                 DrawScene(deltaTime, ConvertUnits.ToDisplayUnits(averagePos));
@@ -1715,12 +1731,18 @@ namespace Source
                 DrawRect(Vector2.Zero, Color.LightGreen, 0f, new Vector2(0.5f, 0.5f), new Vector2(1, 1));
             spriteBatch.End();
 
-
-            // Draw all particles and dead wall
+            // Draw all particles
             spriteBatch.Begin(transformMatrix: view, blendState: BlendState.NonPremultiplied);
             foreach (Particle part in particles)
                 part.Draw(spriteBatch);
             spriteBatch.End();
+
+#if DEBUG
+            spriteBatch.Begin(transformMatrix: view);
+            spriteBatch.Draw(whiteRect, ConvertUnits.ToDisplayUnits(prevAveragePos), null, Color.Olive, 0f, new Vector2(0.5f), ConvertUnits.ToDisplayUnits(3), SpriteEffects.None, 0f);
+            spriteBatch.Draw(whiteRect, averagePos, null, Color.DarkGreen, 0f, new Vector2(0.5f), ConvertUnits.ToDisplayUnits(2), SpriteEffects.None, 0f);
+            spriteBatch.End();
+#endif
         }
 
         private void DrawBackground(Vector2 averagePos)
@@ -1799,6 +1821,7 @@ namespace Source
             spriteBatch.DrawString(fontSmall, "Mouse -- " + ConvertUnits.GetMousePos(prevMouseState), new Vector2(10, GraphicsDevice.Viewport.Height - 40), Color.White);
             spriteBatch.DrawString(fontSmall, "Mouse -- {" + mouse.NormalizedX + "," + mouse.NormalizedY + "}", new Vector2(10, GraphicsDevice.Viewport.Height - 80), Color.White);
             spriteBatch.DrawString(fontSmall, "Music muted: " + MediaPlayer.IsMuted, new Vector2(10, GraphicsDevice.Viewport.Height - 120), Color.White);
+            spriteBatch.DrawString(fontSmall, "Screen center: " + screenCenter, new Vector2(10, GraphicsDevice.Viewport.Height - 160), Color.White);
             spriteBatch.End();
 #endif
 

@@ -13,26 +13,20 @@ namespace Source
 {
     public static class GameData
     {
-        public static int MAX_PLAYERS = 8;
-#if DEBUG
-        public static int[] PLAYERS = {2, 2};
-#else
-        public static int[] PLAYERS = { 1, 2 };            // characters for the players
-#endif
+        public static int MAX_PLAYERS = 8;          // maximum amount of players at one time
+        public static int[] PLAYERS = new int[2];   // number of players
 
         // Settings for user-defined values
-        public static int WINDOW_WIDTH = 1280;       // default width of window		
-        public static int WINDOW_HEIGHT = 720;       // default height of window		
-        public static bool FULLSCREEN = false;       // whether the game is fullscreen		
-        public static bool BORDERLESS = false;      // whether the game is in windowed borderless mode		
+        public static int WINDOW_WIDTH = 1280;       // default width of window
+        public static int WINDOW_HEIGHT = 720;       // default height of window
+        public static bool FULLSCREEN = false;       // whether the game is fullscreen
+        public static bool BORDERLESS = false;      // whether the game is in windowed borderless mode
         public static bool VSYNC = true;            // if the vertical retrace should be syncrhonized
-        public static float VOLUME = 0.8f;                // volume for songs		
+        public static float VOLUME = 0.8f;                // volume for songs
         public static bool MUTED = true;            // whether the game music is muted
 
         public static int LEVEL_FILE = 1;
         public static Vector2 PLAYER_START = new Vector2(1f, -10f);
-
-        //public static int 
 
         public const float SCROLL_STEP = 90f;      // scale for zooming using the scroll wheel
         public const float ZOOM_STEP = 1.5f;       // scale by which zoom is changed with + and -
@@ -87,10 +81,12 @@ namespace Source
         //public const float WINDOW_SLOW = 0.2f;    // -- player speed is reduced to this ratio when a window is hit
         //public const float WALL_SLOW = 0.2f;    // -- player speed is reduced to this ratio when a wall is hit while flying
 
-        public const float CAMERA_SCALE_X = 4f;         // how fast the camera moves
+        public const float CAMERA_SCALE = 7f;           // speed of camera catchup (scales as the square root of distance)
+        public const float CAMERA_SCALE_X = 4f;         // horizontal speed of camera
         public const float CAMERA_SCALE_Y = 20f;        // vertical speed of camera
         public const float MAX_CAMERA_SPEED_X = 1f;    // maximum x speed of camera
         public const float MAX_CAMERA_SPEED_Y = 3f;    // maximum y speed of camera
+        public const float SCREEN_CATCHUP = 0.1f;       // proportion of distance camera will catch up every tick
         public const float SCREEN_LEFT = 0.3f;         // defines how far left the player can be on wobble-screen
         public const float SCREEN_RIGHT = 0.7f;       // defines the right limit of the player on wobble-screen
         public const float SCREEN_SPACE = 0.25f;        // camera will begin zooming out when the player are SCREEN_SPACE % of the screen apart from each other
