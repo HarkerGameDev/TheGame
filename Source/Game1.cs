@@ -207,7 +207,7 @@ namespace Source
             else
             {
                 playerControls = new GameData.Controls[] {
-                                                       new GameData.KeyboardControls(this, Keys.OemComma, Keys.OemPeriod, Keys.OemQuestion, Keys.Left, Keys.Right, Keys.Up, Keys.Down),
+                                                       new GameData.KeyboardControls(this, Keys.OemComma, Keys.OemPeriod, Keys.OemQuestion, Keys.K, Keys.OemSemicolon, Keys.O, Keys.L),
                                                        new GameData.KeyboardControls(this, Keys.LeftControl, Keys.LeftShift, Keys.Z, Keys.A, Keys.D, Keys.W, Keys.S),
                                                        new GameData.GamePadControls(this, PlayerIndex.One, Buttons.X, Buttons.B, Buttons.Y, Buttons.LeftThumbstickLeft, Buttons.LeftThumbstickRight, Buttons.A, Buttons.RightTrigger)
                                                   };
@@ -591,12 +591,12 @@ namespace Source
                         ConvertUnits.SetDisplayUnitToSimUnitRatio(currentZoom);
                     }
 
-                    if (ToggleKey(Keys.I))
-                        LoadBackground(0);
-                    else if (ToggleKey(Keys.O))
-                        LoadBackground(1);
-                    else if (ToggleKey(Keys.P))
-                        LoadBackground(2);
+                    //if (ToggleKey(Keys.I))
+                    //    LoadBackground(0);
+                    //else if (ToggleKey(Keys.O))
+                    //    LoadBackground(1);
+                    //else if (ToggleKey(Keys.P))
+                    //    LoadBackground(2);
 
                     if (editLevel)
                     {
