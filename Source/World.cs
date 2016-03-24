@@ -383,7 +383,7 @@ namespace Source.Collisions
 
 			if (player.Position.Y > BOTTOM) {  // bottom of the level
 				// Kill the player
-                player.Kill();
+                player.Reset();
 				//if (player.Score == 0) {
 				//	for (int i = 0; i < game.players.Count; i++) {
 				//		game.players [i].Score++;

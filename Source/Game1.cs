@@ -574,6 +574,7 @@ namespace Source
                         LoadUI(Menu.Pause);
                         //MediaPlayer.Play(songs[2]);
                     }
+#if DEBUG
                     if (ToggleKey(Keys.E))
                     {
                         editLevel = !editLevel;
@@ -590,6 +591,7 @@ namespace Source
                         }
                         ConvertUnits.SetDisplayUnitToSimUnitRatio(currentZoom);
                     }
+#endif
 
                     //if (ToggleKey(Keys.I))
                     //    LoadBackground(0);
@@ -835,14 +837,15 @@ namespace Source
             for (int i = 0; i < players.Count; i++)
             {
                 Player player = players[i];
-                HandlePlayerInput(player, i, deltaTime);
+                if (player.Alive)
+                    HandlePlayerInput(player, i, deltaTime);
             }
 
             // Find average velocity across the players
-            Vector2 averageVel = Vector2.Zero;
-            foreach (Player player in players)
-                averageVel += player.Velocity;
-            averageVel /= players.Count;
+            //Vector2 averageVel = Vector2.Zero;
+            //foreach (Player player in players)
+            //    averageVel += player.Velocity;
+            //averageVel /= players.Count;
 
             // Calculate screen lag behind players
             //float deltaX = ((cameraBounds.Center.X - screenCenter.X) / cameraBounds.Width - averageVel.X / GameData.RUN_VELOCITY) * GameData.CAMERA_SCALE_X;
@@ -857,16 +860,16 @@ namespace Source
 
             if (ToggleKey(Keys.R))                        // reset
                 Reset();
-            else if (ToggleKey(Keys.D1))
-                players[0] = new Player(Content.Load<Texture2D>("Art/GreenDude"), GameData.PLAYER_START, Character.playerCharacters[0]);
-            else if (ToggleKey(Keys.D2))
-                players[0] = new Player(Content.Load<Texture2D>("Art/GreenDude"), GameData.PLAYER_START, Character.playerCharacters[1]);
-            else if (ToggleKey(Keys.D3))
-                players[0] = new Player(Content.Load<Texture2D>("Art/GreenDude"), GameData.PLAYER_START, Character.playerCharacters[2]);
-            else if (ToggleKey(Keys.D4))
-                players[0] = new Player(Content.Load<Texture2D>("Art/GreenDude"), GameData.PLAYER_START, Character.playerCharacters[3]);
-            else if (ToggleKey(Keys.D5))
-                players[0] = new Player(Content.Load<Texture2D>("Art/GreenDude"), GameData.PLAYER_START, Character.playerCharacters[4]);
+            //else if (ToggleKey(Keys.D1))
+            //    players[0] = new Player(Content.Load<Texture2D>("Art/GreenDude"), GameData.PLAYER_START, Character.playerCharacters[0]);
+            //else if (ToggleKey(Keys.D2))
+            //    players[0] = new Player(Content.Load<Texture2D>("Art/GreenDude"), GameData.PLAYER_START, Character.playerCharacters[1]);
+            //else if (ToggleKey(Keys.D3))
+            //    players[0] = new Player(Content.Load<Texture2D>("Art/GreenDude"), GameData.PLAYER_START, Character.playerCharacters[2]);
+            //else if (ToggleKey(Keys.D4))
+            //    players[0] = new Player(Content.Load<Texture2D>("Art/GreenDude"), GameData.PLAYER_START, Character.playerCharacters[3]);
+            //else if (ToggleKey(Keys.D5))
+            //    players[0] = new Player(Content.Load<Texture2D>("Art/GreenDude"), GameData.PLAYER_START, Character.playerCharacters[4]);
         }
 
         /// <summary>
@@ -1039,7 +1042,7 @@ namespace Source
                                 // TODO animate the transition for super-awesome effect
                                 foreach (Player target in players)
                                 {
-                                    if (target != player)
+                                    if (target != player && target.Alive)
                                     {
                                         Tuple<Vector2, Vector2> state = target.PrevStates[i];
                                         target.MoveToPosition(state.Item1);
@@ -1134,9 +1137,16 @@ namespace Source
 
             // Find average position across all players
             Vector2 averagePos = Vector2.Zero;
+            int count = 0;
             foreach (Player player in players)
-                averagePos += player.Position;
-            averagePos /= players.Count;
+            {
+                if (player.Alive)
+                {
+                    averagePos += player.Position;
+                    count++;
+                }
+            }
+            averagePos /= count;
 
             // Snap the mouse position to 1x1 meter grid
             Vector2 mouseSimPos = ConvertUnits.ToSimUnits(ConvertUnits.GetMousePos(mouse) - cameraBounds.Center.ToVector2() - screenOffset) + averagePos;
@@ -1382,23 +1392,43 @@ namespace Source
             float minY = players[0].Position.Y;
             float maxY = minY;
 
-            float averageX = 0;
-            foreach (Player player in players)
-                averageX += player.Position.X;
-            averageX /= players.Count;
-
+            Vector2 averagePos = Vector2.Zero;
+            int count = 0;
             foreach (Player player in players)
             {
+                if (player.Alive)
+                {
+                    averagePos += player.Position;
+                    count++;
+                }
+            }
+            averagePos /= count;
+            //averagePos = ConvertUnits.ToDisplayUnits(averagePos);
+            averagePos = ConvertUnits.ToDisplayUnits(prevAveragePos);
+
+            for (int i = players.Count - 1; i >= 0; i--)
+            {
+                Player player = players[i];
+                if (!player.Alive)
+                    continue;
+
+                Vector2 dist = ConvertUnits.ToDisplayUnits(player.Position) - averagePos;
+                if (Math.Abs(dist.X) > GraphicsDevice.Viewport.Width / 2f || Math.Abs(dist.Y) > GraphicsDevice.Viewport.Height / 2f)
+                {
+                    player.Kill();
+                    continue;
+                }
+
                 //if (player.Position.X > levelEnd - GameData.LOAD_NEW)
                 //    MakeLevel();
 
-                if (max == null || player.Position.X > max.Position.X)
-                    max = player;
+                //if (max == null || player.Position.X > max.Position.X)
+                //    max = player;
 
-                if (player.Position.Y < minY)
-                    minY = player.Position.Y;
-                else if (player.Position.Y > maxY)
-                    maxY = player.Position.Y;
+                //if (player.Position.Y < minY)
+                //    minY = player.Position.Y;
+                //else if (player.Position.Y > maxY)
+                //    maxY = player.Position.Y;
             }
 
             //foreach (Player player in players)
@@ -1422,7 +1452,7 @@ namespace Source
             //    }
             //}
 
-            float currentX = max == null ? averageX : max.Position.X;
+            //float currentX = max == null ? averagePos : max.Position.X;
 
             //if (totalTime > GameData.WIN_TIME)  // win. TODO -- do more than reset
             //{
@@ -1442,12 +1472,16 @@ namespace Source
         {
             // Find average position across all players
             Vector2 averagePos = Vector2.Zero;
+            int count = 0;
             foreach (Player player in players)
+            {
                 averagePos += player.Position;
-            averagePos /= players.Count;
+                count++;
+            }
+            averagePos /= count;
             //Vector2 averagePos = ConvertUnits.ToDisplayUnits(averagePos);
 
-            // move towards averagePos
+            // move camera towards averagePos
             Vector2 move = averagePos - prevAveragePos;
             float length = move.Length();
             if (length < GameData.CAMERA_SCALE * deltaTime)
@@ -1458,34 +1492,36 @@ namespace Source
             {
                 prevAveragePos += move / length * (float)Math.Sqrt(length) * GameData.CAMERA_SCALE * (float)deltaTime;
             }
-            Console.WriteLine(new StringBuilder().Append("Player Pos: ").Append(averagePos).Append("\tPrev Pos: ").Append(prevAveragePos));
+            //Console.WriteLine(new StringBuilder().Append("Player Pos: ").Append(averagePos).Append("\tPrev Pos: ").Append(prevAveragePos));
             screenCenter = cameraBounds.Center.ToVector2() + ConvertUnits.ToDisplayUnits(move);
 
-            // TODO don't always splitscreen
             float maxX = ConvertUnits.ToSimUnits(GraphicsDevice.Viewport.Width) * GameData.SCREEN_SPACE;
             float maxY = ConvertUnits.ToSimUnits(GraphicsDevice.Viewport.Height) * GameData.SCREEN_SPACE;
             bool splitScreen = false;
-            if (!editLevel)
-            {
-                foreach (Player player in players)
-                {
-                    Vector2 dist = player.Position - averagePos;
-                    if (Math.Abs(dist.X) > maxX || Math.Abs(dist.Y) > maxY)
-                    {
-                        splitScreen = true;
-                        break;
-                    }
-                }
-            }
+            //if (!editLevel)
+            //{
+            //    foreach (Player player in players)
+            //    {
+            //        Vector2 dist = player.Position - averagePos;
+            //        if (Math.Abs(dist.X) > maxX || Math.Abs(dist.Y) > maxY)
+            //        {
+            //            splitScreen = true;
+            //            break;
+            //        }
+            //    }
+            //}
 
 
             if (splitScreen)
             {
                 for (int i = 0; i < GameData.PLAYERS.Length; i++)
                 {
+                    Player player = players[i];
+                    if (!player.Alive)
+                        continue;
+
                     GraphicsDevice.SetRenderTarget(playerScreens[i]);
 
-                    Player player = players[i];
                     Vector2 dist = averagePos - player.Position;
                     dist.Normalize();
                     dist.X *= ConvertUnits.ToSimUnits(GameData.SCREEN_SPACE * GraphicsDevice.Viewport.Width);
@@ -1522,12 +1558,15 @@ namespace Source
             {
                 for (int i = 0; i < GameData.PLAYERS.Length; i++)
                 {
+                    Player player = players[i];
+                    if (!player.Alive)
+                        continue;
+
                     BasicEffect effect = new BasicEffect(graphics.GraphicsDevice);
                     effect.World = Matrix.Identity;
                     effect.TextureEnabled = true;
                     effect.Texture = playerScreens[i];
 
-                    Player player = players[i];
                     Vector2 dist = averagePos - player.Position;
                     dist = new Vector2(dist.Y, dist.X);
                     dist /= -Math.Max(Math.Abs(dist.X), Math.Abs(dist.Y));

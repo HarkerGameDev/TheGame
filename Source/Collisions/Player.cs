@@ -18,6 +18,7 @@ namespace Source.Collisions
         private const float BAR_WIDTH = 1f; // length of bar in meters
         private const float BAR_HEIGHT = 0.25f;
 
+        public bool Alive;
         public State CurrentState;
         public float StunTime;
         public float JumpTime;
@@ -62,6 +63,7 @@ namespace Source.Collisions
 
         public void ResetValues()
         {
+            Alive = true;
             CurrentState = State.Jumping;
             StunTime = 0;
             JumpTime = 0;
@@ -100,6 +102,9 @@ namespace Source.Collisions
         /// <param name="deltaTime"></param>
         public override void Move(float deltaTime)
         {
+            if (!Alive)
+                throw new Exception("Moving dead player");
+
             //ActionTime -= deltaTime;
             if (CurrentState == State.Stunned || CurrentState == State.Flying)
             {
@@ -175,6 +180,9 @@ namespace Source.Collisions
 
         public override void Draw(SpriteBatch spriteBatch)
         {
+            if (!Alive)
+                throw new Exception("Drawing dead player");
+
             if (GrappleTarget != Vector2.Zero)
             {
                 Vector2 dist = GrappleTarget - Position;
@@ -191,11 +199,16 @@ namespace Source.Collisions
             //Game1.DrawRectangle(spriteBatch, pos, Color.Crimson, new Vector2(BAR_WIDTH * BoostTime / GameData.BOOST_LENGTH, BAR_HEIGHT));
         }
 
-        public void Kill()
+        public void Reset()
         {
             Velocity = Vector2.Zero;
             MoveToPosition(GameData.PLAYER_START);
             Projectiles.Clear();
+        }
+
+        public void Kill()
+        {
+            Alive = false;
         }
     }
 }
