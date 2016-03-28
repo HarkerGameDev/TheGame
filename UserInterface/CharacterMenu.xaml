@@ -17,7 +17,7 @@
 
         <TextBlock Text="{Binding PlayerText}" FontSize="40" FontWeight="Bold" TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center" Width="Auto"/>
         <Button Width="165" Height="80" Content="Back" FontSize="20" FontWeight="Bold" HorizontalAlignment="Left" VerticalAlignment="Center" Focusable="False"
-                Command="{Binding ButtonCommand}" CommandParameter="MainMenu" />
+                Command="{Binding ButtonCommand}" CommandParameter="Setup" />
         <Button Width="165" Height="80" Content="Pick Character" FontSize="20" FontWeight="Bold" HorizontalAlignment="Right" VerticalAlignment="Center" Focusable="False"
                 Command="{Binding ButtonCommand}" CommandParameter="NextPlayer" />
         <Button Width="165" Height="80" Grid.Row="1" Content="Previous" HorizontalAlignment="Left" VerticalAlignment="Center" Focusable="False"

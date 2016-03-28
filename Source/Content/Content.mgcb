@@ -160,3 +160,9 @@
 /processorParam:Quality=Best
 /build:Music/Main Menu.mp3
 
+#begin Fonts/Segoe_UI_21_Bold.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:TextureFormat=Compressed
+/build:Fonts/Segoe_UI_21_Bold.spritefont
+

@@ -60,6 +60,7 @@
     <Compile Include="GeneratedUI\MainMenu.xaml.cs" />
     <Compile Include="GeneratedUI\OptionsMenu.xaml.cs" />
     <Compile Include="GeneratedUI\PauseMenu.xaml.cs" />
+    <Compile Include="GeneratedUI\SetupMenu.xaml.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

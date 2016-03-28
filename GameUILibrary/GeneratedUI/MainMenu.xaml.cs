@@ -106,7 +106,7 @@ namespace EmptyKeys.UserInterface.Generated {
             this.Start.FontSize = 20F;
             this.Start.FontStyle = FontStyle.Bold;
             this.Start.Content = "Start";
-            this.Start.CommandParameter = "Character";
+            this.Start.CommandParameter = "Setup";
             Grid.SetRow(this.Start, 2);
             Binding binding_Start_Command = new Binding("ButtonCommand");
             this.Start.SetBinding(Button.CommandProperty, binding_Start_Command);

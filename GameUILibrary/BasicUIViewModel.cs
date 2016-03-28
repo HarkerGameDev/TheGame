@@ -20,8 +20,9 @@ namespace GameUILibrary
         private string controlsText;
         private string playerText;
         private bool buttonEnabled;
-        private float progressValue;
-        private float sliderValue;
+        private int maxPlayers;
+        private int levelValue;
+        private int playerValue;
         private float numericTextBoxValue;
         private string password;
 
@@ -62,6 +63,18 @@ namespace GameUILibrary
         }
 
         /// <summary>
+        /// Gets or sets the maximum number of players for the Setup screen
+        /// </summary>
+        /// <value>
+        /// Maximum number of players
+        /// </value>
+        public int MaxPlayers
+        {
+            get { return maxPlayers; }
+            set { SetProperty(ref maxPlayers, value); }
+        }
+
+        /// <summary>
         /// Gets or sets the menu text to display when player is picking a character.
         /// </summary>
         /// <value>
@@ -86,27 +99,27 @@ namespace GameUILibrary
         }
 
         /// <summary>
-        /// Gets or sets the progress value.
+        /// Gets or sets the slider value for level.
         /// </summary>
         /// <value>
         /// The progress value.
         /// </value>
-        public float ProgressValue
+        public int LevelValue
         {
-            get { return progressValue; }
-            set { SetProperty(ref progressValue, value); }
+            get { return levelValue; }
+            set { SetProperty(ref levelValue, value); }
         }
 
         /// <summary>
-        /// Gets or sets the slider value.
+        /// Gets or sets the slider value for number of players.
         /// </summary>
         /// <value>
         /// The slider value.
         /// </value>
-        public float SliderValue
+        public int PlayerValue
         {
-            get { return sliderValue; }
-            set { SetProperty(ref sliderValue, value); }
+            get { return playerValue; }
+            set { SetProperty(ref playerValue, value); }
         }
 
         /// <summary>
@@ -139,6 +152,7 @@ namespace GameUILibrary
         public BasicUIViewModel()
         {
             ButtonCommand = new RelayCommand(new Action<object>(OnButtonClick));
+            levelValue = 1;
         }
 
         private void OnButtonClick(object obj)
@@ -146,7 +160,6 @@ namespace GameUILibrary
             if (obj != null)
             {
                 ButtonResult = obj.ToString();
-                ProgressValue += 0.5f;
                 ButtonEnabled = true;
                 NumericTextBoxValue = 100;
                 Password = string.Empty;

@@ -116,12 +116,12 @@ namespace Source
 
         public enum State
         {
-            Running, Paused, MainMenu, Options, Controls, Character
+            Running, Paused, MainMenu, Options, Controls, Character, Setup
         }
 
         enum Menu
         {
-            Main, Options, Controls, Pause, Character
+            Main, Options, Controls, Pause, Character, Setup
         }
 
         public Game1()
@@ -207,9 +207,10 @@ namespace Source
             else
             {
                 playerControls = new GameData.Controls[] {
-                                                       new GameData.KeyboardControls(this, Keys.OemComma, Keys.OemPeriod, Keys.OemQuestion, Keys.K, Keys.OemSemicolon, Keys.O, Keys.L),
-                                                       new GameData.KeyboardControls(this, Keys.LeftControl, Keys.LeftShift, Keys.Z, Keys.A, Keys.D, Keys.W, Keys.S),
-                                                       new GameData.GamePadControls(this, PlayerIndex.One, Buttons.X, Buttons.B, Buttons.Y, Buttons.LeftThumbstickLeft, Buttons.LeftThumbstickRight, Buttons.A, Buttons.RightTrigger)
+                                                        new GameData.KeyboardControls(this, Keys.OemComma, Keys.OemPeriod, Keys.OemQuestion, Keys.K, Keys.OemSemicolon, Keys.O, Keys.L),
+                                                        new GameData.KeyboardControls(this, Keys.LeftControl, Keys.LeftShift, Keys.Z, Keys.A, Keys.D, Keys.W, Keys.S),
+                                                        new GameData.GamePadControls(this, PlayerIndex.One, Buttons.X, Buttons.B, Buttons.Y, Buttons.LeftThumbstickLeft, Buttons.LeftThumbstickRight, Buttons.A, Buttons.RightTrigger),
+                                                        new GameData.GamePadControls(this, PlayerIndex.One, Buttons.X, Buttons.B, Buttons.Y, Buttons.LeftThumbstickLeft, Buttons.LeftThumbstickRight, Buttons.A, Buttons.RightTrigger)
                                                   };
             }
 
@@ -384,13 +385,20 @@ namespace Source
                     state = State.Character;
                     menu = new CharacterMenu();
                     break;
+                case Menu.Setup:
+                    state = State.Setup;
+                    menu = new SetupMenu();
+                    break;
             }
 
             menu.DataContext = viewModel;
         }
 
-        private void InitializePlayers()
+        private void StartGame()
         {
+            GameData.LEVEL_FILE = viewModel.LevelValue;
+            LoadLevel(GameData.LEVEL_FILE);
+
             players = new List<Player>();
             for (int i = 0; i < GameData.PLAYERS.Length; i++)
             {
@@ -429,7 +437,7 @@ namespace Source
             FontManager.Instance.LoadFonts(Content, "Fonts");
 
             StringBuilder builder = new StringBuilder();
-            for (int i = 0; i < GameData.PLAYERS.Length; i++)
+            for (int i = 0; i < GameData.MAX_PLAYERS; i++)
             {
                 builder.Append("Player ").AppendLine((i + 1).ToString())
                     .AppendLine(playerControls[i].ToString());
@@ -437,6 +445,8 @@ namespace Source
             viewModel.ControlsText = builder.ToString();
             Console.WriteLine(builder.ToString());
             //viewModel.ControlsText = "Hello!\nWhoo!!";
+
+            viewModel.MaxPlayers = GameData.MAX_PLAYERS;
 
             LoadUI(Menu.Main);
 
@@ -466,9 +476,6 @@ namespace Source
                 (int)(width * (GameData.SCREEN_RIGHT - GameData.SCREEN_LEFT)), (int)(height * (1 - 2 * GameData.SCREEN_TOP)));
             screenCenter = cameraBounds.Center.ToVector2();
             screenOffset = Vector2.Zero;
-
-            // Load the level stored in LEVEL_FILE
-            LoadLevel(GameData.LEVEL_FILE);
         }
 
         private void LoadLevel(int loadLevel)
@@ -696,6 +703,11 @@ namespace Source
                         Exit();
                     UpdateMenu(gameTime.ElapsedGameTime.TotalMilliseconds);
                     break;
+                case State.Setup:
+                    if (ToggleKey(Keys.Escape))
+                        LoadUI(Menu.Main);
+                    UpdateMenu(gameTime.ElapsedGameTime.TotalMilliseconds);
+                    break;
                 case State.Character:
                     if (ToggleKey(Keys.Enter))
                         viewModel.ButtonResult = "NextPlayer";
@@ -704,7 +716,7 @@ namespace Source
                     else if (ToggleKey(Keys.Right))
                         characterSelect = (characterSelect + 1) % Character.playerCharacters.Length;
                     else if (ToggleKey(Keys.Escape))
-                        LoadUI(Menu.Main);
+                        LoadUI(Menu.Setup);
                     UpdateMenu(gameTime.ElapsedGameTime.TotalMilliseconds);
                     break;
                 default:
@@ -758,11 +770,15 @@ namespace Source
                 case "MainMenu":
                     LoadUI(Menu.Main);
                     break;
+                case "Setup":
+                    LoadUI(Menu.Setup);
+                    break;
                 case "Character":
                     LoadUI(Menu.Character);
                     playerSelect = 0;
                     characterSelect = 0;
                     viewModel.PlayerText = "Player " + (playerSelect + 1);
+                    GameData.PLAYERS = new int[viewModel.PlayerValue];
                     break;
                 case "Music":
                     MediaPlayer.IsMuted = !MediaPlayer.IsMuted;
@@ -782,7 +798,7 @@ namespace Source
                     GameData.PLAYERS[playerSelect] = characterSelect;
                     if (++playerSelect >= GameData.PLAYERS.Length)
                     {
-                        InitializePlayers();
+                        StartGame();
                         state = State.Running;
                         mainMenu = false;
                     }
@@ -1846,6 +1862,7 @@ namespace Source
                 case State.Paused:
                 case State.Options:
                 case State.Controls:
+                case State.Setup:
                 case State.MainMenu:
                     //GraphicsDevice.Clear(Color.Turquoise);
                     menu.Draw(gameTime.ElapsedGameTime.TotalMilliseconds);

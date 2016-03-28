@@ -13,8 +13,10 @@ namespace Source
 {
     public static class GameData
     {
-        public static int MAX_PLAYERS = 8;          // maximum amount of players at one time
-        public static int[] PLAYERS = new int[2];   // number of players
+        public static int MAX_PLAYERS = 4;          // maximum amount of players at one time
+        public static int[] PLAYERS;                // number of players
+        public static int LEVEL_FILE = 1;
+        public static Vector2 PLAYER_START = new Vector2(1f, -10f);
 
         // Settings for user-defined values
         public static int WINDOW_WIDTH = 1280;       // default width of window
@@ -24,9 +26,6 @@ namespace Source
         public static bool VSYNC = true;            // if the vertical retrace should be syncrhonized
         public static float VOLUME = 0.8f;                // volume for songs
         public static bool MUTED = true;            // whether the game music is muted
-
-        public static int LEVEL_FILE = 1;
-        public static Vector2 PLAYER_START = new Vector2(1f, -10f);
 
         public const float SCROLL_STEP = 90f;      // scale for zooming using the scroll wheel
         public const float ZOOM_STEP = 1.5f;       // scale by which zoom is changed with + and -
