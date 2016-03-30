@@ -9,53 +9,26 @@ using Microsoft.Xna.Framework.Graphics;
 namespace Source.Collisions
 {
     /// <summary>
-    /// Polygon, not necessarily axis-aligned
+    /// Axis aligned rectangle
     /// </summary>
-    public class Polygon : Body
+    public class AABB : Body
     {
-        public Polygon(Texture2D texture, Vector2 position, Vector2 size, Vector2[] points = null, float rotation = 0f)
-            : base(texture, position, size, rotation)
+        public float Left { get { return Points[0].X; } }
+        public float Right { get { return Points[1].X; } }
+        public float Top { get { return Points[0].Y; } }
+        public float Bottom { get { return Points[2].Y; } }
+
+        public AABB(Texture2D texture, Vector2 position, Vector2 size)
+            : base(texture, position, size, 0f)
         {
-            if (points == null)     // Make a collision rectangle that matches the drawn size
-            {
-                Points = new Vector2[4];
-                Vector2 half = Size / 2;
-                Points[0] = RotatePoint(Position, new Vector2(Position.X - half.X, Position.Y - half.Y), Rotation);
-                Points[1] = RotatePoint(Position, new Vector2(Position.X + half.X, Position.Y - half.Y), Rotation);
-                Points[2] = RotatePoint(Position, new Vector2(Position.X + half.X, Position.Y + half.Y), Rotation);
-                Points[3] = RotatePoint(Position, new Vector2(Position.X - half.X, Position.Y + half.Y), Rotation);
-            }
-            else
-            {
-                Points = points;
-            }
+            Points = new Vector2[4];
+            Vector2 half = Size / 2;
+            Points[0] = new Vector2(Position.X - half.X, Position.Y - half.Y);
+            Points[1] = new Vector2(Position.X + half.X, Position.Y - half.Y);
+            Points[2] = new Vector2(Position.X + half.X, Position.Y + half.Y);
+            Points[3] = new Vector2(Position.X - half.X, Position.Y + half.Y);
 
             Edges = new Vector2[Points.Length];
-            for (int x = 0; x < Edges.Length; x++)
-            {
-                Edges[x] = new Vector2(Points[(x + 1) % 4].X - Points[x].X, Points[(x + 1) % 4].Y - Points[x].Y);
-            }
-        }
-
-        protected Vector2 RotatePoint(Vector2 pivot, Vector2 point, float angle)
-        {
-            double leX = ((Math.Cos(angle) * (point.X - pivot.X)) -
-                               (Math.Sin(angle) * (point.Y - pivot.Y)) +
-                               pivot.X);
-            double leY = ((Math.Sin(angle) * (point.X - pivot.X)) +
-                               (Math.Cos(angle) * (point.Y - pivot.Y)) +
-                               pivot.Y);
-            return new Vector2((float)leX, (float)leY);
-        }
-
-        public void Rotate(float angle)
-        {
-            Rotation += angle;
-            Vector2 half = Size / 2;
-            Points[0] = RotatePoint(Position, new Vector2(Position.X - half.X, Position.Y - half.Y), Rotation);
-            Points[1] = RotatePoint(Position, new Vector2(Position.X + half.X, Position.Y - half.Y), Rotation);
-            Points[2] = RotatePoint(Position, new Vector2(Position.X + half.X, Position.Y + half.Y), Rotation);
-            Points[3] = RotatePoint(Position, new Vector2(Position.X - half.X, Position.Y + half.Y), Rotation);
             for (int x = 0; x < Edges.Length; x++)
             {
                 Edges[x] = new Vector2(Points[(x + 1) % 4].X - Points[x].X, Points[(x + 1) % 4].Y - Points[x].Y);
@@ -68,7 +41,7 @@ namespace Source.Collisions
         /// </summary>
         /// <param name="other">The other Body to check intersection with</param>
         /// <returns>Vector2.Zero for no intersection, and minimum translation vector if there is an intersection</returns>
-        public override Vector2 Intersects(Polygon other)
+        public override Vector2 Intersects(AABB other)
         {
             //Separating Axis Theorem
             int edgeCountA = this.Edges.Length;
@@ -123,7 +96,7 @@ namespace Source.Collisions
             return translationAxis * minIntervalDistance;
         }
 
-        private static void ProjectRectangle(Vector2 axis, Polygon body, ref float min, ref float max)
+        private static void ProjectRectangle(Vector2 axis, AABB body, ref float min, ref float max)
         {
             // Project a point on an axis using the dot product.
             float dotProduct = axis.X * body.Points[0].X + axis.Y * body.Points[0].Y;

@@ -13,7 +13,7 @@ namespace Source.Collisions
     /// <summary>
     /// A player uses a rectangle for collisions
     /// </summary>
-    public class Player : Polygon
+    public class Player : AABB
     {
         private const float BAR_WIDTH = 1f; // length of bar in meters
         private const float BAR_HEIGHT = 0.25f;
@@ -32,7 +32,7 @@ namespace Source.Collisions
         public bool FacingRight { get { return TargetVelocity == 0 ? Flip == SpriteEffects.None : TargetVelocity > 0; } }
 
         // Character-specific variables
-        public Platform SpawnedPlatform;
+        public Obstacle SpawnedPlatform;
         public float PlatformTime;
         public float JetpackTime;
         public bool JetpackEnabled;
@@ -82,7 +82,7 @@ namespace Source.Collisions
         }
 
         public Player(Texture2D texture, Vector2 position, Character character)
-            : base(texture, position, new Vector2(0.6f, 1.8f))
+            : base(texture, position, new Vector2(0.3f, 0.9f))
         {
             Color = character.Color;
             CurrentCharacter = character;
@@ -92,7 +92,7 @@ namespace Source.Collisions
 
             int[] animationFrames = { 4, 4, 2, 4, 2, 1, 1 };
             Origin = new Vector2(Origin.X / animationFrames.Max(), Origin.Y / animationFrames.Length);
-            float textureScale = 1.8f / Origin.Y / 2f * (20f / 18f);
+            float textureScale = Size.Y / Origin.Y / 2f * (20f / 18f);
             Sprite = new AnimatedSprite(texture, this, animationFrames, textureScale);
         }
 

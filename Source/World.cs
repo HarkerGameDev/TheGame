@@ -56,17 +56,21 @@ namespace Source.Collisions
 
                 drop.Velocity.Y += GameData.GRAVITY * deltaTime;
                 drop.Update(deltaTime);
-                foreach (Polygon target in game.platforms)
+                for (int y = (int)drop.Top; y < drop.Bottom; y++)
                 {
-                    Vector2 translation = target.Intersects(drop);
-                    if (translation != Vector2.Zero)
+                    for (int x = (int)drop.Left; x < drop.Right; x++)
                     {
-                        drop.MoveByPosition(translation);
-                        drop.Velocity.X -= drop.Velocity.X * GameData.DROP_FRICTION * deltaTime;
-                        if (translation.Y == 0)
-                            drop.Velocity.X = 0;
-                        if (translation.X == 0)
-                            drop.Velocity.Y = 0;
+                        Tile tile = game.tiles[x, y];
+                        Vector2 translation = Collisions.Collide(tile, x, y, drop);
+                        if (translation != Vector2.Zero)
+                        {
+                            drop.MoveByPosition(translation);
+                            drop.Velocity.X -= drop.Velocity.X * GameData.DROP_FRICTION * deltaTime;
+                            if (translation.Y == 0)
+                                drop.Velocity.X = 0;
+                            if (translation.X == 0)
+                                drop.Velocity.Y = 0;
+                        }
                     }
                 }
 
@@ -136,7 +140,7 @@ namespace Source.Collisions
                     player.PlatformTime -= deltaTime;
                     if (player.PlatformTime < 0)
                     {
-                        game.platforms.Remove(player.SpawnedPlatform);
+                        game.obstacles.Remove(player.SpawnedPlatform);
                         player.SpawnedPlatform = null;
                     }
                 }
@@ -254,20 +258,24 @@ namespace Source.Collisions
                     }
                 }
             }
-            foreach (Platform platform in game.platforms)
+            for (int y = (int)proj.Top; y < proj.Bottom; y++)
             {
-                if (proj.Intersects(platform) != Vector2.Zero)
+                for (int x = (int)proj.Left; x < proj.Right; x++)
                 {
-                    switch (proj.Type)
+                    Tile tile = game.tiles[x, y];
+                    if (Collisions.Collide(tile, x, y, proj) != Vector2.Zero)
                     {
-                        case Projectile.Types.Rocket:
-                            ApplyImpulse(GameData.ROCKET_FORCE, player, proj.Position);
-                            MakeParticles(proj.Position, Game1.whiteRect, GameData.ROCKET_EXPLODE_PART, 0, 0, Color.Firebrick);
-                            break;
-                    }
+                        switch (proj.Type)
+                        {
+                            case Projectile.Types.Rocket:
+                                ApplyImpulse(GameData.ROCKET_FORCE, player, proj.Position);
+                                MakeParticles(proj.Position, Game1.whiteRect, GameData.ROCKET_EXPLODE_PART, 0, 0, Color.Firebrick);
+                                break;
+                        }
 
-                    player.Projectiles.RemoveAt(projIndex);
-                    return false;
+                        player.Projectiles.RemoveAt(projIndex);
+                        return false;
+                    }
                 }
             }
             foreach (Obstacle obstacle in game.obstacles)
@@ -302,83 +310,63 @@ namespace Source.Collisions
         {
             // TODO this seems kinda janky if player falls from great height
             int totalCollisions = 0;
-            foreach (Platform platform in game.platforms)
+            for (int y = (int)player.Top; y < player.Bottom; y++)
             {
-                Vector2 translation = player.Intersects(platform);
-                if (translation != Vector2.Zero)
+                for (int x = (int)player.Left; x < player.Right; x++)
                 {
-                    totalCollisions++;
-
-                    //if (Math.Abs(translation.X) > Math.Abs(translation.Y)/* && !player.WallAbove*/)
-                    //{
-                    //    player.CurrentState = Player.State.Climbing;
-                    //    //player.Velocity.Y = player.ActionTime > 0 ? -GameData.CLIMB_SPEED_FAST : -GameData.CLIMB_SPEED;
-                    //}
-                    //else if (player.CurrentState == Player.State.Climbing)
-                    //    player.CurrentState = Player.State.Walking;
-
-                    if (translation.Y == 0)    // Horizontal collision
+                    Tile tile = game.tiles[x, y];
+                    Vector2 translation = Collisions.Collide(tile, x, y, player);
+                    if (translation != Vector2.Zero)
                     {
-                        if (player.CurrentState == Player.State.Stunned)
-                            player.Velocity.X *= -1;
-                        else
+                        totalCollisions++;
+
+                        //if (Math.Abs(translation.X) > Math.Abs(translation.Y)/* && !player.WallAbove*/)
+                        //{
+                        //    player.CurrentState = Player.State.Climbing;
+                        //    //player.Velocity.Y = player.ActionTime > 0 ? -GameData.CLIMB_SPEED_FAST : -GameData.CLIMB_SPEED;
+                        //}
+                        //else if (player.CurrentState == Player.State.Climbing)
+                        //    player.CurrentState = Player.State.Walking;
+
+                        if (translation.Y == 0)    // Horizontal collision
                         {
-                            player.Velocity.X = 0;
-                            if (player.InAir && player.JumpTime <= 0)
+                            if (player.CurrentState == Player.State.Stunned)
+                                player.Velocity.X *= -1;
+                            else
                             {
-                                if (player.WallJump == Player.Jump.None && player.Velocity.Y > 0)
-                                    player.Velocity.Y *= GameData.WALL_STICK_SCALE;
-                                if (translation.X > 0)
-                                    player.WallJump = Player.Jump.Left;
-                                else
-                                    player.WallJump = Player.Jump.Right;
-                                player.WallJumpLeway = GameData.WALL_JUMP_LEWAY;
+                                player.Velocity.X = 0;
+                                if (player.InAir && player.JumpTime <= 0)
+                                {
+                                    if (player.WallJump == Player.Jump.None && player.Velocity.Y > 0)
+                                        player.Velocity.Y *= GameData.WALL_STICK_SCALE;
+                                    if (translation.X > 0)
+                                        player.WallJump = Player.Jump.Left;
+                                    else
+                                        player.WallJump = Player.Jump.Right;
+                                    player.WallJumpLeway = GameData.WALL_JUMP_LEWAY;
+                                }
                             }
                         }
-                    }
-                    else        // Vertical or diagonal collision
-                    {
-                        if (player.CurrentState == Player.State.Stunned)
-                            player.Velocity.Y *= -1;
-                        else
+                        else        // Vertical or diagonal collision
                         {
-                            player.Velocity.Y = 0;
-                            if (translation.Y > 0 && player.InAir)
+                            if (player.CurrentState == Player.State.Stunned)
+                                player.Velocity.Y *= -1;
+                            else
                             {
-                                player.CurrentState = Player.State.Walking;
-                                player.GrappleTarget = Vector2.Zero;
-                                player.JetpackTime = GameData.JETPACK_TIME;
-                                player.JetpackEnabled = false;
-                                player.JumpsLeft = GameData.TOTAL_JUMPS;
+                                player.Velocity.Y = 0;
+                                if (translation.Y > 0 && player.InAir)
+                                {
+                                    player.CurrentState = Player.State.Walking;
+                                    player.GrappleTarget = Vector2.Zero;
+                                    player.JetpackTime = GameData.JETPACK_TIME;
+                                    player.JetpackEnabled = false;
+                                    player.JumpsLeft = GameData.TOTAL_JUMPS;
+                                }
                             }
                         }
+                        player.MoveByPosition(-translation);
                     }
-                    player.MoveByPosition(-translation);
                 }
-                //else        // player is Slamming or Stunned
-                //{
-                //    if (platform.Rotation != 0)
-                //    {
-                //        MakeParticles(player.Position, platform, GameData.NUM_PART_FLOOR, 0, 1);
-                //    }
-                //    else
-                //    {
-                //        MakeParticles(player.Position, platform, GameData.NUM_PART_FLOOR, 0, 1);
-
-                //        float newFloorX = platform.Position.X + player.Position.X;
-                //        float sizeDiff = platform.Size.X / 2 + GameData.FLOOR_HOLE / 2;
-                //        float halfWidth = platform.Size.X / 2 - GameData.FLOOR_HOLE / 2;
-                //        float playerDist = player.Position.X - platform.Position.X;
-
-                //        if (halfWidth + playerDist > GameData.MIN_FLOOR_WIDTH)
-                //            game.platforms.Add(new Platform(platform.texture, new Vector2((newFloorX - sizeDiff) / 2, platform.Position.Y), halfWidth + playerDist));
-                //        if (halfWidth - playerDist > GameData.MIN_FLOOR_WIDTH)
-                //            game.platforms.Add(new Platform(platform.texture, new Vector2((newFloorX + sizeDiff) / 2, platform.Position.Y), halfWidth - playerDist));
-                //    }
-
-                //    game.platforms.Remove(platform);
-                //    break;
-                //}
             }
 
 			if (player.Position.Y > BOTTOM) {  // bottom of the level
@@ -463,7 +451,7 @@ namespace Source.Collisions
             }
         }
 
-        private void ApplyImpulse(float scale, Polygon player, Vector2 position)
+        private void ApplyImpulse(float scale, AABB player, Vector2 position)
         {
             // Impulse drops off as 1/r
             foreach (Player body in game.players)
@@ -490,7 +478,7 @@ namespace Source.Collisions
             }
         }
 
-        private void ApplyForce(float scale, Polygon player, Vector2 position, float deltaTime)
+        private void ApplyForce(float scale, AABB player, Vector2 position, float deltaTime)
         {
             // Force drops off as 1/r for objects and 1/r^2 for players
             foreach (Particle part in game.particles)
@@ -554,16 +542,9 @@ namespace Source.Collisions
             }
         }
 
-        public Polygon TestPoint(Vector2 point)
+        public bool TestPoint(Vector2 point)
         {
-            foreach (Polygon body in game.platforms)
-            {
-                if (body.TestPoint(point))
-                {
-                    return body;
-                }
-            }
-            return null;
+            return false;
         }
     }
 }

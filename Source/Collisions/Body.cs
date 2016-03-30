@@ -45,7 +45,7 @@ namespace Source.Collisions
         /// <returns></returns>
         public bool TestPoint(Vector2 point)
         {
-            return Intersects(new Platform(texture, point, Vector2.Zero)) != Vector2.Zero;
+            return Intersects(new AABB(texture, point, Vector2.Zero)) != Vector2.Zero;
         }
 
         public virtual void Update(float deltaTime)
@@ -79,7 +79,7 @@ namespace Source.Collisions
         /// </summary>
         /// <param name="other">The other Body to check intersection with</param>
         /// <returns>Vector2.Zero for no intersection, and minimum translation vector if there is an intersection</returns>
-        public abstract Vector2 Intersects(Polygon other);
+        public abstract Vector2 Intersects(AABB other);
 
         /// <summary>
         /// Gets the parametric T value for the ray on start in direction dir, 0 if nothing

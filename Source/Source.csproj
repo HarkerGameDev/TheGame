@@ -65,7 +65,7 @@
   <ItemGroup>
     <Compile Include="Character.cs" />
     <Compile Include="Collisions\Body.cs" />
-    <Compile Include="Collisions\Platform.cs" />
+    <Compile Include="Collisions\Collisions.cs" />
     <Compile Include="Collisions\Polygon.cs" />
     <Compile Include="Collisions\ConvertUnits.cs" />
     <Compile Include="Collisions\Drop.cs" />
@@ -136,9 +136,7 @@
     <None Include="Levels\level0">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Levels\level1">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <None Include="Levels\level1" />
     <None Include="packages.config" />
     <None Include="Settings.ini">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

@@ -53,7 +53,7 @@ namespace Source
 
         public static Texture2D whiteRect;
         Tuple<Texture2D, float, float, float>[] prevBackground, background;
-        float fadeTime;
+        //float fadeTime;
         public SpriteFont fontSmall, fontBig;
         //List<Song> songs;
 
@@ -70,12 +70,8 @@ namespace Source
         float currentZoom = GameData.PIXEL_METER;
 
         bool editLevel = false;
-        public Platform currentPlatform;
-        bool editingPlatform;
-        Vector2 startDraw;
-        Vector2 endDraw;
-        bool lockedX = false;
-        bool lockedY = false;
+        //bool lockedX = false;
+        //bool lockedY = false;
 
         State state = State.MainMenu;
         bool mainMenu = true;
@@ -85,7 +81,7 @@ namespace Source
         float highScore = 0;
 
         public List<Player> players;
-        public List<Platform> platforms;
+        public Tile[,] tiles;
         public List<Particle> particles;
         public List<Obstacle> obstacles;
         public List<Drop> drops;
@@ -447,6 +443,7 @@ namespace Source
             //viewModel.ControlsText = "Hello!\nWhoo!!";
 
             viewModel.MaxPlayers = GameData.MAX_PLAYERS;
+            viewModel.LevelValue = GameData.LEVEL_FILE;
 
             LoadUI(Menu.Main);
 
@@ -463,7 +460,6 @@ namespace Source
             fontBig = Content.Load<SpriteFont>("Fonts/ScoreBig");
 
             // Create objects
-            platforms = new List<Platform>();
             particles = new List<Particle>();
             obstacles = new List<Obstacle>();
             drops = new List<Drop>();
@@ -480,17 +476,32 @@ namespace Source
 
         private void LoadLevel(int loadLevel)
         {
-            platforms.Clear();
             obstacles.Clear();
             drops.Clear();
+
+            //tiles = new Tile[GameData.WORLD_SIZE, GameData.WORLD_SIZE];
+
             using (BinaryReader file = new BinaryReader(File.Open("Levels/level" + loadLevel, FileMode.Open, FileAccess.Read)))
             {
                 GameData.PLAYER_START = new Vector2(file.ReadSingle(), file.ReadSingle());
+                GameData.WORLD_SIZE = file.ReadInt32();
+                Console.WriteLine("World size: " + GameData.WORLD_SIZE);
+                tiles = new Tile[GameData.WORLD_SIZE, GameData.WORLD_SIZE];
+                int i = 0;
                 while (file.BaseStream.Position != file.BaseStream.Length)
                 {
-                    Vector2 position = new Vector2(file.ReadSingle(), file.ReadSingle());
-                    Vector2 size = new Vector2(file.ReadSingle(), file.ReadSingle());
-                    platforms.Add(new Platform(whiteRect, position, size));
+                    byte tile = file.ReadByte();
+                    try
+                    {
+                        tiles[i % GameData.WORLD_SIZE, i / GameData.WORLD_SIZE] = (Tile)(tile & 0x0F);
+                        i++;
+                        tiles[i % GameData.WORLD_SIZE, i / GameData.WORLD_SIZE] = (Tile)(tile >> 4);
+                        i++;
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine("Index: " + i % GameData.WORLD_SIZE + ", " + i / GameData.WORLD_SIZE);
+                    }
                 }
             }
         }
@@ -499,7 +510,7 @@ namespace Source
         {
 #if DEBUG
             //Console.WriteLine("Dir: " + Directory.GetFiles(@"..\..\..\..\Source\Levels")[0]);
-            BinaryWriter file = new BinaryWriter(File.Open(@"..\..\..\..\Source\Levels\level" + saveLevel, FileMode.Open, FileAccess.Write));
+            BinaryWriter file = new BinaryWriter(File.Open(@"..\..\..\..\Source\Levels\level" + saveLevel, FileMode.Truncate, FileAccess.Write));
 #else
             IAsyncResult result = StorageDevice.BeginShowSelector(null, null);
             result.AsyncWaitHandle.WaitOne();
@@ -520,17 +531,21 @@ namespace Source
 
                 BinaryWriter file = new BinaryWriter(container.OpenFile(filename, FileMode.Create));
 #endif
-                file.Write(GameData.PLAYER_START.X);
-                file.Write(GameData.PLAYER_START.Y);
-                foreach (Platform plat in platforms)
-                {
-                    file.Write(plat.Position.X);
-                    file.Write(plat.Position.Y);
-                    file.Write(plat.Size.X);
-                    file.Write(plat.Size.Y);
-                }
+            file.Write(GameData.PLAYER_START.X);
+            file.Write(GameData.PLAYER_START.Y);
+            file.Write(GameData.WORLD_SIZE);
+            int i = 0;
+            while (i < tiles.Length)
+            {
+                Tile tile1 = tiles[i % GameData.WORLD_SIZE, i / GameData.WORLD_SIZE];
+                i++;
+                Tile tile2 = tiles[i % GameData.WORLD_SIZE, i / GameData.WORLD_SIZE];
+                i++;
+                file.Write((byte)((((byte)tile1) & 0x0F) | ((byte)tile2 << 4)));
+            }
+            Console.WriteLine("Wrote {0} bytes, with file seek at {1} bytes", i, file.BaseStream.Position);
 
-                file.Close();
+            file.Close();
 #if !DEBUG
                 container.Dispose();
             }
@@ -588,7 +603,6 @@ namespace Source
                         if (!editLevel)
                         {
                             screenOffset = Vector2.Zero;
-                            currentPlatform = null;
                             currentZoom = GameData.PIXEL_METER;
                         }
                         else
@@ -611,68 +625,65 @@ namespace Source
                     {
                         HandleEditLevel();
                     }
-                    else
+
+                    float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+                    if (simulating)
                     {
-                        float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
-
-                        if (simulating)
+                        while (simIndex < simTimes.Count && simTimes[simIndex] - totalTime <= 0)
                         {
-                            while (simIndex < simTimes.Count && simTimes[simIndex] - totalTime <= 0)
-                            {
-                                //deltaTime += diff;
-                                Console.Write("Sim: " + totalTime + "\t\tReplay: " + simTimes[simIndex] +
-                                    "\t\tDelta: " + deltaTime + "\t\tDiff: " + (simTimes[simIndex] - totalTime) + "\t\t");
-                                GameData.SimulatedControls control = (GameData.SimulatedControls)playerControls[0];
-                                GameData.ControlKey key = keys[simIndex];
-                                switch (key)
-                                {
-                                    case GameData.ControlKey.Special1:
-                                        control.Special1 = true;
-                                        break;
-                                    case GameData.ControlKey.Special2:
-                                        control.Special2 = true;
-                                        break;
-                                    case GameData.ControlKey.Special3:
-                                        control.Special3 = true;
-                                        break;
-                                    case GameData.ControlKey.Left:
-                                        control.Left = !control.Left;
-                                        break;
-                                    case GameData.ControlKey.Right:
-                                        control.Right = !control.Right;
-                                        break;
-                                    case GameData.ControlKey.JumpHeld:
-                                        control.JumpHeld = !control.JumpHeld;
-                                        break;
-                                    case GameData.ControlKey.Down:
-                                        control.Down = !control.Down;
-                                        break;
-                                }
-                                simIndex++;
-                            }
-                        }
-
-                        if (currentPlatform == null)
-                            HandleInput(deltaTime);
-
-                        if (simulating)
-                        {
+                            //deltaTime += diff;
+                            Console.Write("Sim: " + totalTime + "\t\tReplay: " + simTimes[simIndex] +
+                                "\t\tDelta: " + deltaTime + "\t\tDiff: " + (simTimes[simIndex] - totalTime) + "\t\t");
                             GameData.SimulatedControls control = (GameData.SimulatedControls)playerControls[0];
-                            control.Special1 = false;
-                            control.Special2 = false;
-                            control.Special3 = false;
+                            GameData.ControlKey key = keys[simIndex];
+                            switch (key)
+                            {
+                                case GameData.ControlKey.Special1:
+                                    control.Special1 = true;
+                                    break;
+                                case GameData.ControlKey.Special2:
+                                    control.Special2 = true;
+                                    break;
+                                case GameData.ControlKey.Special3:
+                                    control.Special3 = true;
+                                    break;
+                                case GameData.ControlKey.Left:
+                                    control.Left = !control.Left;
+                                    break;
+                                case GameData.ControlKey.Right:
+                                    control.Right = !control.Right;
+                                    break;
+                                case GameData.ControlKey.JumpHeld:
+                                    control.JumpHeld = !control.JumpHeld;
+                                    break;
+                                case GameData.ControlKey.Down:
+                                    control.Down = !control.Down;
+                                    break;
+                            }
+                            simIndex++;
                         }
-
-                        CheckPlayer();
-                        InvertScreen -= deltaTime;
-                        totalTime += deltaTime;
-                        world.Step(deltaTime);
-
-                        // TODO store previous locations of players
-                        foreach (Player player in players)
-                            player.PrevStates.Add(Tuple.Create(player.Position, player.Velocity));
-                        times.Add(totalTime);
                     }
+
+                    HandleInput(deltaTime);
+
+                    if (simulating)
+                    {
+                        GameData.SimulatedControls control = (GameData.SimulatedControls)playerControls[0];
+                        control.Special1 = false;
+                        control.Special2 = false;
+                        control.Special3 = false;
+                    }
+
+                    CheckPlayer();
+                    InvertScreen -= deltaTime;
+                    totalTime += deltaTime;
+                    world.Step(deltaTime);
+
+                    // TODO store previous locations of players
+                    foreach (Player player in players)
+                        player.PrevStates.Add(Tuple.Create(player.Position, player.Velocity));
+                    times.Add(totalTime);
                     break;
                 case State.Paused:
                     if (ToggleKey(Keys.Escape))
@@ -967,9 +978,9 @@ namespace Source
                             switch (player.CurrentCharacter.Ability1)
                             {
                                 case Character.AbilityOne.Platform:
-                                    Platform plat = new Platform(whiteRect, player.Position + new Vector2(0, GameData.PLATFORM_DIST),
-                                        new Vector2(GameData.PLATFORM_WIDTH, GameData.PLATFORM_HEIGHT));
-                                    platforms.Add(plat);
+                                    Obstacle plat = new Obstacle(whiteRect, player.Position + new Vector2(0, GameData.PLATFORM_DIST),
+                                        new Vector2(GameData.PLATFORM_WIDTH, GameData.PLATFORM_HEIGHT), Obstacle.ObstacleType.Platform);
+                                    obstacles.Add(plat);
                                     player.AbilityOneTime = GameData.PLATFORM_COOLDOWN;
                                     player.PlatformTime = GameData.PLATFORM_LIFE;
                                     player.SpawnedPlatform = plat;
@@ -1113,17 +1124,17 @@ namespace Source
         /// <returns>The nearest point of collision, or Vector2.Zero if nothing</returns>
         private Vector2 Raycast(Vector2 start, Vector2 dir)
         {
-            float minT = float.MaxValue;
-            foreach (Platform plat in platforms)
-            {
-                float t = plat.Raycast(start, dir);
-                if (t < minT)
-                    minT = t;
-            }
-            if (minT < GameData.MAX_GRAPPLE)
-                return start + dir * minT;
-            else
-                return Vector2.Zero;
+            //float minT = float.MaxValue;
+            //foreach (Platform plat in tiles)
+            //{
+            //    float t = plat.Raycast(start, dir);
+            //    if (t < minT)
+            //        minT = t;
+            //}
+            //if (minT < GameData.MAX_GRAPPLE)
+            //    return start + dir * minT;
+            //else
+            return Vector2.Zero;
         }
 
         private void wobbleScreen(float amplifier)
@@ -1168,173 +1179,30 @@ namespace Source
             Vector2 mouseSimPos = ConvertUnits.ToSimUnits(ConvertUnits.GetMousePos(mouse) - cameraBounds.Center.ToVector2() - screenOffset) + averagePos;
             Vector2 mouseSimPosRound = new Vector2((float)Math.Round(mouseSimPos.X), (float)Math.Round(mouseSimPos.Y));
 
+            // Pan camera
             if (mouse.LeftButton == ButtonState.Pressed)
             {
-                if (editingPlatform)                                   // Draw the platform
-                {
-                    if (lockedY)
-                        endDraw.Y = mouseSimPosRound.Y;
-                    else if (lockedX)
-                        endDraw.X = mouseSimPosRound.X;
-                    else
-                        endDraw = mouseSimPosRound;
-                }
-                else
-                {
-                    if (keyboard.IsKeyDown(Keys.LeftControl))       // Start drawing a platform
-                    {
-                        editingPlatform = true;
-                        lockedX = lockedY = false;
-                        startDraw = mouseSimPosRound;
-                        endDraw = mouseSimPosRound;
-                    }
-                    else
-                    {
-                        if (keyboard.IsKeyDown(Keys.LeftShift))     // Select a platform
-                        {
-                            Collisions.Polygon body = world.TestPoint(mouseSimPos);
-                            if (body != null && body is Platform)
-                                currentPlatform = (Platform)body;
-                        }
-                        else if (keyboard.IsKeyDown(Keys.LeftAlt) && currentPlatform != null)
-                        {                                           // Resize selected platform
-                            float slopeX = currentPlatform.Size.Y / currentPlatform.Size.X * (mouseSimPos.X - currentPlatform.Position.X);
-                            float yMax = currentPlatform.Position.Y + slopeX;
-                            float yMin = currentPlatform.Position.Y - slopeX;
-
-                            if (yMax < yMin)
-                            {
-                                float temp = yMax;
-                                yMax = yMin;
-                                yMin = temp;
-                            }
-
-                            //Console.WriteLine("yMin: {0}\tyMax: {1}\tmouseY: {2}", yMin, yMax, mouseSimPos.Y);
-
-                            lockedX = false;
-                            lockedY = false;
-                            if (yMin < mouseSimPos.Y && mouseSimPos.Y < yMax)
-                                lockedX = true;
-                            else
-                                lockedY = true;
-
-                            Vector2 topLeft = currentPlatform.Position - currentPlatform.Size / 2f;
-                            Vector2 botRight = currentPlatform.Position + currentPlatform.Size / 2f;
-
-                            if (lockedX)
-                            {
-                                if (Math.Abs(topLeft.X - mouseSimPos.X) < Math.Abs(botRight.X - mouseSimPos.X))     // left
-                                {
-                                    startDraw = botRight;
-                                    endDraw = new Vector2(mouseSimPosRound.X, topLeft.Y);
-                                }
-                                else                // right
-                                {
-                                    startDraw = topLeft;
-                                    endDraw = new Vector2(mouseSimPosRound.X, botRight.Y);
-                                }
-                            }
-                            else if (lockedY)
-                            {
-                                if (Math.Abs(topLeft.Y - mouseSimPos.Y) < Math.Abs(botRight.Y - mouseSimPos.Y))     // top
-                                {
-                                    startDraw = botRight;
-                                    endDraw = new Vector2(topLeft.X, mouseSimPosRound.Y);
-                                }
-                                else            // bottom
-                                {
-                                    startDraw = topLeft;
-                                    endDraw = new Vector2(botRight.X, mouseSimPosRound.Y);
-                                }
-                            }
-
-                            // calculate the starting drawing pivot (which should be on opposite corner of click)
-                            //if (Math.Abs(topLeft.X - mouseSimPos.X) < Math.Abs(botRight.X - mouseSimPos.X))
-                            //{
-                            //    if (Math.Abs(topLeft.Y - mouseSimPos.Y) < Math.Abs(botRight.Y - mouseSimPos.Y))     // top left
-                            //    {
-                            //        startDraw = botRight;
-                            //        if (lockedX)
-                            //            endDraw = new Vector2(mouseSimPosRound.X, topLeft.Y);
-                            //        else if (lockedY)
-                            //            endDraw = new Vector2(topLeft.X, mouseSimPosRound.Y);
-                            //    }
-                            //    else                                    // bottom left
-                            //    {
-                            //        startDraw = new Vector2(botRight.X, topLeft.Y);
-                            //        if (lockedX)
-                            //            endDraw = new Vector2(mouseSimPosRound.X, botRight.Y);
-                            //        else if (lockedY)
-                            //            endDraw = new Vector2(topLeft.X, mouseSimPosRound.Y);
-                            //    }
-                            //}
-                            //else
-                            //{
-                            //    if (Math.Abs(topLeft.Y - mouseSimPos.Y) < Math.Abs(botRight.Y - mouseSimPos.Y))     // top right
-                            //        startDraw = new Vector2(topLeft.X, botRight.Y);
-                            //    else                                    // bottom right
-                            //        startDraw = topLeft;
-                            //}
-
-                            platforms.Remove(currentPlatform);
-                            currentPlatform = null;
-                            editingPlatform = true;
-                        }
-                        else                                        // Move camera
-                        {
-                            screenOffset += ConvertUnits.GetMousePos(mouse) - ConvertUnits.GetMousePos(prevMouseState);
-                        }
-                    }
-                }
+                screenOffset += ConvertUnits.GetMousePos(mouse) - ConvertUnits.GetMousePos(prevMouseState);
             }
-            else if (editingPlatform)                                  // Make the platform
+
+            // Spawn Objects
+            if (keyboard.IsKeyDown(Keys.Q))
             {
-                if (startDraw.X != endDraw.X && startDraw.Y != endDraw.Y)
-                {
-                    Vector2 topLeft, size;
-                    if (startDraw.X > endDraw.X && startDraw.Y < endDraw.Y)     // bottom left
-                    {
-                        topLeft = new Vector2(endDraw.X, startDraw.Y);
-                        size = new Vector2(startDraw.X - endDraw.X, endDraw.Y - startDraw.Y);
-                    }
-                    else if (startDraw.X < endDraw.X && startDraw.Y > endDraw.Y)    // top right
-                    {
-                        topLeft = new Vector2(startDraw.X, endDraw.Y);
-                        size = new Vector2(endDraw.X - startDraw.X, startDraw.Y - endDraw.Y);
-                    }
-                    else
-                    {
-                        topLeft = startDraw;
-                        size = endDraw - startDraw;
-                    }
-                    currentPlatform = new Platform(whiteRect, topLeft + size / 2f, size);
-                    platforms.Add(currentPlatform);
-                }
-                editingPlatform = false;
+                int x = (int)(mouseSimPos.X);
+                int y = (int)(mouseSimPos.Y);
+                if (x < 0)
+                    x = 0;
+                else if (x >= GameData.WORLD_SIZE)
+                    x = GameData.WORLD_SIZE - 1;
+                if (y < 0)
+                    y = 0;
+                else if (y >= GameData.WORLD_SIZE)
+                    y = GameData.WORLD_SIZE - 1;
+                tiles[x, y] = Tile.Filled;
             }
-            else if (currentPlatform != null)
-            {                                                       // Delete selected platform
-                if (keyboard.IsKeyDown(Keys.Back))
-                {
-                    platforms.Remove(currentPlatform);
-                    currentPlatform = null;
-                }
-                else if (keyboard.IsKeyDown(Keys.Up))           // Move platform
-                    currentPlatform.MoveByPosition(-Vector2.UnitY);
-                else if (keyboard.IsKeyDown(Keys.Left))
-                    currentPlatform.MoveByPosition(-Vector2.UnitX);
-                else if (keyboard.IsKeyDown(Keys.Right))
-                    currentPlatform.MoveByPosition(Vector2.UnitX);
-                else if (keyboard.IsKeyDown(Keys.Down))
-                    currentPlatform.MoveByPosition(Vector2.UnitY);
-                else if (keyboard.IsKeyDown(Keys.Enter))        // Deselect platform
-                    currentPlatform = null;
-                else if (ToggleKey(Keys.C))
-                    currentPlatform.Rotate(MathHelper.PiOver4);
-                else if (ToggleKey(Keys.X))
-                    currentPlatform.Rotate(-MathHelper.PiOver4);
-            }
-            if (ToggleKey(Keys.OemPlus))                       // Zoom in and out
+
+            // Zoom in and out
+            if (ToggleKey(Keys.OemPlus))
             {
                 currentZoom *= GameData.ZOOM_STEP;
                 ConvertUnits.SetDisplayUnitToSimUnitRatio(currentZoom);
@@ -1368,6 +1236,8 @@ namespace Source
                     screenOffset -= mousePos - ConvertUnits.GetMousePos(prevMouseState);
                 }
             }
+
+            // Move players for debugging
             if (mouse.RightButton == ButtonState.Pressed && prevMouseState.RightButton == ButtonState.Released)
             {
                 screenOffset = Vector2.Zero;
@@ -1376,7 +1246,9 @@ namespace Source
                     player.MoveToPosition(mouseSimPos);
                 }
             }
-            if (keyboard.IsKeyDown(Keys.LeftControl))           // TODO save and load level from UI
+
+            // TODO save and load level from UI
+            if (keyboard.IsKeyDown(Keys.LeftControl))
             {
                 if (ToggleKey(Keys.S))
                 {
@@ -1586,14 +1458,14 @@ namespace Source
                     Vector2 dist = averagePos - player.Position;
                     dist = new Vector2(dist.Y, dist.X);
                     dist /= -Math.Max(Math.Abs(dist.X), Math.Abs(dist.Y));
-					if (dist.Y > 0.999)
-						dist.Y = 1;
-					else if (dist.Y < -0.999)
-						dist.Y = -1;
-					if (dist.X > 0.999)
-						dist.X = 1;
-					else if (dist.X < -0.9999)
-						dist.X = -1;
+                    if (dist.Y > 0.999)
+                        dist.Y = 1;
+                    else if (dist.Y < -0.999)
+                        dist.Y = -1;
+                    if (dist.X > 0.999)
+                        dist.X = 1;
+                    else if (dist.X < -0.9999)
+                        dist.X = -1;
                     //Console.WriteLine("Dist_" + i + " = " + dist);
 
                     // for Position, (-1,-1) is bottom-left and (1,1) is top-right
@@ -1760,37 +1632,12 @@ namespace Source
             // Draw all objects
             spriteBatch.Begin(transformMatrix: view);
             //spriteBatch.Draw(whiteRect, new Rectangle(-(int)view.Translation.X, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height), Color.LightGray);
-            foreach (Platform platform in platforms)
-                platform.Draw(spriteBatch);
+            for (int i = 0; i < tiles.Length; i++)
+                DrawTile(i);
             foreach (Obstacle obstacle in obstacles)
                 obstacle.Draw(spriteBatch);
             foreach (Drop drop in drops)
                 drop.Draw(spriteBatch);
-            if (currentPlatform != null)
-                DrawRect(currentPlatform.Position, Color.Green, currentPlatform.Rotation, currentPlatform.Origin, currentPlatform.Size);
-            if (editingPlatform)
-            {
-                Vector2 topLeft, size;
-                if (startDraw.X > endDraw.X && startDraw.Y < endDraw.Y)     // bottom left
-                {
-                    topLeft = new Vector2(endDraw.X, startDraw.Y);
-                    size = new Vector2(startDraw.X - endDraw.X, endDraw.Y - startDraw.Y);
-                }
-                else if (startDraw.X < endDraw.X && startDraw.Y > endDraw.Y)    // top right
-                {
-                    topLeft = new Vector2(startDraw.X, endDraw.Y);
-                    size = new Vector2(endDraw.X - startDraw.X, startDraw.Y - endDraw.Y);
-                }
-                else
-                {
-                    topLeft = startDraw;
-                    size = endDraw - startDraw;
-                }
-                Vector2 origin = new Vector2(0.5f, 0.5f);
-                DrawRect(topLeft + size / 2, Color.Azure, 0, origin, size);
-            }
-            if (editLevel)
-                DrawRect(Vector2.Zero, Color.LightGreen, 0f, new Vector2(0.5f, 0.5f), new Vector2(1, 1));
             spriteBatch.End();
 
             // Draw all particles
@@ -1798,6 +1645,27 @@ namespace Source
             foreach (Particle part in particles)
                 part.Draw(spriteBatch);
             spriteBatch.End();
+        }
+
+        private void DrawTile(int index)
+        {
+            int x = index % GameData.WORLD_SIZE;
+            int y = index / GameData.WORLD_SIZE;
+            Tile tile = tiles[x, y];
+            switch (tile)
+            {
+                case Tile.Empty:
+                    break;
+                case Tile.Filled:
+                    spriteBatch.Draw(whiteRect, new Rectangle(
+                        (int)ConvertUnits.ToDisplayUnits(x),
+                        (int)ConvertUnits.ToDisplayUnits(y),
+                        (int)ConvertUnits.ToDisplayUnits(1) + 1,
+                        (int)ConvertUnits.ToDisplayUnits(1) + 1), Color.Gray);
+                    break;
+                default:
+                    throw new Exception("Tile " + tile + " is not being drawn!");
+            }
         }
 
         private void DrawBackground(Vector2 averagePos)

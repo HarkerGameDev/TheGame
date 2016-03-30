@@ -9,7 +9,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Source.Collisions
 {
-    public class Drop : Polygon
+    public class Drop : AABB
     {
         public float LiveTime;
         public Types Type;

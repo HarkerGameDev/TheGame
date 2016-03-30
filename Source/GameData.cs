@@ -15,8 +15,9 @@ namespace Source
     {
         public static int MAX_PLAYERS = 4;          // maximum amount of players at one time
         public static int[] PLAYERS;                // number of players
-        public static int LEVEL_FILE = 1;
-        public static Vector2 PLAYER_START = new Vector2(1f, -10f);
+        public static int LEVEL_FILE = 0;
+        public static Vector2 PLAYER_START = new Vector2(100f, 100f);
+        public static int WORLD_SIZE = 500;         // number of tiles in x and y direction
 
         // Settings for user-defined values
         public static int WINDOW_WIDTH = 1280;       // default width of window
@@ -29,8 +30,8 @@ namespace Source
 
         public const float SCROLL_STEP = 90f;      // scale for zooming using the scroll wheel
         public const float ZOOM_STEP = 1.5f;       // scale by which zoom is changed with + and -
-        public const float PIXEL_METER = 24f;      // pixels per meter for normal game
-        public const float PIXEL_METER_EDIT = 8f;  // pixels per meter when in edit mode for level
+        public const float PIXEL_METER = 40f;      // pixels per meter for normal game
+        public const float PIXEL_METER_EDIT = PIXEL_METER;  // pixels per meter when in edit mode for level
         public const int VIEW_WIDTH = 1280;        // width of unscaled screen in pixels
         public const int VIEW_HEIGHT = 720;        // height of unscaled screen in pixels
         //public const int WINDOW_WIDTH = 1600;       // default width of window
