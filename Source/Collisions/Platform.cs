@@ -11,7 +11,7 @@ namespace Source.Collisions
     /// <summary>
     /// A floor is pretty much a body with a color and specific height
     /// </summary>
-    public class Platform : Body
+    public class Platform : Polygon
     {
         /// <summary>
         /// Creates a new platform
@@ -21,7 +21,7 @@ namespace Source.Collisions
         /// <param name="size">Size of the platform</param>
         /// <param name="rotation">Rotation of the platform in radians</param>
         public Platform(Texture2D texture, Vector2 position, Vector2 size, float rotation = 0f)
-            : base(texture, position, size, rotation)
+            : base(texture, position, size, null, rotation)
         {
             Color = Color.Crimson;
         }

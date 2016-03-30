@@ -15,21 +15,22 @@
         <TextBlock Text="Setup Game" FontSize="40" FontWeight="Bold" TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center" Width="Auto"/>
         <Button Width="165" Height="80" Content="Back" FontSize="20" FontWeight="Bold" HorizontalAlignment="Left" VerticalAlignment="Center"
                 Command="{Binding ButtonCommand}" CommandParameter="MainMenu" TabIndex="0" />
-        <Button Width="165" Height="80" Content="Done" FontSize="20" FontWeight="Bold" HorizontalAlignment="Right" VerticalAlignment="Center" Focusable="False"
-                Command="{Binding ButtonCommand}" CommandParameter="Character" />
         <StackPanel Grid.Row="1" Margin="30" >
             <DockPanel Margin="20">
                 <TextBlock Text="Players" DockPanel.Dock="Top" FontSize="28" FontWeight="Bold" TextAlignment="Center" Padding="10" />
                 <TextBlock Text="{Binding PlayerValue}" DockPanel.Dock="Right"
                          TextAlignment="Right" Width="40" FontSize="20" />
-                <Slider Maximum="{Binding MaxPlayers}" Minimum="1" TickPlacement="Both" Value="{Binding PlayerValue}"/>
+                <Slider Maximum="{Binding MaxPlayers}" Minimum="1" TickPlacement="Both" Value="{Binding PlayerValue}"
+                        TabIndex="1" SmallChange="1" />
             </DockPanel>
             <DockPanel Margin="20">
                 <TextBlock Text="Level" DockPanel.Dock="Top" FontSize="28" FontWeight="Bold" TextAlignment="Center" Padding="10" />
                 <TextBlock Text="{Binding LevelValue}" DockPanel.Dock="Right"
                          TextAlignment="Right" Width="40" FontSize="20" />
-                <Slider Maximum="1" Minimum="0" TickPlacement="Both" Value="{Binding LevelValue}"/>
+                <Slider Maximum="1" Minimum="0" TickPlacement="Both" Value="{Binding LevelValue}" TabIndex="2" />
             </DockPanel>
+            <Button Width="165" Height="80" Content="Done" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"
+                Command="{Binding ButtonCommand}" CommandParameter="Character" TabIndex="3" Margin="20" />
         </StackPanel>
     </Grid>
 </ek:UIRoot>

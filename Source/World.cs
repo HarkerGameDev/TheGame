@@ -55,8 +55,8 @@ namespace Source.Collisions
                 Drop drop = game.drops[i];
 
                 drop.Velocity.Y += GameData.GRAVITY * deltaTime;
-                drop.Move(deltaTime);
-                foreach (Body target in game.platforms)
+                drop.Update(deltaTime);
+                foreach (Polygon target in game.platforms)
                 {
                     Vector2 translation = target.Intersects(drop);
                     if (translation != Vector2.Zero)
@@ -167,7 +167,7 @@ namespace Source.Collisions
 
                 for (int i = 0; i < playerStep; i++)
                 {
-                    player.Move(deltaTime / playerStep);
+                    player.Update(deltaTime / playerStep);
                     CheckPlatforms(player);
                 }
                 CheckObstacles(player);
@@ -217,7 +217,7 @@ namespace Source.Collisions
                     proj.LiveTime -= deltaTime;
                     break;
             }
-            proj.Move(deltaTime);
+            proj.Update(deltaTime);
 
             if (proj.LiveTime < 0)
             {
@@ -463,7 +463,7 @@ namespace Source.Collisions
             }
         }
 
-        private void ApplyImpulse(float scale, Body player, Vector2 position)
+        private void ApplyImpulse(float scale, Polygon player, Vector2 position)
         {
             // Impulse drops off as 1/r
             foreach (Player body in game.players)
@@ -490,7 +490,7 @@ namespace Source.Collisions
             }
         }
 
-        private void ApplyForce(float scale, Body player, Vector2 position, float deltaTime)
+        private void ApplyForce(float scale, Polygon player, Vector2 position, float deltaTime)
         {
             // Force drops off as 1/r for objects and 1/r^2 for players
             foreach (Particle part in game.particles)
@@ -554,9 +554,9 @@ namespace Source.Collisions
             }
         }
 
-        public Body TestPoint(Vector2 point)
+        public Polygon TestPoint(Vector2 point)
         {
-            foreach (Body body in game.platforms)
+            foreach (Polygon body in game.platforms)
             {
                 if (body.TestPoint(point))
                 {

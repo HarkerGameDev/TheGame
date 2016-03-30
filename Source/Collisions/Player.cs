@@ -13,7 +13,7 @@ namespace Source.Collisions
     /// <summary>
     /// A player uses a rectangle for collisions
     /// </summary>
-    public class Player : Body
+    public class Player : Polygon
     {
         private const float BAR_WIDTH = 1f; // length of bar in meters
         private const float BAR_HEIGHT = 0.25f;
@@ -100,7 +100,7 @@ namespace Source.Collisions
         /// This method is pretty much like an update() function for the player body since it is called every tick
         /// </summary>
         /// <param name="deltaTime"></param>
-        public override void Move(float deltaTime)
+        public override void Update(float deltaTime)
         {
             if (!Alive)
                 throw new Exception("Moving dead player");
@@ -150,7 +150,7 @@ namespace Source.Collisions
             {
                 Vector2 prevPosition = Position;
 
-                base.Move(deltaTime);
+                base.Update(deltaTime);
 
                 //if (GrappleRight)
                 //    angle -= GameData.GRAPPLE_SPEED * deltaTime;
@@ -175,7 +175,7 @@ namespace Source.Collisions
                 //Console.WriteLine("X: " + -Math.Cos(angle) + "\tY: " + Math.Sin(angle));
             }
             else        // normal move (non-grapple)
-                base.Move(deltaTime);
+                base.Update(deltaTime);
         }
 
         public override void Draw(SpriteBatch spriteBatch)

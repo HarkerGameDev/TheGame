@@ -11,7 +11,7 @@ namespace Source.Collisions
     /// <summary>
     /// An obstacle is a thing the player must jump over
     /// </summary>
-    public class Obstacle : Body
+    public class Obstacle : Polygon
     {
         public const float OBSTACLE_WIDTH = 2f;
         public const float OBSTACLE_HEIGHT = 1.8f;

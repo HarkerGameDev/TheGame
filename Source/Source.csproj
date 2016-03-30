@@ -65,10 +65,11 @@
   <ItemGroup>
     <Compile Include="Character.cs" />
     <Compile Include="Collisions\Body.cs" />
+    <Compile Include="Collisions\Platform.cs" />
+    <Compile Include="Collisions\Polygon.cs" />
     <Compile Include="Collisions\ConvertUnits.cs" />
     <Compile Include="Collisions\Drop.cs" />
     <Compile Include="Collisions\Obstacle.cs" />
-    <Compile Include="Collisions\Platform.cs" />
     <Compile Include="Collisions\Projectile.cs" />
     <Compile Include="Collisions\Player.cs" />
     <Compile Include="Ini.cs" />

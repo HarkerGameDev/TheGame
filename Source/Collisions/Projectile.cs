@@ -11,7 +11,7 @@ namespace Source.Collisions
     /// <summary>
     /// A projectile can hit stuff and has no gravity
     /// </summary>
-    public class Projectile : Body
+    public class Projectile : Polygon
     {
         public float LiveTime;
         public Types Type;

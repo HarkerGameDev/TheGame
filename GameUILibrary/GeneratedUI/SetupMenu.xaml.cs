@@ -32,25 +32,25 @@ namespace EmptyKeys.UserInterface.Generated {
         
         private Button e_2;
         
-        private Button e_3;
+        private StackPanel e_3;
         
-        private StackPanel e_4;
+        private DockPanel e_4;
         
-        private DockPanel e_5;
+        private TextBlock e_5;
         
         private TextBlock e_6;
         
-        private TextBlock e_7;
+        private Slider e_7;
         
-        private Slider e_8;
+        private DockPanel e_8;
         
-        private DockPanel e_9;
+        private TextBlock e_9;
         
         private TextBlock e_10;
         
-        private TextBlock e_11;
+        private Slider e_11;
         
-        private Slider e_12;
+        private Button e_12;
         
         public SetupMenu() : 
                 base() {
@@ -110,93 +110,97 @@ namespace EmptyKeys.UserInterface.Generated {
             Binding binding_e_2_Command = new Binding("ButtonCommand");
             this.e_2.SetBinding(Button.CommandProperty, binding_e_2_Command);
             // e_3 element
-            this.e_3 = new Button();
+            this.e_3 = new StackPanel();
             this.e_0.Children.Add(this.e_3);
             this.e_3.Name = "e_3";
-            this.e_3.Height = 80F;
-            this.e_3.Width = 165F;
-            this.e_3.Focusable = false;
-            this.e_3.HorizontalAlignment = HorizontalAlignment.Right;
-            this.e_3.VerticalAlignment = VerticalAlignment.Center;
-            this.e_3.FontSize = 20F;
-            this.e_3.FontStyle = FontStyle.Bold;
-            this.e_3.Content = "Done";
-            this.e_3.CommandParameter = "Character";
-            Binding binding_e_3_Command = new Binding("ButtonCommand");
-            this.e_3.SetBinding(Button.CommandProperty, binding_e_3_Command);
+            this.e_3.Margin = new Thickness(30F, 30F, 30F, 30F);
+            Grid.SetRow(this.e_3, 1);
             // e_4 element
-            this.e_4 = new StackPanel();
-            this.e_0.Children.Add(this.e_4);
+            this.e_4 = new DockPanel();
+            this.e_3.Children.Add(this.e_4);
             this.e_4.Name = "e_4";
-            this.e_4.Margin = new Thickness(30F, 30F, 30F, 30F);
-            Grid.SetRow(this.e_4, 1);
+            this.e_4.Margin = new Thickness(20F, 20F, 20F, 20F);
             // e_5 element
-            this.e_5 = new DockPanel();
+            this.e_5 = new TextBlock();
             this.e_4.Children.Add(this.e_5);
             this.e_5.Name = "e_5";
-            this.e_5.Margin = new Thickness(20F, 20F, 20F, 20F);
+            this.e_5.Text = "Players";
+            this.e_5.Padding = new Thickness(10F, 10F, 10F, 10F);
+            this.e_5.TextAlignment = TextAlignment.Center;
+            this.e_5.FontSize = 28F;
+            this.e_5.FontStyle = FontStyle.Bold;
+            DockPanel.SetDock(this.e_5, Dock.Top);
             // e_6 element
             this.e_6 = new TextBlock();
-            this.e_5.Children.Add(this.e_6);
+            this.e_4.Children.Add(this.e_6);
             this.e_6.Name = "e_6";
-            this.e_6.Text = "Players";
-            this.e_6.Padding = new Thickness(10F, 10F, 10F, 10F);
-            this.e_6.TextAlignment = TextAlignment.Center;
-            this.e_6.FontSize = 28F;
-            this.e_6.FontStyle = FontStyle.Bold;
-            DockPanel.SetDock(this.e_6, Dock.Top);
+            this.e_6.Width = 40F;
+            this.e_6.TextAlignment = TextAlignment.Right;
+            this.e_6.FontSize = 20F;
+            DockPanel.SetDock(this.e_6, Dock.Right);
+            Binding binding_e_6_Text = new Binding("PlayerValue");
+            this.e_6.SetBinding(TextBlock.TextProperty, binding_e_6_Text);
             // e_7 element
-            this.e_7 = new TextBlock();
-            this.e_5.Children.Add(this.e_7);
+            this.e_7 = new Slider();
+            this.e_4.Children.Add(this.e_7);
             this.e_7.Name = "e_7";
-            this.e_7.Width = 40F;
-            this.e_7.TextAlignment = TextAlignment.Right;
-            this.e_7.FontSize = 20F;
-            DockPanel.SetDock(this.e_7, Dock.Right);
-            Binding binding_e_7_Text = new Binding("PlayerValue");
-            this.e_7.SetBinding(TextBlock.TextProperty, binding_e_7_Text);
+            this.e_7.TabIndex = 1;
+            this.e_7.Minimum = 1F;
+            this.e_7.SmallChange = 1F;
+            Binding binding_e_7_Maximum = new Binding("MaxPlayers");
+            this.e_7.SetBinding(Slider.MaximumProperty, binding_e_7_Maximum);
+            Binding binding_e_7_Value = new Binding("PlayerValue");
+            this.e_7.SetBinding(Slider.ValueProperty, binding_e_7_Value);
             // e_8 element
-            this.e_8 = new Slider();
-            this.e_5.Children.Add(this.e_8);
+            this.e_8 = new DockPanel();
+            this.e_3.Children.Add(this.e_8);
             this.e_8.Name = "e_8";
-            this.e_8.Minimum = 1F;
-            Binding binding_e_8_Maximum = new Binding("MaxPlayers");
-            this.e_8.SetBinding(Slider.MaximumProperty, binding_e_8_Maximum);
-            Binding binding_e_8_Value = new Binding("PlayerValue");
-            this.e_8.SetBinding(Slider.ValueProperty, binding_e_8_Value);
+            this.e_8.Margin = new Thickness(20F, 20F, 20F, 20F);
             // e_9 element
-            this.e_9 = new DockPanel();
-            this.e_4.Children.Add(this.e_9);
+            this.e_9 = new TextBlock();
+            this.e_8.Children.Add(this.e_9);
             this.e_9.Name = "e_9";
-            this.e_9.Margin = new Thickness(20F, 20F, 20F, 20F);
+            this.e_9.Text = "Level";
+            this.e_9.Padding = new Thickness(10F, 10F, 10F, 10F);
+            this.e_9.TextAlignment = TextAlignment.Center;
+            this.e_9.FontSize = 28F;
+            this.e_9.FontStyle = FontStyle.Bold;
+            DockPanel.SetDock(this.e_9, Dock.Top);
             // e_10 element
             this.e_10 = new TextBlock();
-            this.e_9.Children.Add(this.e_10);
+            this.e_8.Children.Add(this.e_10);
             this.e_10.Name = "e_10";
-            this.e_10.Text = "Level";
-            this.e_10.Padding = new Thickness(10F, 10F, 10F, 10F);
-            this.e_10.TextAlignment = TextAlignment.Center;
-            this.e_10.FontSize = 28F;
-            this.e_10.FontStyle = FontStyle.Bold;
-            DockPanel.SetDock(this.e_10, Dock.Top);
+            this.e_10.Width = 40F;
+            this.e_10.TextAlignment = TextAlignment.Right;
+            this.e_10.FontSize = 20F;
+            DockPanel.SetDock(this.e_10, Dock.Right);
+            Binding binding_e_10_Text = new Binding("LevelValue");
+            this.e_10.SetBinding(TextBlock.TextProperty, binding_e_10_Text);
             // e_11 element
-            this.e_11 = new TextBlock();
-            this.e_9.Children.Add(this.e_11);
+            this.e_11 = new Slider();
+            this.e_8.Children.Add(this.e_11);
             this.e_11.Name = "e_11";
-            this.e_11.Width = 40F;
-            this.e_11.TextAlignment = TextAlignment.Right;
-            this.e_11.FontSize = 20F;
-            DockPanel.SetDock(this.e_11, Dock.Right);
-            Binding binding_e_11_Text = new Binding("LevelValue");
-            this.e_11.SetBinding(TextBlock.TextProperty, binding_e_11_Text);
+            this.e_11.TabIndex = 2;
+            this.e_11.Minimum = 0F;
+            this.e_11.Maximum = 1F;
+            Binding binding_e_11_Value = new Binding("LevelValue");
+            this.e_11.SetBinding(Slider.ValueProperty, binding_e_11_Value);
             // e_12 element
-            this.e_12 = new Slider();
-            this.e_9.Children.Add(this.e_12);
+            this.e_12 = new Button();
+            this.e_3.Children.Add(this.e_12);
             this.e_12.Name = "e_12";
-            this.e_12.Minimum = 0F;
-            this.e_12.Maximum = 1F;
-            Binding binding_e_12_Value = new Binding("LevelValue");
-            this.e_12.SetBinding(Slider.ValueProperty, binding_e_12_Value);
+            this.e_12.Height = 80F;
+            this.e_12.Width = 165F;
+            this.e_12.Margin = new Thickness(20F, 20F, 20F, 20F);
+            this.e_12.HorizontalAlignment = HorizontalAlignment.Center;
+            this.e_12.VerticalAlignment = VerticalAlignment.Center;
+            this.e_12.TabIndex = 3;
+            this.e_12.FontSize = 20F;
+            this.e_12.FontStyle = FontStyle.Bold;
+            this.e_12.Content = "Done";
+            this.e_12.CommandParameter = "Character";
+            Binding binding_e_12_Command = new Binding("ButtonCommand");
+            this.e_12.SetBinding(Button.CommandProperty, binding_e_12_Command);
             FontManager.Instance.AddFont("Segoe UI", 40F, FontStyle.Bold, "Segoe_UI_30_Bold");
             FontManager.Instance.AddFont("Segoe UI", 20F, FontStyle.Bold, "Segoe_UI_15_Bold");
             FontManager.Instance.AddFont("Segoe UI", 28F, FontStyle.Bold, "Segoe_UI_21_Bold");

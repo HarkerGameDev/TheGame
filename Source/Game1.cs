@@ -1082,25 +1082,25 @@ namespace Source
                             break;
                     }
                 }
-                if (player.AbilityThreeTime < 0 && controls.Special2)
-                {
-                    switch (player.CurrentCharacter.Ability3)
-                    {
-                        //case Character.AbilityThree.Swap:
-                        //    player.AbilityThreeTime = GameData.SWAP_COOLDOWN;
-                        //    Player first = players[rand.Next(players.Count)];
-                        //    Player second = players[rand.Next(players.Count)];
-                        //    Vector2 tempPos = first.Position;
-                        //    Vector2 tempVel = first.Velocity;
+                //if (player.AbilityThreeTime < 0 && controls.Special2)
+                //{
+                //    switch (player.CurrentCharacter.Ability3)
+                //    {
+                //        //case Character.AbilityThree.Swap:
+                //        //    player.AbilityThreeTime = GameData.SWAP_COOLDOWN;
+                //        //    Player first = players[rand.Next(players.Count)];
+                //        //    Player second = players[rand.Next(players.Count)];
+                //        //    Vector2 tempPos = first.Position;
+                //        //    Vector2 tempVel = first.Velocity;
 
-                        //    // TODO somehow indicate to the player that they have switched
-                        //    first.MoveToPosition(second.Position);
-                        //    first.Velocity = second.Velocity;
-                        //    second.MoveToPosition(tempPos);
-                        //    second.Velocity = tempVel;
-                        //    break;
-                    }
-                }
+                //        //    // TODO somehow indicate to the player that they have switched
+                //        //    first.MoveToPosition(second.Position);
+                //        //    first.Velocity = second.Velocity;
+                //        //    second.MoveToPosition(tempPos);
+                //        //    second.Velocity = tempVel;
+                //        //    break;
+                //    }
+                //}
             }
             player.PrevJump = controls.JumpHeld;
         }
@@ -1192,7 +1192,7 @@ namespace Source
                     {
                         if (keyboard.IsKeyDown(Keys.LeftShift))     // Select a platform
                         {
-                            Body body = world.TestPoint(mouseSimPos);
+                            Collisions.Polygon body = world.TestPoint(mouseSimPos);
                             if (body != null && body is Platform)
                                 currentPlatform = (Platform)body;
                         }
@@ -1329,10 +1329,10 @@ namespace Source
                     currentPlatform.MoveByPosition(Vector2.UnitY);
                 else if (keyboard.IsKeyDown(Keys.Enter))        // Deselect platform
                     currentPlatform = null;
-                else if (ToggleKey(Keys.F))
-                {
-                    currentPlatform.Color = currentPlatform.Color == Color.Crimson ? Color.LightGoldenrodYellow : Color.Crimson;
-                }
+                else if (ToggleKey(Keys.C))
+                    currentPlatform.Rotate(MathHelper.PiOver4);
+                else if (ToggleKey(Keys.X))
+                    currentPlatform.Rotate(-MathHelper.PiOver4);
             }
             if (ToggleKey(Keys.OemPlus))                       // Zoom in and out
             {
@@ -1404,7 +1404,7 @@ namespace Source
         /// </summary>
         private void CheckPlayer()
         {
-            Player max = null;
+            //Player max = null;
             float minY = players[0].Position.Y;
             float maxY = minY;
 
@@ -1431,7 +1431,7 @@ namespace Source
                 Vector2 dist = ConvertUnits.ToDisplayUnits(player.Position) - averagePos;
                 if (Math.Abs(dist.X) > GraphicsDevice.Viewport.Width / 2f || Math.Abs(dist.Y) > GraphicsDevice.Viewport.Height / 2f)
                 {
-                    player.Kill();
+                    //player.Kill();
                     continue;
                 }
 
@@ -1739,6 +1739,13 @@ namespace Source
         {
             Matrix view = Matrix.CreateTranslation(new Vector3(screenOffset + screenCenter - averagePos, 0f));
 
+#if DEBUG
+            spriteBatch.Begin(transformMatrix: view);
+            spriteBatch.Draw(whiteRect, ConvertUnits.ToDisplayUnits(prevAveragePos), null, Color.Olive, 0f, new Vector2(0.5f), ConvertUnits.ToDisplayUnits(3), SpriteEffects.None, 0f);
+            spriteBatch.Draw(whiteRect, averagePos, null, Color.DarkGreen, 0f, new Vector2(0.5f), ConvertUnits.ToDisplayUnits(2), SpriteEffects.None, 0f);
+            spriteBatch.End();
+#endif
+
             // Draw players
             spriteBatch.Begin(transformMatrix: view);
             foreach (Player player in players)
@@ -1791,13 +1798,6 @@ namespace Source
             foreach (Particle part in particles)
                 part.Draw(spriteBatch);
             spriteBatch.End();
-
-#if DEBUG
-            spriteBatch.Begin(transformMatrix: view);
-            spriteBatch.Draw(whiteRect, ConvertUnits.ToDisplayUnits(prevAveragePos), null, Color.Olive, 0f, new Vector2(0.5f), ConvertUnits.ToDisplayUnits(3), SpriteEffects.None, 0f);
-            spriteBatch.Draw(whiteRect, averagePos, null, Color.DarkGreen, 0f, new Vector2(0.5f), ConvertUnits.ToDisplayUnits(2), SpriteEffects.None, 0f);
-            spriteBatch.End();
-#endif
         }
 
         private void DrawBackground(Vector2 averagePos)
