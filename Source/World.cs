@@ -142,8 +142,8 @@ namespace Source.Collisions
                 }
 
                 float gravity = GameData.GRAVITY * deltaTime;
-                if (player.WallJump != Player.Jump.None && player.Velocity.Y > 0)
-                    gravity *= GameData.WALL_SLIDE_SCALE;
+                //if (player.WallJump != Player.Jump.None && player.Velocity.Y > 0)
+                //    gravity *= GameData.WALL_SLIDE_SCALE;
 
                 //if (player.GrappleTarget != Vector2.Zero)
                 //{
@@ -302,6 +302,7 @@ namespace Source.Collisions
         {
             // TODO this seems kinda janky if player falls from great height
             int totalCollisions = 0;
+            player.WallJump = Player.Direction.None;
             foreach (Platform platform in game.platforms)
             {
                 Vector2 translation = player.Intersects(platform);
@@ -324,16 +325,22 @@ namespace Source.Collisions
                         else
                         {
                             player.Velocity.X = 0;
-                            if (player.InAir && player.JumpTime <= 0)
-                            {
-                                if (player.WallJump == Player.Jump.None && player.Velocity.Y > 0)
-                                    player.Velocity.Y *= GameData.WALL_STICK_SCALE;
+                            //if (player.InAir && player.JumpTime <= 0)
+                            //{
+                                //if (player.WallJump == Player.Jump.None && player.Velocity.Y > 0)
+                                //    player.Velocity.Y *= GameData.WALL_STICK_SCALE;
                                 if (translation.X > 0)
-                                    player.WallJump = Player.Jump.Left;
+                                {
+                                    translation.X -= 0.0001f;
+                                    player.WallJump = Player.Direction.Right;
+                                }
                                 else
-                                    player.WallJump = Player.Jump.Right;
-                                player.WallJumpLeway = GameData.WALL_JUMP_LEWAY;
-                            }
+                                {
+                                    translation.X += 0.0001f;
+                                    player.WallJump = Player.Direction.Left;
+                                }
+                                //player.WallJumpLeway = GameData.WALL_JUMP_LEWAY;
+                            //}
                         }
                     }
                     else        // Vertical or diagonal collision
@@ -343,6 +350,7 @@ namespace Source.Collisions
                         else
                         {
                             player.Velocity.Y = 0;
+                            player.JumpTime = 0f;
                             if (translation.Y > 0 && player.InAir)
                             {
                                 player.CurrentState = Player.State.Walking;
@@ -392,7 +400,7 @@ namespace Source.Collisions
 				//player.Score--;
             }
 
-            if (totalCollisions == 0 && !player.InAir)
+            if (totalCollisions == 0 && player.CurrentState != Player.State.Stunned)
                 player.CurrentState = Player.State.Jumping;
         }
 
@@ -442,7 +450,7 @@ namespace Source.Collisions
                     {
                         player.Velocity.Y = -GameData.OBSTACLE_JUMP;
                         player.StunTime = GameData.OBSTACLE_STUN;
-                        player.CurrentState = Player.State.Flying;
+                        //player.CurrentState = Player.State.Flying;
                     }
                     else if (translation.Y == 0) // hitting from side
                     {
@@ -544,8 +552,8 @@ namespace Source.Collisions
                         // User basically loses control if they are closer than the threshold
                         if (length < GameData.BOOMERANG_ANTIGRAV)
                         {
-                            if (force.X * body.Velocity.X > 0)      // Velocity.X and force are in same direction
-                                body.TargetVelocity = body.Velocity.X;
+                            //if (force.X * body.Velocity.X > 0)      // Velocity.X and force are in same direction
+                            //    body.TargetVelocity = body.Velocity.X;
                             body.Velocity.Y -= GameData.GRAVITY * deltaTime;
                         }
                         //Console.WriteLine("TargetVelocity: {0}", body.TargetVelocity);

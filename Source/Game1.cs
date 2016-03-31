@@ -447,6 +447,8 @@ namespace Source
             //viewModel.ControlsText = "Hello!\nWhoo!!";
 
             viewModel.MaxPlayers = GameData.MAX_PLAYERS;
+            viewModel.LevelValue = GameData.LEVEL_FILE;
+            viewModel.PlayerValue = GameData.DEFAULT_PLAYERS;
 
             LoadUI(Menu.Main);
 
@@ -490,7 +492,8 @@ namespace Source
                 {
                     Vector2 position = new Vector2(file.ReadSingle(), file.ReadSingle());
                     Vector2 size = new Vector2(file.ReadSingle(), file.ReadSingle());
-                    platforms.Add(new Platform(whiteRect, position, size));
+                    float rotation = file.ReadSingle();
+                    platforms.Add(new Platform(whiteRect, position, size, rotation));
                 }
             }
         }
@@ -528,6 +531,7 @@ namespace Source
                     file.Write(plat.Position.Y);
                     file.Write(plat.Size.X);
                     file.Write(plat.Size.Y);
+                    file.Write(plat.Rotation);
                 }
 
                 file.Close();
@@ -611,68 +615,67 @@ namespace Source
                     {
                         HandleEditLevel();
                     }
-                    else
+
+                    float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+                    if (simulating)
                     {
-                        float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
-
-                        if (simulating)
+                        while (simIndex < simTimes.Count && simTimes[simIndex] - totalTime <= 0)
                         {
-                            while (simIndex < simTimes.Count && simTimes[simIndex] - totalTime <= 0)
-                            {
-                                //deltaTime += diff;
-                                Console.Write("Sim: " + totalTime + "\t\tReplay: " + simTimes[simIndex] +
-                                    "\t\tDelta: " + deltaTime + "\t\tDiff: " + (simTimes[simIndex] - totalTime) + "\t\t");
-                                GameData.SimulatedControls control = (GameData.SimulatedControls)playerControls[0];
-                                GameData.ControlKey key = keys[simIndex];
-                                switch (key)
-                                {
-                                    case GameData.ControlKey.Special1:
-                                        control.Special1 = true;
-                                        break;
-                                    case GameData.ControlKey.Special2:
-                                        control.Special2 = true;
-                                        break;
-                                    case GameData.ControlKey.Special3:
-                                        control.Special3 = true;
-                                        break;
-                                    case GameData.ControlKey.Left:
-                                        control.Left = !control.Left;
-                                        break;
-                                    case GameData.ControlKey.Right:
-                                        control.Right = !control.Right;
-                                        break;
-                                    case GameData.ControlKey.JumpHeld:
-                                        control.JumpHeld = !control.JumpHeld;
-                                        break;
-                                    case GameData.ControlKey.Down:
-                                        control.Down = !control.Down;
-                                        break;
-                                }
-                                simIndex++;
-                            }
-                        }
-
-                        if (currentPlatform == null)
-                            HandleInput(deltaTime);
-
-                        if (simulating)
-                        {
+                            //deltaTime += diff;
+                            Console.Write("Sim: " + totalTime + "\t\tReplay: " + simTimes[simIndex] +
+                                "\t\tDelta: " + deltaTime + "\t\tDiff: " + (simTimes[simIndex] - totalTime) + "\t\t");
                             GameData.SimulatedControls control = (GameData.SimulatedControls)playerControls[0];
-                            control.Special1 = false;
-                            control.Special2 = false;
-                            control.Special3 = false;
+                            GameData.ControlKey key = keys[simIndex];
+                            switch (key)
+                            {
+                                case GameData.ControlKey.Special1:
+                                    control.Special1 = true;
+                                    break;
+                                case GameData.ControlKey.Special2:
+                                    control.Special2 = true;
+                                    break;
+                                case GameData.ControlKey.Special3:
+                                    control.Special3 = true;
+                                    break;
+                                case GameData.ControlKey.Left:
+                                    control.Left = !control.Left;
+                                    break;
+                                case GameData.ControlKey.Right:
+                                    control.Right = !control.Right;
+                                    break;
+                                case GameData.ControlKey.JumpHeld:
+                                    control.JumpHeld = !control.JumpHeld;
+                                    break;
+                                case GameData.ControlKey.Down:
+                                    control.Down = !control.Down;
+                                    break;
+                            }
+                            simIndex++;
                         }
-
-                        CheckPlayer();
-                        InvertScreen -= deltaTime;
-                        totalTime += deltaTime;
-                        world.Step(deltaTime);
-
-                        // TODO store previous locations of players
-                        foreach (Player player in players)
-                            player.PrevStates.Add(Tuple.Create(player.Position, player.Velocity));
-                        times.Add(totalTime);
                     }
+
+                    if (currentPlatform == null)
+                        HandleInput(deltaTime);
+
+                    if (simulating)
+                    {
+                        GameData.SimulatedControls control = (GameData.SimulatedControls)playerControls[0];
+                        control.Special1 = false;
+                        control.Special2 = false;
+                        control.Special3 = false;
+                    }
+
+                    CheckPlayer();
+                    InvertScreen -= deltaTime;
+                    totalTime += deltaTime;
+                    world.Step(deltaTime);
+
+                    // TODO store previous locations of players
+                    foreach (Player player in players)
+                        player.PrevStates.Add(Tuple.Create(player.Position, player.Velocity));
+                    times.Add(totalTime);
+
                     break;
                 case State.Paused:
                     if (ToggleKey(Keys.Escape))
@@ -944,23 +947,32 @@ namespace Source
             {
                 if (controls.JumpHeld)
                 {
-                    if (!player.PrevJump)
+                    if (!player.PrevJump)       // toggle jump
                     {
                         if (player.CanJump)    // normal jump
                         {
-                            player.Velocity.Y = -GameData.JUMP_SPEED;
-                            player.TargetVelocity = player.TargetVelocity * GameData.JUMP_SLOW;
+                            if (player.Velocity.Y > 0)
+                                player.Velocity.Y = 0;
+                            player.JumpSpeed = player.Velocity.Y * GameData.JUMP_HOLD_PROP - GameData.JUMP_SPEED;
+
+                            player.Velocity.Y -= GameData.JUMP_SPEED;
+                            //player.TargetVelocity = player.TargetVelocity * GameData.JUMP_SLOW;
                             player.CurrentState = Player.State.Jumping;
                             player.JumpTime = GameData.JUMP_TIME;
                         }
-                        else if (player.WallJump != Player.Jump.None)    // wall jump
+                        else if (player.WallJump != Player.Direction.None)    // wall jump
                         {
-                            player.Velocity.Y = -GameData.WALL_JUMP_Y;
-                            if (player.WallJump == Player.Jump.Left)
-                                player.Velocity.X = -GameData.WALL_JUMP_X;
-                            else
+                            if (player.Velocity.Y > 0)
+                                player.Velocity.Y = 0;
+                            player.JumpSpeed = player.Velocity.Y * GameData.JUMP_HOLD_PROP - GameData.WALL_JUMP_Y;
+
+                            player.Velocity.Y -= GameData.WALL_JUMP_Y;
+                            if (player.WallJump == Player.Direction.Left)
                                 player.Velocity.X = GameData.WALL_JUMP_X;
-                            player.WallJump = Player.Jump.None;
+                            else
+                                player.Velocity.X = -GameData.WALL_JUMP_X;
+                            player.JumpTime = GameData.JUMP_TIME;
+                            //player.WallJump = Player.Jump.None;
                         }
                         else if (player.AbilityOneTime < 0)        // jump abilities
                         {
@@ -998,7 +1010,8 @@ namespace Source
                     }
                     else if (player.JumpTime > 0)   // hold jump in air
                     {
-                        player.Velocity.Y -= GameData.JUMP_ACCEL * deltaTime;
+                        if (player.Velocity.Y > player.JumpSpeed)
+                            player.Velocity.Y = player.JumpSpeed;
                     }
                     else if (player.JetpackEnabled)
                     {
@@ -1028,11 +1041,11 @@ namespace Source
                 }
 
                 if (controls.Right)
-                    player.TargetVelocity = GameData.RUN_VELOCITY;
+                    player.TargetVelocity = Player.Direction.Right;
                 else if (controls.Left)
-                    player.TargetVelocity = -GameData.RUN_VELOCITY;
+                    player.TargetVelocity = Player.Direction.Left;
                 else
-                    player.TargetVelocity = 0;
+                    player.TargetVelocity = Player.Direction.None;
 
                 // activate (or toggle) special abilities
                 if (player.AbilityTwoTime < 0 && controls.Special1)
@@ -1878,6 +1891,12 @@ namespace Source
             spriteBatch.DrawString(fontSmall, "Mouse -- {" + mouse.NormalizedX + "," + mouse.NormalizedY + "}", new Vector2(10, GraphicsDevice.Viewport.Height - 80), Color.White);
             spriteBatch.DrawString(fontSmall, "Music muted: " + MediaPlayer.IsMuted, new Vector2(10, GraphicsDevice.Viewport.Height - 120), Color.White);
             spriteBatch.DrawString(fontSmall, "Screen center: " + screenCenter, new Vector2(10, GraphicsDevice.Viewport.Height - 160), Color.White);
+            if (players != null)
+            {
+                spriteBatch.DrawString(fontSmall, "Player 0 Velocity: " + players[0].Velocity, new Vector2(10, GraphicsDevice.Viewport.Height - 200), Color.White);
+                spriteBatch.DrawString(fontSmall, "Player 0 Wall: " + players[0].WallJump, new Vector2(10, GraphicsDevice.Viewport.Height - 240), Color.White);
+                spriteBatch.DrawString(fontSmall, "Player 0 State: " + players[0].CurrentState, new Vector2(10, GraphicsDevice.Viewport.Height - 280), Color.White);
+            }
             spriteBatch.End();
 #endif
 

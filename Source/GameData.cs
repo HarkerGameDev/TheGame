@@ -15,8 +15,12 @@ namespace Source
     {
         public static int MAX_PLAYERS = 4;          // maximum amount of players at one time
         public static int[] PLAYERS;                // number of players
-        public static int LEVEL_FILE = 1;
+        public static int LEVEL_FILE = 1;           // default level
+        public static int DEFAULT_PLAYERS = 2;      // default number of players
         public static Vector2 PLAYER_START = new Vector2(1f, -10f);
+
+        public static float PLAYER_WIDTH = 0.6f;    // width of player in m
+        public static float PLAYER_HEIGHT = 1.8f;   // height of player in m
 
         // Settings for user-defined values
         public static int WINDOW_WIDTH = 1280;       // default width of window
@@ -31,33 +35,33 @@ namespace Source
         public const float ZOOM_STEP = 1.5f;       // scale by which zoom is changed with + and -
         public const float PIXEL_METER = 24f;      // pixels per meter for normal game
         public const float PIXEL_METER_EDIT = 8f;  // pixels per meter when in edit mode for level
-        public const int VIEW_WIDTH = 1280;        // width of unscaled screen in pixels
-        public const int VIEW_HEIGHT = 720;        // height of unscaled screen in pixels
-        //public const int WINDOW_WIDTH = 1600;       // default width of window
-        //public const int WINDOW_HEIGHT = 900;       // default height of window
-        //public const int WINDOW_WIDTH = 1920;       // default width of window
-        //public const int WINDOW_HEIGHT = 1080;       // default height of window
+        public const int VIEW_WIDTH = 1920;        // width of unscaled screen in pixels
+        public const int VIEW_HEIGHT = 1080;        // height of unscaled screen in pixels
 
         public const float SHADOW_SCALE = PIXEL_METER / 3.4f; // what light calculations will be normalized to (smaller scale = larger light)
         public static Color DARK_COLOR = new Color(new Vector3(0.1f));  // color mask for non-lit areas
         public static Color LIGHT_COLOR = Color.Wheat;
 
-        public const float JUMP_SPEED = 16f; // m/s -- the initial upwards velocity when player jumps
-        public const float JUMP_ACCEL = GRAVITY + 3f;   // m/s^2 -- acceleration when holding jump
-        public const float JUMP_TIME = 0.2f;  // s -- can hold jump for this long and still have upwards velocity
-        public const float WALL_JUMP_Y = 12f;   // m/s -- vertical jump off a wall
-        public const float WALL_JUMP_X = 16f;   // m/s -- horizontal jump off a wall
-        public const float WALL_JUMP_LEWAY = 0.3f;    // s -- time after which player can no longer wall jump after leaving a wall
-        public const float WALL_STICK_SCALE = 0.5f; // -- scale of vertical velocity when beginning to wall slide
-        public const float WALL_SLIDE_SCALE = 0.2f; // -- gravity scale when sliding on the wall
+        public const float JUMP_HOLD_PROP = 0.7f;   // keep this proportion of your current Y velocity when holding a jump
+        public const float JUMP_SPEED = 8f; // m/s -- the upwards velocity when player jumps (and holds it)
+        //public const float JUMP_ACCEL = GRAVITY + 3f;   // m/s^2 -- acceleration when holding jump
+        public const float JUMP_TIME = 0.55f;  // s -- can hold jump for this long and still have upwards velocity
+        public const float WALL_JUMP_Y = 6f;   // m/s -- vertical jump off a wall
+        public const float WALL_JUMP_X = 7.6f;   // m/s -- horizontal jump off a wall
+        public const float WALL_STICK_VEL = 3.4f;     // m/s -- downwards velocity when sticking to a wall
+        //public const float WALL_JUMP_LEWAY = 0.3f;    // s -- time after which player can no longer wall jump after leaving a wall
+        //public const float WALL_STICK_SCALE = 0.5f; // -- scale of vertical velocity when beginning to wall slide
+        //public const float WALL_SLIDE_SCALE = 0.2f; // -- gravity scale when sliding on the wall
 
-        public const float GRAVITY = 36f;   // m/s^2 -- gravity for players
+        public const float GRAVITY = 21f;   // m/s^2 -- gravity for players
         public const float GRAVITY_PART = 15f; // m/s^2 -- gravity for particles
 
         public const float MIN_VELOCITY = 1f;  // m/s -- what can be considered target velocity
-        public const float RUN_VELOCITY = 22f; // m/s -- maximum horizontal velocity for player
-        public const float MAX_ACCEL = 30f;   // m/s^2 -- acceleration applied when reaching TargetVelocity
-        public const float AIR_ACCEL = 25f;   // m/s^2 -- acceleration while in air
+        public const float MAX_VELOCITY = 20f; // m/s -- maximum horizontal velocity for player
+        public const float LAND_ACCEL = 20f;   // m/s^2 -- acceleration applied when reaching TargetVelocity
+        public const float AIR_ACCEL = LAND_ACCEL - 1f;   // m/s^2 -- acceleration while in air
+        public const float LAND_DRAG = 3.1f;     // m/s^2 -- decelleration to 0 when on the ground
+        public const float AIR_DRAG = 0.55f;       // m/s^2 -- decelleration to 0 when in air
         public const float OBSTACLE_JUMP = 25f; // m/s -- initial upwards velocity after vaulting off of an obstacle succesfully
         //public const float CLIMB_SPEED = 8f;     // m/s -- speed of climbing onto a ledge
 
@@ -75,17 +79,17 @@ namespace Source
         public const float GRAVITY_FORCE = 112f;  // G (in physics) in essence
         public const float BOMB_FORCE = 150f;        // force in m/s when a bomb explodes
 
-        public const float JUMP_SLOW = 0.85f;   // -- x velocity is scaled by this when jumping
+        public const float JUMP_SLOW = 1.0f;   // -- x velocity is scaled by this when jumping
         public const float OBSTACLE_SLOW = 0.2f;    // -- player speed is reduced to this ratio when an obstacle is hit incorrectly
         //public const float WINDOW_SLOW = 0.2f;    // -- player speed is reduced to this ratio when a window is hit
         //public const float WALL_SLOW = 0.2f;    // -- player speed is reduced to this ratio when a wall is hit while flying
 
-        public const float CAMERA_SCALE = 7f;           // speed of camera catchup (scales as the square root of distance)
-        public const float CAMERA_SCALE_X = 4f;         // horizontal speed of camera
-        public const float CAMERA_SCALE_Y = 20f;        // vertical speed of camera
-        public const float MAX_CAMERA_SPEED_X = 1f;    // maximum x speed of camera
-        public const float MAX_CAMERA_SPEED_Y = 3f;    // maximum y speed of camera
-        public const float SCREEN_CATCHUP = 0.1f;       // proportion of distance camera will catch up every tick
+        public const float CAMERA_SCALE = 8f;           // speed of camera catchup (scales as the square root of distance)
+        //public const float CAMERA_SCALE_X = 4f;         // horizontal speed of camera
+        //public const float CAMERA_SCALE_Y = 20f;        // vertical speed of camera
+        //public const float MAX_CAMERA_SPEED_X = 1f;    // maximum x speed of camera
+        //public const float MAX_CAMERA_SPEED_Y = 3f;    // maximum y speed of camera
+        //public const float SCREEN_CATCHUP = 0.1f;       // proportion of distance camera will catch up every tick
         public const float SCREEN_LEFT = 0.3f;         // defines how far left the player can be on wobble-screen
         public const float SCREEN_RIGHT = 0.7f;       // defines the right limit of the player on wobble-screen
         public const float SCREEN_SPACE = 0.25f;        // camera will begin zooming out when the player are SCREEN_SPACE % of the screen apart from each other

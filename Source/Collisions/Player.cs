@@ -22,11 +22,11 @@ namespace Source.Collisions
         public State CurrentState;
         public float StunTime;
         public float JumpTime;
+        public float JumpSpeed;
         public bool PrevJump;
         public float AbilityOneTime, AbilityTwoTime, AbilityThreeTime;
-        public Jump WallJump;
-        public float WallJumpLeway;
-        public float TargetVelocity;
+        public Direction WallJump;
+        public Direction TargetVelocity;
         public Character CurrentCharacter;
         public SpriteEffects Flip;
         public bool FacingRight { get { return TargetVelocity == 0 ? Flip == SpriteEffects.None : TargetVelocity > 0; } }
@@ -45,16 +45,15 @@ namespace Source.Collisions
 
         public List<Projectile> Projectiles;
 
-        public bool InAir { get { return CurrentState == State.Jumping || CurrentState == State.Stunned
-                    || CurrentState == State.Flying; } }
-        public bool CanJump { get { return CurrentState == State.Walking; } }
+        public bool InAir { get { return CurrentState == State.Jumping || CurrentState == State.Stunned || CurrentState == State.WallStick; } }
+        public bool CanJump { get { return CurrentState == State.Walking || CurrentState == State.Sliding; } }
 
         public enum State
         {
-            Jumping=0, Walking=1, Stunned=5, Flying=6
+            Jumping=0, Walking=1, WallStick=2, Sliding=5, Stunned=6
         }
 
-        public enum Jump
+        public enum Direction
         {
             None, Right, Left
         }
@@ -72,8 +71,7 @@ namespace Source.Collisions
             AbilityTwoTime = 0;
             AbilityThreeTime = 0;
             TargetVelocity = 0;
-            WallJump = Jump.None;
-            WallJumpLeway = 0;
+            WallJump = Direction.None;
             Flip = SpriteEffects.None;
 
             PrevStates = new List<Tuple<Vector2, Vector2>>();
@@ -82,7 +80,7 @@ namespace Source.Collisions
         }
 
         public Player(Texture2D texture, Vector2 position, Character character)
-            : base(texture, position, new Vector2(0.6f, 1.8f))
+            : base(texture, position, new Vector2(GameData.PLAYER_WIDTH, GameData.PLAYER_HEIGHT))
         {
             Color = character.Color;
             CurrentCharacter = character;
@@ -92,7 +90,7 @@ namespace Source.Collisions
 
             int[] animationFrames = { 4, 4, 2, 4, 2, 1, 1 };
             Origin = new Vector2(Origin.X / animationFrames.Max(), Origin.Y / animationFrames.Length);
-            float textureScale = 1.8f / Origin.Y / 2f * (20f / 18f);
+            float textureScale = GameData.PLAYER_HEIGHT / Origin.Y / 2f * (20f / 18f);
             Sprite = new AnimatedSprite(texture, this, animationFrames, textureScale);
         }
 
@@ -106,7 +104,7 @@ namespace Source.Collisions
                 throw new Exception("Moving dead player");
 
             //ActionTime -= deltaTime;
-            if (CurrentState == State.Stunned || CurrentState == State.Flying)
+            if (CurrentState == State.Stunned)
             {
                 StunTime -= deltaTime;
                 if (StunTime < 0)
@@ -121,28 +119,82 @@ namespace Source.Collisions
                 if (CurrentState == State.Jumping)
                     JumpTime -= deltaTime;
 
-                // stop wall sliding
-                if (WallJump == Jump.Left || WallJump == Jump.Right)
-                {
-                    if (WallJumpLeway < 0)
-                        WallJump = Jump.None;
-                    WallJumpLeway -= deltaTime;
-                }
-
                 // face left and right
                 if (Velocity.X > 0)
                     Flip = SpriteEffects.None;
                 else if (Velocity.X < 0)
                     Flip = SpriteEffects.FlipHorizontally;
 
-                // accelerate to target velocity
-                float diff = Velocity.X - TargetVelocity;
-                if (Math.Abs(diff) < GameData.MIN_VELOCITY)
-                    Velocity.X = TargetVelocity;
-                else if (InAir)
-                    Velocity.X -= Math.Sign(diff) * deltaTime * GameData.AIR_ACCEL;
+                // apply drag, acceleration, and stick to wall if moving towards it
+                if (InAir)
+                {
+                    if (TargetVelocity == Direction.Right)
+                    {
+                        if (Velocity.X < 0)
+                            Velocity.X += GameData.AIR_DRAG * deltaTime;
+                        Velocity.X += GameData.AIR_ACCEL * deltaTime;
+                        if (WallJump == Direction.Right && Velocity.Y >= GameData.WALL_STICK_VEL)
+                            CurrentState = State.WallStick;
+                    }
+                    else if (TargetVelocity == Direction.Left)
+                    {
+                        if (Velocity.X > 0)
+                            Velocity.X -= GameData.AIR_DRAG * deltaTime;
+                        Velocity.X -= GameData.AIR_ACCEL * deltaTime;
+                        if (WallJump == Direction.Left && Velocity.Y >= GameData.WALL_STICK_VEL)
+                            CurrentState = State.WallStick;
+                    }
+                    else
+                    {
+                        if (Math.Abs(Velocity.X) < GameData.MIN_VELOCITY)
+                            Velocity.X = 0f;
+                        else
+                            Velocity.X -= Velocity.X * GameData.AIR_DRAG * deltaTime;
+                    }
+                }
                 else
-                    Velocity.X -= Math.Sign(diff) * deltaTime * GameData.MAX_ACCEL;
+                {
+                    CurrentState = State.Walking;
+                    if (TargetVelocity == Direction.Right)
+                    {
+                        if (Velocity.X < 0)
+                        {
+                            Velocity.X -= Velocity.X * GameData.LAND_DRAG * deltaTime;
+                            CurrentState = State.Sliding;
+                        }
+                        Velocity.X += GameData.LAND_ACCEL * deltaTime;
+                    }
+                    else if (TargetVelocity == Direction.Left)
+                    {
+                        if (Velocity.X > 0)
+                        {
+                            Velocity.X -= Velocity.X * GameData.LAND_DRAG * deltaTime;
+                            CurrentState = State.Sliding;
+                        }
+                        Velocity.X -= GameData.LAND_ACCEL * deltaTime;
+                    }
+                    else
+                    {
+                        if (Math.Abs(Velocity.X) < GameData.MIN_VELOCITY)
+                            Velocity.X = 0f;
+                        else
+                        {
+                            Velocity.X -= Velocity.X * GameData.LAND_DRAG * deltaTime;
+                            CurrentState = State.Sliding;
+                        }
+                    }
+                }
+
+                if (Velocity.X > GameData.MAX_VELOCITY)
+                    Velocity.X = GameData.MAX_VELOCITY;
+                else if (Velocity.X < -GameData.MAX_VELOCITY)
+                    Velocity.X = -GameData.MAX_VELOCITY;
+
+                if (CurrentState == State.WallStick)
+                {
+                    Console.WriteLine("Wall stick");
+                    Velocity.Y = GameData.WALL_STICK_VEL;
+                }
             }
 
             // swing on grapple
