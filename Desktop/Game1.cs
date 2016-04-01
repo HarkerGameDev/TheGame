@@ -518,8 +518,8 @@ namespace Source
         private void SaveLevel(int saveLevel)
         {
 #if DEBUG
-            //Console.WriteLine("Dir: " + Directory.GetFiles(@"..\..\..\..\Source\Levels")[0]);
-            BinaryWriter file = new BinaryWriter(File.Open(@"..\..\..\..\Source\Levels\level" + saveLevel, FileMode.Open, FileAccess.Write));
+            //Console.WriteLine("Dir: " + Directory.GetFiles(@"..\..\..\..\Levels")[0]);
+            BinaryWriter file = new BinaryWriter(File.Open(@"..\..\..\..\Levels\level" + saveLevel, FileMode.Open, FileAccess.Write));
 #else
             IAsyncResult result = StorageDevice.BeginShowSelector(null, null);
             result.AsyncWaitHandle.WaitOne();
