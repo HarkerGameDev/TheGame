@@ -424,8 +424,6 @@ namespace Source
                 players.Add(new Player(Content.Load<Texture2D>("Art/GreenDude"), GameData.PLAYER_START, Character.playerCharacters[character]));
             }
 
-            // TODO make camera type customizable (from setup screen)
-            cameraType = GameData.CAMERA_TYPE;
             cameraPos = GameData.PLAYER_START;
             playerCenter = 0;
             cameraNode = cameraPath.First;
@@ -685,8 +683,8 @@ namespace Source
                                 case GameData.ControlKey.Special2:
                                     control.Special2 = true;
                                     break;
-                                case GameData.ControlKey.Special3:
-                                    control.Special3 = true;
+                                case GameData.ControlKey.BasicAttack:
+                                    control.BasicAttack = true;
                                     break;
                                 case GameData.ControlKey.Left:
                                     control.Left = !control.Left;
@@ -713,7 +711,7 @@ namespace Source
                         GameData.SimulatedControls control = (GameData.SimulatedControls)playerControls[0];
                         control.Special1 = false;
                         control.Special2 = false;
-                        control.Special3 = false;
+                        control.BasicAttack = false;
                     }
 
                     CheckPlayer();
@@ -826,6 +824,15 @@ namespace Source
                 case "Setup":
                     LoadUI(Menu.Setup);
                     break;
+                case "Average":
+                    cameraType = CameraType.Average;
+                    goto case "Character";
+                case "Player":
+                    cameraType = CameraType.Player;
+                    goto case "Character";
+                case "Path":
+                    cameraType = CameraType.Path;
+                    goto case "Character";
                 case "Character":
                     LoadUI(Menu.Character);
                     playerSelect = 0;
@@ -962,10 +969,10 @@ namespace Source
                     simTimes.Add(totalTime);
                     keys.Add(GameData.ControlKey.Special2);
                 }
-                if (controls.Special3)
+                if (controls.BasicAttack)
                 {
                     simTimes.Add(totalTime);
-                    keys.Add(GameData.ControlKey.Special3);
+                    keys.Add(GameData.ControlKey.BasicAttack);
                 }
                 if (controls.Down != prevDown)
                 {
@@ -1143,6 +1150,32 @@ namespace Source
                             vel += player.Velocity * GameData.BOOMERANG_SCALE;
                             player.Projectiles.Add(new Projectile(whiteRect, player.Position, Color.YellowGreen, Projectile.Types.Boomerang, vel));
                             break;
+                    }
+                }
+
+                // Basic attack
+                // TODO include attacker's momentum
+                if (controls.BasicAttack)
+                {
+                    foreach (Player target in players)
+                    {
+                        if (target != player && Math.Abs(player.Position.Y - target.Position.Y) < GameData.ATTACK_HEIGHT)
+                        {
+                            if (player.FacingRight)
+                            {
+                                if (target.Position.X > player.Position.X - player.Size.X / 2f && target.Position.X < player.Position.X + GameData.ATTACK_WIDTH)
+                                {
+                                    target.Velocity += new Vector2(GameData.ATTACK_IMPULSE_X, GameData.ATTACK_IMPULSE_Y) + player.Velocity * GameData.ATTACK_MOMENTUM;
+                                }
+                            }
+                            else
+                            {
+                                if (target.Position.X < player.Position.X + player.Size.X / 2f && target.Position.X > player.Position.X - GameData.ATTACK_WIDTH)
+                                {
+                                    target.Velocity += new Vector2(-GameData.ATTACK_IMPULSE_X, GameData.ATTACK_IMPULSE_Y) + player.Velocity * GameData.ATTACK_MOMENTUM;
+                                }
+                            }
+                        }
                     }
                 }
                 //if (player.AbilityThreeTime < 0 && controls.Special2)

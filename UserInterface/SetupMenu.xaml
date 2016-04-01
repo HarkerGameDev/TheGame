@@ -20,17 +20,25 @@
                 <TextBlock Text="Players" DockPanel.Dock="Top" FontSize="28" FontWeight="Bold" TextAlignment="Center" Padding="10" />
                 <TextBlock Text="{Binding PlayerValue}" DockPanel.Dock="Right"
                          TextAlignment="Right" Width="40" FontSize="20" />
-                <Slider Maximum="{Binding MaxPlayers}" Minimum="1" TickPlacement="Both" Value="{Binding PlayerValue}"
-                        TabIndex="1" SmallChange="1" />
+                <Slider Maximum="{Binding MaxPlayers}" Minimum="1" TickPlacement="Both" Value="{Binding PlayerValue}" />
             </DockPanel>
             <DockPanel Margin="20">
                 <TextBlock Text="Level" DockPanel.Dock="Top" FontSize="28" FontWeight="Bold" TextAlignment="Center" Padding="10" />
                 <TextBlock Text="{Binding LevelValue}" DockPanel.Dock="Right"
                          TextAlignment="Right" Width="40" FontSize="20" />
-                <Slider Maximum="1" Minimum="0" TickPlacement="Both" Value="{Binding LevelValue}" TabIndex="2" />
+                <Slider Maximum="1" Minimum="0" TickPlacement="Both" Value="{Binding LevelValue}" />
             </DockPanel>
+            <TextBlock Text="Camera Type (choose one to start game)" FontSize="28" FontWeight="Bold" TextAlignment="Center" Padding="10" />
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" >
+                <Button Width="165" Height="80" Content="Average" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"
+                    Command="{Binding ButtonCommand}" CommandParameter="Average" TabIndex="3" Margin="20" />
+                <Button Width="165" Height="80" Content="Player" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"
+                    Command="{Binding ButtonCommand}" CommandParameter="Player" TabIndex="4" Margin="20" />
+                <Button Width="165" Height="80" Content="Path" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"
+                    Command="{Binding ButtonCommand}" CommandParameter="Path" TabIndex="5" Margin="20" />
+            </StackPanel>
             <Button Width="165" Height="80" Content="Done" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"
-                Command="{Binding ButtonCommand}" CommandParameter="Character" TabIndex="3" Margin="20" />
+                Command="{Binding ButtonCommand}" CommandParameter="Character" TabIndex="6" Margin="20" Visibility="{Binding ButtonEnabled}" />
         </StackPanel>
     </Grid>
 </ek:UIRoot>

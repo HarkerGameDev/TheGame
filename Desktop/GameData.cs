@@ -24,7 +24,6 @@ namespace Source
 
         public static float PLAYER_WIDTH = 0.6f;    // width of player in m
         public static float PLAYER_HEIGHT = 1.8f;   // height of player in m
-        public static Game1.CameraType CAMERA_TYPE = Game1.CameraType.Path;
         public static float NODE_SIZE = 2f;         // length of square side when drawing node in m
 
         // Settings for user-defined values
@@ -121,6 +120,12 @@ namespace Source
         public const float OBSTACLE_STUN = 0.5f;    // time of stun after vaulting off obstacle
         public const float OBSTACLE_HIT_STUN = 0.4f;    // time of stun after hitting an obstacle
         public const float STUN_RADIUS = 3.3f;    // radius within which a player will be stuned from an explosion (in m)
+
+        public const float ATTACK_WIDTH = 3f;       // width of attack hitbox (in m)
+        public const float ATTACK_HEIGHT = 3f;      // height of attack hitbox (in m)
+        public const float ATTACK_IMPULSE_X = 16f;    // change in X velocity when hit by an attack
+        public const float ATTACK_IMPULSE_Y = -11f;    // change in Y velocity when hit by an attack
+        public const float ATTACK_MOMENTUM = 3f;  // proportion of momentum from attacker included in attack
 
         // Character constants
 #if DEBUG
@@ -222,14 +227,14 @@ namespace Source
 
         public enum ControlKey
         {
-            Special1, Special2, Special3, Left, Right, JumpHeld, Down
+            Special1, Special2, BasicAttack, Left, Right, JumpHeld, Down
         }
 
         public interface Controls
         {
             bool Special1 { get; }   // toggle
             bool Special2 { get; }  // toggle
-            bool Special3 { get; }  // toggle
+            bool BasicAttack { get; }  // toggle
             bool Left { get; }     // hold
             bool Right { get; }     // hold
             bool JumpHeld { get; }  // hold
@@ -242,7 +247,7 @@ namespace Source
         {
             public bool Special1 { get; set; }
             public bool Special2 { get; set; }
-            public bool Special3 { get; set; }
+            public bool BasicAttack { get; set; }
             public bool Left { get; set; }
             public bool Right { get; set; }
             public bool JumpHeld { get; set; }
@@ -252,7 +257,7 @@ namespace Source
             {
                 Special1 = false;
                 Special2 = false;
-                Special3 = false;
+                BasicAttack = false;
                 Left = false;
                 Right = false;
                 JumpHeld = false;
@@ -264,7 +269,7 @@ namespace Source
         {
             public bool Special1 { get { return game.ToggleKey(special1); } }
             public bool Special2 { get { return game.ToggleKey(special2); } }
-            public bool Special3 { get { return game.ToggleKey(special3); } }
+            public bool BasicAttack { get { return game.ToggleKey(basicAttack); } }
             public bool Left { get { return Keyboard.GetState().IsKeyDown(left); } }
             public bool Right { get { return Keyboard.GetState().IsKeyDown(right); } }
             public bool Jump { get { return game.ToggleKey(jump); } }
@@ -272,14 +277,14 @@ namespace Source
             public bool Down { get { return Keyboard.GetState().IsKeyDown(down); } }
 
             private Game1 game;
-            private Keys special1, special2, special3, left, right, jump, down;
+            private Keys special1, special2, basicAttack, left, right, jump, down;
 
-            public KeyboardControls(Game1 game, Keys special1, Keys special2, Keys special3, Keys left, Keys right, Keys jump, Keys down)
+            public KeyboardControls(Game1 game, Keys basicAttack, Keys special1, Keys special2, Keys left, Keys right, Keys jump, Keys down)
             {
                 this.game = game;
                 this.special1 = special1;
                 this.special2 = special2;
-                this.special3 = special3;
+                this.basicAttack = basicAttack;
                 this.left = left;
                 this.right = right;
                 this.jump = jump;
@@ -293,9 +298,9 @@ namespace Source
                     .AppendLine("Right = " + right)
                     .AppendLine("Jump = " + jump)
                     .AppendLine("Action = " + down)
+                    .AppendLine("Special3 = " + basicAttack)
                     .AppendLine("Special1 = " + special1)
-                    .AppendLine("Special2 = " + special2)
-                    .AppendLine("Special3 = " + special3);
+                    .AppendLine("Special2 = " + special2);
 
                 return builder.ToString();
             }
@@ -305,7 +310,7 @@ namespace Source
         {
             public bool Special1 { get { return game.ToggleButton(playerIndex, special1); } }
             public bool Special2 { get { return game.ToggleButton(playerIndex, special2); } }
-            public bool Special3 { get { return game.ToggleButton(playerIndex, special3); } }
+            public bool BasicAttack { get { return game.ToggleButton(playerIndex, basicAttack); } }
             public bool Left { get { return GamePad.GetState(playerIndex, GamePadDeadZone.Circular).IsButtonDown(left); } }
             public bool Right { get { return GamePad.GetState(playerIndex, GamePadDeadZone.Circular).IsButtonDown(right); } }
             public bool JumpHeld { get { return GamePad.GetState(playerIndex, GamePadDeadZone.Circular).IsButtonDown(jump); } }
@@ -313,15 +318,15 @@ namespace Source
 
             private Game1 game;
             private PlayerIndex playerIndex;
-            private Buttons special1, special2, special3, left, right, jump, down;
+            private Buttons special1, special2, basicAttack, left, right, jump, down;
 
-            public GamePadControls(Game1 game, PlayerIndex playerIndex, Buttons special1, Buttons special2, Buttons special3, Buttons left, Buttons right, Buttons jump, Buttons down)
+            public GamePadControls(Game1 game, PlayerIndex playerIndex, Buttons basicAttack, Buttons special1, Buttons special2, Buttons left, Buttons right, Buttons jump, Buttons down)
             {
                 this.game = game;
                 this.playerIndex = playerIndex;
                 this.special1 = special1;
                 this.special2 = special2;
-                this.special3 = special3;
+                this.basicAttack = basicAttack;
                 this.left = left;
                 this.right = right;
                 this.jump = jump;
@@ -335,9 +340,9 @@ namespace Source
                     .AppendLine("Right = " + right)
                     .AppendLine("Jump = " + jump)
                     .AppendLine("Action = " + down)
+                    .AppendLine("Attack = " + basicAttack)
                     .AppendLine("Special1 = " + special1)
-                    .AppendLine("Special2 = " + special2)
-                    .AppendLine("Special3 = " + special3);
+                    .AppendLine("Special2 = " + special2);
                 return builder.ToString();
             }
         }

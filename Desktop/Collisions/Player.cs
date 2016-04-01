@@ -29,7 +29,7 @@ namespace Source.Collisions
         public Direction TargetVelocity;
         public Character CurrentCharacter;
         public SpriteEffects Flip;
-        public bool FacingRight { get { return TargetVelocity == 0 ? Flip == SpriteEffects.None : TargetVelocity > 0; } }
+        public bool FacingRight { get { return TargetVelocity == Direction.None ? Flip == SpriteEffects.None : TargetVelocity == Direction.Right; } }
 
         // Character-specific variables
         public Platform SpawnedPlatform;

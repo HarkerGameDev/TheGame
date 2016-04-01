@@ -50,7 +50,17 @@ namespace EmptyKeys.UserInterface.Generated {
         
         private Slider e_11;
         
-        private Button e_12;
+        private TextBlock e_12;
+        
+        private StackPanel e_13;
+        
+        private Button e_14;
+        
+        private Button e_15;
+        
+        private Button e_16;
+        
+        private Button e_17;
         
         public SetupMenu() : 
                 base() {
@@ -144,9 +154,7 @@ namespace EmptyKeys.UserInterface.Generated {
             this.e_7 = new Slider();
             this.e_4.Children.Add(this.e_7);
             this.e_7.Name = "e_7";
-            this.e_7.TabIndex = 1;
             this.e_7.Minimum = 1F;
-            this.e_7.SmallChange = 1F;
             Binding binding_e_7_Maximum = new Binding("MaxPlayers");
             this.e_7.SetBinding(Slider.MaximumProperty, binding_e_7_Maximum);
             Binding binding_e_7_Value = new Binding("PlayerValue");
@@ -180,27 +188,91 @@ namespace EmptyKeys.UserInterface.Generated {
             this.e_11 = new Slider();
             this.e_8.Children.Add(this.e_11);
             this.e_11.Name = "e_11";
-            this.e_11.TabIndex = 2;
             this.e_11.Minimum = 0F;
             this.e_11.Maximum = 1F;
             Binding binding_e_11_Value = new Binding("LevelValue");
             this.e_11.SetBinding(Slider.ValueProperty, binding_e_11_Value);
             // e_12 element
-            this.e_12 = new Button();
+            this.e_12 = new TextBlock();
             this.e_3.Children.Add(this.e_12);
             this.e_12.Name = "e_12";
-            this.e_12.Height = 80F;
-            this.e_12.Width = 165F;
-            this.e_12.Margin = new Thickness(20F, 20F, 20F, 20F);
-            this.e_12.HorizontalAlignment = HorizontalAlignment.Center;
-            this.e_12.VerticalAlignment = VerticalAlignment.Center;
-            this.e_12.TabIndex = 3;
-            this.e_12.FontSize = 20F;
+            this.e_12.Text = "Camera Type (choose one to start game)";
+            this.e_12.Padding = new Thickness(10F, 10F, 10F, 10F);
+            this.e_12.TextAlignment = TextAlignment.Center;
+            this.e_12.FontSize = 28F;
             this.e_12.FontStyle = FontStyle.Bold;
-            this.e_12.Content = "Done";
-            this.e_12.CommandParameter = "Character";
-            Binding binding_e_12_Command = new Binding("ButtonCommand");
-            this.e_12.SetBinding(Button.CommandProperty, binding_e_12_Command);
+            // e_13 element
+            this.e_13 = new StackPanel();
+            this.e_3.Children.Add(this.e_13);
+            this.e_13.Name = "e_13";
+            this.e_13.HorizontalAlignment = HorizontalAlignment.Center;
+            this.e_13.Orientation = Orientation.Horizontal;
+            // e_14 element
+            this.e_14 = new Button();
+            this.e_13.Children.Add(this.e_14);
+            this.e_14.Name = "e_14";
+            this.e_14.Height = 80F;
+            this.e_14.Width = 165F;
+            this.e_14.Margin = new Thickness(20F, 20F, 20F, 20F);
+            this.e_14.HorizontalAlignment = HorizontalAlignment.Center;
+            this.e_14.VerticalAlignment = VerticalAlignment.Center;
+            this.e_14.TabIndex = 3;
+            this.e_14.FontSize = 20F;
+            this.e_14.FontStyle = FontStyle.Bold;
+            this.e_14.Content = "Average";
+            this.e_14.CommandParameter = "Average";
+            Binding binding_e_14_Command = new Binding("ButtonCommand");
+            this.e_14.SetBinding(Button.CommandProperty, binding_e_14_Command);
+            // e_15 element
+            this.e_15 = new Button();
+            this.e_13.Children.Add(this.e_15);
+            this.e_15.Name = "e_15";
+            this.e_15.Height = 80F;
+            this.e_15.Width = 165F;
+            this.e_15.Margin = new Thickness(20F, 20F, 20F, 20F);
+            this.e_15.HorizontalAlignment = HorizontalAlignment.Center;
+            this.e_15.VerticalAlignment = VerticalAlignment.Center;
+            this.e_15.TabIndex = 4;
+            this.e_15.FontSize = 20F;
+            this.e_15.FontStyle = FontStyle.Bold;
+            this.e_15.Content = "Player";
+            this.e_15.CommandParameter = "Player";
+            Binding binding_e_15_Command = new Binding("ButtonCommand");
+            this.e_15.SetBinding(Button.CommandProperty, binding_e_15_Command);
+            // e_16 element
+            this.e_16 = new Button();
+            this.e_13.Children.Add(this.e_16);
+            this.e_16.Name = "e_16";
+            this.e_16.Height = 80F;
+            this.e_16.Width = 165F;
+            this.e_16.Margin = new Thickness(20F, 20F, 20F, 20F);
+            this.e_16.HorizontalAlignment = HorizontalAlignment.Center;
+            this.e_16.VerticalAlignment = VerticalAlignment.Center;
+            this.e_16.TabIndex = 5;
+            this.e_16.FontSize = 20F;
+            this.e_16.FontStyle = FontStyle.Bold;
+            this.e_16.Content = "Path";
+            this.e_16.CommandParameter = "Path";
+            Binding binding_e_16_Command = new Binding("ButtonCommand");
+            this.e_16.SetBinding(Button.CommandProperty, binding_e_16_Command);
+            // e_17 element
+            this.e_17 = new Button();
+            this.e_3.Children.Add(this.e_17);
+            this.e_17.Name = "e_17";
+            this.e_17.Height = 80F;
+            this.e_17.Width = 165F;
+            this.e_17.Margin = new Thickness(20F, 20F, 20F, 20F);
+            this.e_17.HorizontalAlignment = HorizontalAlignment.Center;
+            this.e_17.VerticalAlignment = VerticalAlignment.Center;
+            this.e_17.TabIndex = 6;
+            this.e_17.FontSize = 20F;
+            this.e_17.FontStyle = FontStyle.Bold;
+            this.e_17.Content = "Done";
+            this.e_17.CommandParameter = "Character";
+            Binding binding_e_17_Visibility = new Binding("ButtonEnabled");
+            this.e_17.SetBinding(Button.VisibilityProperty, binding_e_17_Visibility);
+            Binding binding_e_17_Command = new Binding("ButtonCommand");
+            this.e_17.SetBinding(Button.CommandProperty, binding_e_17_Command);
             FontManager.Instance.AddFont("Segoe UI", 40F, FontStyle.Bold, "Segoe_UI_30_Bold");
             FontManager.Instance.AddFont("Segoe UI", 20F, FontStyle.Bold, "Segoe_UI_15_Bold");
             FontManager.Instance.AddFont("Segoe UI", 28F, FontStyle.Bold, "Segoe_UI_21_Bold");

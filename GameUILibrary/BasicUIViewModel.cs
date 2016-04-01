@@ -160,9 +160,6 @@ namespace GameUILibrary
             if (obj != null)
             {
                 ButtonResult = obj.ToString();
-                ButtonEnabled = true;
-                NumericTextBoxValue = 100;
-                Password = string.Empty;
                 Debug.WriteLine("Clicked button " + ButtonResult);
             }
         }

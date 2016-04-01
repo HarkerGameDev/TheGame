@@ -160,9 +160,10 @@ namespace Source.Collisions
                     player.Velocity.Y += gravity;
 
                 // TODO this doesn't work perfectly
-                int playerStep = Math.Max((int)Math.Ceiling(deltaTime * Math.Abs(player.Velocity.Y) / player.Size.Y * 1.5f),
-                                            (int)Math.Ceiling(deltaTime * Math.Abs(player.Velocity.X) / player.Size.X * 1.5f))
-                                            / 2;
+                //int playerStep = Math.Max((int)Math.Ceiling(deltaTime * Math.Abs(player.Velocity.Y) / player.Size.Y * 1.5f),
+                //                            (int)Math.Ceiling(deltaTime * Math.Abs(player.Velocity.X) / player.Size.X * 1.5f))
+                //                            / 2;
+                int playerStep = 1;
                 if (playerStep < 1) playerStep = 1;
 
                 if (playerStep > 1)
