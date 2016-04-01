@@ -64,9 +64,11 @@ namespace Source
 
         Rectangle cameraBounds; // limit of where the player can be on screen
         Vector2 screenCenter; // where the player is on the screen
-        Vector2 prevAveragePos;     // previous average position of players
+        Vector2 cameraPos;     // previous average position of players
         Vector2 screenOffset; // offset from mouse panning
         float currentZoom = GameData.PIXEL_METER;
+        int playerCenter;   // which player camera is centered at (if in Player mode)
+        CameraType cameraType;
 
         bool editLevel = false;
         public Platform currentPlatform;
@@ -113,6 +115,11 @@ namespace Source
         float InvertScreen = -1;
         List<float> times;
 
+        public enum CameraType
+        {
+            Average, Player
+        }
+
         public enum State
         {
             Running, Paused, MainMenu, Options, Controls, Character, Setup
@@ -157,7 +164,7 @@ namespace Source
             graphics.PreferredDepthStencilFormat = DepthFormat.Depth24Stencil8;
             e.GraphicsDeviceInformation.PresentationParameters.MultiSampleCount = 16;
 
-            IsFixedTimeStep = false;
+            IsFixedTimeStep = true;
             graphics.SynchronizeWithVerticalRetrace = GameData.VSYNC;
             graphics.IsFullScreen = GameData.FULLSCREEN;
 #if WINDOWS
@@ -405,7 +412,11 @@ namespace Source
                 int character = GameData.PLAYERS[i];
                 players.Add(new Player(Content.Load<Texture2D>("Art/GreenDude"), GameData.PLAYER_START, Character.playerCharacters[character]));
             }
-            prevAveragePos = GameData.PLAYER_START;
+
+            // TODO make camera type customizable (from setup screen)
+            cameraPos = GameData.PLAYER_START;
+            cameraType = GameData.CAMERA_TYPE;
+            playerCenter = 0;
         }
 
         /// <summary>
@@ -1367,7 +1378,7 @@ namespace Source
 
                     Vector2 mousePos = ConvertUnits.ToDisplayUnits(mouseSimPos - averagePos) + cameraBounds.Center.ToVector2() + screenOffset;
                     screenOffset -= mousePos - ConvertUnits.GetMousePos(prevMouseState);
-                    Console.WriteLine("Screen offset: " + screenOffset);
+                    //Console.WriteLine("Screen offset: " + screenOffset);
                 }
                 else if (mouse.ScrollWheelValue < editScroll)
                 {
@@ -1432,7 +1443,7 @@ namespace Source
             }
             averagePos /= count;
             //averagePos = ConvertUnits.ToDisplayUnits(averagePos);
-            averagePos = ConvertUnits.ToDisplayUnits(prevAveragePos);
+            averagePos = ConvertUnits.ToDisplayUnits(cameraPos);
 
             for (int i = players.Count - 1; i >= 0; i--)
             {
@@ -1498,27 +1509,36 @@ namespace Source
 
         private void DrawGame(double deltaTime)
         {
-            // Find average position across all players
-            Vector2 averagePos = Vector2.Zero;
-            int count = 0;
-            foreach (Player player in players)
+            Vector2 newCameraPos;
+            switch (cameraType)
             {
-                averagePos += player.Position;
-                count++;
+                case CameraType.Average:
+                    newCameraPos = Vector2.Zero;
+                    int count = 0;
+                    foreach (Player player in players)
+                    {
+                        newCameraPos += player.Position;
+                        count++;
+                    }
+                    newCameraPos /= count;
+                    break;
+                case CameraType.Player:
+                    newCameraPos = players[playerCenter].Position;
+                    break;
+                default:
+                    throw new Exception("Camera type " + cameraType + " not implemented");
             }
-            averagePos /= count;
-            //Vector2 averagePos = ConvertUnits.ToDisplayUnits(averagePos);
 
-            // move camera towards averagePos
-            Vector2 move = averagePos - prevAveragePos;
+            // move camera towards newCameraPos
+            Vector2 move = newCameraPos - cameraPos;
             float length = move.Length();
             if (length < GameData.CAMERA_SCALE * deltaTime)
             {
-                prevAveragePos = averagePos;
+                cameraPos = newCameraPos;
             }
             else
             {
-                prevAveragePos += move / length * (float)Math.Sqrt(length) * GameData.CAMERA_SCALE * (float)deltaTime;
+                cameraPos += move / length * (float)Math.Sqrt(length) * GameData.CAMERA_SCALE * (float)deltaTime;
             }
             //Console.WriteLine(new StringBuilder().Append("Player Pos: ").Append(averagePos).Append("\tPrev Pos: ").Append(prevAveragePos));
             screenCenter = cameraBounds.Center.ToVector2() + ConvertUnits.ToDisplayUnits(move);
@@ -1550,7 +1570,7 @@ namespace Source
 
                     GraphicsDevice.SetRenderTarget(playerScreens[i]);
 
-                    Vector2 dist = averagePos - player.Position;
+                    Vector2 dist = cameraPos - player.Position;
                     dist.Normalize();
                     dist.X *= ConvertUnits.ToSimUnits(GameData.SCREEN_SPACE * GraphicsDevice.Viewport.Width);
                     dist.Y *= ConvertUnits.ToSimUnits(GameData.SCREEN_SPACE * GraphicsDevice.Viewport.Height);
@@ -1560,7 +1580,7 @@ namespace Source
                     // Draw background
                     float zoom = ConvertUnits.GetRatio();
                     ConvertUnits.SetDisplayUnitToSimUnitRatio(GameData.SHADOW_SCALE);
-                    DrawBackground(ConvertUnits.ToDisplayUnits(prevAveragePos));
+                    DrawBackground(ConvertUnits.ToDisplayUnits(cameraPos));
                     ConvertUnits.SetDisplayUnitToSimUnitRatio(zoom);
 
                     DrawScene(deltaTime, ConvertUnits.ToDisplayUnits(pos));
@@ -1573,10 +1593,10 @@ namespace Source
                 // Draw background
                 float zoom = ConvertUnits.GetRatio();
                 ConvertUnits.SetDisplayUnitToSimUnitRatio(GameData.SHADOW_SCALE);
-                DrawBackground(ConvertUnits.ToDisplayUnits(prevAveragePos));
+                DrawBackground(ConvertUnits.ToDisplayUnits(cameraPos));
                 ConvertUnits.SetDisplayUnitToSimUnitRatio(zoom);
 
-                DrawScene(deltaTime, ConvertUnits.ToDisplayUnits(averagePos));
+                DrawScene(deltaTime, ConvertUnits.ToDisplayUnits(cameraPos));
             }
 
             GraphicsDevice.SetRenderTarget(null);
@@ -1595,7 +1615,7 @@ namespace Source
                     effect.TextureEnabled = true;
                     effect.Texture = playerScreens[i];
 
-                    Vector2 dist = averagePos - player.Position;
+                    Vector2 dist = cameraPos - player.Position;
                     dist = new Vector2(dist.Y, dist.X);
                     dist /= -Math.Max(Math.Abs(dist.X), Math.Abs(dist.Y));
 					if (dist.Y > 0.999)
@@ -1753,7 +1773,7 @@ namespace Source
 
 #if DEBUG
             spriteBatch.Begin(transformMatrix: view);
-            spriteBatch.Draw(whiteRect, ConvertUnits.ToDisplayUnits(prevAveragePos), null, Color.Olive, 0f, new Vector2(0.5f), ConvertUnits.ToDisplayUnits(3), SpriteEffects.None, 0f);
+            spriteBatch.Draw(whiteRect, ConvertUnits.ToDisplayUnits(cameraPos), null, Color.Olive, 0f, new Vector2(0.5f), ConvertUnits.ToDisplayUnits(3), SpriteEffects.None, 0f);
             spriteBatch.Draw(whiteRect, averagePos, null, Color.DarkGreen, 0f, new Vector2(0.5f), ConvertUnits.ToDisplayUnits(2), SpriteEffects.None, 0f);
             spriteBatch.End();
 #endif

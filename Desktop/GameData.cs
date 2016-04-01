@@ -7,7 +7,6 @@ using System.Reflection;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using Source.Collisions;
 
 namespace Source
 {
@@ -16,11 +15,16 @@ namespace Source
         public static int MAX_PLAYERS = 4;          // maximum amount of players at one time
         public static int[] PLAYERS;                // number of players
         public static int LEVEL_FILE = 1;           // default level
+#if DEBUG
+        public static int DEFAULT_PLAYERS = 1;      // default number of players
+#else
         public static int DEFAULT_PLAYERS = 2;      // default number of players
+#endif
         public static Vector2 PLAYER_START = new Vector2(1f, -10f);
 
         public static float PLAYER_WIDTH = 0.6f;    // width of player in m
         public static float PLAYER_HEIGHT = 1.8f;   // height of player in m
+        public static Game1.CameraType CAMERA_TYPE = Game1.CameraType.Player;
 
         // Settings for user-defined values
         public static int WINDOW_WIDTH = 1280;       // default width of window
@@ -49,6 +53,7 @@ namespace Source
         public const float WALL_JUMP_Y = 6f;   // m/s -- vertical jump off a wall
         public const float WALL_JUMP_X = 7.6f;   // m/s -- horizontal jump off a wall
         public const float WALL_STICK_VEL = 3.4f;     // m/s -- downwards velocity when sticking to a wall
+        public const float WALL_STICK_ACCEL = 90f;   // m/s^2 -- how quickly player will accelerate to wall-sticking velocity (constant w/ respect to distance)
         //public const float WALL_JUMP_LEWAY = 0.3f;    // s -- time after which player can no longer wall jump after leaving a wall
         //public const float WALL_STICK_SCALE = 0.5f; // -- scale of vertical velocity when beginning to wall slide
         //public const float WALL_SLIDE_SCALE = 0.2f; // -- gravity scale when sliding on the wall

@@ -192,8 +192,11 @@ namespace Source.Collisions
 
                 if (CurrentState == State.WallStick)
                 {
-                    Console.WriteLine("Wall stick");
-                    Velocity.Y = GameData.WALL_STICK_VEL;
+                    //Console.WriteLine("Wall stick");
+                    if (Velocity.Y > GameData.WALL_STICK_VEL + GameData.MIN_VELOCITY)
+                        Velocity.Y -= GameData.WALL_STICK_ACCEL * deltaTime;
+                    else
+                        Velocity.Y = GameData.WALL_STICK_VEL;
                 }
             }
 

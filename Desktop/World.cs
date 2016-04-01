@@ -362,6 +362,11 @@ namespace Source.Collisions
                         }
                     }
                     player.MoveByPosition(-translation);
+                    if (translation.LengthSquared() > 1)
+                    {
+                        Console.WriteLine("Collision translation of {0}", translation);
+                        platform.Color = Color.Green;
+                    }
                 }
                 //else        // player is Slamming or Stunned
                 //{
