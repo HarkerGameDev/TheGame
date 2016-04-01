@@ -24,7 +24,8 @@ namespace Source
 
         public static float PLAYER_WIDTH = 0.6f;    // width of player in m
         public static float PLAYER_HEIGHT = 1.8f;   // height of player in m
-        public static Game1.CameraType CAMERA_TYPE = Game1.CameraType.Player;
+        public static Game1.CameraType CAMERA_TYPE = Game1.CameraType.Path;
+        public static float NODE_SIZE = 2f;         // length of square side when drawing node in m
 
         // Settings for user-defined values
         public static int WINDOW_WIDTH = 1280;       // default width of window
@@ -38,7 +39,7 @@ namespace Source
         public const float SCROLL_STEP = 90f;      // scale for zooming using the scroll wheel
         public const float ZOOM_STEP = 1.5f;       // scale by which zoom is changed with + and -
         public const float PIXEL_METER = 24f;      // pixels per meter for normal game
-        public const float PIXEL_METER_EDIT = 8f;  // pixels per meter when in edit mode for level
+        public const float PIXEL_METER_EDIT = PIXEL_METER;  // pixels per meter when in edit mode for level
         public const int VIEW_WIDTH = 1920;        // width of unscaled screen in pixels
         public const int VIEW_HEIGHT = 1080;        // height of unscaled screen in pixels
 
@@ -89,7 +90,9 @@ namespace Source
         //public const float WINDOW_SLOW = 0.2f;    // -- player speed is reduced to this ratio when a window is hit
         //public const float WALL_SLOW = 0.2f;    // -- player speed is reduced to this ratio when a wall is hit while flying
 
-        public const float CAMERA_SPEED = 4f;           // speed of camera catchup (scales as the square root of distance)
+        public static float CAMERA_SPEED;           // speed of camera catchup (scales as the square root of distance)
+        public const float FAST_CAMERA_SPEED = 70f;     // speed of camera when holding RightShift
+        public const float SLOW_CAMERA_SPEED = 7f; // speed of camera when NOT holding RightShift
         //public const float CAMERA_SCALE_X = 4f;         // horizontal speed of camera
         //public const float CAMERA_SCALE_Y = 20f;        // vertical speed of camera
         //public const float MAX_CAMERA_SPEED_X = 1f;    // maximum x speed of camera

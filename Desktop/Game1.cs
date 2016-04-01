@@ -63,18 +63,22 @@ namespace Source
         World world;
 
         Rectangle cameraBounds; // limit of where the player can be on screen
-        Vector2 screenCenter; // where the player is on the screen
         Vector2 cameraPos;     // previous average position of players
         Vector2 screenOffset; // offset from mouse panning
         float currentZoom = GameData.PIXEL_METER;
+
+        Vector2 screenCenter; // where the player is on the screen
         int playerCenter;   // which player camera is centered at (if in Player mode)
         CameraType cameraType;
+        LinkedList<Vector2> cameraPath;
+        LinkedListNode<Vector2> cameraNode;
 
         bool editLevel = false;
         public Platform currentPlatform;
         bool editingPlatform;
         Vector2 startDraw;
         Vector2 endDraw;
+        LinkedListNode<Vector2> selectedNode;
         bool lockedX = false;
         bool lockedY = false;
 
@@ -117,7 +121,7 @@ namespace Source
 
         public enum CameraType
         {
-            Average, Player
+            Average, Player, Path
         }
 
         public enum State
@@ -221,7 +225,7 @@ namespace Source
             {
                 playerControls = new GameData.Controls[] {
                                                         new GameData.KeyboardControls(this, Keys.OemComma, Keys.OemPeriod, Keys.OemQuestion, Keys.K, Keys.OemSemicolon, Keys.O, Keys.L),
-                                                        new GameData.KeyboardControls(this, Keys.LeftControl, Keys.LeftShift, Keys.Z, Keys.A, Keys.D, Keys.W, Keys.S),
+                                                        new GameData.KeyboardControls(this, Keys.LeftShift, Keys.Z, Keys.X, Keys.A, Keys.D, Keys.W, Keys.S),
                                                         new GameData.GamePadControls(this, PlayerIndex.One, Buttons.X, Buttons.B, Buttons.Y, Buttons.LeftThumbstickLeft, Buttons.LeftThumbstickRight, Buttons.A, Buttons.RightTrigger),
                                                         new GameData.GamePadControls(this, PlayerIndex.One, Buttons.X, Buttons.B, Buttons.Y, Buttons.LeftThumbstickLeft, Buttons.LeftThumbstickRight, Buttons.A, Buttons.RightTrigger)
                                                   };
@@ -421,9 +425,10 @@ namespace Source
             }
 
             // TODO make camera type customizable (from setup screen)
-            cameraPos = GameData.PLAYER_START;
             cameraType = GameData.CAMERA_TYPE;
+            cameraPos = GameData.PLAYER_START;
             playerCenter = 0;
+            cameraNode = cameraPath.First;
         }
 
         /// <summary>
@@ -502,16 +507,33 @@ namespace Source
             platforms.Clear();
             obstacles.Clear();
             drops.Clear();
+            cameraPath = new LinkedList<Vector2>();
             using (BinaryReader file = new BinaryReader(File.Open("Levels/level" + loadLevel, FileMode.Open, FileAccess.Read)))
             {
                 GameData.PLAYER_START = new Vector2(file.ReadSingle(), file.ReadSingle());
-                while (file.BaseStream.Position != file.BaseStream.Length)
+                GameData.CAMERA_SPEED = GameData.SLOW_CAMERA_SPEED;     // TODO user-customizable camera speed
+                int cameraNodes = file.ReadInt32();
+                //Console.WriteLine("Camera nodes: {0}", cameraNodes);
+                for (int i = 0; i < cameraNodes; i++)
                 {
-                    Vector2 position = new Vector2(file.ReadSingle(), file.ReadSingle());
-                    Vector2 size = new Vector2(file.ReadSingle(), file.ReadSingle());
-                    float rotation = file.ReadSingle();
-                    platforms.Add(new Platform(whiteRect, position, size, rotation));
+                    cameraPath.AddLast(new Vector2(file.ReadSingle(), file.ReadSingle()));
+                    //Console.WriteLine("Loading node: {0}", cameraPath.Last.Value);
                 }
+                try
+                {
+                    while (file.BaseStream.Position != file.BaseStream.Length)
+                    {
+                        Vector2 position = new Vector2(file.ReadSingle(), file.ReadSingle());
+                        Vector2 size = new Vector2(file.ReadSingle(), file.ReadSingle());
+                        float rotation = file.ReadSingle();
+                        platforms.Add(new Platform(whiteRect, position, size, rotation));
+                    }
+                }
+                catch (IOException e)
+                {
+                    Console.WriteLine("Failed to load level\nGot through {0} platforms\n{1}", platforms.Count, e);
+                }
+                Console.WriteLine("Read {0} bytes from level", file.BaseStream.Position);
             }
         }
 
@@ -519,7 +541,7 @@ namespace Source
         {
 #if DEBUG
             //Console.WriteLine("Dir: " + Directory.GetFiles(@"..\..\..\..\Levels")[0]);
-            BinaryWriter file = new BinaryWriter(File.Open(@"..\..\..\..\Levels\level" + saveLevel, FileMode.Open, FileAccess.Write));
+            BinaryWriter file = new BinaryWriter(File.Open(@"..\..\..\..\Levels\level" + saveLevel, FileMode.Create, FileAccess.Write));
 #else
             IAsyncResult result = StorageDevice.BeginShowSelector(null, null);
             result.AsyncWaitHandle.WaitOne();
@@ -540,18 +562,25 @@ namespace Source
 
                 BinaryWriter file = new BinaryWriter(container.OpenFile(filename, FileMode.Create));
 #endif
-                file.Write(GameData.PLAYER_START.X);
-                file.Write(GameData.PLAYER_START.Y);
-                foreach (Platform plat in platforms)
-                {
-                    file.Write(plat.Position.X);
-                    file.Write(plat.Position.Y);
-                    file.Write(plat.Size.X);
-                    file.Write(plat.Size.Y);
-                    file.Write(plat.Rotation);
-                }
+            file.Write(GameData.PLAYER_START.X);
+            file.Write(GameData.PLAYER_START.Y);
+            file.Write(cameraPath.Count);
+            foreach (Vector2 node in cameraPath)
+            {
+                file.Write(node.X);
+                file.Write(node.Y);
+            }
+            foreach (Platform plat in platforms)
+            {
+                file.Write(plat.Position.X);
+                file.Write(plat.Position.Y);
+                file.Write(plat.Size.X);
+                file.Write(plat.Size.Y);
+                file.Write(plat.Rotation);
+            }
+            Console.WriteLine("Wrote {0} bytes to level", file.BaseStream.Position);
 
-                file.Close();
+            file.Close();
 #if !DEBUG
                 container.Dispose();
             }
@@ -631,6 +660,10 @@ namespace Source
                     if (editLevel)
                     {
                         HandleEditLevel();
+                    }
+                    else
+                    {
+                        GameData.CAMERA_SPEED = GameData.SLOW_CAMERA_SPEED;
                     }
 
                     float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
@@ -1278,41 +1311,33 @@ namespace Source
                                 }
                             }
 
-                            // calculate the starting drawing pivot (which should be on opposite corner of click)
-                            //if (Math.Abs(topLeft.X - mouseSimPos.X) < Math.Abs(botRight.X - mouseSimPos.X))
-                            //{
-                            //    if (Math.Abs(topLeft.Y - mouseSimPos.Y) < Math.Abs(botRight.Y - mouseSimPos.Y))     // top left
-                            //    {
-                            //        startDraw = botRight;
-                            //        if (lockedX)
-                            //            endDraw = new Vector2(mouseSimPosRound.X, topLeft.Y);
-                            //        else if (lockedY)
-                            //            endDraw = new Vector2(topLeft.X, mouseSimPosRound.Y);
-                            //    }
-                            //    else                                    // bottom left
-                            //    {
-                            //        startDraw = new Vector2(botRight.X, topLeft.Y);
-                            //        if (lockedX)
-                            //            endDraw = new Vector2(mouseSimPosRound.X, botRight.Y);
-                            //        else if (lockedY)
-                            //            endDraw = new Vector2(topLeft.X, mouseSimPosRound.Y);
-                            //    }
-                            //}
-                            //else
-                            //{
-                            //    if (Math.Abs(topLeft.Y - mouseSimPos.Y) < Math.Abs(botRight.Y - mouseSimPos.Y))     // top right
-                            //        startDraw = new Vector2(topLeft.X, botRight.Y);
-                            //    else                                    // bottom right
-                            //        startDraw = topLeft;
-                            //}
-
                             platforms.Remove(currentPlatform);
                             currentPlatform = null;
                             editingPlatform = true;
                         }
-                        else                                        // Move camera
+                        else if (prevMouseState.LeftButton == ButtonState.Released)       // toggle mouse click
                         {
-                            screenOffset += ConvertUnits.GetMousePos(mouse) - ConvertUnits.GetMousePos(prevMouseState);
+                            // Try to select node
+                            selectedNode = null;
+                            LinkedListNode<Vector2> node = cameraPath.First;
+                            while (node != null)
+                            {
+                                Vector2 dist = node.Value - mouseSimPos;
+                                if (Math.Abs(dist.X) < GameData.NODE_SIZE && Math.Abs(dist.Y) < GameData.NODE_SIZE)
+                                {
+                                    selectedNode = node;
+                                    //Console.WriteLine("Selected node with dist {0}", dist);
+                                    break;
+                                }
+                                node = node.Next;
+                            }
+                        }
+                        else
+                        {
+                            if (selectedNode == null)           // Move camera
+                                screenOffset += ConvertUnits.GetMousePos(mouse) - ConvertUnits.GetMousePos(prevMouseState);
+                            else                                // Move node
+                                selectedNode.Value = mouseSimPos;
                         }
                     }
                 }
@@ -1364,7 +1389,37 @@ namespace Source
                 else if (ToggleKey(Keys.X))
                     currentPlatform.Rotate(-MathHelper.PiOver4);
             }
-            if (ToggleKey(Keys.OemPlus))                       // Zoom in and out
+            else if (selectedNode != null)
+            {
+                if (keyboard.IsKeyDown(Keys.Back))          // Delete selected node
+                {
+                    cameraPath.Remove(selectedNode);
+                    selectedNode = null;
+                }
+                else if (keyboard.IsKeyDown(Keys.Enter))    // Deseslect node
+                    selectedNode = null;
+                else if (ToggleKey(Keys.F))
+                {
+                    LinkedListNode<Vector2> newNode = new LinkedListNode<Vector2>(mouseSimPos);
+                    cameraPath.AddAfter(selectedNode, newNode);
+                    selectedNode = newNode;
+                }
+            }
+
+            // Make new camera node at end of path
+            if (ToggleKey(Keys.Q))
+            {
+                cameraPath.AddLast(mouseSimPos);
+                selectedNode = cameraPath.Last;
+            }
+
+            if (keyboard.IsKeyDown(Keys.RightShift))
+                GameData.CAMERA_SPEED = GameData.FAST_CAMERA_SPEED;
+            else
+                GameData.CAMERA_SPEED = 0f;
+
+            // Zoom in and out
+            if (ToggleKey(Keys.OemPlus))
             {
                 currentZoom *= GameData.ZOOM_STEP;
                 ConvertUnits.SetDisplayUnitToSimUnitRatio(currentZoom);
@@ -1398,6 +1453,8 @@ namespace Source
                     screenOffset -= mousePos - ConvertUnits.GetMousePos(prevMouseState);
                 }
             }
+
+            // Move players
             if (mouse.RightButton == ButtonState.Pressed && prevMouseState.RightButton == ButtonState.Released)
             {
                 screenOffset = Vector2.Zero;
@@ -1405,8 +1462,11 @@ namespace Source
                 {
                     player.MoveToPosition(mouseSimPos);
                 }
+                //cameraPos = mouseSimPos;
             }
-            if (keyboard.IsKeyDown(Keys.LeftControl))           // TODO save and load level from UI
+
+            // TODO save and load level from UI
+            if (keyboard.IsKeyDown(Keys.LeftControl))
             {
                 if (ToggleKey(Keys.S))
                 {
@@ -1479,7 +1539,7 @@ namespace Source
                 //    maxY = player.Position.Y;
             }
 
-            if (players.Count > 1 && alivePlayers <= 1)
+            if (players.Count > 1 && alivePlayers <= 1 || players.Count == 1 && alivePlayers < 1)
             {
                 foreach (Player player in players)
                 {
@@ -1543,6 +1603,10 @@ namespace Source
                 case CameraType.Player:
                     newCameraPos = players[playerCenter].Position;
                     break;
+                case CameraType.Path:
+                    // TODO check if the next node should be used
+                    newCameraPos = cameraNode == null ? cameraPos : cameraNode.Value;
+                    break;
                 default:
                     throw new Exception("Camera type " + cameraType + " not implemented");
             }
@@ -1553,17 +1617,20 @@ namespace Source
             if (length < GameData.CAMERA_SPEED * deltaTime)
             {
                 cameraPos = newCameraPos;
+                if (cameraType == CameraType.Path && cameraNode != null)
+                    cameraNode = cameraNode.Next;
             }
             else
             {
-                cameraPos += move /*/ length * (float)Math.Sqrt(length)*/ * GameData.CAMERA_SPEED * (float)deltaTime;
+                if (cameraType == CameraType.Path && length != 0)
+                    cameraPos += move / length * GameData.CAMERA_SPEED * (float)deltaTime;
+                else
+                    cameraPos += move /*/ length * (float)Math.Sqrt(length)*/ * GameData.CAMERA_SPEED * (float)deltaTime;
             }
-            //Console.WriteLine(new StringBuilder().Append("Player Pos: ").Append(averagePos).Append("\tPrev Pos: ").Append(prevAveragePos));
-            screenCenter = cameraBounds.Center.ToVector2() + ConvertUnits.ToDisplayUnits(move);
 
-            float maxX = ConvertUnits.ToSimUnits(GraphicsDevice.Viewport.Width) * GameData.SCREEN_SPACE;
-            float maxY = ConvertUnits.ToSimUnits(GraphicsDevice.Viewport.Height) * GameData.SCREEN_SPACE;
-            bool splitScreen = false;
+            //float maxX = ConvertUnits.ToSimUnits(GraphicsDevice.Viewport.Width) * GameData.SCREEN_SPACE;
+            //float maxY = ConvertUnits.ToSimUnits(GraphicsDevice.Viewport.Height) * GameData.SCREEN_SPACE;
+            //bool splitScreen = false;
             //if (!editLevel)
             //{
             //    foreach (Player player in players)
@@ -1578,138 +1645,138 @@ namespace Source
             //}
 
 
-            if (splitScreen)
-            {
-                for (int i = 0; i < GameData.PLAYERS.Length; i++)
-                {
-                    Player player = players[i];
-                    if (!player.Alive)
-                        continue;
+            //if (splitScreen)
+            //{
+            //    for (int i = 0; i < GameData.PLAYERS.Length; i++)
+            //    {
+            //        Player player = players[i];
+            //        if (!player.Alive)
+            //            continue;
 
-                    GraphicsDevice.SetRenderTarget(playerScreens[i]);
+            //        GraphicsDevice.SetRenderTarget(playerScreens[i]);
 
-                    Vector2 dist = cameraPos - player.Position;
-                    dist.Normalize();
-                    dist.X *= ConvertUnits.ToSimUnits(GameData.SCREEN_SPACE * GraphicsDevice.Viewport.Width);
-                    dist.Y *= ConvertUnits.ToSimUnits(GameData.SCREEN_SPACE * GraphicsDevice.Viewport.Height);
-                    Vector2 pos = player.Position + dist;
-                    //Console.WriteLine("Real pos_" + i + " = " + player.Position + "\tPos = " + pos + "\tDist = " + dist);
+            //        Vector2 dist = cameraPos - player.Position;
+            //        dist.Normalize();
+            //        dist.X *= ConvertUnits.ToSimUnits(GameData.SCREEN_SPACE * GraphicsDevice.Viewport.Width);
+            //        dist.Y *= ConvertUnits.ToSimUnits(GameData.SCREEN_SPACE * GraphicsDevice.Viewport.Height);
+            //        Vector2 pos = player.Position + dist;
+            //        //Console.WriteLine("Real pos_" + i + " = " + player.Position + "\tPos = " + pos + "\tDist = " + dist);
 
-                    // Draw background
-                    float zoom = ConvertUnits.GetRatio();
-                    ConvertUnits.SetDisplayUnitToSimUnitRatio(GameData.SHADOW_SCALE);
-                    DrawBackground(ConvertUnits.ToDisplayUnits(cameraPos));
-                    ConvertUnits.SetDisplayUnitToSimUnitRatio(zoom);
+            //        // Draw background
+            //        float zoom = ConvertUnits.GetRatio();
+            //        ConvertUnits.SetDisplayUnitToSimUnitRatio(GameData.SHADOW_SCALE);
+            //        DrawBackground(ConvertUnits.ToDisplayUnits(cameraPos));
+            //        ConvertUnits.SetDisplayUnitToSimUnitRatio(zoom);
 
-                    DrawScene(deltaTime, ConvertUnits.ToDisplayUnits(pos));
-                }
-            }
-            else
-            {
-                GraphicsDevice.SetRenderTarget(playerScreens[0]);
+            //        DrawScene(deltaTime, ConvertUnits.ToDisplayUnits(pos));
+            //    }
+            //}
+            //else
+            //{
+            GraphicsDevice.SetRenderTarget(playerScreens[0]);
 
-                // Draw background
-                float zoom = ConvertUnits.GetRatio();
-                ConvertUnits.SetDisplayUnitToSimUnitRatio(GameData.SHADOW_SCALE);
-                DrawBackground(ConvertUnits.ToDisplayUnits(cameraPos));
-                ConvertUnits.SetDisplayUnitToSimUnitRatio(zoom);
+            // Draw background
+            float zoom = ConvertUnits.GetRatio();
+            ConvertUnits.SetDisplayUnitToSimUnitRatio(GameData.SHADOW_SCALE);
+            DrawBackground(ConvertUnits.ToDisplayUnits(cameraPos));
+            ConvertUnits.SetDisplayUnitToSimUnitRatio(zoom);
 
-                DrawScene(deltaTime, ConvertUnits.ToDisplayUnits(cameraPos));
-            }
+            DrawScene(deltaTime, ConvertUnits.ToDisplayUnits(cameraPos));
+            //}
 
             GraphicsDevice.SetRenderTarget(null);
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
-            if (splitScreen)
-            {
-                for (int i = 0; i < GameData.PLAYERS.Length; i++)
-                {
-                    Player player = players[i];
-                    if (!player.Alive)
-                        continue;
+     //       if (splitScreen)
+     //       {
+     //           for (int i = 0; i < GameData.PLAYERS.Length; i++)
+     //           {
+     //               Player player = players[i];
+     //               if (!player.Alive)
+     //                   continue;
 
-                    BasicEffect effect = new BasicEffect(graphics.GraphicsDevice);
-                    effect.World = Matrix.Identity;
-                    effect.TextureEnabled = true;
-                    effect.Texture = playerScreens[i];
+     //               BasicEffect effect = new BasicEffect(graphics.GraphicsDevice);
+     //               effect.World = Matrix.Identity;
+     //               effect.TextureEnabled = true;
+     //               effect.Texture = playerScreens[i];
 
-                    Vector2 dist = cameraPos - player.Position;
-                    dist = new Vector2(dist.Y, dist.X);
-                    dist /= -Math.Max(Math.Abs(dist.X), Math.Abs(dist.Y));
-					if (dist.Y > 0.999)
-						dist.Y = 1;
-					else if (dist.Y < -0.999)
-						dist.Y = -1;
-					if (dist.X > 0.999)
-						dist.X = 1;
-					else if (dist.X < -0.9999)
-						dist.X = -1;
-                    //Console.WriteLine("Dist_" + i + " = " + dist);
+     //               Vector2 dist = cameraPos - player.Position;
+     //               dist = new Vector2(dist.Y, dist.X);
+     //               dist /= -Math.Max(Math.Abs(dist.X), Math.Abs(dist.Y));
+					//if (dist.Y > 0.999)
+					//	dist.Y = 1;
+					//else if (dist.Y < -0.999)
+					//	dist.Y = -1;
+					//if (dist.X > 0.999)
+					//	dist.X = 1;
+					//else if (dist.X < -0.9999)
+					//	dist.X = -1;
+     //               //Console.WriteLine("Dist_" + i + " = " + dist);
 
-                    // for Position, (-1,-1) is bottom-left and (1,1) is top-right
-                    // for TextureCoordinate, (0,0) is top-left and (1,1) is bottom-right
-                    VertexPositionTexture[] vertices = new VertexPositionTexture[4];
+     //               // for Position, (-1,-1) is bottom-left and (1,1) is top-right
+     //               // for TextureCoordinate, (0,0) is top-left and (1,1) is bottom-right
+     //               VertexPositionTexture[] vertices = new VertexPositionTexture[4];
 
-                    if (Math.Abs(dist.Y) == 1)
-                    {
-                        vertices[0].Position = new Vector3(dist, 0f);
-                        vertices[1].Position = new Vector3(dist.Y, dist.Y, 0f);
-                        vertices[2].Position = new Vector3(-dist, 0f);
-                        vertices[3].Position = new Vector3(dist.Y, -dist.Y, 0f);
-                    }
-                    else
-                    {
-                        vertices[0].Position = new Vector3(dist, 0f);
-                        vertices[1].Position = new Vector3(dist.X, -dist.X, 0f);
-                        vertices[2].Position = new Vector3(-dist, 0f);
-                        vertices[3].Position = new Vector3(-dist.X, -dist.X, 0f);
-                    }
+     //               if (Math.Abs(dist.Y) == 1)
+     //               {
+     //                   vertices[0].Position = new Vector3(dist, 0f);
+     //                   vertices[1].Position = new Vector3(dist.Y, dist.Y, 0f);
+     //                   vertices[2].Position = new Vector3(-dist, 0f);
+     //                   vertices[3].Position = new Vector3(dist.Y, -dist.Y, 0f);
+     //               }
+     //               else
+     //               {
+     //                   vertices[0].Position = new Vector3(dist, 0f);
+     //                   vertices[1].Position = new Vector3(dist.X, -dist.X, 0f);
+     //                   vertices[2].Position = new Vector3(-dist, 0f);
+     //                   vertices[3].Position = new Vector3(-dist.X, -dist.X, 0f);
+     //               }
 
-                    //vertices[0].Position = new Vector3(-1f, -1f, 0f);
-                    //vertices[1].Position = new Vector3(1f, 1f, 0f);
-                    //vertices[2].Position = new Vector3(1f, -1f, 0f);
+     //               //vertices[0].Position = new Vector3(-1f, -1f, 0f);
+     //               //vertices[1].Position = new Vector3(1f, 1f, 0f);
+     //               //vertices[2].Position = new Vector3(1f, -1f, 0f);
 
-                    for (int j = 0; j < vertices.Length; j++)
-                    {
-                        vertices[j].TextureCoordinate = new Vector2(vertices[j].Position.X / 2f + 0.5f, -vertices[j].Position.Y / 2f + 0.5f);
-                        if (InvertScreen > 0)
-                            vertices[j].TextureCoordinate *= -1;
-                        //if (InvertScreen > 0)
-                        //{
-                        //    vertices[0].TextureCoordinate = new Vector2(1f, 0f);
-                        //    vertices[1].TextureCoordinate = new Vector2(0f, 1f);
-                        //    vertices[2].TextureCoordinate = new Vector2(0f, 0f);
-                        //}
-                        //else
-                        //{
-                        //    vertices[0].TextureCoordinate = new Vector2(0f, 1f);
-                        //    vertices[1].TextureCoordinate = new Vector2(1f, 0f);
-                        //    vertices[2].TextureCoordinate = new Vector2(1f, 1f);
-                        //}
-                    }
+     //               for (int j = 0; j < vertices.Length; j++)
+     //               {
+     //                   vertices[j].TextureCoordinate = new Vector2(vertices[j].Position.X / 2f + 0.5f, -vertices[j].Position.Y / 2f + 0.5f);
+     //                   if (InvertScreen > 0)
+     //                       vertices[j].TextureCoordinate *= -1;
+     //                   //if (InvertScreen > 0)
+     //                   //{
+     //                   //    vertices[0].TextureCoordinate = new Vector2(1f, 0f);
+     //                   //    vertices[1].TextureCoordinate = new Vector2(0f, 1f);
+     //                   //    vertices[2].TextureCoordinate = new Vector2(0f, 0f);
+     //                   //}
+     //                   //else
+     //                   //{
+     //                   //    vertices[0].TextureCoordinate = new Vector2(0f, 1f);
+     //                   //    vertices[1].TextureCoordinate = new Vector2(1f, 0f);
+     //                   //    vertices[2].TextureCoordinate = new Vector2(1f, 1f);
+     //                   //}
+     //               }
 
-                    foreach (EffectPass pass in effect.CurrentTechnique.Passes)
-                    {
-                        pass.Apply();
+     //               foreach (EffectPass pass in effect.CurrentTechnique.Passes)
+     //               {
+     //                   pass.Apply();
 
-                        GraphicsDevice.DrawUserPrimitives<VertexPositionTexture>(PrimitiveType.TriangleStrip, vertices, 0, 2);
-                    }
+     //                   GraphicsDevice.DrawUserPrimitives<VertexPositionTexture>(PrimitiveType.TriangleStrip, vertices, 0, 2);
+     //               }
 
-                    spriteBatch.Begin();
-                    float rot = MathHelper.PiOver2 + (float)Math.Atan2(dist.X * GraphicsDevice.Viewport.Width, dist.Y * GraphicsDevice.Viewport.Height);
-                    Vector2 origin = new Vector2(0.5f, 0.5f);
-                    Vector2 scale = new Vector2(GraphicsDevice.Viewport.Width + GraphicsDevice.Viewport.Height, GameData.SPLIT_HEIGHT);
-                    spriteBatch.Draw(Game1.whiteRect, GraphicsDevice.Viewport.Bounds.Center.ToVector2(), null, Color.Black, rot, origin, scale, SpriteEffects.None, 0f);
-                    spriteBatch.End();
-                }
-            }
-            else
-            {
-                spriteBatch.Begin();
-                spriteBatch.Draw(playerScreens[0], GraphicsDevice.Viewport.Bounds, null, Color.White, 0f, Vector2.Zero,
-                    InvertScreen > 0 ? SpriteEffects.FlipVertically | SpriteEffects.FlipHorizontally : SpriteEffects.None, 0f);
-                spriteBatch.End();
-            }
+     //               spriteBatch.Begin();
+     //               float rot = MathHelper.PiOver2 + (float)Math.Atan2(dist.X * GraphicsDevice.Viewport.Width, dist.Y * GraphicsDevice.Viewport.Height);
+     //               Vector2 origin = new Vector2(0.5f, 0.5f);
+     //               Vector2 scale = new Vector2(GraphicsDevice.Viewport.Width + GraphicsDevice.Viewport.Height, GameData.SPLIT_HEIGHT);
+     //               spriteBatch.Draw(Game1.whiteRect, GraphicsDevice.Viewport.Bounds.Center.ToVector2(), null, Color.Black, rot, origin, scale, SpriteEffects.None, 0f);
+     //               spriteBatch.End();
+     //           }
+     //       }
+     //       else
+     //       {
+            spriteBatch.Begin();
+            spriteBatch.Draw(playerScreens[0], GraphicsDevice.Viewport.Bounds, null, Color.White, 0f, Vector2.Zero,
+                InvertScreen > 0 ? SpriteEffects.FlipVertically | SpriteEffects.FlipHorizontally : SpriteEffects.None, 0f);
+            spriteBatch.End();
+            //}
 
             // Draw all HUD elements
             spriteBatch.Begin();
@@ -1728,8 +1795,8 @@ namespace Source
             float leftX = GraphicsDevice.Viewport.Width - fontSmall.MeasureString(frames).X;
             spriteBatch.DrawString(fontSmall, frames, new Vector2(leftX, 0f), Color.LightGray);
 
-            // Display current survived time
-            string time = totalTime.ToString("n1") + "s survived";
+            // Display current played time
+            string time = totalTime.ToString("n1") + "s played";
             leftX = GraphicsDevice.Viewport.Width / 2f - fontSmall.MeasureString(time).X / 2f;
             spriteBatch.DrawString(fontSmall, time, new Vector2(leftX, 0f), Color.LightSkyBlue);
 
@@ -1741,6 +1808,14 @@ namespace Source
             // Display version number
             Vector2 botRight = new Vector2(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height) - fontSmall.MeasureString(GameData.Version);
             spriteBatch.DrawString(fontSmall, GameData.Version, botRight, Color.LightSalmon);
+
+            // Show "Editing" text
+            if (editLevel)
+            {
+                string editing = "Editing level";
+                leftX = GraphicsDevice.Viewport.Width / 2f - fontBig.MeasureString(editing).X / 2f;
+                spriteBatch.DrawString(fontBig, editing, new Vector2(leftX, 100f), Color.Chartreuse);
+            }
 
             spriteBatch.End();
 
@@ -1789,13 +1864,6 @@ namespace Source
         {
             Matrix view = Matrix.CreateTranslation(new Vector3(screenOffset + screenCenter - averagePos, 0f));
 
-#if DEBUG
-            spriteBatch.Begin(transformMatrix: view);
-            spriteBatch.Draw(whiteRect, ConvertUnits.ToDisplayUnits(cameraPos), null, Color.Olive, 0f, new Vector2(0.5f), ConvertUnits.ToDisplayUnits(3), SpriteEffects.None, 0f);
-            spriteBatch.Draw(whiteRect, averagePos, null, Color.DarkGreen, 0f, new Vector2(0.5f), ConvertUnits.ToDisplayUnits(2), SpriteEffects.None, 0f);
-            spriteBatch.End();
-#endif
-
             // Draw players
             spriteBatch.Begin(transformMatrix: view);
             foreach (Player player in players)
@@ -1843,7 +1911,28 @@ namespace Source
                 DrawRect(topLeft + size / 2, Color.Azure, 0, origin, size);
             }
             if (editLevel)
+            {
                 DrawRect(Vector2.Zero, Color.LightGreen, 0f, new Vector2(0.5f, 0.5f), new Vector2(1, 1));
+                LinkedListNode<Vector2> node = cameraPath.First;
+                if (node != null)
+                {
+                    while (node.Next != null)
+                    {
+                        Vector2 dist = node.Next.Value - node.Value;
+                        float rot = (float)Math.Atan2(dist.Y, dist.X);
+                        Vector2 origin = new Vector2(0f, 0.5f);
+                        Vector2 scale = new Vector2(ConvertUnits.ToDisplayUnits(dist.Length()), 3f);
+                        spriteBatch.Draw(Game1.whiteRect, ConvertUnits.ToDisplayUnits(node.Value), null, Color.Yellow, rot, origin, scale, SpriteEffects.None, 0f);
+                        DrawRect(node.Value, Color.YellowGreen, 0f, new Vector2(0.5f, 0.5f), new Vector2(GameData.NODE_SIZE));
+                        node = node.Next;
+                    }
+                    DrawRect(node.Value, Color.YellowGreen, 0f, new Vector2(0.5f, 0.5f), new Vector2(GameData.NODE_SIZE));
+                    if (selectedNode != null)
+                    {
+                        DrawRect(selectedNode.Value, Color.Plum, 0f, new Vector2(0.5f, 0.5f), new Vector2(GameData.NODE_SIZE * 2));
+                    }
+                }
+            }
             spriteBatch.End();
 
             // Draw all particles
@@ -1851,6 +1940,13 @@ namespace Source
             foreach (Particle part in particles)
                 part.Draw(spriteBatch);
             spriteBatch.End();
+
+#if DEBUG
+            spriteBatch.Begin(transformMatrix: view);
+            spriteBatch.Draw(whiteRect, ConvertUnits.ToDisplayUnits(cameraPos), null, Color.Olive, 0f, new Vector2(0.5f), ConvertUnits.ToDisplayUnits(3), SpriteEffects.None, 0f);
+            spriteBatch.Draw(whiteRect, averagePos, null, Color.DarkGreen, 0f, new Vector2(0.5f), ConvertUnits.ToDisplayUnits(2), SpriteEffects.None, 0f);
+            spriteBatch.End();
+#endif
         }
 
         private void DrawBackground(Vector2 averagePos)
@@ -1931,11 +2027,12 @@ namespace Source
             spriteBatch.DrawString(fontSmall, "Mouse -- {" + mouse.NormalizedX + "," + mouse.NormalizedY + "}", new Vector2(10, GraphicsDevice.Viewport.Height - 80), Color.White);
             spriteBatch.DrawString(fontSmall, "Music muted: " + MediaPlayer.IsMuted, new Vector2(10, GraphicsDevice.Viewport.Height - 120), Color.White);
             spriteBatch.DrawString(fontSmall, "Screen center: " + screenCenter, new Vector2(10, GraphicsDevice.Viewport.Height - 160), Color.White);
+            spriteBatch.DrawString(fontSmall, "Screen offset: " + screenOffset, new Vector2(10, GraphicsDevice.Viewport.Height - 200), Color.White);
             if (players != null)
             {
-                spriteBatch.DrawString(fontSmall, "Player 0 Velocity: " + players[0].Velocity, new Vector2(10, GraphicsDevice.Viewport.Height - 200), Color.White);
-                spriteBatch.DrawString(fontSmall, "Player 0 Wall: " + players[0].WallJump, new Vector2(10, GraphicsDevice.Viewport.Height - 240), Color.White);
-                spriteBatch.DrawString(fontSmall, "Player 0 State: " + players[0].CurrentState, new Vector2(10, GraphicsDevice.Viewport.Height - 280), Color.White);
+                spriteBatch.DrawString(fontSmall, "Player 0 Velocity: " + players[0].Velocity, new Vector2(10, GraphicsDevice.Viewport.Height - 240), Color.White);
+                spriteBatch.DrawString(fontSmall, "Player 0 Wall: " + players[0].WallJump, new Vector2(10, GraphicsDevice.Viewport.Height - 280), Color.White);
+                spriteBatch.DrawString(fontSmall, "Player 0 State: " + players[0].CurrentState, new Vector2(10, GraphicsDevice.Viewport.Height - 320), Color.White);
             }
             spriteBatch.End();
 #endif
@@ -1954,18 +2051,6 @@ namespace Source
         private void DrawRect(Vector2 position, Color color, float rotation, Vector2 origin, Vector2 scale)
         {
             spriteBatch.Draw(whiteRect, ConvertUnits.ToDisplayUnits(position), null, color, rotation, origin, ConvertUnits.ToDisplayUnits(scale), SpriteEffects.None, 0f);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="spriteBatch"></param>
-        /// <param name="position">Bottom left of rectangle</param>
-        /// <param name="color"></param>
-        /// <param name="scale">Rectangle will be scaled from the bottom left</param>
-        public static void DrawRectangle(SpriteBatch spriteBatch, Vector2 position, Color color, Vector2 scale)
-        {
-            spriteBatch.Draw(whiteRect, ConvertUnits.ToDisplayUnits(position), null, color, 0f, Vector2.Zero, ConvertUnits.ToDisplayUnits(scale), SpriteEffects.None, 0f);
         }
     }
 }
