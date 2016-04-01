@@ -134,6 +134,8 @@ namespace Source
         {
             LoadSettings();
             graphics = new GraphicsDeviceManager(this);
+            graphics.IsFullScreen = GameData.FULLSCREEN;
+            graphics.SynchronizeWithVerticalRetrace = GameData.VSYNC;
             graphics.DeviceCreated += graphics_DeviceCreated;
             graphics.PreparingDeviceSettings += graphics_PreparingDeviceSettings;
             IsMouseVisible = true;
@@ -165,8 +167,6 @@ namespace Source
             e.GraphicsDeviceInformation.PresentationParameters.MultiSampleCount = 16;
 
             IsFixedTimeStep = true;
-            graphics.SynchronizeWithVerticalRetrace = GameData.VSYNC;
-            graphics.IsFullScreen = GameData.FULLSCREEN;
 #if WINDOWS
             Window.IsBorderless = GameData.BORDERLESS;
 #endif
@@ -182,8 +182,15 @@ namespace Source
         {
             // Sets how many pixels is a meter
             ConvertUnits.SetDisplayUnitToSimUnitRatio(currentZoom);
-            ConvertUnits.SetMouseScale((float)Window.ClientBounds.Width / nativeScreenWidth);
+            ConvertUnits.SetMouseScale((float)GraphicsDevice.Viewport.Width / nativeScreenWidth);
             ConvertUnits.SetResolutionScale((float)nativeScreenWidth / GameData.VIEW_WIDTH);
+
+            Console.WriteLine("Native: {{{0}, {1}}}", nativeScreenWidth, nativeScreenHeight);
+            Console.WriteLine("Window: " + Window.ClientBounds.Size);
+            //Console.WriteLine("Screen: {{{0}, {1}}}", GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width, GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height);
+            Console.WriteLine("Adapter: {{{0}, {1}}}", GraphicsDevice.Adapter.CurrentDisplayMode.Width, GraphicsDevice.Adapter.CurrentDisplayMode.Height);
+            Console.WriteLine("Viewport: " + GraphicsDevice.Viewport.Bounds.Size);
+            Console.WriteLine("Backbuffer: {{{0}, {1}}}", graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight);
 
             // Set seed for a scheduled random level (minutes since Jan 1, 2015)
             //randSeed = DateTime.Now.Millisecond;
@@ -836,7 +843,7 @@ namespace Source
                     graphics.ApplyChanges();
 
                     Console.WriteLine("Fullscreen: " + graphics.IsFullScreen);
-                    ConvertUnits.SetMouseScale((float)Window.ClientBounds.Width / nativeScreenWidth);
+                    ConvertUnits.SetMouseScale((float)GraphicsDevice.Viewport.Width / nativeScreenWidth);
                     //ConvertUnits.SetResolutionScale((float)nativeScreenWidth / GameData.VIEW_WIDTH);
                     //Window.BeginScreenDeviceChange(true);
                     //Console.WriteLine("Fullscreen: {0}\tEngine: {1}", graphics.IsFullScreen, Engine.Instance.Renderer.IsFullScreen);
