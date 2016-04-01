@@ -122,6 +122,9 @@ namespace Source.Collisions
             float projDeltaTime = deltaTime / projStep;
             foreach (Player player in game.players)
             {
+                if (!player.Alive)
+                    continue;
+
                 for (int i = player.Projectiles.Count - 1; i >= 0; i--)
                 {
                     for (int j = 0; j < projStep; j++)
@@ -362,11 +365,13 @@ namespace Source.Collisions
                         }
                     }
                     player.MoveByPosition(-translation);
+#if DEBUG
                     if (translation.LengthSquared() > 1)
                     {
                         Console.WriteLine("Collision translation of {0}", translation);
                         platform.Color = Color.Green;
                     }
+#endif
                 }
                 //else        // player is Slamming or Stunned
                 //{

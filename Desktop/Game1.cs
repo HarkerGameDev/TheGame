@@ -1182,20 +1182,20 @@ namespace Source
             MouseState mouse = Mouse.GetState();
 
             // Find average position across all players
-            Vector2 averagePos = Vector2.Zero;
-            int count = 0;
-            foreach (Player player in players)
-            {
-                if (player.Alive)
-                {
-                    averagePos += player.Position;
-                    count++;
-                }
-            }
-            averagePos /= count;
+            //Vector2 averagePos = Vector2.Zero;
+            //int count = 0;
+            //foreach (Player player in players)
+            //{
+            //    if (player.Alive)
+            //    {
+            //        averagePos += player.Position;
+            //        count++;
+            //    }
+            //}
+            //averagePos /= count;
 
             // Snap the mouse position to 1x1 meter grid
-            Vector2 mouseSimPos = ConvertUnits.ToSimUnits(ConvertUnits.GetMousePos(mouse) - cameraBounds.Center.ToVector2() - screenOffset) + averagePos;
+            Vector2 mouseSimPos = ConvertUnits.ToSimUnits(ConvertUnits.GetMousePos(mouse) - cameraBounds.Center.ToVector2() - screenOffset) + cameraPos;
             Vector2 mouseSimPosRound = new Vector2((float)Math.Round(mouseSimPos.X), (float)Math.Round(mouseSimPos.Y));
 
             if (mouse.LeftButton == ButtonState.Pressed)
@@ -1383,7 +1383,7 @@ namespace Source
                     editScroll = mouse.ScrollWheelValue;
                     ConvertUnits.SetDisplayUnitToSimUnitRatio(currentZoom);
 
-                    Vector2 mousePos = ConvertUnits.ToDisplayUnits(mouseSimPos - averagePos) + cameraBounds.Center.ToVector2() + screenOffset;
+                    Vector2 mousePos = ConvertUnits.ToDisplayUnits(mouseSimPos - cameraPos) + cameraBounds.Center.ToVector2() + screenOffset;
                     screenOffset -= mousePos - ConvertUnits.GetMousePos(prevMouseState);
                     //Console.WriteLine("Screen offset: " + screenOffset);
                 }
@@ -1394,7 +1394,7 @@ namespace Source
                     editScroll = mouse.ScrollWheelValue;
                     ConvertUnits.SetDisplayUnitToSimUnitRatio(currentZoom);
 
-                    Vector2 mousePos = ConvertUnits.ToDisplayUnits(mouseSimPos - averagePos) + cameraBounds.Center.ToVector2() + screenOffset;
+                    Vector2 mousePos = ConvertUnits.ToDisplayUnits(mouseSimPos - cameraPos) + cameraBounds.Center.ToVector2() + screenOffset;
                     screenOffset -= mousePos - ConvertUnits.GetMousePos(prevMouseState);
                 }
             }
@@ -1438,31 +1438,33 @@ namespace Source
             float minY = players[0].Position.Y;
             float maxY = minY;
 
-            Vector2 averagePos = Vector2.Zero;
-            int count = 0;
-            foreach (Player player in players)
-            {
-                if (player.Alive)
-                {
-                    averagePos += player.Position;
-                    count++;
-                }
-            }
-            averagePos /= count;
+            //Vector2 averagePos = Vector2.Zero;
+            //int count = 0;
+            //foreach (Player player in players)
+            //{
+            //    if (player.Alive)
+            //    {
+            //        averagePos += player.Position;
+            //        count++;
+            //    }
+            //}
+            //averagePos /= count;
             //averagePos = ConvertUnits.ToDisplayUnits(averagePos);
-            averagePos = ConvertUnits.ToDisplayUnits(cameraPos);
+
+            int alivePlayers = 0;
 
             for (int i = players.Count - 1; i >= 0; i--)
             {
                 Player player = players[i];
-                if (!player.Alive)
-                    continue;
-
-                Vector2 dist = ConvertUnits.ToDisplayUnits(player.Position) - averagePos;
-                if (Math.Abs(dist.X) > GraphicsDevice.Viewport.Width / 2f || Math.Abs(dist.Y) > GraphicsDevice.Viewport.Height / 2f)
+                if (player.Alive)
                 {
-                    //player.Kill();
-                    continue;
+                    alivePlayers++;
+                    Vector2 dist = ConvertUnits.ToDisplayUnits(player.Position - cameraPos);
+                    if (Math.Abs(dist.X) > GraphicsDevice.Viewport.Width / 2f || Math.Abs(dist.Y) > GraphicsDevice.Viewport.Height / 2f)
+                    {
+                        player.Kill();
+                        continue;
+                    }
                 }
 
                 //if (player.Position.X > levelEnd - GameData.LOAD_NEW)
@@ -1475,6 +1477,15 @@ namespace Source
                 //    minY = player.Position.Y;
                 //else if (player.Position.Y > maxY)
                 //    maxY = player.Position.Y;
+            }
+
+            if (players.Count > 1 && alivePlayers <= 1)
+            {
+                foreach (Player player in players)
+                {
+                    player.MoveToPosition(cameraPos);
+                    player.ResetValues();
+                }
             }
 
             //foreach (Player player in players)
@@ -1539,13 +1550,13 @@ namespace Source
             // move camera towards newCameraPos
             Vector2 move = newCameraPos - cameraPos;
             float length = move.Length();
-            if (length < GameData.CAMERA_SCALE * deltaTime)
+            if (length < GameData.CAMERA_SPEED * deltaTime)
             {
                 cameraPos = newCameraPos;
             }
             else
             {
-                cameraPos += move / length * (float)Math.Sqrt(length) * GameData.CAMERA_SCALE * (float)deltaTime;
+                cameraPos += move /*/ length * (float)Math.Sqrt(length)*/ * GameData.CAMERA_SPEED * (float)deltaTime;
             }
             //Console.WriteLine(new StringBuilder().Append("Player Pos: ").Append(averagePos).Append("\tPrev Pos: ").Append(prevAveragePos));
             screenCenter = cameraBounds.Center.ToVector2() + ConvertUnits.ToDisplayUnits(move);
@@ -1789,8 +1800,11 @@ namespace Source
             spriteBatch.Begin(transformMatrix: view);
             foreach (Player player in players)
             {
-                player.Sprite.Update(deltaTime);
-                player.Draw(spriteBatch);
+                if (player.Alive)
+                {
+                    player.Sprite.Update(deltaTime);
+                    player.Draw(spriteBatch);
+                }
                 foreach (Projectile proj in player.Projectiles)
                     proj.Draw(spriteBatch);
             }

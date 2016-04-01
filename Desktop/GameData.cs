@@ -89,7 +89,7 @@ namespace Source
         //public const float WINDOW_SLOW = 0.2f;    // -- player speed is reduced to this ratio when a window is hit
         //public const float WALL_SLOW = 0.2f;    // -- player speed is reduced to this ratio when a wall is hit while flying
 
-        public const float CAMERA_SCALE = 8f;           // speed of camera catchup (scales as the square root of distance)
+        public const float CAMERA_SPEED = 4f;           // speed of camera catchup (scales as the square root of distance)
         //public const float CAMERA_SCALE_X = 4f;         // horizontal speed of camera
         //public const float CAMERA_SCALE_Y = 20f;        // vertical speed of camera
         //public const float MAX_CAMERA_SPEED_X = 1f;    // maximum x speed of camera
