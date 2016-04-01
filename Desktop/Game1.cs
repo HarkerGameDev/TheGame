@@ -1576,6 +1576,8 @@ namespace Source
             {
                 foreach (Player player in players)
                 {
+                    if (player.Alive)
+                        player.Score++;
                     player.MoveToPosition(cameraPos);
                     player.ResetValues();
                 }
@@ -1834,9 +1836,17 @@ namespace Source
             spriteBatch.DrawString(fontSmall, time, new Vector2(leftX, 0f), Color.LightSkyBlue);
 
             // Display high score
-            string high = "High Score: " + highScore.ToString("n1");
-            leftX = GraphicsDevice.Viewport.Width / 2f - fontSmall.MeasureString(high).X / 2f;
-            spriteBatch.DrawString(fontSmall, high, new Vector2(leftX, 40f), Color.Yellow);
+            //string high = "High Score: " + highScore.ToString("n1");
+            //leftX = GraphicsDevice.Viewport.Width / 2f - fontSmall.MeasureString(high).X / 2f;
+            //spriteBatch.DrawString(fontSmall, high, new Vector2(leftX, 40f), Color.Yellow);
+
+            // Display player scores
+            for (int i=0; i<players.Count; i++)
+            {
+                StringBuilder text = new StringBuilder("Player ");
+                text.Append(i + 1).Append(" Score: ").Append(players[i].Score);
+                spriteBatch.DrawString(fontSmall, text, new Vector2(10f, 10f + 40 * i), Color.BlanchedAlmond);
+            }
 
             // Display version number
             Vector2 botRight = new Vector2(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height) - fontSmall.MeasureString(GameData.Version);
@@ -1852,15 +1862,15 @@ namespace Source
 
             spriteBatch.End();
 
-#if DEBUG
-            spriteBatch.Begin();
-            for (int i = 0; i < GameData.PLAYERS.Length; i++)
-            {
-                spriteBatch.Draw(playerScreens[i], new Rectangle(GraphicsDevice.Viewport.Width / 10 * i, 0, GraphicsDevice.Viewport.Width / 10, GraphicsDevice.Viewport.Height / 10), Color.White);
-                spriteBatch.Draw(whiteRect, new Rectangle(GraphicsDevice.Viewport.Width / 10 * i, 0, 10, GraphicsDevice.Viewport.Height / 10), Color.Black);
-            }
-            spriteBatch.End();
-#endif
+//#if DEBUG
+//            spriteBatch.Begin();
+//            for (int i = 0; i < GameData.PLAYERS.Length; i++)
+//            {
+//                spriteBatch.Draw(playerScreens[i], new Rectangle(GraphicsDevice.Viewport.Width / 10 * i, 0, GraphicsDevice.Viewport.Width / 10, GraphicsDevice.Viewport.Height / 10), Color.White);
+//                spriteBatch.Draw(whiteRect, new Rectangle(GraphicsDevice.Viewport.Width / 10 * i, 0, 10, GraphicsDevice.Viewport.Height / 10), Color.Black);
+//            }
+//            spriteBatch.End();
+//#endif
         }
 
         //private void DrawCasters(LightArea lightArea, Vector2 averagePos)
@@ -1909,10 +1919,8 @@ namespace Source
                 foreach (Projectile proj in player.Projectiles)
                     proj.Draw(spriteBatch);
             }
-            spriteBatch.End();
 
             // Draw all objects
-            spriteBatch.Begin(transformMatrix: view);
             //spriteBatch.Draw(whiteRect, new Rectangle(-(int)view.Translation.X, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height), Color.LightGray);
             foreach (Platform platform in platforms)
                 platform.Draw(spriteBatch);
@@ -1974,12 +1982,12 @@ namespace Source
                 part.Draw(spriteBatch);
             spriteBatch.End();
 
-#if DEBUG
-            spriteBatch.Begin(transformMatrix: view);
-            spriteBatch.Draw(whiteRect, ConvertUnits.ToDisplayUnits(cameraPos), null, Color.Olive, 0f, new Vector2(0.5f), ConvertUnits.ToDisplayUnits(3), SpriteEffects.None, 0f);
-            spriteBatch.Draw(whiteRect, averagePos, null, Color.DarkGreen, 0f, new Vector2(0.5f), ConvertUnits.ToDisplayUnits(2), SpriteEffects.None, 0f);
-            spriteBatch.End();
-#endif
+//#if DEBUG
+//            spriteBatch.Begin(transformMatrix: view);
+//            spriteBatch.Draw(whiteRect, ConvertUnits.ToDisplayUnits(cameraPos), null, Color.Olive, 0f, new Vector2(0.5f), ConvertUnits.ToDisplayUnits(3), SpriteEffects.None, 0f);
+//            spriteBatch.Draw(whiteRect, averagePos, null, Color.DarkGreen, 0f, new Vector2(0.5f), ConvertUnits.ToDisplayUnits(2), SpriteEffects.None, 0f);
+//            spriteBatch.End();
+//#endif
         }
 
         private void DrawBackground(Vector2 averagePos)
@@ -1995,7 +2003,7 @@ namespace Source
                 float speed = layer.Item2;
                 float center = layer.Item3;
                 float size = layer.Item4 * ConvertUnits.GetResolutionScale();
-                spriteBatch.Draw(tex, new Vector2(0, height * center),
+                spriteBatch.Draw(tex, new Vector2(0, height * center + averagePos.Y * speed * GameData.BACKGROUND_Y_SCALE),
                     new Rectangle((int)(averagePos.X * speed), 0, (int)(width / size), tex.Height),
                     Color.White, 0f, new Vector2(0, tex.Height / 2), size, SpriteEffects.None, 0f);
             }

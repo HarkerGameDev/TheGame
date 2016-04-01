@@ -19,6 +19,7 @@ namespace Source.Collisions
         private const float BAR_HEIGHT = 0.25f;
 
         public bool Alive;
+        public int Score;
         public State CurrentState;
         public float StunTime;
         public float JumpTime;
@@ -85,6 +86,7 @@ namespace Source.Collisions
             Color = character.Color;
             CurrentCharacter = character;
             SpawnedPlatform = null;
+            Score = 0;
 
             ResetValues();
 

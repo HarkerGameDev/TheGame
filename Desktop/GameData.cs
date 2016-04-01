@@ -182,6 +182,7 @@ namespace Source
         public const float MAX_FORCE = 105f;        // maximum (m/s^2)^2 for a gravity force
         public const float BOOMERANG_LIFE_CUTOFF = PROJ_LIVE - 1f;  // leway time during which boomerang is leaving player's hands
 
+        public const float BACKGROUND_Y_SCALE = 0.1f;       // Y parallaxing in relation to X parallaxing
         //public const int NUM_WORLDS = 3;    // number of worlds to load
         // format of WORLD_LAYERS is:
         //  first array is each individual world
