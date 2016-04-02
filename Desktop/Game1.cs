@@ -224,8 +224,9 @@ namespace Source
             else
             {
                 playerControls = new GameData.Controls[] {
-                                                        new GameData.KeyboardControls(this, Keys.OemComma, Keys.OemPeriod, Keys.OemQuestion, Keys.K, Keys.OemSemicolon, Keys.O, Keys.L),
-                                                        new GameData.KeyboardControls(this, Keys.LeftShift, Keys.Z, Keys.X, Keys.A, Keys.D, Keys.W, Keys.S),
+                                                        new GameData.KeyboardControls(this, Keys.N, Keys.M, Keys.OemQuestion, Keys.K, Keys.OemSemicolon, Keys.O, Keys.L),
+                                                        new GameData.SimulatedControls(this),
+                                                        new GameData.KeyboardControls(this, Keys.Z, Keys.X, Keys.T, Keys.A, Keys.D, Keys.W, Keys.S),
                                                         new GameData.GamePadControls(this, PlayerIndex.One, Buttons.X, Buttons.B, Buttons.Y, Buttons.LeftThumbstickLeft, Buttons.LeftThumbstickRight, Buttons.A, Buttons.RightTrigger),
                                                         new GameData.GamePadControls(this, PlayerIndex.One, Buttons.X, Buttons.B, Buttons.Y, Buttons.LeftThumbstickLeft, Buttons.LeftThumbstickRight, Buttons.A, Buttons.RightTrigger)
                                                   };
@@ -421,7 +422,10 @@ namespace Source
             {
                 //int character = rand.Next(Character.playerCharacters.Length);
                 int character = GameData.PLAYERS[i];
-                players.Add(new Player(Content.Load<Texture2D>("Art/GreenDude"), GameData.PLAYER_START, Character.playerCharacters[character]));
+                if (playerControls[i] is GameData.SimulatedControls)
+                    players.Add(new AI(Content.Load<Texture2D>("Art/GreenDude"), GameData.PLAYER_START, Character.playerCharacters[character], (GameData.SimulatedControls)playerControls[i]));
+                else
+                    players.Add(new Player(Content.Load<Texture2D>("Art/GreenDude"), GameData.PLAYER_START, Character.playerCharacters[character]));
             }
 
             cameraPos = GameData.PLAYER_START;
@@ -680,11 +684,11 @@ namespace Source
                                 case GameData.ControlKey.Special1:
                                     control.Special1 = true;
                                     break;
-                                case GameData.ControlKey.Special2:
-                                    control.Special2 = true;
+                                case GameData.ControlKey.Basic2:
+                                    control.Basic2 = true;
                                     break;
-                                case GameData.ControlKey.BasicAttack:
-                                    control.BasicAttack = true;
+                                case GameData.ControlKey.Basic1:
+                                    control.Basic1 = true;
                                     break;
                                 case GameData.ControlKey.Left:
                                     control.Left = !control.Left;
@@ -710,8 +714,8 @@ namespace Source
                     {
                         GameData.SimulatedControls control = (GameData.SimulatedControls)playerControls[0];
                         control.Special1 = false;
-                        control.Special2 = false;
-                        control.BasicAttack = false;
+                        control.Basic2 = false;
+                        control.Basic1 = false;
                     }
 
                     CheckPlayer();
@@ -964,15 +968,15 @@ namespace Source
                     simTimes.Add(totalTime);
                     keys.Add(GameData.ControlKey.Special1);
                 }
-                if (controls.Special2)
+                if (controls.Basic2)
                 {
                     simTimes.Add(totalTime);
-                    keys.Add(GameData.ControlKey.Special2);
+                    keys.Add(GameData.ControlKey.Basic2);
                 }
-                if (controls.BasicAttack)
+                if (controls.Basic1)
                 {
                     simTimes.Add(totalTime);
-                    keys.Add(GameData.ControlKey.BasicAttack);
+                    keys.Add(GameData.ControlKey.Basic1);
                 }
                 if (controls.Down != prevDown)
                 {
@@ -1153,26 +1157,85 @@ namespace Source
                     }
                 }
 
-                // Basic attack
-                // TODO include attacker's momentum
-                if (controls.BasicAttack)
+                // Basic attack (with 3 modifiers in both land AND air)
+                // TODO modifiers
+                // TODO hitstun, delay, and pause everything for a moment
+                if (controls.Basic1)
                 {
-                    foreach (Player target in players)
+                    if (controls.Down)                                          // holding down
                     {
-                        if (target != player && Math.Abs(player.Position.Y - target.Position.Y) < GameData.ATTACK_HEIGHT)
+                        foreach (Player target in players)
                         {
-                            if (player.FacingRight)
+                            if (target != player && Math.Abs(player.Position.X - target.Position.X) < GameData.ATTACK_DOWN_WIDTH)
                             {
-                                if (target.Position.X > player.Position.X - player.Size.X / 2f && target.Position.X < player.Position.X + GameData.ATTACK_WIDTH)
+                                if (target.Position.Y > player.Position.Y - player.Size.Y / 2f && target.Position.Y < player.Position.Y + GameData.ATTACK_DOWN_HEIGHT)
                                 {
-                                    target.Velocity += new Vector2(GameData.ATTACK_IMPULSE_X, GameData.ATTACK_IMPULSE_Y) + player.Velocity * GameData.ATTACK_MOMENTUM;
+                                    if (target.Velocity.Y < 0)
+                                        target.Velocity.Y = 0;
+                                    target.Velocity += new Vector2(player.FacingRight ? GameData.ATTACK_DOWN_X : -GameData.ATTACK_DOWN_X, GameData.ATTACK_DOWN_Y)
+                                        + player.Velocity * GameData.ATTACK_DOWN_MOMENTUM;
                                 }
                             }
-                            else
+                        }
+                    }
+                    else if (player.TargetVelocity == Player.Direction.None)        // no direction
+                    {
+                        foreach (Player target in players)
+                        {
+                            if (target != player && Math.Abs(player.Position.Y - target.Position.Y) < GameData.ATTACK_NORM_HEIGHT)
                             {
-                                if (target.Position.X < player.Position.X + player.Size.X / 2f && target.Position.X > player.Position.X - GameData.ATTACK_WIDTH)
+                                if (player.FacingRight)
                                 {
-                                    target.Velocity += new Vector2(-GameData.ATTACK_IMPULSE_X, GameData.ATTACK_IMPULSE_Y) + player.Velocity * GameData.ATTACK_MOMENTUM;
+                                    if (target.Position.X > player.Position.X - player.Size.X / 2f && target.Position.X < player.Position.X + GameData.ATTACK_NORM_WIDTH)
+                                    {
+                                        if (target.Velocity.X < 0)
+                                            target.Velocity.X = 0;
+                                        if (target.Velocity.Y > 0)
+                                            target.Velocity.Y = 0;
+                                        target.Velocity += new Vector2(GameData.ATTACK_NORM_X, GameData.ATTACK_NORM_Y) + player.Velocity * GameData.ATTACK_NORM_MOMENTUM;
+                                    }
+                                }
+                                else
+                                {
+                                    if (target.Position.X < player.Position.X + player.Size.X / 2f && target.Position.X > player.Position.X - GameData.ATTACK_NORM_WIDTH)
+                                    {
+                                        if (target.Velocity.X > 0)
+                                            target.Velocity.X = 0;
+                                        if (target.Velocity.Y > 0)
+                                            target.Velocity.Y = 0;
+                                        target.Velocity += new Vector2(-GameData.ATTACK_NORM_X, GameData.ATTACK_NORM_Y) + player.Velocity * GameData.ATTACK_NORM_MOMENTUM;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else                                                    // holding right or left
+                    {
+                        foreach (Player target in players)
+                        {
+                            if (target != player && Math.Abs(player.Position.Y - target.Position.Y) < GameData.ATTACK_SIDE_HEIGHT)
+                            {
+                                if (player.FacingRight)
+                                {
+                                    if (target.Position.X > player.Position.X - player.Size.X / 2f && target.Position.X < player.Position.X + GameData.ATTACK_SIDE_WIDTH)
+                                    {
+                                        if (target.Velocity.X < 0)
+                                            target.Velocity.X = 0;
+                                        if (target.Velocity.Y > 0)
+                                            target.Velocity.Y = 0;
+                                        target.Velocity += new Vector2(GameData.ATTACK_SIDE_X, GameData.ATTACK_SIDE_Y) + player.Velocity * GameData.ATTACK_SIDE_MOMENTUM;
+                                    }
+                                }
+                                else
+                                {
+                                    if (target.Position.X < player.Position.X + player.Size.X / 2f && target.Position.X > player.Position.X - GameData.ATTACK_SIDE_WIDTH)
+                                    {
+                                        if (target.Velocity.X > 0)
+                                            target.Velocity.X = 0;
+                                        if (target.Velocity.Y > 0)
+                                            target.Velocity.Y = 0;
+                                        target.Velocity += new Vector2(-GameData.ATTACK_SIDE_X, GameData.ATTACK_SIDE_Y) + player.Velocity * GameData.ATTACK_SIDE_MOMENTUM;
+                                    }
                                 }
                             }
                         }
@@ -1417,9 +1480,9 @@ namespace Source
                     currentPlatform.MoveByPosition(Vector2.UnitY);
                 else if (keyboard.IsKeyDown(Keys.Enter))        // Deselect platform
                     currentPlatform = null;
-                else if (ToggleKey(Keys.C))
+                else if (ToggleKey(Keys.V))
                     currentPlatform.Rotate(MathHelper.PiOver4);
-                else if (ToggleKey(Keys.X))
+                else if (ToggleKey(Keys.C))
                     currentPlatform.Rotate(-MathHelper.PiOver4);
             }
             else if (selectedNode != null)

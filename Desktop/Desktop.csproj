@@ -9,8 +9,8 @@
     <ProjectGuid>{CEAA7958-9C16-4E74-BA50-59A964B35096}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Desktop</RootNamespace>
-    <AssemblyName>Desktop</AssemblyName>
+    <RootNamespace>Source</RootNamespace>
+    <AssemblyName>Game</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <MonoGamePlatform>DesktopGL</MonoGamePlatform>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
@@ -42,6 +42,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Character.cs" />
+    <Compile Include="Collisions\AI.cs" />
     <Compile Include="Collisions\Body.cs" />
     <Compile Include="Collisions\ConvertUnits.cs" />
     <Compile Include="Collisions\Drop.cs" />

@@ -21,6 +21,8 @@ namespace Source
         public static int DEFAULT_PLAYERS = 2;      // default number of players
 #endif
         public static Vector2 PLAYER_START = new Vector2(1f, -10f);
+        public static float AI_WAIT = 3f;           // number of seconds until AI jumps again
+        public static float AI_HOLD = 1f;           // how long AI holds the jump button
 
         public static float PLAYER_WIDTH = 0.6f;    // width of player in m
         public static float PLAYER_HEIGHT = 1.8f;   // height of player in m
@@ -121,11 +123,24 @@ namespace Source
         public const float OBSTACLE_HIT_STUN = 0.4f;    // time of stun after hitting an obstacle
         public const float STUN_RADIUS = 3.3f;    // radius within which a player will be stuned from an explosion (in m)
 
-        public const float ATTACK_WIDTH = 3f;       // width of attack hitbox (in m)
-        public const float ATTACK_HEIGHT = 3f;      // height of attack hitbox (in m)
-        public const float ATTACK_IMPULSE_X = 16f;    // change in X velocity when hit by an attack
-        public const float ATTACK_IMPULSE_Y = -11f;    // change in Y velocity when hit by an attack
-        public const float ATTACK_MOMENTUM = 3f;  // proportion of momentum from attacker included in attack
+        // Attack constants
+        public const float ATTACK_NORM_WIDTH = 3f;       // width of attack hitbox (in m)
+        public const float ATTACK_NORM_HEIGHT = 3f;      // height of attack hitbox (in m)
+        public const float ATTACK_NORM_X = 13f;    // change in X velocity when hit by an attack
+        public const float ATTACK_NORM_Y = -10f;    // change in Y velocity when hit by an attack
+        public const float ATTACK_NORM_MOMENTUM = 3f;  // proportion of momentum from attacker included in attack
+
+        public const float ATTACK_DOWN_WIDTH = 4f;       // width of attack hitbox (in m)
+        public const float ATTACK_DOWN_HEIGHT = 4f;      // height of attack hitbox (in m)
+        public const float ATTACK_DOWN_X = 3f;    // change in X velocity when hit by an attack
+        public const float ATTACK_DOWN_Y = 11f;    // change in Y velocity when hit by an attack
+        public const float ATTACK_DOWN_MOMENTUM = 0.5f;  // proportion of momentum from attacker included in attack
+
+        public const float ATTACK_SIDE_WIDTH = 4f;       // width of attack hitbox (in m)
+        public const float ATTACK_SIDE_HEIGHT = 2f;      // height of attack hitbox (in m)
+        public const float ATTACK_SIDE_X = 24f;    // change in X velocity when hit by an attack
+        public const float ATTACK_SIDE_Y = -7f;    // change in Y velocity when hit by an attack
+        public const float ATTACK_SIDE_MOMENTUM = 4f;  // proportion of momentum from attacker included in attack
 
         // Character constants
 #if DEBUG
@@ -228,14 +243,14 @@ namespace Source
 
         public enum ControlKey
         {
-            Special1, Special2, BasicAttack, Left, Right, JumpHeld, Down
+            Special1, Basic2, Basic1, Left, Right, JumpHeld, Down
         }
 
         public interface Controls
         {
+            bool Basic1 { get; }  // toggle
+            bool Basic2 { get; }  // toggle
             bool Special1 { get; }   // toggle
-            bool Special2 { get; }  // toggle
-            bool BasicAttack { get; }  // toggle
             bool Left { get; }     // hold
             bool Right { get; }     // hold
             bool JumpHeld { get; }  // hold
@@ -246,9 +261,9 @@ namespace Source
 
         public class SimulatedControls : Controls
         {
+            public bool Basic1 { get; set; }
+            public bool Basic2 { get; set; }
             public bool Special1 { get; set; }
-            public bool Special2 { get; set; }
-            public bool BasicAttack { get; set; }
             public bool Left { get; set; }
             public bool Right { get; set; }
             public bool JumpHeld { get; set; }
@@ -256,9 +271,9 @@ namespace Source
 
             public SimulatedControls(Game1 game)
             {
+                Basic1 = false;
+                Basic2 = false;
                 Special1 = false;
-                Special2 = false;
-                BasicAttack = false;
                 Left = false;
                 Right = false;
                 JumpHeld = false;
@@ -268,24 +283,23 @@ namespace Source
 
         public class KeyboardControls : Controls
         {
+            public bool Basic1 { get { return game.ToggleKey(basic1); } }
+            public bool Basic2 { get { return game.ToggleKey(basic2); } }
             public bool Special1 { get { return game.ToggleKey(special1); } }
-            public bool Special2 { get { return game.ToggleKey(special2); } }
-            public bool BasicAttack { get { return game.ToggleKey(basicAttack); } }
             public bool Left { get { return Keyboard.GetState().IsKeyDown(left); } }
             public bool Right { get { return Keyboard.GetState().IsKeyDown(right); } }
-            public bool Jump { get { return game.ToggleKey(jump); } }
             public bool JumpHeld { get { return Keyboard.GetState().IsKeyDown(jump); } }
             public bool Down { get { return Keyboard.GetState().IsKeyDown(down); } }
 
             private Game1 game;
-            private Keys special1, special2, basicAttack, left, right, jump, down;
+            private Keys basic1, basic2, special1, left, right, jump, down;
 
-            public KeyboardControls(Game1 game, Keys basicAttack, Keys special1, Keys special2, Keys left, Keys right, Keys jump, Keys down)
+            public KeyboardControls(Game1 game, Keys basic1, Keys basic2, Keys special1, Keys left, Keys right, Keys jump, Keys down)
             {
                 this.game = game;
+                this.basic1 = basic1;
+                this.basic2 = basic2;
                 this.special1 = special1;
-                this.special2 = special2;
-                this.basicAttack = basicAttack;
                 this.left = left;
                 this.right = right;
                 this.jump = jump;
@@ -298,10 +312,10 @@ namespace Source
                 builder.AppendLine("Left = " + left)
                     .AppendLine("Right = " + right)
                     .AppendLine("Jump = " + jump)
-                    .AppendLine("Action = " + down)
-                    .AppendLine("Special3 = " + basicAttack)
-                    .AppendLine("Special1 = " + special1)
-                    .AppendLine("Special2 = " + special2);
+                    .AppendLine("Down = " + down)
+                    .AppendLine("Basic1 = " + basic1)
+                    .AppendLine("Basic2 = " + basic2)
+                    .AppendLine("Special1 = " + special1);
 
                 return builder.ToString();
             }
@@ -309,9 +323,9 @@ namespace Source
 
         public class GamePadControls : Controls
         {
+            public bool Basic1 { get { return game.ToggleButton(playerIndex, basic1); } }
+            public bool Basic2 { get { return game.ToggleButton(playerIndex, basic2); } }
             public bool Special1 { get { return game.ToggleButton(playerIndex, special1); } }
-            public bool Special2 { get { return game.ToggleButton(playerIndex, special2); } }
-            public bool BasicAttack { get { return game.ToggleButton(playerIndex, basicAttack); } }
             public bool Left { get { return GamePad.GetState(playerIndex, GamePadDeadZone.Circular).IsButtonDown(left); } }
             public bool Right { get { return GamePad.GetState(playerIndex, GamePadDeadZone.Circular).IsButtonDown(right); } }
             public bool JumpHeld { get { return GamePad.GetState(playerIndex, GamePadDeadZone.Circular).IsButtonDown(jump); } }
@@ -319,15 +333,15 @@ namespace Source
 
             private Game1 game;
             private PlayerIndex playerIndex;
-            private Buttons special1, special2, basicAttack, left, right, jump, down;
+            private Buttons basic1, basic2, special1, left, right, jump, down;
 
-            public GamePadControls(Game1 game, PlayerIndex playerIndex, Buttons basicAttack, Buttons special1, Buttons special2, Buttons left, Buttons right, Buttons jump, Buttons down)
+            public GamePadControls(Game1 game, PlayerIndex playerIndex, Buttons basic1, Buttons basic2, Buttons special1, Buttons left, Buttons right, Buttons jump, Buttons down)
             {
                 this.game = game;
                 this.playerIndex = playerIndex;
+                this.basic1 = basic1;
+                this.basic2 = basic2;
                 this.special1 = special1;
-                this.special2 = special2;
-                this.basicAttack = basicAttack;
                 this.left = left;
                 this.right = right;
                 this.jump = jump;
@@ -340,10 +354,10 @@ namespace Source
                 builder.AppendLine("Left = " + left)
                     .AppendLine("Right = " + right)
                     .AppendLine("Jump = " + jump)
-                    .AppendLine("Action = " + down)
-                    .AppendLine("Attack = " + basicAttack)
-                    .AppendLine("Special1 = " + special1)
-                    .AppendLine("Special2 = " + special2);
+                    .AppendLine("Down = " + down)
+                    .AppendLine("Basic1 = " + basic1)
+                    .AppendLine("Basic2 = " + basic2)
+                    .AppendLine("Special1 = " + special1);
                 return builder.ToString();
             }
         }
