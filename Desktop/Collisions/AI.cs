@@ -14,14 +14,18 @@ namespace Source.Collisions
     /// </summary>
     public class AI : Player
     {
-        private GameData.SimulatedControls controls;
+        public GameData.SimulatedControls Controls;
         private float timer;
 
-        public AI(Texture2D texture, Vector2 position, Character character, GameData.SimulatedControls controls)
+        public AI(Texture2D texture, Vector2 position, Character character, GameData.SimulatedControls controls, Direction direction)
             : base(texture, position, character)
         {
-            this.controls = controls;
+            this.Controls = controls;
             timer = GameData.AI_WAIT;
+            if (direction == Direction.Right)
+                controls.Right = true;
+            else if (direction == Direction.Left)
+                controls.Left = true;
         }
 
         public override void Update(float deltaTime)
@@ -31,12 +35,12 @@ namespace Source.Collisions
             timer -= deltaTime;
             if (timer < 0)
             {
-                controls.JumpHeld = false;
+                Controls.JumpHeld = false;
                 timer = GameData.AI_WAIT;
             }
             else if (timer < GameData.AI_HOLD)
             {
-                controls.JumpHeld = true;
+                Controls.JumpHeld = true;
             }
         }
     }

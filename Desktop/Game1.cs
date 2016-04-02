@@ -48,7 +48,7 @@ namespace Source
         MouseState prevMouseState;
         int editScroll;
 
-        GameData.Controls[] playerControls;
+        public List<GameData.Controls> playerControls;
 
         public static Texture2D whiteRect;
         Tuple<Texture2D, float, float, float>[] prevBackground, background;
@@ -223,13 +223,12 @@ namespace Source
             }
             else
             {
-                playerControls = new GameData.Controls[] {
-                                                        new GameData.KeyboardControls(this, Keys.N, Keys.M, Keys.OemQuestion, Keys.K, Keys.OemSemicolon, Keys.O, Keys.L),
-                                                        new GameData.SimulatedControls(this),
-                                                        new GameData.KeyboardControls(this, Keys.Z, Keys.X, Keys.T, Keys.A, Keys.D, Keys.W, Keys.S),
-                                                        new GameData.GamePadControls(this, PlayerIndex.One, Buttons.X, Buttons.B, Buttons.Y, Buttons.LeftThumbstickLeft, Buttons.LeftThumbstickRight, Buttons.A, Buttons.RightTrigger),
-                                                        new GameData.GamePadControls(this, PlayerIndex.One, Buttons.X, Buttons.B, Buttons.Y, Buttons.LeftThumbstickLeft, Buttons.LeftThumbstickRight, Buttons.A, Buttons.RightTrigger)
-                                                  };
+                playerControls = new List<GameData.Controls>();
+                playerControls.Add(new GameData.KeyboardControls(this, Keys.N, Keys.M, Keys.OemQuestion, Keys.K, Keys.OemSemicolon, Keys.O, Keys.L));
+                playerControls.Add(new GameData.SimulatedControls(this));
+                playerControls.Add(new GameData.KeyboardControls(this, Keys.Z, Keys.X, Keys.T, Keys.A, Keys.D, Keys.W, Keys.S));
+                playerControls.Add(new GameData.GamePadControls(this, PlayerIndex.One, Buttons.X, Buttons.B, Buttons.Y, Buttons.LeftThumbstickLeft, Buttons.LeftThumbstickRight, Buttons.A, Buttons.RightTrigger));
+                playerControls.Add(new GameData.GamePadControls(this, PlayerIndex.One, Buttons.X, Buttons.B, Buttons.Y, Buttons.LeftThumbstickLeft, Buttons.LeftThumbstickRight, Buttons.A, Buttons.RightTrigger));
             }
 
             rand = new Random();
@@ -305,7 +304,8 @@ namespace Source
                 container.Dispose();
             }
 
-            playerControls = new GameData.Controls[] { new GameData.SimulatedControls(this), new GameData.SimulatedControls(this) };
+            playerControls = new List<GameData.Controls>();
+            playerControls.Add(new GameData.SimulatedControls(this));
         }
 
         private void Reset()
@@ -372,7 +372,8 @@ namespace Source
             else
             {
                 simIndex = 0;
-                playerControls = new GameData.Controls[] { new GameData.SimulatedControls(this), new GameData.SimulatedControls(this), new GameData.SimulatedControls(this) };
+                playerControls = new List<GameData.Controls>();
+                playerControls.Add(new GameData.SimulatedControls(this));
                 //simulating = false;
             }
         }
@@ -423,7 +424,7 @@ namespace Source
                 //int character = rand.Next(Character.playerCharacters.Length);
                 int character = GameData.PLAYERS[i];
                 if (playerControls[i] is GameData.SimulatedControls)
-                    players.Add(new AI(Content.Load<Texture2D>("Art/GreenDude"), GameData.PLAYER_START, Character.playerCharacters[character], (GameData.SimulatedControls)playerControls[i]));
+                    players.Add(new AI(Content.Load<Texture2D>("Art/GreenDude"), GameData.PLAYER_START, Character.playerCharacters[character], (GameData.SimulatedControls)playerControls[i], Player.Direction.None));
                 else
                     players.Add(new Player(Content.Load<Texture2D>("Art/GreenDude"), GameData.PLAYER_START, Character.playerCharacters[character]));
             }
@@ -1113,13 +1114,17 @@ namespace Source
                 {
                     switch (player.CurrentCharacter.Ability2)
                     {
-                        case Character.AbilityTwo.Invert:
-                            player.AbilityTwoTime = GameData.INVERT_COOLDOWN;
-                            InvertScreen = GameData.INVERT_TIME;
+                        case Character.AbilityTwo.Clone:
+                            player.AbilityTwoTime = GameData.CLONE_COOLDOWN;
+                            GameData.SimulatedControls simulatedControls = new GameData.SimulatedControls(this);
+                            playerControls.Insert(players.Count, simulatedControls);
+                            AI clone = new AI(player.texture, player.Position, player.CurrentCharacter, simulatedControls, player.TargetVelocity);
+                            players.Add(clone);
+                            player.ClonedPlayer = clone;
+                            player.CloneTime = GameData.CLONE_TIME;
                             break;
-                        case Character.AbilityTwo.Trap:
-                            player.AbilityTwoTime = GameData.TRAP_COOLDOWN;
-                            drops.Add(new Drop(player, whiteRect, player.Position, 1f, Drop.Types.Trap, Color.Red));
+                        case Character.AbilityTwo.Hook:
+                            throw new NotImplementedException("Ability " + player.CurrentCharacter.Ability2 + " is not accounted for");
                             break;
                         case Character.AbilityTwo.Timewarp:
                             player.AbilityTwoTime = GameData.TIMEWARP_COOLDOWN;
@@ -1157,9 +1162,23 @@ namespace Source
                     }
                 }
 
+                if (player.AbilityThreeTime < 0 && controls.Basic2)
+                {
+                    switch (player.CurrentCharacter.Ability3)
+                    {
+                        case Character.AbilityThree.Invert:
+                            player.AbilityThreeTime = GameData.INVERT_COOLDOWN;
+                            InvertScreen = GameData.INVERT_TIME;
+                            break;
+                        case Character.AbilityThree.Trap:
+                            player.AbilityThreeTime = GameData.TRAP_COOLDOWN;
+                            drops.Add(new Drop(player, whiteRect, player.Position, 1f, Drop.Types.Trap, Color.Red));
+                            break;
+                    }
+                }
+
                 // Basic attack (with 3 modifiers in both land AND air)
-                // TODO modifiers
-                // TODO hitstun, delay, and pause everything for a moment
+                // TODO hitstun, cooldown, and pause everything for a moment during impact
                 if (controls.Basic1)
                 {
                     if (controls.Down)                                          // holding down
@@ -1209,7 +1228,7 @@ namespace Source
                             }
                         }
                     }
-                    else                                                    // holding right or left
+                    else                                                    // holding left or right
                     {
                         foreach (Player target in players)
                         {
@@ -1241,25 +1260,6 @@ namespace Source
                         }
                     }
                 }
-                //if (player.AbilityThreeTime < 0 && controls.Special2)
-                //{
-                //    switch (player.CurrentCharacter.Ability3)
-                //    {
-                //        //case Character.AbilityThree.Swap:
-                //        //    player.AbilityThreeTime = GameData.SWAP_COOLDOWN;
-                //        //    Player first = players[rand.Next(players.Count)];
-                //        //    Player second = players[rand.Next(players.Count)];
-                //        //    Vector2 tempPos = first.Position;
-                //        //    Vector2 tempVel = first.Velocity;
-
-                //        //    // TODO somehow indicate to the player that they have switched
-                //        //    first.MoveToPosition(second.Position);
-                //        //    first.Velocity = second.Velocity;
-                //        //    second.MoveToPosition(tempPos);
-                //        //    second.Velocity = tempVel;
-                //        //    break;
-                //    }
-                //}
             }
             player.PrevJump = controls.JumpHeld;
         }

@@ -13,9 +13,9 @@ namespace Source
         public static Character[] playerCharacters = {
             new Character(Color.CadetBlue, "Cadet", AbilityOne.Jetpack, AbilityTwo.Rocket, AbilityThree.Temp),
             new Character(Color.YellowGreen, "Acrobat", AbilityOne.Jump, AbilityTwo.Boomerang, AbilityThree.Temp),
-            new Character(Color.Purple, "Psychic", AbilityOne.Platform, AbilityTwo.Invert, AbilityThree.Clone),
+            new Character(Color.Purple, "Psychic", AbilityOne.Platform, AbilityTwo.Clone, AbilityThree.Invert),
             new Character(Color.GhostWhite, "Planeswalker", AbilityOne.Blink, AbilityTwo.Timewarp, AbilityThree.Temp),
-            new Character(Color.ForestGreen, "Hunter", AbilityOne.Grapple, AbilityTwo.Trap, AbilityThree.Hook)
+            new Character(Color.ForestGreen, "Hunter", AbilityOne.Grapple, AbilityTwo.Hook, AbilityThree.Trap)
             //new Character(Color.Yellow, "Alchemist", AbilityOne.Transmute, AbilityTwo.Explosive, AbilityThree.Singularity),
             //new Character(Color.WhiteSmoke, "Chronowalker", AbilityOne.Slowdown, AbilityTwo.Chronoshift, AbilityThree.LostTime),
             //new Character(Color.Purple, "Psychic", AbilityOne.Destroy, AbilityTwo.Move, AbilityThree.Swap),
@@ -38,13 +38,13 @@ namespace Source
 
         public enum AbilityTwo
         {
-            Invert, Trap, Timewarp, Rocket, Boomerang
+            Clone, Hook, Timewarp, Rocket, Boomerang
             //Explosive, Chronoshift, Move, Hallucination, Attract, Hookshot
         }
 
         public enum AbilityThree
         {
-            Clone, Hook, Temp
+            Invert, Trap, Temp
             //Singularity, LostTime, Swap, Foresight, Repel, Nothing
         }
 

@@ -152,6 +152,8 @@ namespace Source
         public const float PLATFORM_HEIGHT = 1f;    // height of platform
         public const float PLATFORM_COOLDOWN = 4f;  // cooldown for platform ability
         public const float PLATFORM_LIFE = 2.2f;      // how long the platform lasts before despawning
+        public const float CLONE_TIME = 6f;         // how long the clone will last before dying (ignoring other means)
+        public const float CLONE_COOLDOWN = 10f;    // cooldown for clone ability
         public const float INVERT_TIME = 10f;        // time during which controls will be inverted
         public const float INVERT_COOLDOWN = 22f;   // cooldown for casting invert
 

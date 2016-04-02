@@ -35,6 +35,8 @@ namespace Source.Collisions
         // Character-specific variables
         public Platform SpawnedPlatform;
         public float PlatformTime;
+        public AI ClonedPlayer;
+        public float CloneTime;
         public float JetpackTime;
         public bool JetpackEnabled;
         public int JumpsLeft;
@@ -71,7 +73,7 @@ namespace Source.Collisions
             AbilityOneTime = 0;
             AbilityTwoTime = 0;
             AbilityThreeTime = 0;
-            TargetVelocity = 0;
+            TargetVelocity = Direction.None;
             WallJump = Direction.None;
             Flip = SpriteEffects.None;
 
@@ -86,6 +88,7 @@ namespace Source.Collisions
             Color = character.Color;
             CurrentCharacter = character;
             SpawnedPlatform = null;
+            ClonedPlayer = null;
             Score = 0;
 
             ResetValues();

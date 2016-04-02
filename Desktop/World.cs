@@ -120,8 +120,9 @@ namespace Source.Collisions
             // Handle players and their projectiles
             int projStep = (int)Math.Ceiling(deltaTime * GameData.PROJ_SPEED / GameData.PROJ_WIDTH);
             float projDeltaTime = deltaTime / projStep;
-            foreach (Player player in game.players)
+            for (int x=game.players.Count-1; x>=0; x--)
             {
+                Player player = game.players[x];
                 if (!player.Alive)
                     continue;
 
@@ -141,6 +142,17 @@ namespace Source.Collisions
                     {
                         game.platforms.Remove(player.SpawnedPlatform);
                         player.SpawnedPlatform = null;
+                    }
+                }
+
+                if (player.ClonedPlayer != null)
+                {
+                    player.CloneTime -= deltaTime;
+                    if (player.CloneTime < 0)
+                    {
+                        game.playerControls.Remove(player.ClonedPlayer.Controls);
+                        game.players.Remove(player.ClonedPlayer);
+                        player.ClonedPlayer = null;
                     }
                 }
 
