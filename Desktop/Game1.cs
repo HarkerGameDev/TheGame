@@ -224,9 +224,9 @@ namespace Source
             else
             {
                 playerControls = new List<GameData.Controls>();
-                playerControls.Add(new GameData.KeyboardControls(this, Keys.N, Keys.M, Keys.OemQuestion, Keys.K, Keys.OemSemicolon, Keys.O, Keys.L));
+                playerControls.Add(new GameData.KeyboardControls(this, Keys.N, Keys.M, Keys.B, Keys.K, Keys.OemSemicolon, Keys.O, Keys.L));
                 playerControls.Add(new GameData.SimulatedControls(this));
-                playerControls.Add(new GameData.KeyboardControls(this, Keys.Z, Keys.X, Keys.T, Keys.A, Keys.D, Keys.W, Keys.S));
+                playerControls.Add(new GameData.KeyboardControls(this, Keys.Z, Keys.X, Keys.LeftShift, Keys.A, Keys.D, Keys.W, Keys.S));
                 playerControls.Add(new GameData.GamePadControls(this, PlayerIndex.One, Buttons.X, Buttons.B, Buttons.Y, Buttons.LeftThumbstickLeft, Buttons.LeftThumbstickRight, Buttons.A, Buttons.RightTrigger));
                 playerControls.Add(new GameData.GamePadControls(this, PlayerIndex.One, Buttons.X, Buttons.B, Buttons.Y, Buttons.LeftThumbstickLeft, Buttons.LeftThumbstickRight, Buttons.A, Buttons.RightTrigger));
             }
@@ -685,8 +685,8 @@ namespace Source
                                 case GameData.ControlKey.Special1:
                                     control.Special1 = true;
                                     break;
-                                case GameData.ControlKey.Basic2:
-                                    control.Basic2 = true;
+                                case GameData.ControlKey.Special2:
+                                    control.Special2 = true;
                                     break;
                                 case GameData.ControlKey.Basic1:
                                     control.Basic1 = true;
@@ -715,7 +715,7 @@ namespace Source
                     {
                         GameData.SimulatedControls control = (GameData.SimulatedControls)playerControls[0];
                         control.Special1 = false;
-                        control.Basic2 = false;
+                        control.Special2 = false;
                         control.Basic1 = false;
                     }
 
@@ -969,10 +969,10 @@ namespace Source
                     simTimes.Add(totalTime);
                     keys.Add(GameData.ControlKey.Special1);
                 }
-                if (controls.Basic2)
+                if (controls.Special2)
                 {
                     simTimes.Add(totalTime);
-                    keys.Add(GameData.ControlKey.Basic2);
+                    keys.Add(GameData.ControlKey.Special2);
                 }
                 if (controls.Basic1)
                 {
@@ -1123,9 +1123,6 @@ namespace Source
                             player.ClonedPlayer = clone;
                             player.CloneTime = GameData.CLONE_TIME;
                             break;
-                        case Character.AbilityTwo.Hook:
-                            throw new NotImplementedException("Ability " + player.CurrentCharacter.Ability2 + " is not accounted for");
-                            break;
                         case Character.AbilityTwo.Timewarp:
                             player.AbilityTwoTime = GameData.TIMEWARP_COOLDOWN;
                             int i = times.Count - 1;
@@ -1146,23 +1143,31 @@ namespace Source
                                 }
                             }
                             break;
+                        case Character.AbilityTwo.Hook:
+                            player.AbilityTwoTime = GameData.HOOK_COOLDOWN;
+                            Vector2 vel = new Vector2(player.FacingRight ? GameData.HOOK_X : -GameData.HOOK_X, GameData.HOOK_Y)
+                                + player.Velocity * GameData.HOOK_SCALE;
+                            player.Projectiles.Add(new Projectile(whiteRect, player.Position, Color.DarkSlateGray, Projectile.Types.Hook, vel));
+                            player.HookedLocation = Vector2.Zero;
+                            player.HookedPlayer = null;
+                            break;
                         case Character.AbilityTwo.Rocket:
                             // TODO tweak rocket so it's better
                             player.AbilityTwoTime = GameData.ROCKET_COOLDOWN;
-                            Vector2 vel = new Vector2(player.FacingRight ? GameData.ROCKET_X : -GameData.ROCKET_X, -GameData.ROCKET_Y);
-                            vel += player.Velocity * GameData.ROCKET_SCALE;
+                            vel = new Vector2(player.FacingRight ? GameData.ROCKET_X : -GameData.ROCKET_X, GameData.ROCKET_Y)
+                                + player.Velocity * GameData.ROCKET_SCALE;
                             player.Projectiles.Add(new Projectile(whiteRect, player.Position, Color.DarkOliveGreen, Projectile.Types.Rocket, vel));
                             break;
                         case Character.AbilityTwo.Boomerang:
                             player.AbilityTwoTime = GameData.BOOMERANG_COOLDOWN;
-                            vel = new Vector2(player.FacingRight ? GameData.BOOMERANG_X : -GameData.BOOMERANG_X, -GameData.BOOMERANG_Y);
-                            vel += player.Velocity * GameData.BOOMERANG_SCALE;
+                            vel = new Vector2(player.FacingRight ? GameData.BOOMERANG_X : -GameData.BOOMERANG_X, GameData.BOOMERANG_Y)
+                                + player.Velocity * GameData.BOOMERANG_SCALE;
                             player.Projectiles.Add(new Projectile(whiteRect, player.Position, Color.YellowGreen, Projectile.Types.Boomerang, vel));
                             break;
                     }
                 }
 
-                if (player.AbilityThreeTime < 0 && controls.Basic2)
+                if (player.AbilityThreeTime < 0 && controls.Special2)
                 {
                     switch (player.CurrentCharacter.Ability3)
                     {
@@ -2135,7 +2140,7 @@ namespace Source
             if (players != null)
             {
                 spriteBatch.DrawString(fontSmall, "Player 0 Velocity: " + players[0].Velocity, new Vector2(10, GraphicsDevice.Viewport.Height - 240), Color.White);
-                spriteBatch.DrawString(fontSmall, "Player 0 Wall: " + players[0].WallJump, new Vector2(10, GraphicsDevice.Viewport.Height - 280), Color.White);
+                spriteBatch.DrawString(fontSmall, "Player 0 Position: " + players[0].Position, new Vector2(10, GraphicsDevice.Viewport.Height - 280), Color.White);
                 spriteBatch.DrawString(fontSmall, "Player 0 State: " + players[0].CurrentState, new Vector2(10, GraphicsDevice.Viewport.Height - 320), Color.White);
             }
             spriteBatch.End();

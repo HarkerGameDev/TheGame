@@ -43,6 +43,8 @@ namespace Source.Collisions
         public List<Tuple<Vector2, Vector2>> PrevStates;     // Position, Velocity
 
         public Vector2 GrappleTarget;
+        public Player HookedPlayer;
+        public Vector2 HookedLocation;
         public float TargetRadius;
         public bool GrappleRight;
 
@@ -107,6 +109,33 @@ namespace Source.Collisions
         {
             if (!Alive)
                 throw new Exception("Moving dead player");
+
+            // pull towards hooked player
+            if (HookedPlayer != null)
+            {
+                Vector2 dist = HookedPlayer.Position - Position;
+                if (dist.LengthSquared() < 1)
+                    HookedPlayer = null;
+                else
+                {
+                    dist.Normalize();
+                    dist *= GameData.HOOK_PULL * deltaTime;
+                    Velocity += dist;
+                    HookedPlayer.Velocity -= dist;
+                }
+            }
+            else if (HookedLocation != Vector2.Zero)
+            {
+                Vector2 dist = HookedLocation - Position;
+                if (dist.LengthSquared() < 1)
+                    HookedLocation = Vector2.Zero;
+                else
+                {
+                    dist.Normalize();
+                    dist *= GameData.HOOK_PULL * deltaTime;
+                    Velocity += dist;
+                }
+            }
 
             //ActionTime -= deltaTime;
             if (CurrentState == State.Stunned)
@@ -243,13 +272,25 @@ namespace Source.Collisions
             if (!Alive)
                 throw new Exception("Drawing dead player");
 
+            // Draw lines
             if (GrappleTarget != Vector2.Zero)
             {
-                Vector2 dist = GrappleTarget - Position;
-                float rot = (float)Math.Atan2(dist.Y, dist.X);
-                Vector2 origin = new Vector2(0f, 0.5f);
-                Vector2 scale = new Vector2(ConvertUnits.ToDisplayUnits(dist.Length()), GameData.GRAPPLE_HEIGHT);
-                spriteBatch.Draw(Game1.whiteRect, ConvertUnits.ToDisplayUnits(Position), null, Color.Brown, rot, origin, scale, SpriteEffects.None, 0f);
+                DrawLine(spriteBatch, Position, GrappleTarget, GameData.GRAPPLE_HEIGHT, Color.Brown);
+            }
+            foreach (Projectile proj in Projectiles)
+            {
+                if (proj.Type == Projectile.Types.Hook)
+                {
+                    DrawLine(spriteBatch, Position, proj.Position, GameData.HOOK_HEIGHT, Color.SaddleBrown);
+                }
+            }
+            if (HookedPlayer != null)
+            {
+                DrawLine(spriteBatch, Position, HookedPlayer.Position, GameData.HOOK_HEIGHT, Color.Salmon);
+            }
+            else if (HookedLocation != Vector2.Zero)
+            {
+                DrawLine(spriteBatch, Position, HookedLocation, GameData.HOOK_HEIGHT, Color.Salmon);
             }
 
             Sprite.Draw(spriteBatch);
@@ -257,6 +298,15 @@ namespace Source.Collisions
             //Vector2 pos = new Vector2(Position.X - BAR_WIDTH / 2, Position.Y - Size.Y * 0.7f);
             //Game1.DrawRectangle(spriteBatch, pos, Color.LightSalmon, new Vector2(BAR_WIDTH, BAR_HEIGHT));
             //Game1.DrawRectangle(spriteBatch, pos, Color.Crimson, new Vector2(BAR_WIDTH * BoostTime / GameData.BOOST_LENGTH, BAR_HEIGHT));
+        }
+
+        private void DrawLine(SpriteBatch spriteBatch, Vector2 start, Vector2 end, float height, Color color)
+        {
+            Vector2 dist = end - start;
+            float rot = (float)Math.Atan2(dist.Y, dist.X);
+            Vector2 origin = new Vector2(0f, 0.5f);
+            Vector2 scale = new Vector2(ConvertUnits.ToDisplayUnits(dist.Length()), height);
+            spriteBatch.Draw(Game1.whiteRect, ConvertUnits.ToDisplayUnits(start), null, color, rot, origin, scale, SpriteEffects.None, 0f);
         }
 
         public void Reset()

@@ -16,7 +16,7 @@ namespace Source
         public static int[] PLAYERS;                // number of players
         public static int LEVEL_FILE = 1;           // default level
 #if DEBUG
-        public static int DEFAULT_PLAYERS = 1;      // default number of players
+        public static int DEFAULT_PLAYERS = 2;      // default number of players
 #else
         public static int DEFAULT_PLAYERS = 2;      // default number of players
 #endif
@@ -164,6 +164,13 @@ namespace Source
         public const float GRAPPLE_BOOST = 1.0f;      // boost in momentum after releasing a rope
         //public const float GRAPPLE_HELP = 10f;      // help to push player when no manual input
         //public const float GRAPPLE_HELP_MIN = 3f;  // minimum length of velocity while swinging
+        public const float HOOK_COOLDOWN = 6f;      // cooldown for hookshot ability
+        public const float HOOK_X = 35f;            // initial x velocity of hookshot (w/o player)
+        public const float HOOK_Y = -3f;            // initial y velocity of hookshot (w/o player)
+        public const float HOOK_SCALE = 0.2f;       // scale of player's velocity in hook when firing
+        public const float HOOK_GRAVITY = 15f;      // gravity for hook while it is flying
+        public const float HOOK_HEIGHT = 3f;        // pixel height of hookshot rope
+        public const float HOOK_PULL = 85f;         // pulling force of hookshot (in m/s^2)
         public const float TRAP_COOLDOWN = 4f;     // cooldown for dropping a trap
         public const float TRAP_FORCE = 90f;       // force when trap expires and explodes
         public const int TRAP_PARTICLES = 20;    // number of particles when trap explodes
@@ -179,18 +186,19 @@ namespace Source
         public const float JETPACK_PARTICLES = 1 / 40f; // number of particles spawned by jetpack per second
         public const float ROCKET_COOLDOWN = 4f;    // cooldown for rocket explosive ability
         public const float ROCKET_X = 25f;          // initial x velocity of rocket (w/o player)
-        public const float ROCKET_Y = 3f;          // initial y velocity of rocket (w/o player)
+        public const float ROCKET_Y = -3f;          // initial y velocity of rocket (w/o player)
         public const float ROCKET_SCALE = 0.3f;     // scale of player's velocity in rocket when firing
         public const float ROCKET_GRAVITY = 10f;    // gravity for rocket
         public const float ROCKET_PARTICLES = 1 / 60f; // number of particles spawned by rocket per second
         public const int ROCKET_EXPLODE_PART = 20; // number of particles when rocket explodes
         public const float ROCKET_FORCE = 130f;    // force when rocket hits something and explodes
+        public const float ROCKET_STUN = 0.9f;      // stun time when hit by a rocket directly
 
         public const int TOTAL_JUMPS = 3;       // number of jumps the acrobat can do in total (including intial jump)
         public const float AIR_JUMP_SPEED = JUMP_SPEED + 4f;    // velocity of jump when acrobat jumping in air
         public const float BOOMERANG_COOLDOWN = 6f;    // cooldown for boomerang throw ability
         public const float BOOMERANG_X = 20f;          // initial x velocity of boomerang (w/o player)
-        public const float BOOMERANG_Y = 18f;          // initial y velocity of boomerang (w/o player)
+        public const float BOOMERANG_Y = -18f;          // initial y velocity of boomerang (w/o player)
         public const float BOOMERANG_SCALE = 0.1f;     // scale of player's velocity in boomerang when throwing
         public const float BOOMERANG_ATTRACT = 90f;    // attraction of boomerang back to player (constant with regards to distance)
         //public const float BOOMERANG_GRAVITY = 1f;    // gravity for boomerang
@@ -245,14 +253,14 @@ namespace Source
 
         public enum ControlKey
         {
-            Special1, Basic2, Basic1, Left, Right, JumpHeld, Down
+            Special1, Special2, Basic1, Left, Right, JumpHeld, Down
         }
 
         public interface Controls
         {
             bool Basic1 { get; }  // toggle
-            bool Basic2 { get; }  // toggle
             bool Special1 { get; }   // toggle
+            bool Special2 { get; }  // toggle
             bool Left { get; }     // hold
             bool Right { get; }     // hold
             bool JumpHeld { get; }  // hold
@@ -264,8 +272,8 @@ namespace Source
         public class SimulatedControls : Controls
         {
             public bool Basic1 { get; set; }
-            public bool Basic2 { get; set; }
             public bool Special1 { get; set; }
+            public bool Special2 { get; set; }
             public bool Left { get; set; }
             public bool Right { get; set; }
             public bool JumpHeld { get; set; }
@@ -274,34 +282,39 @@ namespace Source
             public SimulatedControls(Game1 game)
             {
                 Basic1 = false;
-                Basic2 = false;
                 Special1 = false;
+                Special2 = false;
                 Left = false;
                 Right = false;
                 JumpHeld = false;
                 Down = false;
+            }
+
+            public override string ToString()
+            {
+                return "AI controlled\n";
             }
         }
 
         public class KeyboardControls : Controls
         {
             public bool Basic1 { get { return game.ToggleKey(basic1); } }
-            public bool Basic2 { get { return game.ToggleKey(basic2); } }
             public bool Special1 { get { return game.ToggleKey(special1); } }
+            public bool Special2 { get { return game.ToggleKey(special2); } }
             public bool Left { get { return Keyboard.GetState().IsKeyDown(left); } }
             public bool Right { get { return Keyboard.GetState().IsKeyDown(right); } }
             public bool JumpHeld { get { return Keyboard.GetState().IsKeyDown(jump); } }
             public bool Down { get { return Keyboard.GetState().IsKeyDown(down); } }
 
             private Game1 game;
-            private Keys basic1, basic2, special1, left, right, jump, down;
+            private Keys basic1, special1, special2, left, right, jump, down;
 
-            public KeyboardControls(Game1 game, Keys basic1, Keys basic2, Keys special1, Keys left, Keys right, Keys jump, Keys down)
+            public KeyboardControls(Game1 game, Keys basic1, Keys special1, Keys special2, Keys left, Keys right, Keys jump, Keys down)
             {
                 this.game = game;
                 this.basic1 = basic1;
-                this.basic2 = basic2;
                 this.special1 = special1;
+                this.special2 = special2;
                 this.left = left;
                 this.right = right;
                 this.jump = jump;
@@ -316,8 +329,8 @@ namespace Source
                     .AppendLine("Jump = " + jump)
                     .AppendLine("Down = " + down)
                     .AppendLine("Basic1 = " + basic1)
-                    .AppendLine("Basic2 = " + basic2)
-                    .AppendLine("Special1 = " + special1);
+                    .AppendLine("Special1 = " + special1)
+                    .AppendLine("Special2 = " + special2);
 
                 return builder.ToString();
             }
@@ -326,8 +339,8 @@ namespace Source
         public class GamePadControls : Controls
         {
             public bool Basic1 { get { return game.ToggleButton(playerIndex, basic1); } }
-            public bool Basic2 { get { return game.ToggleButton(playerIndex, basic2); } }
             public bool Special1 { get { return game.ToggleButton(playerIndex, special1); } }
+            public bool Special2 { get { return game.ToggleButton(playerIndex, special2); } }
             public bool Left { get { return GamePad.GetState(playerIndex, GamePadDeadZone.Circular).IsButtonDown(left); } }
             public bool Right { get { return GamePad.GetState(playerIndex, GamePadDeadZone.Circular).IsButtonDown(right); } }
             public bool JumpHeld { get { return GamePad.GetState(playerIndex, GamePadDeadZone.Circular).IsButtonDown(jump); } }
@@ -335,15 +348,15 @@ namespace Source
 
             private Game1 game;
             private PlayerIndex playerIndex;
-            private Buttons basic1, basic2, special1, left, right, jump, down;
+            private Buttons basic1, special1, special2, left, right, jump, down;
 
-            public GamePadControls(Game1 game, PlayerIndex playerIndex, Buttons basic1, Buttons basic2, Buttons special1, Buttons left, Buttons right, Buttons jump, Buttons down)
+            public GamePadControls(Game1 game, PlayerIndex playerIndex, Buttons basic1, Buttons special1, Buttons special2, Buttons left, Buttons right, Buttons jump, Buttons down)
             {
                 this.game = game;
                 this.playerIndex = playerIndex;
                 this.basic1 = basic1;
-                this.basic2 = basic2;
                 this.special1 = special1;
+                this.special2 = special2;
                 this.left = left;
                 this.right = right;
                 this.jump = jump;
@@ -358,8 +371,8 @@ namespace Source
                     .AppendLine("Jump = " + jump)
                     .AppendLine("Down = " + down)
                     .AppendLine("Basic1 = " + basic1)
-                    .AppendLine("Basic2 = " + basic2)
-                    .AppendLine("Special1 = " + special1);
+                    .AppendLine("Special1 = " + special1)
+                    .AppendLine("Special2 = " + special2);
                 return builder.ToString();
             }
         }

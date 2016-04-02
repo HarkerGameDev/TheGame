@@ -198,7 +198,7 @@ namespace Source.Collisions
         }
 
         /// <summary>
-        /// 
+        /// Updates, moves, and collides all projectiles for a player
         /// </summary>
         /// <param name="player"></param>
         /// <param name="deltaTime"></param>
@@ -228,6 +228,10 @@ namespace Source.Collisions
                         //Console.WriteLine("Proj Velocity: {0}", proj.Velocity);
                         ApplyForce(-GameData.BOOMERANG_FORCE, player, proj.Position, deltaTime);
                     }
+                    break;
+                case Projectile.Types.Hook:
+                    proj.LiveTime -= deltaTime;
+                    proj.Velocity.Y += GameData.HOOK_GRAVITY * deltaTime;
                     break;
                 default:
                     proj.LiveTime -= deltaTime;
@@ -261,8 +265,13 @@ namespace Source.Collisions
                             case Projectile.Types.Rocket:
                                 ApplyImpulse(GameData.ROCKET_FORCE, player, proj.Position);
                                 MakeParticles(proj.Position, Game1.whiteRect, GameData.ROCKET_EXPLODE_PART, 0, 0, Color.Firebrick);
-                                target.StunTime = GameData.STUN_TIME;
+                                target.StunTime = GameData.ROCKET_STUN;
                                 target.CurrentState = Player.State.Stunned;
+                                break;
+                            case Projectile.Types.Hook:
+                                player.HookedPlayer = target;
+                                //player.StunTime = target.StunTime = GameData.HOOK_STUN;
+                                //player.CurrentState = target.CurrentState = Player.State.Stunned;
                                 break;
                         }
                         player.Projectiles.RemoveAt(projIndex);
@@ -279,6 +288,9 @@ namespace Source.Collisions
                         case Projectile.Types.Rocket:
                             ApplyImpulse(GameData.ROCKET_FORCE, player, proj.Position);
                             MakeParticles(proj.Position, Game1.whiteRect, GameData.ROCKET_EXPLODE_PART, 0, 0, Color.Firebrick);
+                            break;
+                        case Projectile.Types.Hook:
+                            player.HookedLocation = proj.Position;
                             break;
                     }
 
