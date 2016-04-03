@@ -17,8 +17,8 @@ namespace Source.Collisions
         public GameData.SimulatedControls Controls;
         private float timer;
 
-        public AI(Texture2D texture, Vector2 position, Character character, GameData.SimulatedControls controls, Direction direction)
-            : base(texture, position, character)
+        public AI(Texture2D texture, Vector2 position, Character character, LinkedListNode<Vector2> checkpoint, GameData.SimulatedControls controls, Direction direction)
+            : base(texture, position, character, checkpoint)
         {
             this.Controls = controls;
             timer = GameData.AI_WAIT;

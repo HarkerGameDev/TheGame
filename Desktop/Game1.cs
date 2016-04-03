@@ -64,7 +64,6 @@ namespace Source
 
         Rectangle cameraBounds; // limit of where the player can be on screen
         Vector2 cameraPos;     // previous average position of players
-        Vector2 screenOffset; // offset from mouse panning
         float currentZoom = GameData.PIXEL_METER;
 
         Vector2 screenCenter; // where the player is on the screen
@@ -358,6 +357,8 @@ namespace Source
             {
                 player.MoveToPosition(GameData.PLAYER_START);
                 player.ResetValues();
+                player.Checkpoints = 0;
+                player.Progress = 0;
             }
             //levelEnd = 0;
             totalTime = 0;
@@ -424,9 +425,10 @@ namespace Source
                 //int character = rand.Next(Character.playerCharacters.Length);
                 int character = GameData.PLAYERS[i];
                 if (playerControls[i] is GameData.SimulatedControls)
-                    players.Add(new AI(Content.Load<Texture2D>("Art/GreenDude"), GameData.PLAYER_START, Character.playerCharacters[character], (GameData.SimulatedControls)playerControls[i], Player.Direction.None));
+                    players.Add(new AI(Content.Load<Texture2D>("Art/GreenDude"), GameData.PLAYER_START, Character.playerCharacters[character], cameraPath.First,
+                        (GameData.SimulatedControls)playerControls[i], Player.Direction.None));
                 else
-                    players.Add(new Player(Content.Load<Texture2D>("Art/GreenDude"), GameData.PLAYER_START, Character.playerCharacters[character]));
+                    players.Add(new Player(Content.Load<Texture2D>("Art/GreenDude"), GameData.PLAYER_START, Character.playerCharacters[character], cameraPath.First));
             }
 
             cameraPos = GameData.PLAYER_START;
@@ -502,7 +504,6 @@ namespace Source
             cameraBounds = new Rectangle((int)(width * GameData.SCREEN_LEFT), (int)(height * GameData.SCREEN_TOP),
                 (int)(width * (GameData.SCREEN_RIGHT - GameData.SCREEN_LEFT)), (int)(height * (1 - 2 * GameData.SCREEN_TOP)));
             screenCenter = cameraBounds.Center.ToVector2();
-            screenOffset = Vector2.Zero;
         }
 
         private void LoadLevel(int loadLevel)
@@ -640,7 +641,6 @@ namespace Source
                         editLevel = !editLevel;
                         if (!editLevel)
                         {
-                            screenOffset = Vector2.Zero;
                             currentPlatform = null;
                             currentZoom = GameData.PIXEL_METER;
                         }
@@ -1118,7 +1118,7 @@ namespace Source
                             player.AbilityTwoTime = GameData.CLONE_COOLDOWN;
                             GameData.SimulatedControls simulatedControls = new GameData.SimulatedControls(this);
                             playerControls.Insert(players.Count, simulatedControls);
-                            AI clone = new AI(player.texture, player.Position, player.CurrentCharacter, simulatedControls, player.TargetVelocity);
+                            AI clone = new AI(player.texture, player.Position, player.CurrentCharacter, player.Node, simulatedControls, player.TargetVelocity);
                             players.Add(clone);
                             player.ClonedPlayer = clone;
                             player.CloneTime = GameData.CLONE_TIME;
@@ -1329,7 +1329,7 @@ namespace Source
             //averagePos /= count;
 
             // Snap the mouse position to 1x1 meter grid
-            Vector2 mouseSimPos = ConvertUnits.ToSimUnits(ConvertUnits.GetMousePos(mouse) - cameraBounds.Center.ToVector2() - screenOffset) + cameraPos;
+            Vector2 mouseSimPos = ConvertUnits.ToSimUnits(ConvertUnits.GetMousePos(mouse) - cameraBounds.Center.ToVector2()) + cameraPos;
             Vector2 mouseSimPosRound = new Vector2((float)Math.Round(mouseSimPos.X), (float)Math.Round(mouseSimPos.Y));
 
             if (mouse.LeftButton == ButtonState.Pressed)
@@ -1347,6 +1347,7 @@ namespace Source
                 {
                     if (keyboard.IsKeyDown(Keys.LeftControl))       // Start drawing a platform
                     {
+                        selectedNode = null;
                         editingPlatform = true;
                         lockedX = lockedY = false;
                         startDraw = mouseSimPosRound;
@@ -1358,7 +1359,10 @@ namespace Source
                         {
                             Collisions.Polygon body = world.TestPoint(mouseSimPos);
                             if (body != null && body is Platform)
+                            {
                                 currentPlatform = (Platform)body;
+                                selectedNode = null;
+                            }
                         }
                         else if (keyboard.IsKeyDown(Keys.LeftAlt) && currentPlatform != null)
                         {                                           // Resize selected platform
@@ -1436,7 +1440,7 @@ namespace Source
                         else
                         {
                             if (selectedNode == null)           // Move camera
-                                screenOffset += ConvertUnits.GetMousePos(mouse) - ConvertUnits.GetMousePos(prevMouseState);
+                                cameraPos -= ConvertUnits.ToSimUnits(ConvertUnits.GetMousePos(mouse) - ConvertUnits.GetMousePos(prevMouseState));    // TODO test this
                             else                                // Move node
                                 selectedNode.Value = mouseSimPos;
                         }
@@ -1539,8 +1543,8 @@ namespace Source
                     editScroll = mouse.ScrollWheelValue;
                     ConvertUnits.SetDisplayUnitToSimUnitRatio(currentZoom);
 
-                    Vector2 mousePos = ConvertUnits.ToDisplayUnits(mouseSimPos - cameraPos) + cameraBounds.Center.ToVector2() + screenOffset;
-                    screenOffset -= mousePos - ConvertUnits.GetMousePos(prevMouseState);
+                    Vector2 mousePos = ConvertUnits.ToDisplayUnits(mouseSimPos - cameraPos) + cameraBounds.Center.ToVector2();
+                    cameraPos += ConvertUnits.ToSimUnits(mousePos - ConvertUnits.GetMousePos(prevMouseState));  // TODO test this
                     //Console.WriteLine("Screen offset: " + screenOffset);
                 }
                 else if (mouse.ScrollWheelValue < editScroll)
@@ -1550,20 +1554,19 @@ namespace Source
                     editScroll = mouse.ScrollWheelValue;
                     ConvertUnits.SetDisplayUnitToSimUnitRatio(currentZoom);
 
-                    Vector2 mousePos = ConvertUnits.ToDisplayUnits(mouseSimPos - cameraPos) + cameraBounds.Center.ToVector2() + screenOffset;
-                    screenOffset -= mousePos - ConvertUnits.GetMousePos(prevMouseState);
+                    Vector2 mousePos = ConvertUnits.ToDisplayUnits(mouseSimPos - cameraPos) + cameraBounds.Center.ToVector2();
+                    cameraPos += ConvertUnits.ToSimUnits(mousePos - ConvertUnits.GetMousePos(prevMouseState));  // TODO test this
                 }
             }
 
             // Move players
             if (mouse.RightButton == ButtonState.Pressed && prevMouseState.RightButton == ButtonState.Released)
             {
-                screenOffset = Vector2.Zero;
                 foreach (Player player in players)
                 {
                     player.MoveToPosition(mouseSimPos);
                 }
-                //cameraPos = mouseSimPos;
+                cameraPos = mouseSimPos;
             }
 
             // TODO save and load level from UI
@@ -1591,6 +1594,20 @@ namespace Source
         }
 
         /// <summary>
+        /// Projects a point onto a line and returns the progress along that line segment.
+        /// </summary>
+        /// <param name="start">Start of the line segment</param>
+        /// <param name="end">End of the line segment</param>
+        /// <param name="point">Point to project</param>
+        /// <returns>A number representing progress along the line, which is between (0,1) if the point lies within the segment</returns>
+        private float ProjectPointToLine(Vector2 start, Vector2 end, Vector2 point)
+        {
+            Vector2 line = end - start;
+            //Console.WriteLine("Line: " + line);
+            return Vector2.Dot(point - start, line) / line.LengthSquared();
+        }
+
+        /// <summary>
         /// Checks if the user is off the level, and resets the player if it is. Also, updates player-related game things (documentation WIP)
         /// </summary>
         private void CheckPlayer()
@@ -1612,14 +1629,31 @@ namespace Source
             //averagePos /= count;
             //averagePos = ConvertUnits.ToDisplayUnits(averagePos);
 
-            int alivePlayers = 0;
+            // Update progress
+            foreach (Player player in players)
+            {
+                if (player.Node.Next != null)
+                {
+                    player.Progress = ProjectPointToLine(player.Node.Value, player.Node.Next.Value, player.Position);
+                    if (player.Progress > 1)
+                    {
+                        player.Checkpoints += 1;
+                        player.Node = player.Node.Next;
+                    }
+                }
+            }
 
+            // TODO update place in race
+
+            // Check for off-screen
+            int alivePlayers = 0;
             for (int i = players.Count - 1; i >= 0; i--)
             {
                 Player player = players[i];
                 if (player.Alive)
                 {
                     alivePlayers++;
+
                     Vector2 dist = ConvertUnits.ToDisplayUnits(player.Position - cameraPos);
                     if (Math.Abs(dist.X) > GraphicsDevice.Viewport.Width / 2f || Math.Abs(dist.Y) > GraphicsDevice.Viewport.Height / 2f)
                     {
@@ -1640,6 +1674,7 @@ namespace Source
                 //    maxY = player.Position.Y;
             }
 
+            // Restart round
             if (players.Count > 1 && alivePlayers <= 1 || players.Count == 1 && alivePlayers < 1)
             {
                 foreach (Player player in players)
@@ -1973,7 +2008,7 @@ namespace Source
 
         private void DrawScene(double deltaTime, Vector2 averagePos)
         {
-            Matrix view = Matrix.CreateTranslation(new Vector3(screenOffset + screenCenter - averagePos, 0f));
+            Matrix view = Matrix.CreateTranslation(new Vector3(screenCenter - averagePos, 0f));
 
             // Draw players
             spriteBatch.Begin(transformMatrix: view);
@@ -2135,13 +2170,13 @@ namespace Source
             spriteBatch.DrawString(fontSmall, "Mouse -- " + ConvertUnits.GetMousePos(prevMouseState), new Vector2(10, GraphicsDevice.Viewport.Height - 40), Color.White);
             spriteBatch.DrawString(fontSmall, "Mouse -- {" + mouse.NormalizedX + "," + mouse.NormalizedY + "}", new Vector2(10, GraphicsDevice.Viewport.Height - 80), Color.White);
             spriteBatch.DrawString(fontSmall, "Music muted: " + MediaPlayer.IsMuted, new Vector2(10, GraphicsDevice.Viewport.Height - 120), Color.White);
-            spriteBatch.DrawString(fontSmall, "Screen center: " + screenCenter, new Vector2(10, GraphicsDevice.Viewport.Height - 160), Color.White);
-            spriteBatch.DrawString(fontSmall, "Screen offset: " + screenOffset, new Vector2(10, GraphicsDevice.Viewport.Height - 200), Color.White);
+            spriteBatch.DrawString(fontSmall, "Camera Pos: " + cameraPos, new Vector2(10, GraphicsDevice.Viewport.Height - 160), Color.White);
             if (players != null)
             {
-                spriteBatch.DrawString(fontSmall, "Player 0 Velocity: " + players[0].Velocity, new Vector2(10, GraphicsDevice.Viewport.Height - 240), Color.White);
-                spriteBatch.DrawString(fontSmall, "Player 0 Position: " + players[0].Position, new Vector2(10, GraphicsDevice.Viewport.Height - 280), Color.White);
-                spriteBatch.DrawString(fontSmall, "Player 0 State: " + players[0].CurrentState, new Vector2(10, GraphicsDevice.Viewport.Height - 320), Color.White);
+                spriteBatch.DrawString(fontSmall, "Player 0 Velocity: " + players[0].Velocity, new Vector2(10, GraphicsDevice.Viewport.Height - 200), Color.White);
+                spriteBatch.DrawString(fontSmall, "Player 0 Position: " + players[0].Position, new Vector2(10, GraphicsDevice.Viewport.Height - 240), Color.White);
+                spriteBatch.DrawString(fontSmall, "Player 0 Checkpoint: " + players[0].Checkpoints, new Vector2(10, GraphicsDevice.Viewport.Height - 280), Color.White);
+                spriteBatch.DrawString(fontSmall, "Player 0 Progress: " + (players[0].Progress + players[0].Checkpoints), new Vector2(10, GraphicsDevice.Viewport.Height - 320), Color.White);
             }
             spriteBatch.End();
 #endif

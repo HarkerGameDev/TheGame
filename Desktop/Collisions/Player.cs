@@ -20,6 +20,10 @@ namespace Source.Collisions
 
         public bool Alive;
         public int Score;
+        public int Checkpoints;
+        public float Progress;      // progress through the level (based on checkpoints)
+        public LinkedListNode<Vector2> Node;    // Last passed checkpoint node
+        public int Place;           // the place in the race
         public State CurrentState;
         public float StunTime;
         public float JumpTime;
@@ -84,7 +88,7 @@ namespace Source.Collisions
             Velocity = Vector2.Zero;
         }
 
-        public Player(Texture2D texture, Vector2 position, Character character)
+        public Player(Texture2D texture, Vector2 position, Character character, LinkedListNode<Vector2> checkpoint)
             : base(texture, position, new Vector2(GameData.PLAYER_WIDTH, GameData.PLAYER_HEIGHT))
         {
             Color = character.Color;
@@ -92,6 +96,10 @@ namespace Source.Collisions
             SpawnedPlatform = null;
             ClonedPlayer = null;
             Score = 0;
+            Checkpoints = 0;
+            Progress = 0;
+            Place = 0;
+            Node = checkpoint;
 
             ResetValues();
 
