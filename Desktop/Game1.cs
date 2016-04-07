@@ -87,6 +87,8 @@ namespace Source
         int playerSelect = 0;
         float totalTime = 0;
         float highScore = 0;
+        float killTime = 0;
+        float respawnTime = 0;
 
         public List<Player> players;
         public List<Platform> platforms;
@@ -224,7 +226,9 @@ namespace Source
             {
                 playerControls = new List<GameData.Controls>();
                 playerControls.Add(new GameData.KeyboardControls(this, Keys.N, Keys.M, Keys.B, Keys.K, Keys.OemSemicolon, Keys.O, Keys.L));
+#if DEBUG
                 playerControls.Add(new GameData.SimulatedControls(this));
+#endif
                 playerControls.Add(new GameData.KeyboardControls(this, Keys.Z, Keys.X, Keys.LeftShift, Keys.A, Keys.D, Keys.W, Keys.S));
                 playerControls.Add(new GameData.GamePadControls(this, PlayerIndex.One, Buttons.X, Buttons.B, Buttons.Y, Buttons.LeftThumbstickLeft, Buttons.LeftThumbstickRight, Buttons.A, Buttons.RightTrigger));
                 playerControls.Add(new GameData.GamePadControls(this, PlayerIndex.One, Buttons.X, Buttons.B, Buttons.Y, Buttons.LeftThumbstickLeft, Buttons.LeftThumbstickRight, Buttons.A, Buttons.RightTrigger));
@@ -626,7 +630,8 @@ namespace Source
         /// checking for collisions, gathering input, and playing audio.
         /// </summary>
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
-        protected override void Update(GameTime gameTime)
+        protected override void 
+            Update(GameTime gameTime)
         {
             switch (state) {
                 case State.Running:
@@ -666,7 +671,10 @@ namespace Source
                     }
                     else
                     {
-                        GameData.CAMERA_SPEED = GameData.SLOW_CAMERA_SPEED;
+                        //if (killTime > 0)
+                        //    GameData.CAMERA_SPEED = GameData.FAST_CAMERA_SPEED;
+                        //else
+                            GameData.CAMERA_SPEED = GameData.SLOW_CAMERA_SPEED;
                     }
 
                     float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
@@ -719,15 +727,19 @@ namespace Source
                         control.Basic1 = false;
                     }
 
-                    CheckPlayer();
-                    InvertScreen -= deltaTime;
-                    totalTime += deltaTime;
-                    world.Step(deltaTime);
+                    CheckPlayer(deltaTime);
+                    if (respawnTime <= 0)
+                    {
+                        InvertScreen -= deltaTime;
+                        totalTime += deltaTime;
+                        world.Step(deltaTime);
 
-                    // TODO store previous locations of players
-                    foreach (Player player in players)
-                        player.PrevStates.Add(Tuple.Create(player.Position, player.Velocity));
-                    times.Add(totalTime);
+                        foreach (Player player in players)
+                            player.PrevStates.Add(Tuple.Create(player.Position, player.Velocity));
+                        times.Add(totalTime);
+                    }
+                    else
+                        respawnTime -= deltaTime;
 
                     break;
                 case State.Paused:
@@ -1610,133 +1622,42 @@ namespace Source
         /// <summary>
         /// Checks if the user is off the level, and resets the player if it is. Also, updates player-related game things (documentation WIP)
         /// </summary>
-        private void CheckPlayer()
+        private void CheckPlayer(float deltaTime)
         {
-            //Player max = null;
-            float minY = players[0].Position.Y;
-            float maxY = minY;
-
-            //Vector2 averagePos = Vector2.Zero;
-            //int count = 0;
-            //foreach (Player player in players)
-            //{
-            //    if (player.Alive)
-            //    {
-            //        averagePos += player.Position;
-            //        count++;
-            //    }
-            //}
-            //averagePos /= count;
-            //averagePos = ConvertUnits.ToDisplayUnits(averagePos);
-
-            // Update progress
-            foreach (Player player in players)
-            {
-                if (player.Node.Next != null)
-                {
-                    player.Progress = ProjectPointToLine(player.Node.Value, player.Node.Next.Value, player.Position);
-                    if (player.Progress > 1)
-                    {
-                        player.Checkpoints += 1;
-                        player.Node = player.Node.Next;
-                    }
-                }
-            }
-
             // TODO update place in race
-
-            // Check for off-screen
-            int alivePlayers = 0;
-            for (int i = players.Count - 1; i >= 0; i--)
+            Player last = players[0];
+            Player first = last;
+            for (int i = 1; i < players.Count; i++)
             {
                 Player player = players[i];
                 if (player.Alive)
                 {
-                    alivePlayers++;
-
-                    Vector2 dist = ConvertUnits.ToDisplayUnits(player.Position - cameraPos);
-                    if (Math.Abs(dist.X) > GraphicsDevice.Viewport.Width / 2f || Math.Abs(dist.Y) > GraphicsDevice.Viewport.Height / 2f)
-                    {
-                        player.Kill();
-                        continue;
-                    }
-                }
-
-                //if (player.Position.X > levelEnd - GameData.LOAD_NEW)
-                //    MakeLevel();
-
-                //if (max == null || player.Position.X > max.Position.X)
-                //    max = player;
-
-                //if (player.Position.Y < minY)
-                //    minY = player.Position.Y;
-                //else if (player.Position.Y > maxY)
-                //    maxY = player.Position.Y;
-            }
-
-            // Restart round
-            if (players.Count > 1 && alivePlayers <= 1 || players.Count == 1 && alivePlayers < 1)
-            {
-                foreach (Player player in players)
-                {
-                    if (player.Alive)
-                        player.Score++;
-                    player.MoveToPosition(cameraPos);
-                    player.ResetValues();
+                    if (player.Checkpoints < last.Checkpoints || player.Checkpoints == last.Checkpoints && player.Progress < last.Progress)
+                        last = player;
+                    else if (player.Checkpoints > first.Checkpoints || player.Checkpoints == first.Checkpoints && player.Progress > first.Progress)
+                        first = player;
                 }
             }
 
-            //foreach (Player player in players)
-            //{
-            //    if (player.TimeSinceDeath > 0)
-            //    {
-            //        bool allDead = max == null;
+            //Console.WriteLine("Player ");
 
-            //        float val = (float)(player.TimeSinceDeath / GameData.DEAD_TIME);
-            //        float targetX = allDead ? averageX : max.Position.X;
-            //        float newX = MathHelper.Lerp(targetX, player.Position.X, val);
-            //        float newY = MathHelper.Lerp(player.SpawnY, player.Position.Y, val);
-
-            //        player.MoveToPosition(new Vector2(newX, newY));
-            //    }
-            //    else if (player.Position.X < averageX - ConvertUnits.ToSimUnits(GameData.DEAD_DIST))
-            //    {
-            //        player.Kill(rand);
-            //        if (max != null)
-            //            max.Score++;
-            //    }
-            //}
-
-            //float currentX = max == null ? averagePos : max.Position.X;
-
-            //if (totalTime > GameData.WIN_TIME)  // win. TODO -- do more than reset
-            //{
-            //    Reset();
-            //    if (max != null)
-            //        max.Score += GameData.WIN_SCORE;
-            //}
-
-            //float dist = maxY - minY;
-            //if (dist * currentZoom / GameData.SCREEN_SPACE > GraphicsDevice.Viewport.Height)
-            //    ConvertUnits.SetDisplayUnitToSimUnitRatio(GraphicsDevice.Viewport.Height * GameData.SCREEN_SPACE / dist);
-            //else
-            //    ConvertUnits.SetDisplayUnitToSimUnitRatio(currentZoom);
-        }
-
-        private void DrawGame(double deltaTime)
-        {
+            // Update camera position
             Vector2 newCameraPos;
             switch (cameraType)
             {
                 case CameraType.Average:
-                    newCameraPos = Vector2.Zero;
-                    int count = 0;
-                    foreach (Player player in players)
-                    {
-                        newCameraPos += player.Position;
-                        count++;
-                    }
-                    newCameraPos /= count;
+                    //newCameraPos = Vector2.Zero;
+                    //int count = 0;
+                    //foreach (Player player in players)
+                    //{
+                    //    if (player.Alive)
+                    //    {
+                    //        newCameraPos += player.Position;
+                    //        count++;
+                    //    }
+                    //}
+                    //newCameraPos /= count;
+                    newCameraPos = (first.Position + last.Position) / 2f;
                     break;
                 case CameraType.Player:
                     newCameraPos = players[playerCenter].Position;
@@ -1761,11 +1682,125 @@ namespace Source
             else
             {
                 if (cameraType == CameraType.Path && length != 0)
-                    cameraPos += move / length * GameData.CAMERA_SPEED * (float)deltaTime;
+                    cameraPos += move / length * GameData.CAMERA_SPEED * deltaTime;
                 else
-                    cameraPos += move /*/ length * (float)Math.Sqrt(length)*/ * GameData.CAMERA_SPEED * (float)deltaTime;
+                    cameraPos += move /*/ length * (float)Math.Sqrt(length)*/ * GameData.CAMERA_SPEED * deltaTime;
             }
 
+            //Player max = null;
+            float minY = players[0].Position.Y;
+            float maxY = minY;
+
+            //Vector2 averagePos = Vector2.Zero;
+            //int count = 0;
+            //foreach (Player player in players)
+            //{
+            //    if (player.Alive)
+            //    {
+            //        averagePos += player.Position;
+            //        count++;
+            //    }
+            //}
+            //averagePos /= count;
+            //averagePos = ConvertUnits.ToDisplayUnits(averagePos);
+
+            // Update progress
+            foreach (Player player in players)
+            {
+#if DEBUG
+                if (player == first)
+                    player.Color = Color.White;
+                else if (player == last)
+                    player.Color = Color.Black;
+                else
+                    player.Color = Color.Red;
+#endif
+
+                if (player.Alive && player.Node.Next != null)
+                {
+                    player.Progress = ProjectPointToLine(player.Node.Value, player.Node.Next.Value, player.Position);
+                    if (player.Progress > 1)
+                    {
+                        player.Checkpoints += 1;
+                        player.Node = player.Node.Next;
+                    }
+                }
+            }
+
+            // Check for off-screen
+            killTime -= deltaTime;
+            for (int i = players.Count - 1; i >= 0; i--)
+            {
+                Player player = players[i];
+                if (player.Alive && killTime < 0)
+                {
+                    Vector2 dist = ConvertUnits.ToDisplayUnits(player.Position - cameraPos);
+                    if (Math.Abs(dist.X) > GraphicsDevice.Viewport.Width / 2f || Math.Abs(dist.Y) > GraphicsDevice.Viewport.Height / 2f)
+                    {
+                        Console.WriteLine("Player {0} is off-screen, with cameraPos {1}", i, cameraPos);
+                        if (cameraType == CameraType.Average)
+                        {
+                            last.Kill();
+                            killTime = GameData.KILL_TIME;
+                            break;
+                        }
+                        else
+                        {
+                            player.Kill();
+                            continue;
+                        }
+                    }
+                }
+
+                //if (player.Position.X > levelEnd - GameData.LOAD_NEW)
+                //    MakeLevel();
+
+                //if (max == null || player.Position.X > max.Position.X)
+                //    max = player;
+
+                //if (player.Position.Y < minY)
+                //    minY = player.Position.Y;
+                //else if (player.Position.Y > maxY)
+                //    maxY = player.Position.Y;
+            }
+
+            int alivePlayers = 0;
+            foreach (Player player in players)
+            {
+                if (player.Alive)
+                {
+                    alivePlayers++;
+                }
+            }
+
+            // Restart round
+            if (players.Count > 1 && alivePlayers <= 1)
+            {
+                Player alive = null;
+                foreach (Player player in players)
+                {
+                    if (player.Alive)
+                    {
+                        player.Score++;
+                        alive = player;
+                        break;
+                    }
+                }
+                foreach (Player player in players)
+                {
+                    player.ResetValues();
+                    player.MoveToPosition(alive.Position);
+                    player.Checkpoints = alive.Checkpoints;
+                    player.Progress = alive.Progress;
+                    player.Node = alive.Node;
+                    //Console.WriteLine("Set player checkpoints to {0} and progress to {1}", player.Checkpoints, player.Progress);
+                }
+                respawnTime = GameData.RESPAWN_TIME;
+            }
+        }
+
+        private void DrawGame(double deltaTime)
+        {
             //float maxX = ConvertUnits.ToSimUnits(GraphicsDevice.Viewport.Width) * GameData.SCREEN_SPACE;
             //float maxY = ConvertUnits.ToSimUnits(GraphicsDevice.Viewport.Height) * GameData.SCREEN_SPACE;
             //bool splitScreen = false;
@@ -2018,10 +2053,18 @@ namespace Source
                 {
                     player.Sprite.Update(deltaTime);
                     player.Draw(spriteBatch);
+#if DEBUG
+                    Vector2 size = fontSmall.MeasureString((player.Checkpoints + player.Progress).ToString());
+                    spriteBatch.DrawString(fontSmall, (player.Checkpoints + player.Progress).ToString(),
+                        ConvertUnits.ToDisplayUnits(new Vector2(player.Position.X, player.Position.Y - 1f)),
+                        Color.White, 0f, new Vector2(size.X / 2f, size.Y), 0.7f, SpriteEffects.None, 0f);
+                    //Console.WriteLine("Drawing text: {0}", player.Checkpoints + player.Progress);
+#endif
                 }
                 foreach (Projectile proj in player.Projectiles)
                     proj.Draw(spriteBatch);
             }
+            //spriteBatch.DrawString(fontSmall, "HI", ConvertUnits.ToDisplayUnits(players[0].Position), Color.White);
 
             // Draw all objects
             //spriteBatch.Draw(whiteRect, new Rectangle(-(int)view.Translation.X, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height), Color.LightGray);
@@ -2175,8 +2218,8 @@ namespace Source
             {
                 spriteBatch.DrawString(fontSmall, "Player 0 Velocity: " + players[0].Velocity, new Vector2(10, GraphicsDevice.Viewport.Height - 200), Color.White);
                 spriteBatch.DrawString(fontSmall, "Player 0 Position: " + players[0].Position, new Vector2(10, GraphicsDevice.Viewport.Height - 240), Color.White);
-                spriteBatch.DrawString(fontSmall, "Player 0 Checkpoint: " + players[0].Checkpoints, new Vector2(10, GraphicsDevice.Viewport.Height - 280), Color.White);
-                spriteBatch.DrawString(fontSmall, "Player 0 Progress: " + (players[0].Progress + players[0].Checkpoints), new Vector2(10, GraphicsDevice.Viewport.Height - 320), Color.White);
+                //spriteBatch.DrawString(fontSmall, "Player 0 Checkpoint: " + players[0].Checkpoints, new Vector2(10, GraphicsDevice.Viewport.Height - 280), Color.White);
+                //spriteBatch.DrawString(fontSmall, "Player 0 Progress: " + (players[0].Progress + players[0].Checkpoints), new Vector2(10, GraphicsDevice.Viewport.Height - 320), Color.White);
             }
             spriteBatch.End();
 #endif

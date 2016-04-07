@@ -27,6 +27,8 @@ namespace Source
         public static float PLAYER_WIDTH = 0.6f;    // width of player in m
         public static float PLAYER_HEIGHT = 1.8f;   // height of player in m
         public static float NODE_SIZE = 2f;         // length of square side when drawing node in m
+        public static float KILL_TIME = 0.2f;       // peace period (in s) after someone dies before someone new can die
+        public static float RESPAWN_TIME = 1f;
 
         // Settings for user-defined values
         public static int WINDOW_WIDTH = 1280;       // default width of window
