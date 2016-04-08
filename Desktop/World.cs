@@ -20,15 +20,17 @@ namespace Source.Collisions
         public const float BOTTOM = 10000f;        // bottom of the level
 
         private Game1 game;
+        private Random rand;
 
         public World(Game1 game)
         {
             this.game = game;
+            rand = new Random();
         }
 
         public void Step(float deltaTime)
         {
-            // Handle particles
+            // Handle global particles
             for (int i = game.particles.Count - 1; i >= 0; i--)
             {
                 Particle part = game.particles[i];
@@ -38,14 +40,11 @@ namespace Source.Collisions
                 //Console.WriteLine("Alpha: " + part.Color.A);
                 if (part.LiveTime < 0)
                     game.particles.RemoveAt(i);
-                else if(part.type == Particle.Type.Texture)
+                else if (TestPoint(part.Position) == null)
                 {
-                    if (TestPoint(part.Position) == null)
-                    {
-                        part.Velocity.Y += GameData.GRAVITY_PART * deltaTime;
-                        part.Angle += part.AngularVelocity * deltaTime;
-                        part.Position += part.Velocity * deltaTime;
-                    }
+                    part.Velocity.Y += GameData.GRAVITY_PART * deltaTime;
+                    part.Angle += part.AngularVelocity * deltaTime;
+                    part.Position += part.Velocity * deltaTime;
                 }
             }
 
@@ -171,7 +170,6 @@ namespace Source.Collisions
                 //else
                     player.Velocity.Y += gravity;
 
-                // TODO this doesn't work perfectly
                 //int playerStep = Math.Max((int)Math.Ceiling(deltaTime * Math.Abs(player.Velocity.Y) / player.Size.Y * 1.5f),
                 //                            (int)Math.Ceiling(deltaTime * Math.Abs(player.Velocity.X) / player.Size.X * 1.5f))
                 //                            / 2;
@@ -210,14 +208,9 @@ namespace Source.Collisions
             switch (proj.Type)
             {
                 case Projectile.Types.Rocket:
-                    float prevTime = proj.LiveTime;
-                    proj.LiveTime -= deltaTime;
                     proj.Velocity.Y += GameData.ROCKET_GRAVITY * deltaTime;
-                    int particles = (int)(Math.Truncate(prevTime / GameData.ROCKET_PARTICLES) - Math.Truncate(proj.LiveTime / GameData.ROCKET_PARTICLES));
-                    MakeParticles(new Vector2(proj.Position.X - proj.Size.X / 2f, proj.Position.Y), Game1.whiteRect, particles, 0, 1, Color.WhiteSmoke);
                     break;
                 case Projectile.Types.Boomerang:
-                    proj.LiveTime -= deltaTime;
                     Vector2 dist = proj.Position - player.Position;
                     if (dist != Vector2.Zero)
                     {
@@ -230,11 +223,7 @@ namespace Source.Collisions
                     }
                     break;
                 case Projectile.Types.Hook:
-                    proj.LiveTime -= deltaTime;
                     proj.Velocity.Y += GameData.HOOK_GRAVITY * deltaTime;
-                    break;
-                default:
-                    proj.LiveTime -= deltaTime;
                     break;
             }
             proj.Update(deltaTime);
@@ -322,13 +311,18 @@ namespace Source.Collisions
         {
             // TODO make particles more general (ex: jetpack vs trap)
             for (int i = 0; i < amount; i++)
-                game.particles.Add(new Particle(pos, new Vector2(GameData.PARTICLE_WIDTH),
-                    texture, 0f, rand(x, y, new Vector2(GameData.PARTICLE_X, GameData.PARTICLE_Y)), 0f, GameData.PARTICLE_LIFETIME, color));
+            {
+                Vector2 velocity = randomVector(x, y, new Vector2(GameData.PARTICLE_X, GameData.PARTICLE_Y));
+                float angularVelocity = 0.1f * ((float)rand.NextDouble() * 2 - 1);
+                float size = (float)rand.NextDouble();
+                float liveTime = 0.5f + 2f * (float)rand.NextDouble();
+
+                game.particles.Add(new Particle(texture, pos, velocity, 0f, angularVelocity, color, size, liveTime));
+            }
         }
 
         private void CheckPlatforms(Player player)
         {
-            // TODO this seems kinda janky if player falls from great height
             int totalCollisions = 0;
             player.WallJump = Player.Direction.None;
             foreach (Platform platform in game.platforms)
@@ -446,24 +440,24 @@ namespace Source.Collisions
         /// <param name="y">0 is up and down, 1 is down, -1 is up</param>
         /// <param name="amplifier"></param>
         /// <returns></returns>
-        private Vector2 rand(int x, int y, Vector2 amplifier)
+        private Vector2 randomVector(int x, int y, Vector2 amplifier)
         {
             float randX = 0;
             float randY = 0;
 
             if (x == 0) // Left & Right
-                randX = ((float)game.rand.NextDouble() * 2 - 1) * amplifier.X;
+                randX = ((float)rand.NextDouble() * 2 - 1) * amplifier.X;
             else if (x == 1) // Right
-                randX = (float)game.rand.NextDouble() * amplifier.X;
+                randX = (float)rand.NextDouble() * amplifier.X;
             else if (x == -1) // Left
-                randX = (float)game.rand.NextDouble() * -1 * amplifier.X;
+                randX = (float)rand.NextDouble() * -1 * amplifier.X;
 
             if (y == 0) // Up & Down
-                randY = ((float)game.rand.NextDouble() * 2 - 1) * amplifier.Y;
+                randY = ((float)rand.NextDouble() * 2 - 1) * amplifier.Y;
             else if (y == 1) // Down
-                randY = (float)game.rand.NextDouble() * amplifier.Y;
+                randY = (float)rand.NextDouble() * amplifier.Y;
             else if (y == -1) // Up
-                randY = (float)game.rand.NextDouble() * -1 * amplifier.Y;
+                randY = (float)rand.NextDouble() * -1 * amplifier.Y;
 
             return new Vector2(randX, randY);
         }
@@ -506,7 +500,7 @@ namespace Source.Collisions
             }
         }
 
-        private void ApplyImpulse(float scale, Polygon player, Vector2 position)
+        private void ApplyImpulse(float scale, Player player, Vector2 position)
         {
             // Impulse drops off as 1/r
             foreach (Player body in game.players)
@@ -536,6 +530,7 @@ namespace Source.Collisions
         private void ApplyForce(float scale, Polygon player, Vector2 position, float deltaTime)
         {
             // Force drops off as 1/r for objects and 1/r^2 for players
+            // TODO apply force on particle emitters
             foreach (Particle part in game.particles)
             {
                 Vector2 dist = part.Position - position;

@@ -11,76 +11,44 @@ using Source.Collisions;
 namespace Source.Graphics
 {
     /// <summary>
-    /// Displays a particle effect.
+    /// Displays a particle effect as a texture. Motion is simulated.
     /// </summary>
     public class Particle
     {
-        public enum Type
-        {
-            Text, Texture
-        }
-
+        public Texture2D Texture;
         public Vector2 Position;
-
+        public Vector2 Velocity;
+        public float Angle;
+        public float AngularVelocity;
+        public Color Color;
+        public float Size;
         public float LiveTime;
 
-        public Type type;
-
-        private SpriteFont font;
-        private string text;
-
-        private Texture2D texture;
-        public float Angle;
-        public Vector2 Velocity;
-        public float AngularVelocity;
-        public Vector2 Size;
-        public Color Color;
-
-        public Particle(Vector2 position, Type type)
+        public Particle(Texture2D texture, Vector2 position, Vector2 velocity,
+            float angle, float angularVelocity, Color color, float size, float liveTime)
         {
-            this.Position = position;
-            this.type = type;
-            LiveTime = GameData.PARTICLE_LIFETIME_TEXT;
-        }
-
-        public Particle(Vector2 position, SpriteFont font, string text)
-        {
-            this.font = font;
-            this.text = text;
-            LiveTime = GameData.PARTICLE_LIFETIME_TEXT;
-            
-            Position = new Vector2(position.X - ConvertUnits.ToSimUnits(font.MeasureString(text).X / 2f), position.Y);
-            type = Type.Text;
-        }
-
-        public Particle(Vector2 position, Vector2 size, Texture2D texture, float angle, Vector2 velocity, float angularVelocity, float lifeTime, Color color)
-        {
-            this.texture = texture;
-            this.Angle = angle;
-            this.Velocity = velocity;
-            this.AngularVelocity = angularVelocity;
-            this.Color = color;
-            Size = size;
-            LiveTime = lifeTime;
+            Texture = texture;
             Position = position;
-            type = Type.Texture;
+            Velocity = velocity;
+            Angle = angle;
+            AngularVelocity = angularVelocity;
+            Color = color;
+            Size = size / Texture.Width;
+            LiveTime = liveTime;
         }
-        
-
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            switch (type)
-            {
-                case Type.Text:
-                    spriteBatch.DrawString(font, text, ConvertUnits.ToDisplayUnits(Position), Color.YellowGreen);
-                    break;
+            //Console.WriteLine("Part color: " + Color);
+            spriteBatch.Draw(Texture, ConvertUnits.ToDisplayUnits(Position), null, Color,
+                Angle, new Vector2(Texture.Width / 2f, Texture.Height / 2f), ConvertUnits.ToDisplayUnits(Size), SpriteEffects.None, 0f);
+        }
 
-                case Type.Texture:
-                    //Console.WriteLine("Part color: " + Color);
-                    spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(Position), null, Color, Angle, new Vector2(texture.Width / 2.0f, texture.Height / 2.0f), ConvertUnits.ToDisplayUnits(Size) / new Vector2(texture.Width / 2.0f, texture.Height / 2.0f), SpriteEffects.None, 0f);
-                    break;
-            }
+        public void Update(float deltaTime)
+        {
+            LiveTime -= deltaTime;
+            Position += Velocity * deltaTime;
+            Angle += AngularVelocity;
         }
     }
 }

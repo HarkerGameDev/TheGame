@@ -6,6 +6,8 @@ using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
+using Source.Graphics;
+
 namespace Source.Collisions
 {
     /// <summary>
@@ -15,6 +17,8 @@ namespace Source.Collisions
     {
         public float LiveTime;
         public Types Type;
+
+        ParticleEmitter particleEmitter;
 
         public enum Types
         {
@@ -29,6 +33,31 @@ namespace Source.Collisions
             Velocity = velocity;
 
             LiveTime = GameData.PROJ_LIVE;
+
+            if (Type == Types.Rocket)
+            {
+                particleEmitter = new ParticleEmitter(GameData.ROCKET_TEXTURES, Position);
+            }
+        }
+
+        public override void Update(float deltaTime)
+        {
+            base.Update(deltaTime);
+            LiveTime -= deltaTime;
+            if (particleEmitter != null)
+            {
+                particleEmitter.EmitterLocation = Position;
+                particleEmitter.Update(deltaTime);
+            }
+        }
+
+        public override void Draw(SpriteBatch spriteBatch)
+        {
+            base.Draw(spriteBatch);
+            if (particleEmitter != null)
+            {
+                particleEmitter.Draw(spriteBatch);
+            }
         }
     }
 }

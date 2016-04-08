@@ -30,6 +30,9 @@ namespace Source
         public static float KILL_TIME = 0.2f;       // peace period (in s) after someone dies before someone new can die
         public static float RESPAWN_TIME = 1f;
 
+        // Particle textures (to be reused when needed)
+        public static List<Texture2D> SLIDE_TEXTURES, JETPACK_TEXTURES, ROCKET_TEXTURES;
+
         // Settings for user-defined values
         public static int WINDOW_WIDTH = 1280;       // default width of window
         public static int WINDOW_HEIGHT = 720;       // default height of window

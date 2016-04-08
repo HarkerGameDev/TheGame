@@ -61,6 +61,7 @@ namespace Source
         public Random rand;
         //Random randLevel;
         World world;
+        ParticleEmitter particleEmitter;
 
         Rectangle cameraBounds; // limit of where the player can be on screen
         Vector2 cameraPos;     // previous average position of players
@@ -508,6 +509,22 @@ namespace Source
             cameraBounds = new Rectangle((int)(width * GameData.SCREEN_LEFT), (int)(height * GameData.SCREEN_TOP),
                 (int)(width * (GameData.SCREEN_RIGHT - GameData.SCREEN_LEFT)), (int)(height * (1 - 2 * GameData.SCREEN_TOP)));
             screenCenter = cameraBounds.Center.ToVector2();
+
+            // Initialize particle engine
+            List<Texture2D> particleTextures = new List<Texture2D>();
+            particleTextures.Add(Content.Load<Texture2D>("Particles/circle"));
+            particleTextures.Add(Content.Load<Texture2D>("Particles/star"));
+            particleTextures.Add(Content.Load<Texture2D>("Particles/diamond"));
+            particleEmitter = new ParticleEmitter(particleTextures, GameData.PLAYER_START);
+
+            GameData.SLIDE_TEXTURES = new List<Texture2D>();
+            GameData.SLIDE_TEXTURES.Add(Content.Load<Texture2D>("Particles/circle"));
+
+            GameData.JETPACK_TEXTURES = new List<Texture2D>();
+            GameData.JETPACK_TEXTURES.Add(Content.Load<Texture2D>("Particles/diamond"));
+
+            GameData.ROCKET_TEXTURES = new List<Texture2D>();
+            GameData.ROCKET_TEXTURES.Add(Content.Load<Texture2D>("Particles/star"));
         }
 
         private void LoadLevel(int loadLevel)
@@ -519,7 +536,7 @@ namespace Source
             using (BinaryReader file = new BinaryReader(File.Open("Levels/level" + loadLevel, FileMode.Open, FileAccess.Read)))
             {
                 GameData.PLAYER_START = new Vector2(file.ReadSingle(), file.ReadSingle());
-                GameData.CAMERA_SPEED = GameData.SLOW_CAMERA_SPEED;     // TODO user-customizable camera speed
+                GameData.CAMERA_SPEED = GameData.SLOW_CAMERA_SPEED;
                 int cameraNodes = file.ReadInt32();
                 //Console.WriteLine("Camera nodes: {0}", cameraNodes);
                 for (int i = 0; i < cameraNodes; i++)
@@ -728,6 +745,7 @@ namespace Source
                     }
 
                     CheckPlayer(deltaTime);
+                    particleEmitter.Update(deltaTime);
                     if (respawnTime <= 0)
                     {
                         InvertScreen -= deltaTime;
@@ -885,7 +903,6 @@ namespace Source
                     }
                     break;
                 case "Fullscreen":
-                    // TODO toggle fullscreen
                     if (!graphics.IsFullScreen)
                     {
                         graphics.PreferredBackBufferWidth = GraphicsDevice.Adapter.CurrentDisplayMode.Width;
@@ -1061,7 +1078,6 @@ namespace Source
                                     player.SpawnedPlatform = plat;
                                     break;
                                 case Character.AbilityOne.Grapple:
-                                    // TODO do a grapple animation
                                     //player.GrappleTarget = player.Position + new Vector2(10f, -10f);
                                     player.GrappleTarget = Raycast(player.Position, new Vector2(player.FacingRight ? 1f : -1f, GameData.GRAPPLE_ANGLE));
                                     player.TargetRadius = Vector2.Distance(player.Position, player.GrappleTarget);
@@ -1093,9 +1109,6 @@ namespace Source
                         {
                             float prevTime = player.JetpackTime;
                             player.JetpackTime -= deltaTime;
-                            int particles = (int)(Math.Truncate(prevTime / GameData.JETPACK_PARTICLES) - Math.Truncate(player.JetpackTime / GameData.JETPACK_PARTICLES));
-                            //Console.WriteLine("Prev: {0}\tCurr: {1}", prevTime / GameData.JETPACK_PARTICLES, player.JetpackTime / GameData.JETPACK_PARTICLES);
-                            world.MakeParticles(new Vector2(player.Position.X, player.Position.Y + player.Size.Y / 2f), whiteRect, particles, 0, 1, Color.WhiteSmoke);
                             player.Velocity.Y -= (player.Velocity.Y > 0 ? GameData.JETPACK_ACCEL_DOWN : GameData.JETPACK_ACCEL_UP) * deltaTime;
                             //Console.WriteLine("Jetpacking: {0} at time: {1}", player.Velocity.Y, player.JetpackTime);
                         }
@@ -1106,7 +1119,6 @@ namespace Source
                     player.JumpTime = 0;
                     if (player.GrappleTarget != Vector2.Zero)
                     {
-                        // TODO boost more for lower speeds and less for higher speeds
                         // TODO fix when player mashes grapple to get super-speed
                         player.Velocity *= GameData.GRAPPLE_BOOST;
                         player.GrappleTarget = Vector2.Zero;
@@ -1143,7 +1155,6 @@ namespace Source
                             if (i >= 0)
                             {
                                 Console.WriteLine("Found time: {0}\tCurrent time: {1}", times[i], totalTime);
-                                // TODO animate the transition for super-awesome effect
                                 foreach (Player target in players)
                                 {
                                     if (target != player && target.Alive)
@@ -1164,7 +1175,6 @@ namespace Source
                             player.HookedPlayer = null;
                             break;
                         case Character.AbilityTwo.Rocket:
-                            // TODO tweak rocket so it's better
                             player.AbilityTwoTime = GameData.ROCKET_COOLDOWN;
                             vel = new Vector2(player.FacingRight ? GameData.ROCKET_X : -GameData.ROCKET_X, GameData.ROCKET_Y)
                                 + player.Velocity * GameData.ROCKET_SCALE;
@@ -1452,7 +1462,7 @@ namespace Source
                         else
                         {
                             if (selectedNode == null)           // Move camera
-                                cameraPos -= ConvertUnits.ToSimUnits(ConvertUnits.GetMousePos(mouse) - ConvertUnits.GetMousePos(prevMouseState));    // TODO test this
+                                cameraPos -= ConvertUnits.ToSimUnits(ConvertUnits.GetMousePos(mouse) - ConvertUnits.GetMousePos(prevMouseState));
                             else                                // Move node
                                 selectedNode.Value = mouseSimPos;
                         }
@@ -1556,7 +1566,7 @@ namespace Source
                     ConvertUnits.SetDisplayUnitToSimUnitRatio(currentZoom);
 
                     Vector2 mousePos = ConvertUnits.ToDisplayUnits(mouseSimPos - cameraPos) + cameraBounds.Center.ToVector2();
-                    cameraPos += ConvertUnits.ToSimUnits(mousePos - ConvertUnits.GetMousePos(prevMouseState));  // TODO test this
+                    cameraPos += ConvertUnits.ToSimUnits(mousePos - ConvertUnits.GetMousePos(prevMouseState));
                     //Console.WriteLine("Screen offset: " + screenOffset);
                 }
                 else if (mouse.ScrollWheelValue < editScroll)
@@ -1567,7 +1577,7 @@ namespace Source
                     ConvertUnits.SetDisplayUnitToSimUnitRatio(currentZoom);
 
                     Vector2 mousePos = ConvertUnits.ToDisplayUnits(mouseSimPos - cameraPos) + cameraBounds.Center.ToVector2();
-                    cameraPos += ConvertUnits.ToSimUnits(mousePos - ConvertUnits.GetMousePos(prevMouseState));  // TODO test this
+                    cameraPos += ConvertUnits.ToSimUnits(mousePos - ConvertUnits.GetMousePos(prevMouseState));
                 }
             }
 
@@ -1581,7 +1591,6 @@ namespace Source
                 cameraPos = mouseSimPos;
             }
 
-            // TODO save and load level from UI
             if (keyboard.IsKeyDown(Keys.LeftControl))
             {
                 if (ToggleKey(Keys.S))
@@ -1624,7 +1633,6 @@ namespace Source
         /// </summary>
         private void CheckPlayer(float deltaTime)
         {
-            // TODO update place in race
             Player last = players[0];
             Player first = last;
             for (int i = 1; i < players.Count; i++)
@@ -2124,6 +2132,7 @@ namespace Source
 
             // Draw all particles
             spriteBatch.Begin(transformMatrix: view, blendState: BlendState.NonPremultiplied);
+            particleEmitter.Draw(spriteBatch);
             foreach (Particle part in particles)
                 part.Draw(spriteBatch);
             spriteBatch.End();
@@ -2173,7 +2182,6 @@ namespace Source
             GraphicsDevice.Clear(Color.MidnightBlue);
 
             spriteBatch.Begin();
-            // TODO draw current profile
             spriteBatch.DrawString(fontBig, Character.playerCharacters[characterSelect].Name, new Vector2(300, 200), Character.playerCharacters[characterSelect].Color);
             spriteBatch.End();
         }

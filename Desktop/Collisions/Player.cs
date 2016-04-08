@@ -36,6 +36,8 @@ namespace Source.Collisions
         public SpriteEffects Flip;
         public bool FacingRight { get { return TargetVelocity == Direction.None ? Flip == SpriteEffects.None : TargetVelocity == Direction.Right; } }
 
+        ParticleEmitter slideEmitter, jetpackEmitter;
+
         // Character-specific variables
         public Platform SpawnedPlatform;
         public float PlatformTime;
@@ -107,6 +109,9 @@ namespace Source.Collisions
             Origin = new Vector2(Origin.X / animationFrames.Max(), Origin.Y / animationFrames.Length);
             float textureScale = GameData.PLAYER_HEIGHT / Origin.Y / 2f * (20f / 18f);
             Sprite = new AnimatedSprite(texture, this, animationFrames, textureScale);
+
+            slideEmitter = new ParticleEmitter(GameData.SLIDE_TEXTURES, Position);
+            jetpackEmitter = new ParticleEmitter(GameData.JETPACK_TEXTURES, Position);
         }
 
         /// <summary>
@@ -240,6 +245,14 @@ namespace Source.Collisions
                     else
                         Velocity.Y = GameData.WALL_STICK_VEL;
                 }
+
+                slideEmitter.Enabled = CurrentState == State.WallStick || CurrentState == State.Sliding;
+                slideEmitter.EmitterLocation = Position;
+                slideEmitter.Update(deltaTime);
+
+                jetpackEmitter.Enabled = JetpackEnabled && JetpackTime > 0;
+                jetpackEmitter.EmitterLocation = Position;
+                jetpackEmitter.Update(deltaTime);
             }
 
             // swing on grapple
@@ -302,7 +315,11 @@ namespace Source.Collisions
             }
 
             Sprite.Draw(spriteBatch);
-            
+
+            slideEmitter.Draw(spriteBatch);
+            jetpackEmitter.Draw(spriteBatch);
+            //particles!!!
+
             //Vector2 pos = new Vector2(Position.X - BAR_WIDTH / 2, Position.Y - Size.Y * 0.7f);
             //Game1.DrawRectangle(spriteBatch, pos, Color.LightSalmon, new Vector2(BAR_WIDTH, BAR_HEIGHT));
             //Game1.DrawRectangle(spriteBatch, pos, Color.Crimson, new Vector2(BAR_WIDTH * BoostTime / GameData.BOOST_LENGTH, BAR_HEIGHT));
