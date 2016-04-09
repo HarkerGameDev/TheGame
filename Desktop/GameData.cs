@@ -188,13 +188,11 @@ namespace Source
         public const float JETPACK_ACCEL_UP = 15f + GRAVITY;  // m/s^2 -- upwards acceleration while jetpacking and going up
         public const float JETPACK_ACCEL_DOWN = 60f + GRAVITY;  // m/s^2 -- updwards acceleration while jetpacking and going down
         public const float JETPACK_TIME = 0.9f; // jetpack lasts for this long without touching ground
-        public const float JETPACK_PARTICLES = 1 / 40f; // number of particles spawned by jetpack per second
         public const float ROCKET_COOLDOWN = 4f;    // cooldown for rocket explosive ability
         public const float ROCKET_X = 25f;          // initial x velocity of rocket (w/o player)
         public const float ROCKET_Y = -3f;          // initial y velocity of rocket (w/o player)
         public const float ROCKET_SCALE = 0.3f;     // scale of player's velocity in rocket when firing
         public const float ROCKET_GRAVITY = 10f;    // gravity for rocket
-        public const float ROCKET_PARTICLES = 1 / 60f; // number of particles spawned by rocket per second
         public const int ROCKET_EXPLODE_PART = 20; // number of particles when rocket explodes
         public const float ROCKET_FORCE = 130f;    // force when rocket hits something and explodes
         public const float ROCKET_STUN = 0.9f;      // stun time when hit by a rocket directly

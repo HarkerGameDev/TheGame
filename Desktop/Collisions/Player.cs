@@ -36,7 +36,7 @@ namespace Source.Collisions
         public SpriteEffects Flip;
         public bool FacingRight { get { return TargetVelocity == Direction.None ? Flip == SpriteEffects.None : TargetVelocity == Direction.Right; } }
 
-        ParticleEmitter slideEmitter, jetpackEmitter;
+        public ParticleEmitter SlideEmitter, JetpackEmitter;
 
         // Character-specific variables
         public Platform SpawnedPlatform;
@@ -110,8 +110,19 @@ namespace Source.Collisions
             float textureScale = GameData.PLAYER_HEIGHT / Origin.Y / 2f * (20f / 18f);
             Sprite = new AnimatedSprite(texture, this, animationFrames, textureScale);
 
-            slideEmitter = new ParticleEmitter(GameData.SLIDE_TEXTURES, Position);
-            jetpackEmitter = new ParticleEmitter(GameData.JETPACK_TEXTURES, Position);
+            SlideEmitter = new ParticleEmitter(GameData.SLIDE_TEXTURES, Position, 75f);
+            SlideEmitter.Red = SlideEmitter.Blue = SlideEmitter.Green = 1f;
+            SlideEmitter.RedVar = SlideEmitter.BlueVar = SlideEmitter.GreenVar = 0f;
+            SlideEmitter.AngVelVar = 0.001f;
+            SlideEmitter.LiveTime = 5f;
+            SlideEmitter.VelVarX = SlideEmitter.VelVarY = 0.5f;
+
+            JetpackEmitter = new ParticleEmitter(GameData.JETPACK_TEXTURES, Position, 140f);
+            JetpackEmitter.Size = 1.5f;
+            JetpackEmitter.Red = 0.62f;
+            JetpackEmitter.Blue = 0.16f;
+            JetpackEmitter.Green = 0.1f;
+            JetpackEmitter.RedVar = JetpackEmitter.BlueVar = JetpackEmitter.GreenVar = 0f;
         }
 
         /// <summary>
@@ -246,13 +257,28 @@ namespace Source.Collisions
                         Velocity.Y = GameData.WALL_STICK_VEL;
                 }
 
-                slideEmitter.Enabled = CurrentState == State.WallStick || CurrentState == State.Sliding;
-                slideEmitter.EmitterLocation = Position;
-                slideEmitter.Update(deltaTime);
+                Vector2 bottom = new Vector2(Position.X, Position.Y + Size.Y / 2f);
+                if (CurrentState == State.Sliding)
+                {
+                    SlideEmitter.Enabled = true;
+                    SlideEmitter.EmitterLocation = bottom;
+                    SlideEmitter.VelY = -SlideEmitter.VelVarY;
+                }
+                else if (CurrentState == State.WallStick)
+                {
+                    SlideEmitter.Enabled = true;
+                    SlideEmitter.EmitterLocation = Position;
+                    SlideEmitter.VelY = 0f;
+                }
+                else
+                {
+                    SlideEmitter.Enabled = false;
+                }
+                //SlideEmitter.Update(deltaTime);
 
-                jetpackEmitter.Enabled = JetpackEnabled && JetpackTime > 0;
-                jetpackEmitter.EmitterLocation = Position;
-                jetpackEmitter.Update(deltaTime);
+                JetpackEmitter.Enabled = JetpackEnabled && JetpackTime > 0;
+                JetpackEmitter.EmitterLocation = bottom;
+                //JetpackEmitter.Update(deltaTime);
             }
 
             // swing on grapple
@@ -316,8 +342,8 @@ namespace Source.Collisions
 
             Sprite.Draw(spriteBatch);
 
-            slideEmitter.Draw(spriteBatch);
-            jetpackEmitter.Draw(spriteBatch);
+            //SlideEmitter.Draw(spriteBatch);
+            //JetpackEmitter.Draw(spriteBatch);
             //particles!!!
 
             //Vector2 pos = new Vector2(Position.X - BAR_WIDTH / 2, Position.Y - Size.Y * 0.7f);

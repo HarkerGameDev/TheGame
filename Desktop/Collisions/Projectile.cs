@@ -18,7 +18,7 @@ namespace Source.Collisions
         public float LiveTime;
         public Types Type;
 
-        ParticleEmitter particleEmitter;
+        public ParticleEmitter ParticleEmitter;
 
         public enum Types
         {
@@ -36,7 +36,8 @@ namespace Source.Collisions
 
             if (Type == Types.Rocket)
             {
-                particleEmitter = new ParticleEmitter(GameData.ROCKET_TEXTURES, Position);
+                ParticleEmitter = new ParticleEmitter(GameData.ROCKET_TEXTURES, Position, 90f);
+                ParticleEmitter.Size = 1.5f;
             }
         }
 
@@ -44,20 +45,20 @@ namespace Source.Collisions
         {
             base.Update(deltaTime);
             LiveTime -= deltaTime;
-            if (particleEmitter != null)
+            if (ParticleEmitter != null)
             {
-                particleEmitter.EmitterLocation = Position;
-                particleEmitter.Update(deltaTime);
+                ParticleEmitter.EmitterLocation = Position;
+                //ParticleEmitter.Update(deltaTime);
             }
         }
 
         public override void Draw(SpriteBatch spriteBatch)
         {
             base.Draw(spriteBatch);
-            if (particleEmitter != null)
-            {
-                particleEmitter.Draw(spriteBatch);
-            }
+            //if (ParticleEmitter != null)
+            //{
+            //    ParticleEmitter.Draw(spriteBatch);
+            //}
         }
     }
 }

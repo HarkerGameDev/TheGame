@@ -24,29 +24,57 @@ namespace Source.Graphics
         private float currentTime;
         public bool Enabled;
 
-        public ParticleEmitter(List<Texture2D> textures, Vector2 location)
+        public float VelX, VelY;
+        public float VelVarX, VelVarY;
+        public float AngVel;
+        public float AngVelVar;
+        public float Red, Blue, Green;
+        public float RedVar, BlueVar, GreenVar;
+        public float Size;
+        public float SizeVar;
+        public float LiveTime;
+        public float LiveTimeVar;
+
+        public ParticleEmitter(List<Texture2D> textures, Vector2 location, float particlesPerSec)
         {
             EmitterLocation = location;
             this.textures = textures;
             this.particles = new List<Particle>();
             random = new Random();
 
-            spawnTime = 1f / 20f;
+            spawnTime = 1f / particlesPerSec;
             currentTime = 0;
             Enabled = true;
+
+            VelX = 0f;
+            VelY = 0f;
+            VelVarX = 1f;
+            VelVarY = 1f;
+            AngVel = 0f;
+            AngVelVar = 1f;
+            Red = 0.5f;
+            Blue = 0.5f;
+            Green = 0.5f;
+            RedVar = BlueVar = GreenVar = 0.5f;
+            Size = 1f;
+            SizeVar = 0.5f;
+            LiveTime = 1.5f;
+            LiveTimeVar = 1f;
         }
 
         private Particle MakeParticle()
         {
             Texture2D texture = textures[random.Next(textures.Count)];
             Vector2 position = EmitterLocation;
-            Vector2 velocity = new Vector2(1f * (float)random.NextDouble() * 2 - 1,
-                1f * (float)random.NextDouble() * 2 - 1);
+            Vector2 velocity = new Vector2(VelX + VelVarX * ((float)random.NextDouble() - 0.5f),
+                VelY + VelVarY * ((float)random.NextDouble() - 0.5f));
             float angle = 0;
-            float angularVelocity = 0.1f * ((float)random.NextDouble() * 2 - 1);
-            Color color = new Color((float)random.NextDouble(), (float)random.NextDouble(), (float)random.NextDouble());
-            float size = (float)random.NextDouble();
-            float liveTime = 0.5f + 2f * (float)random.NextDouble();
+            float angularVelocity = AngVel + AngVelVar * ((float)random.NextDouble() - 0.5f);
+            Color color = new Color(Red + RedVar * ((float)random.NextDouble() - 0.5f),
+                Blue + BlueVar * ((float)random.NextDouble() - 0.5f),
+                Green + GreenVar * ((float)random.NextDouble() - 0.5f));
+            float size = Size + SizeVar * ((float)random.NextDouble() - 0.5f);
+            float liveTime = LiveTime + LiveTimeVar * ((float)random.NextDouble() - 0.5f);
 
             return new Particle(texture, position, velocity, angle, angularVelocity, color, size, liveTime);
         }

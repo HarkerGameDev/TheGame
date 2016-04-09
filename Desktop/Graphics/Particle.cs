@@ -20,9 +20,14 @@ namespace Source.Graphics
         public Vector2 Velocity;
         public float Angle;
         public float AngularVelocity;
+
         public Color Color;
         public float Size;
         public float LiveTime;
+
+        private readonly Color StartColor;
+        private readonly float StartSize;
+        private readonly float StartLife;
 
         public Particle(Texture2D texture, Vector2 position, Vector2 velocity,
             float angle, float angularVelocity, Color color, float size, float liveTime)
@@ -32,9 +37,9 @@ namespace Source.Graphics
             Velocity = velocity;
             Angle = angle;
             AngularVelocity = angularVelocity;
-            Color = color;
-            Size = size / Texture.Width;
-            LiveTime = liveTime;
+            StartColor = Color = color;
+            StartSize = Size = size / Texture.Width;
+            StartLife = LiveTime = liveTime;
         }
 
         public void Draw(SpriteBatch spriteBatch)
@@ -47,8 +52,16 @@ namespace Source.Graphics
         public void Update(float deltaTime)
         {
             LiveTime -= deltaTime;
-            Position += Velocity * deltaTime;
-            Angle += AngularVelocity;
+
+            if (StartLife > 0)
+            {
+                float ratio = LiveTime / StartLife;
+                Size = StartSize * ratio;
+                this.Color.A = (byte)(ratio * 255);
+
+                Position += Velocity * deltaTime;
+                Angle += AngularVelocity;
+            }
         }
     }
 }

@@ -510,21 +510,24 @@ namespace Source
                 (int)(width * (GameData.SCREEN_RIGHT - GameData.SCREEN_LEFT)), (int)(height * (1 - 2 * GameData.SCREEN_TOP)));
             screenCenter = cameraBounds.Center.ToVector2();
 
-            // Initialize particle engine
+            // Define particles
             List<Texture2D> particleTextures = new List<Texture2D>();
             particleTextures.Add(Content.Load<Texture2D>("Particles/circle"));
             particleTextures.Add(Content.Load<Texture2D>("Particles/star"));
             particleTextures.Add(Content.Load<Texture2D>("Particles/diamond"));
-            particleEmitter = new ParticleEmitter(particleTextures, GameData.PLAYER_START);
+
+            particleEmitter = new ParticleEmitter(particleTextures, GameData.PLAYER_START, 1f);
+            particleEmitter.VelVarX = particleEmitter.VelVarY = 5f;
+            particleEmitter.LiveTime = 8f;
 
             GameData.SLIDE_TEXTURES = new List<Texture2D>();
-            GameData.SLIDE_TEXTURES.Add(Content.Load<Texture2D>("Particles/circle"));
+            GameData.SLIDE_TEXTURES.Add(Content.Load<Texture2D>("Particles/smoke"));
 
             GameData.JETPACK_TEXTURES = new List<Texture2D>();
-            GameData.JETPACK_TEXTURES.Add(Content.Load<Texture2D>("Particles/diamond"));
+            GameData.JETPACK_TEXTURES.Add(Content.Load<Texture2D>("Particles/gradient"));
 
             GameData.ROCKET_TEXTURES = new List<Texture2D>();
-            GameData.ROCKET_TEXTURES.Add(Content.Load<Texture2D>("Particles/star"));
+            GameData.ROCKET_TEXTURES.Add(Content.Load<Texture2D>("Particles/gradient"));
         }
 
         private void LoadLevel(int loadLevel)
@@ -745,7 +748,6 @@ namespace Source
                     }
 
                     CheckPlayer(deltaTime);
-                    particleEmitter.Update(deltaTime);
                     if (respawnTime <= 0)
                     {
                         InvertScreen -= deltaTime;
@@ -1629,10 +1631,23 @@ namespace Source
         }
 
         /// <summary>
-        /// Checks if the user is off the level, and resets the player if it is. Also, updates player-related game things (documentation WIP)
+        /// Updates player and checks if the user is off the level, and resets the player if it is.
+        /// Also updates the camera position. Basically, the non-collision update for the game
         /// </summary>
         private void CheckPlayer(float deltaTime)
         {
+            // Update all particle emitters
+            particleEmitter.Update(deltaTime);
+            foreach (Player player in players)
+            {
+                player.SlideEmitter.Update(deltaTime);
+                player.JetpackEmitter.Update(deltaTime);
+                foreach (Projectile proj in player.Projectiles)
+                {
+                    proj.ParticleEmitter.Update(deltaTime);
+                }
+            }
+
             Player last = players[0];
             Player first = last;
             for (int i = 1; i < players.Count; i++)
@@ -2130,19 +2145,35 @@ namespace Source
             }
             spriteBatch.End();
 
-            // Draw all particles
-            spriteBatch.Begin(transformMatrix: view, blendState: BlendState.NonPremultiplied);
-            particleEmitter.Draw(spriteBatch);
+            // Draw all alpha-based particles
+            spriteBatch.Begin(blendState: BlendState.NonPremultiplied, transformMatrix: view);
             foreach (Particle part in particles)
                 part.Draw(spriteBatch);
+            foreach (Player player in players)
+            {
+                player.SlideEmitter.Draw(spriteBatch);
+            }
             spriteBatch.End();
 
-//#if DEBUG
-//            spriteBatch.Begin(transformMatrix: view);
-//            spriteBatch.Draw(whiteRect, ConvertUnits.ToDisplayUnits(cameraPos), null, Color.Olive, 0f, new Vector2(0.5f), ConvertUnits.ToDisplayUnits(3), SpriteEffects.None, 0f);
-//            spriteBatch.Draw(whiteRect, averagePos, null, Color.DarkGreen, 0f, new Vector2(0.5f), ConvertUnits.ToDisplayUnits(2), SpriteEffects.None, 0f);
-//            spriteBatch.End();
-//#endif
+            // Draw all additive particles
+            spriteBatch.Begin(blendState: BlendState.Additive, transformMatrix: view);
+            particleEmitter.Draw(spriteBatch);
+            foreach (Player player in players)
+            {
+                player.JetpackEmitter.Draw(spriteBatch);
+                foreach (Projectile proj in player.Projectiles)
+                {
+                    proj.ParticleEmitter.Draw(spriteBatch);
+                }
+            }
+            spriteBatch.End();
+
+            //#if DEBUG
+            //            spriteBatch.Begin(transformMatrix: view);
+            //            spriteBatch.Draw(whiteRect, ConvertUnits.ToDisplayUnits(cameraPos), null, Color.Olive, 0f, new Vector2(0.5f), ConvertUnits.ToDisplayUnits(3), SpriteEffects.None, 0f);
+            //            spriteBatch.Draw(whiteRect, averagePos, null, Color.DarkGreen, 0f, new Vector2(0.5f), ConvertUnits.ToDisplayUnits(2), SpriteEffects.None, 0f);
+            //            spriteBatch.End();
+            //#endif
         }
 
         private void DrawBackground(Vector2 averagePos)
