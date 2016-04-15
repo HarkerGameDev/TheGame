@@ -29,6 +29,7 @@ namespace Source.Collisions
         public float JumpTime;
         public float JumpSpeed;
         public bool PrevJump;
+        public float AttackTime;
         public float AbilityOneTime, AbilityTwoTime, AbilityThreeTime;
         public Direction WallJump;
         public Direction TargetVelocity;
@@ -78,6 +79,7 @@ namespace Source.Collisions
             StunTime = 0;
             JumpTime = 0;
             PrevJump = false;
+            AttackTime = 0;
             AbilityOneTime = 0;
             AbilityTwoTime = 0;
             AbilityThreeTime = 0;
@@ -170,6 +172,7 @@ namespace Source.Collisions
             }
             else
             {
+                AttackTime -= deltaTime;
                 AbilityOneTime -= deltaTime;
                 AbilityTwoTime -= deltaTime;
                 AbilityThreeTime -= deltaTime;

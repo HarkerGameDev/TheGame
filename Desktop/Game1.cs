@@ -90,6 +90,7 @@ namespace Source
         float highScore = 0;
         float killTime = 0;
         float respawnTime = 0;
+        float hitPause = 0;
 
         public List<Player> players;
         public List<Platform> platforms;
@@ -230,7 +231,7 @@ namespace Source
 #if DEBUG
                 playerControls.Add(new GameData.SimulatedControls(this));
 #endif
-                //playerControls.Add(new GameData.KeyboardControls(this, Keys.Z, Keys.X, Keys.LeftShift, Keys.A, Keys.D, Keys.W, Keys.S));
+                playerControls.Add(new GameData.KeyboardControls(this, Keys.Z, Keys.X, Keys.LeftShift, Keys.A, Keys.D, Keys.W, Keys.S));
                 playerControls.Add(new GameData.GamePadControls(this, PlayerIndex.One, Buttons.X, Buttons.B, Buttons.Y, Buttons.LeftThumbstickLeft, Buttons.LeftThumbstickRight, Buttons.A, Buttons.RightTrigger));
                 playerControls.Add(new GameData.GamePadControls(this, PlayerIndex.Two, Buttons.X, Buttons.B, Buttons.Y, Buttons.LeftThumbstickLeft, Buttons.LeftThumbstickRight, Buttons.A, Buttons.RightTrigger));
             }
@@ -699,6 +700,12 @@ namespace Source
 
                     float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
+                    if (hitPause > 0f)
+                    {
+                        hitPause -= deltaTime;
+                        break;
+                    }
+
                     if (simulating)
                     {
                         while (simIndex < simTimes.Count && simTimes[simIndex] - totalTime <= 0)
@@ -738,6 +745,9 @@ namespace Source
 
                     if (currentPlatform == null)
                         HandleInput(deltaTime);
+
+                    if (hitPause > 0f)
+                        break;
 
                     if (simulating)
                     {
@@ -1095,7 +1105,10 @@ namespace Source
                                     break;
                                 case Character.AbilityOne.Jump:
                                     if (--player.JumpsLeft > 0)
-                                        player.Velocity.Y = -GameData.AIR_JUMP_SPEED;
+                                    {
+                                        player.Velocity.Y *= GameData.AIR_JUMP_MOMENTUM;
+                                        player.Velocity.Y -= GameData.AIR_JUMP_SPEED;
+                                    }
                                     break;
                             }
                         }
@@ -1207,8 +1220,8 @@ namespace Source
                 }
 
                 // Basic attack (with 3 modifiers in both land AND air)
-                // TODO hitstun, cooldown, and pause everything for a moment during impact
-                if (controls.Basic1)
+                // TODO animations (or just smear) for attacks
+                if (controls.Basic1 && player.AttackTime < 0f)
                 {
                     if (controls.Down)                                          // holding down
                     {
@@ -1222,6 +1235,8 @@ namespace Source
                                         target.Velocity.Y = 0;
                                     target.Velocity += new Vector2(player.FacingRight ? GameData.ATTACK_DOWN_X : -GameData.ATTACK_DOWN_X, GameData.ATTACK_DOWN_Y)
                                         + player.Velocity * GameData.ATTACK_DOWN_MOMENTUM;
+                                    hitPause = GameData.HIT_PAUSE;
+                                    player.AttackTime = GameData.ATTACK_TIME;
                                 }
                             }
                         }
@@ -1241,6 +1256,8 @@ namespace Source
                                         if (target.Velocity.Y > 0)
                                             target.Velocity.Y = 0;
                                         target.Velocity += new Vector2(GameData.ATTACK_NORM_X, GameData.ATTACK_NORM_Y) + player.Velocity * GameData.ATTACK_NORM_MOMENTUM;
+                                        hitPause = GameData.HIT_PAUSE;
+                                        player.AttackTime = GameData.ATTACK_TIME;
                                     }
                                 }
                                 else
@@ -1252,6 +1269,8 @@ namespace Source
                                         if (target.Velocity.Y > 0)
                                             target.Velocity.Y = 0;
                                         target.Velocity += new Vector2(-GameData.ATTACK_NORM_X, GameData.ATTACK_NORM_Y) + player.Velocity * GameData.ATTACK_NORM_MOMENTUM;
+                                        hitPause = GameData.HIT_PAUSE;
+                                        player.AttackTime = GameData.ATTACK_TIME;
                                     }
                                 }
                             }
@@ -1271,7 +1290,9 @@ namespace Source
                                             target.Velocity.X = 0;
                                         if (target.Velocity.Y > 0)
                                             target.Velocity.Y = 0;
-                                        target.Velocity += new Vector2(GameData.ATTACK_SIDE_X, GameData.ATTACK_SIDE_Y) + player.Velocity * GameData.ATTACK_SIDE_MOMENTUM;
+                                        target.Velocity += new Vector2(GameData.ATTACK_SIDE_X + player.Velocity.X * GameData.ATTACK_SIDE_MOMENTUM, GameData.ATTACK_SIDE_Y);
+                                        hitPause = GameData.HIT_PAUSE;
+                                        player.AttackTime = GameData.ATTACK_TIME;
                                     }
                                 }
                                 else
@@ -1282,7 +1303,9 @@ namespace Source
                                             target.Velocity.X = 0;
                                         if (target.Velocity.Y > 0)
                                             target.Velocity.Y = 0;
-                                        target.Velocity += new Vector2(-GameData.ATTACK_SIDE_X, GameData.ATTACK_SIDE_Y) + player.Velocity * GameData.ATTACK_SIDE_MOMENTUM;
+                                        target.Velocity += new Vector2(-GameData.ATTACK_SIDE_X + player.Velocity.X * GameData.ATTACK_SIDE_MOMENTUM, GameData.ATTACK_SIDE_Y);
+                                        hitPause = GameData.HIT_PAUSE;
+                                        player.AttackTime = GameData.ATTACK_TIME;
                                     }
                                 }
                             }
@@ -1687,7 +1710,6 @@ namespace Source
                     newCameraPos = players[playerCenter].Position;
                     break;
                 case CameraType.Path:
-                    // TODO check if the next node should be used
                     newCameraPos = cameraNode == null ? cameraPos : cameraNode.Value;
                     break;
                 default:
@@ -2146,16 +2168,6 @@ namespace Source
             }
             spriteBatch.End();
 
-            // Draw all alpha-based particles
-            spriteBatch.Begin(blendState: BlendState.NonPremultiplied, transformMatrix: view);
-            foreach (Particle part in particles)
-                part.Draw(spriteBatch);
-            foreach (Player player in players)
-            {
-                player.SlideEmitter.Draw(spriteBatch);
-            }
-            spriteBatch.End();
-
             // Draw all additive particles
             spriteBatch.Begin(blendState: BlendState.Additive, transformMatrix: view);
             particleEmitter.Draw(spriteBatch);
@@ -2167,6 +2179,16 @@ namespace Source
                     if (proj.ParticleEmitter != null)
                         proj.ParticleEmitter.Draw(spriteBatch);
                 }
+            }
+            spriteBatch.End();
+
+            // Draw all alpha-based particles
+            spriteBatch.Begin(blendState: BlendState.NonPremultiplied, transformMatrix: view);
+            foreach (Particle part in particles)
+                part.Draw(spriteBatch);
+            foreach (Player player in players)
+            {
+                player.SlideEmitter.Draw(spriteBatch);
             }
             spriteBatch.End();
 

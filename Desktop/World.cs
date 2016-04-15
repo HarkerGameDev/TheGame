@@ -530,7 +530,6 @@ namespace Source.Collisions
         private void ApplyForce(float scale, Polygon player, Vector2 position, float deltaTime)
         {
             // Force drops off as 1/r for objects and 1/r^2 for players
-            // TODO apply force on particle emitters
             foreach (Particle part in game.particles)
             {
                 Vector2 dist = part.Position - position;

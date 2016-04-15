@@ -71,7 +71,7 @@ namespace Source
 
         public const float MIN_VELOCITY = 1f;  // m/s -- what can be considered target velocity
         public const float MAX_VELOCITY = 20f; // m/s -- maximum horizontal velocity for player
-        public const float LAND_ACCEL = 20f;   // m/s^2 -- acceleration applied when reaching TargetVelocity
+        public const float LAND_ACCEL = 24f;   // m/s^2 -- acceleration applied when reaching TargetVelocity
         public const float AIR_ACCEL = LAND_ACCEL - 1f;   // m/s^2 -- acceleration while in air
         public const float LAND_DRAG = 3.1f;     // m/s^2 -- decelleration to 0 when on the ground
         public const float AIR_DRAG = 0.55f;       // m/s^2 -- decelleration to 0 when in air
@@ -130,11 +130,14 @@ namespace Source
         public const float STUN_RADIUS = 3.3f;    // radius within which a player will be stuned from an explosion (in m)
 
         // Attack constants
+        public const float HIT_PAUSE = 8f / 60f;    // time after attack during which everything stops (to enhance effect)
+        public const float ATTACK_TIME = 0.5f;      // time between attacks
+
         public const float ATTACK_NORM_WIDTH = 3f;       // width of attack hitbox (in m)
         public const float ATTACK_NORM_HEIGHT = 3f;      // height of attack hitbox (in m)
         public const float ATTACK_NORM_X = 13f;    // change in X velocity when hit by an attack
         public const float ATTACK_NORM_Y = -10f;    // change in Y velocity when hit by an attack
-        public const float ATTACK_NORM_MOMENTUM = 3f;  // proportion of momentum from attacker included in attack
+        public const float ATTACK_NORM_MOMENTUM = 0.4f;  // proportion of total momentum from attacker included in attack
 
         public const float ATTACK_DOWN_WIDTH = 4f;       // width of attack hitbox (in m)
         public const float ATTACK_DOWN_HEIGHT = 4f;      // height of attack hitbox (in m)
@@ -200,6 +203,7 @@ namespace Source
 
         public const int TOTAL_JUMPS = 3;       // number of jumps the acrobat can do in total (including intial jump)
         public const float AIR_JUMP_SPEED = JUMP_SPEED + 4f;    // velocity of jump when acrobat jumping in air
+        public const float AIR_JUMP_MOMENTUM = 0.5f;    // vertical velocity kept when jumping
         public const float BOOMERANG_COOLDOWN = 6f;    // cooldown for boomerang throw ability
         public const float BOOMERANG_X = 20f;          // initial x velocity of boomerang (w/o player)
         public const float BOOMERANG_Y = -18f;          // initial y velocity of boomerang (w/o player)
