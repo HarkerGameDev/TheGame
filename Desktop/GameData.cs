@@ -61,11 +61,12 @@ namespace Source
         public const float WALL_JUMP_X = 7.6f;   // m/s -- horizontal jump off a wall
         public const float WALL_STICK_VEL = 3.4f;     // m/s -- downwards velocity when sticking to a wall
         public const float WALL_STICK_ACCEL = 90f;   // m/s^2 -- how quickly player will accelerate to wall-sticking velocity (constant w/ respect to distance)
+        public const float WALL_LEWAY = 0.2f;       // s -- time during which player moves from wall but still stick to it, Super Meat Boy style
         //public const float WALL_JUMP_LEWAY = 0.3f;    // s -- time after which player can no longer wall jump after leaving a wall
         //public const float WALL_STICK_SCALE = 0.5f; // -- scale of vertical velocity when beginning to wall slide
         //public const float WALL_SLIDE_SCALE = 0.2f; // -- gravity scale when sliding on the wall
 
-        public const float GRAVITY = 21f;   // m/s^2 -- gravity for players
+        public const float GRAVITY = 13f;   // m/s^2 -- gravity for players
         public const float GRAVITY_PART = 15f; // m/s^2 -- gravity for particles
 
         public const float MIN_VELOCITY = 1f;  // m/s -- what can be considered target velocity
@@ -177,7 +178,7 @@ namespace Source
         public const float HOOK_HEIGHT = 3f;        // pixel height of hookshot rope
         public const float HOOK_PULL = 85f;         // pulling force of hookshot (in m/s^2)
         public const float TRAP_COOLDOWN = 4f;     // cooldown for dropping a trap
-        public const float TRAP_FORCE = 90f;       // force when trap expires and explodes
+        public const float TRAP_FORCE = 70f;       // force when trap expires and explodes
         public const int TRAP_PARTICLES = 20;    // number of particles when trap explodes
 
         public const float BLINK_COOLDOWN = 2.8f;     // cooldown for blink ability
@@ -185,7 +186,7 @@ namespace Source
         public const float TIMEWARP_TIME = 2f;      // how many seconds should be reversed
         public const float TIMEWARP_COOLDOWN = 5f;  // cooldown for timewarp ability
 
-        public const float JETPACK_ACCEL_UP = 15f + GRAVITY;  // m/s^2 -- upwards acceleration while jetpacking and going up
+        public const float JETPACK_ACCEL_UP = 6f + GRAVITY;  // m/s^2 -- upwards acceleration while jetpacking and going up
         public const float JETPACK_ACCEL_DOWN = 60f + GRAVITY;  // m/s^2 -- updwards acceleration while jetpacking and going down
         public const float JETPACK_TIME = 0.9f; // jetpack lasts for this long without touching ground
         public const float ROCKET_COOLDOWN = 4f;    // cooldown for rocket explosive ability
@@ -194,7 +195,7 @@ namespace Source
         public const float ROCKET_SCALE = 0.3f;     // scale of player's velocity in rocket when firing
         public const float ROCKET_GRAVITY = 10f;    // gravity for rocket
         public const int ROCKET_EXPLODE_PART = 20; // number of particles when rocket explodes
-        public const float ROCKET_FORCE = 130f;    // force when rocket hits something and explodes
+        public const float ROCKET_FORCE = 100f;    // force when rocket hits something and explodes
         public const float ROCKET_STUN = 0.9f;      // stun time when hit by a rocket directly
 
         public const int TOTAL_JUMPS = 3;       // number of jumps the acrobat can do in total (including intial jump)
@@ -207,7 +208,7 @@ namespace Source
         //public const float BOOMERANG_GRAVITY = 1f;    // gravity for boomerang
         public const float BOOMERANG_FORCE = 580f;    // force with which boomerang pulls other things inside
         public const float BOOMERANG_ANTIGRAV = 7f;    // m radius after which player is "sucked in" and loses all control
-        public const float MAX_FORCE = 105f;        // maximum (m/s^2)^2 for a gravity force
+        public const float MAX_FORCE = 41f;        // maximum (m/s^2)^2 for a gravity force
         public const float BOOMERANG_LIFE_CUTOFF = PROJ_LIVE - 1f;  // leway time during which boomerang is leaving player's hands
 
         public const float BACKGROUND_Y_SCALE = 0.1f;       // Y parallaxing in relation to X parallaxing

@@ -230,9 +230,9 @@ namespace Source
 #if DEBUG
                 playerControls.Add(new GameData.SimulatedControls(this));
 #endif
-                playerControls.Add(new GameData.KeyboardControls(this, Keys.Z, Keys.X, Keys.LeftShift, Keys.A, Keys.D, Keys.W, Keys.S));
+                //playerControls.Add(new GameData.KeyboardControls(this, Keys.Z, Keys.X, Keys.LeftShift, Keys.A, Keys.D, Keys.W, Keys.S));
                 playerControls.Add(new GameData.GamePadControls(this, PlayerIndex.One, Buttons.X, Buttons.B, Buttons.Y, Buttons.LeftThumbstickLeft, Buttons.LeftThumbstickRight, Buttons.A, Buttons.RightTrigger));
-                playerControls.Add(new GameData.GamePadControls(this, PlayerIndex.One, Buttons.X, Buttons.B, Buttons.Y, Buttons.LeftThumbstickLeft, Buttons.LeftThumbstickRight, Buttons.A, Buttons.RightTrigger));
+                playerControls.Add(new GameData.GamePadControls(this, PlayerIndex.Two, Buttons.X, Buttons.B, Buttons.Y, Buttons.LeftThumbstickLeft, Buttons.LeftThumbstickRight, Buttons.A, Buttons.RightTrigger));
             }
 
             rand = new Random();
@@ -469,7 +469,7 @@ namespace Source
             FontManager.Instance.LoadFonts(Content, "Fonts");
 
             StringBuilder builder = new StringBuilder();
-            for (int i = 0; i < GameData.MAX_PLAYERS; i++)
+            for (int i = 0; i < playerControls.Count; i++)
             {
                 builder.Append("Player ").AppendLine((i + 1).ToString())
                     .AppendLine(playerControls[i].ToString());
@@ -1644,7 +1644,8 @@ namespace Source
                 player.JetpackEmitter.Update(deltaTime);
                 foreach (Projectile proj in player.Projectiles)
                 {
-                    proj.ParticleEmitter.Update(deltaTime);
+                    if (proj.ParticleEmitter != null)
+                        proj.ParticleEmitter.Update(deltaTime);
                 }
             }
 
@@ -2163,7 +2164,8 @@ namespace Source
                 player.JetpackEmitter.Draw(spriteBatch);
                 foreach (Projectile proj in player.Projectiles)
                 {
-                    proj.ParticleEmitter.Draw(spriteBatch);
+                    if (proj.ParticleEmitter != null)
+                        proj.ParticleEmitter.Draw(spriteBatch);
                 }
             }
             spriteBatch.End();
