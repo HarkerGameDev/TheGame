@@ -66,7 +66,7 @@ namespace Source
         //public const float WALL_STICK_SCALE = 0.5f; // -- scale of vertical velocity when beginning to wall slide
         //public const float WALL_SLIDE_SCALE = 0.2f; // -- gravity scale when sliding on the wall
 
-        public const float GRAVITY = 13f;   // m/s^2 -- gravity for players
+        public const float GRAVITY = 19f;   // m/s^2 -- gravity for players
         public const float GRAVITY_PART = 15f; // m/s^2 -- gravity for particles
 
         public const float MIN_VELOCITY = 1f;  // m/s -- what can be considered target velocity
@@ -133,14 +133,14 @@ namespace Source
         public const float HIT_PAUSE = 8f / 60f;    // time after attack during which everything stops (to enhance effect)
         public const float ATTACK_TIME = 0.5f;      // time between attacks
 
-        public const float ATTACK_NORM_WIDTH = 3f;       // width of attack hitbox (in m)
-        public const float ATTACK_NORM_HEIGHT = 3f;      // height of attack hitbox (in m)
+        public const float ATTACK_NORM_WIDTH = 2f;       // width of attack hitbox (in m)
+        public const float ATTACK_NORM_HEIGHT = 2f;      // height of attack hitbox (in m)
         public const float ATTACK_NORM_X = 13f;    // change in X velocity when hit by an attack
         public const float ATTACK_NORM_Y = -10f;    // change in Y velocity when hit by an attack
         public const float ATTACK_NORM_MOMENTUM = 0.4f;  // proportion of total momentum from attacker included in attack
 
-        public const float ATTACK_DOWN_WIDTH = 4f;       // width of attack hitbox (in m)
-        public const float ATTACK_DOWN_HEIGHT = 4f;      // height of attack hitbox (in m)
+        public const float ATTACK_DOWN_WIDTH = 2f;       // width of attack hitbox (in m)
+        public const float ATTACK_DOWN_HEIGHT = 3f;      // height of attack hitbox (in m)
         public const float ATTACK_DOWN_X = 3f;    // change in X velocity when hit by an attack
         public const float ATTACK_DOWN_Y = 11f;    // change in Y velocity when hit by an attack
         public const float ATTACK_DOWN_MOMENTUM = 0.5f;  // proportion of momentum from attacker included in attack
@@ -173,7 +173,7 @@ namespace Source
         public const float GRAPPLE_BOOST = 1.0f;      // boost in momentum after releasing a rope
         //public const float GRAPPLE_HELP = 10f;      // help to push player when no manual input
         //public const float GRAPPLE_HELP_MIN = 3f;  // minimum length of velocity while swinging
-        public const float HOOK_COOLDOWN = 6f;      // cooldown for hookshot ability
+        public const float HOOK_LIFE = 6f;      // cooldown for hookshot ability
         public const float HOOK_X = 35f;            // initial x velocity of hookshot (w/o player)
         public const float HOOK_Y = -3f;            // initial y velocity of hookshot (w/o player)
         public const float HOOK_SCALE = 0.2f;       // scale of player's velocity in hook when firing

@@ -30,6 +30,7 @@ namespace Source.Collisions
         public float JumpSpeed;
         public bool PrevJump;
         public float AttackTime;
+        public bool ShowSmear;
         public float AbilityOneTime, AbilityTwoTime, AbilityThreeTime;
         public Direction WallJump;
         public Direction TargetVelocity;
@@ -80,6 +81,7 @@ namespace Source.Collisions
             JumpTime = 0;
             PrevJump = false;
             AttackTime = 0;
+            ShowSmear = false;
             AbilityOneTime = 0;
             AbilityTwoTime = 0;
             AbilityThreeTime = 0;
@@ -90,6 +92,10 @@ namespace Source.Collisions
             PrevStates = new List<Tuple<Vector2, Vector2>>();
             Projectiles = new List<Projectile>();
             Velocity = Vector2.Zero;
+
+            GrappleTarget = Vector2.Zero;
+            HookedPlayer = null;
+            HookedLocation = Vector2.Zero;
         }
 
         public Player(Texture2D texture, Vector2 position, Character character, LinkedListNode<Vector2> checkpoint)
@@ -135,6 +141,8 @@ namespace Source.Collisions
         {
             if (!Alive)
                 throw new Exception("Moving dead player");
+
+            ShowSmear = false;
 
             // pull towards hooked player
             if (HookedPlayer != null)
@@ -343,6 +351,15 @@ namespace Source.Collisions
                 DrawLine(spriteBatch, Position, HookedLocation, GameData.HOOK_HEIGHT, Color.Salmon);
             }
 
+            if (ShowSmear)
+            {
+                // TODO replace attack with some proper animation with sparky flash effects
+                spriteBatch.Draw(Game1.smear,
+                    ConvertUnits.ToDisplayUnits(new Vector2(Position.X + (FacingRight ? 1f : -1f), Position.Y)),
+                    null, Color.White, 0f, Game1.smear.Bounds.Size.ToVector2() / 2f, ConvertUnits.ToDisplayUnits(0.01f),
+                    FacingRight ? SpriteEffects.None : SpriteEffects.FlipHorizontally, 0f);
+            }
+
             Sprite.Draw(spriteBatch);
 
             //SlideEmitter.Draw(spriteBatch);
@@ -360,7 +377,7 @@ namespace Source.Collisions
             float rot = (float)Math.Atan2(dist.Y, dist.X);
             Vector2 origin = new Vector2(0f, 0.5f);
             Vector2 scale = new Vector2(ConvertUnits.ToDisplayUnits(dist.Length()), height);
-            spriteBatch.Draw(Game1.whiteRect, ConvertUnits.ToDisplayUnits(start), null, color, rot, origin, scale, SpriteEffects.None, 0f);
+            spriteBatch.Draw(Game1.whiteRect, ConvertUnits.ToDisplayUnits(start), null, color, rot, origin, scale, SpriteEffects.None, 1f);
         }
 
         public void Reset()

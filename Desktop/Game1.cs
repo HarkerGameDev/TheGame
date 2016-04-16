@@ -51,6 +51,7 @@ namespace Source
         public List<GameData.Controls> playerControls;
 
         public static Texture2D whiteRect;
+        public static Texture2D smear;
         Tuple<Texture2D, float, float, float>[] prevBackground, background;
         float fadeTime;
         public SpriteFont fontSmall, fontBig;
@@ -231,7 +232,7 @@ namespace Source
 #if DEBUG
                 playerControls.Add(new GameData.SimulatedControls(this));
 #endif
-                playerControls.Add(new GameData.KeyboardControls(this, Keys.Z, Keys.X, Keys.LeftShift, Keys.A, Keys.D, Keys.W, Keys.S));
+                playerControls.Add(new GameData.KeyboardControls(this, Keys.LeftShift, Keys.V, Keys.Z, Keys.A, Keys.D, Keys.W, Keys.S));
                 playerControls.Add(new GameData.GamePadControls(this, PlayerIndex.One, Buttons.X, Buttons.B, Buttons.Y, Buttons.LeftThumbstickLeft, Buttons.LeftThumbstickRight, Buttons.A, Buttons.RightTrigger));
                 playerControls.Add(new GameData.GamePadControls(this, PlayerIndex.Two, Buttons.X, Buttons.B, Buttons.Y, Buttons.LeftThumbstickLeft, Buttons.LeftThumbstickRight, Buttons.A, Buttons.RightTrigger));
             }
@@ -490,6 +491,8 @@ namespace Source
             // Use this to draw any rectangles
             whiteRect = new Texture2D(GraphicsDevice, 1, 1);
             whiteRect.SetData(new[] { Color.White });
+
+            smear = Content.Load<Texture2D>("Art/smear");
 
             // Load assets in the Content Manager
             //background = Content.Load<Texture2D>("Art/skyscrapers");
@@ -1181,19 +1184,28 @@ namespace Source
                                 }
                             }
                             break;
-                        case Character.AbilityTwo.Hook:
-                            player.AbilityTwoTime = GameData.HOOK_COOLDOWN;
-                            Vector2 vel = new Vector2(player.FacingRight ? GameData.HOOK_X : -GameData.HOOK_X, GameData.HOOK_Y)
-                                + player.Velocity * GameData.HOOK_SCALE;
-                            player.Projectiles.Add(new Projectile(whiteRect, player.Position, Color.DarkSlateGray, Projectile.Types.Hook, vel));
-                            player.HookedLocation = Vector2.Zero;
-                            player.HookedPlayer = null;
-                            break;
                         case Character.AbilityTwo.Rocket:
                             player.AbilityTwoTime = GameData.ROCKET_COOLDOWN;
-                            vel = new Vector2(player.FacingRight ? GameData.ROCKET_X : -GameData.ROCKET_X, GameData.ROCKET_Y)
+                            Vector2 vel = new Vector2(player.FacingRight ? GameData.ROCKET_X : -GameData.ROCKET_X, GameData.ROCKET_Y)
                                 + player.Velocity * GameData.ROCKET_SCALE;
                             player.Projectiles.Add(new Projectile(whiteRect, player.Position, Color.DarkOliveGreen, Projectile.Types.Rocket, vel));
+                            break;
+                        case Character.AbilityTwo.Hook:
+                            if (player.HookedLocation != Vector2.Zero)
+                                player.HookedLocation = Vector2.Zero;
+                            else if (player.HookedPlayer != null)
+                                player.HookedPlayer = null;
+                            else if (player.Projectiles.Count < 1)      // player is not currently firing
+                            {
+                                //player.AbilityTwoTime = GameData.HOOK_COOLDOWN;
+                                vel = new Vector2(player.FacingRight ? GameData.HOOK_X : -GameData.HOOK_X, GameData.HOOK_Y)
+                                    + player.Velocity * GameData.HOOK_SCALE;
+                                Projectile proj = new Projectile(whiteRect, player.Position, Color.DarkSlateGray, Projectile.Types.Hook, vel);
+                                proj.LiveTime = GameData.HOOK_LIFE;
+                                player.Projectiles.Add(proj);
+                                player.HookedLocation = Vector2.Zero;
+                                player.HookedPlayer = null;
+                            }
                             break;
                         case Character.AbilityTwo.Boomerang:
                             player.AbilityTwoTime = GameData.BOOMERANG_COOLDOWN;
@@ -1237,6 +1249,7 @@ namespace Source
                                         + player.Velocity * GameData.ATTACK_DOWN_MOMENTUM;
                                     hitPause = GameData.HIT_PAUSE;
                                     player.AttackTime = GameData.ATTACK_TIME;
+                                    player.ShowSmear = true;
                                 }
                             }
                         }
@@ -1258,6 +1271,7 @@ namespace Source
                                         target.Velocity += new Vector2(GameData.ATTACK_NORM_X, GameData.ATTACK_NORM_Y) + player.Velocity * GameData.ATTACK_NORM_MOMENTUM;
                                         hitPause = GameData.HIT_PAUSE;
                                         player.AttackTime = GameData.ATTACK_TIME;
+                                        player.ShowSmear = true;
                                     }
                                 }
                                 else
@@ -1271,6 +1285,7 @@ namespace Source
                                         target.Velocity += new Vector2(-GameData.ATTACK_NORM_X, GameData.ATTACK_NORM_Y) + player.Velocity * GameData.ATTACK_NORM_MOMENTUM;
                                         hitPause = GameData.HIT_PAUSE;
                                         player.AttackTime = GameData.ATTACK_TIME;
+                                        player.ShowSmear = true;
                                     }
                                 }
                             }
@@ -1293,6 +1308,7 @@ namespace Source
                                         target.Velocity += new Vector2(GameData.ATTACK_SIDE_X + player.Velocity.X * GameData.ATTACK_SIDE_MOMENTUM, GameData.ATTACK_SIDE_Y);
                                         hitPause = GameData.HIT_PAUSE;
                                         player.AttackTime = GameData.ATTACK_TIME;
+                                        player.ShowSmear = true;
                                     }
                                 }
                                 else
@@ -1306,6 +1322,7 @@ namespace Source
                                         target.Velocity += new Vector2(-GameData.ATTACK_SIDE_X + player.Velocity.X * GameData.ATTACK_SIDE_MOMENTUM, GameData.ATTACK_SIDE_Y);
                                         hitPause = GameData.HIT_PAUSE;
                                         player.AttackTime = GameData.ATTACK_TIME;
+                                        player.ShowSmear = true;
                                     }
                                 }
                             }
@@ -1993,7 +2010,7 @@ namespace Source
      //       {
             spriteBatch.Begin();
             spriteBatch.Draw(playerScreens[0], GraphicsDevice.Viewport.Bounds, null, Color.White, 0f, Vector2.Zero,
-                InvertScreen > 0 ? SpriteEffects.FlipVertically | SpriteEffects.FlipHorizontally : SpriteEffects.None, 0f);
+                InvertScreen > 0 ? SpriteEffects.FlipVertically | SpriteEffects.FlipHorizontally : SpriteEffects.None, 1f);
             spriteBatch.End();
             //}
 
@@ -2092,7 +2109,7 @@ namespace Source
             Matrix view = Matrix.CreateTranslation(new Vector3(screenCenter - averagePos, 0f));
 
             // Draw players
-            spriteBatch.Begin(transformMatrix: view);
+            spriteBatch.Begin(SpriteSortMode.BackToFront, transformMatrix: view);
             foreach (Player player in players)
             {
                 if (player.Alive)
@@ -2215,7 +2232,7 @@ namespace Source
                 float size = layer.Item4 * ConvertUnits.GetResolutionScale();
                 spriteBatch.Draw(tex, new Vector2(0, height * center + averagePos.Y * speed * GameData.BACKGROUND_Y_SCALE),
                     new Rectangle((int)(averagePos.X * speed), 0, (int)(width / size), tex.Height),
-                    Color.White, 0f, new Vector2(0, tex.Height / 2), size, SpriteEffects.None, 0f);
+                    Color.White, 0f, new Vector2(0, tex.Height / 2), size, SpriteEffects.None, 1f);
             }
             //spriteBatch.Draw(background, new Vector2(0, height * GameData.BACK3_CENTER),
             //   new Rectangle((int)(averagePos.X * GameData.BACK3_MOVE), 0, (int)(width / GameData.BACK3_SIZE), background.Height),
@@ -2300,7 +2317,7 @@ namespace Source
         /// <param name="scale">The horizontal and vertical scale for the rectangle</param>
         private void DrawRect(Vector2 position, Color color, float rotation, Vector2 origin, Vector2 scale)
         {
-            spriteBatch.Draw(whiteRect, ConvertUnits.ToDisplayUnits(position), null, color, rotation, origin, ConvertUnits.ToDisplayUnits(scale), SpriteEffects.None, 0f);
+            spriteBatch.Draw(whiteRect, ConvertUnits.ToDisplayUnits(position), null, color, rotation, origin, ConvertUnits.ToDisplayUnits(scale), SpriteEffects.None, 1f);
         }
     }
 }

@@ -70,7 +70,7 @@ namespace Source.Collisions
 
         public virtual void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(Position), null, Color, Rotation, Origin, ConvertUnits.ToDisplayUnits(Size) / (Origin * 2), SpriteEffects.None, 0f);
+            spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(Position), null, Color, Rotation, Origin, ConvertUnits.ToDisplayUnits(Size) / (Origin * 2), SpriteEffects.None, 1f);
         }
 
         /// <summary>
