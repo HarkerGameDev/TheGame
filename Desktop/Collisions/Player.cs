@@ -202,16 +202,20 @@ namespace Source.Collisions
                         if (Velocity.X < 0)
                             Velocity.X += GameData.AIR_DRAG * deltaTime;
                         Velocity.X += GameData.AIR_ACCEL * deltaTime;
-                        if (WallJump == Direction.Right && Velocity.Y >= GameData.WALL_STICK_VEL)
-                            CurrentState = State.WallStick;
+                        //if (WallJump == Direction.Right && Velocity.Y >= GameData.WALL_STICK_VEL)
+                        //    CurrentState = State.WallStick;
+                        if (WallJump == Direction.Left)
+                            WallJump = Direction.None;
                     }
                     else if (TargetVelocity == Direction.Left)
                     {
                         if (Velocity.X > 0)
                             Velocity.X -= GameData.AIR_DRAG * deltaTime;
                         Velocity.X -= GameData.AIR_ACCEL * deltaTime;
-                        if (WallJump == Direction.Left && Velocity.Y >= GameData.WALL_STICK_VEL)
-                            CurrentState = State.WallStick;
+                        //if (WallJump == Direction.Left && Velocity.Y >= GameData.WALL_STICK_VEL)
+                        //    CurrentState = State.WallStick;
+                        if (WallJump == Direction.Right)
+                            WallJump = Direction.None;
                     }
                     else
                     {

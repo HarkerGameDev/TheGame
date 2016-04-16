@@ -324,7 +324,6 @@ namespace Source.Collisions
         private void CheckPlatforms(Player player)
         {
             int totalCollisions = 0;
-            player.WallJump = Player.Direction.None;
             foreach (Platform platform in game.platforms)
             {
                 Vector2 translation = player.Intersects(platform);
@@ -349,19 +348,15 @@ namespace Source.Collisions
                             player.Velocity.X = 0;
                             //if (player.InAir && player.JumpTime <= 0)
                             //{
-                                //if (player.WallJump == Player.Jump.None && player.Velocity.Y > 0)
-                                //    player.Velocity.Y *= GameData.WALL_STICK_SCALE;
-                                if (translation.X > 0)
-                                {
-                                    translation.X -= 0.0001f;
-                                    player.WallJump = Player.Direction.Right;
-                                }
-                                else
-                                {
-                                    translation.X += 0.0001f;
-                                    player.WallJump = Player.Direction.Left;
-                                }
-                                //player.WallJumpLeway = GameData.WALL_JUMP_LEWAY;
+                            //if (player.WallJump == Player.Jump.None && player.Velocity.Y > 0)
+                            //    player.Velocity.Y *= GameData.WALL_STICK_SCALE;
+                            if (player.Velocity.Y >= GameData.WALL_STICK_VEL)
+                            {
+                                if (translation.X > 0 && player.TargetVelocity == Player.Direction.Right ||
+                                    translation.X < 0 && player.TargetVelocity == Player.Direction.Left)
+                                    player.CurrentState = Player.State.WallStick;
+                            }
+                            //player.WallJumpLeway = GameData.WALL_JUMP_LEWAY;
                             //}
                         }
                     }
@@ -429,7 +424,7 @@ namespace Source.Collisions
 				//player.Score--;
             }
 
-            if (totalCollisions == 0 && player.CurrentState != Player.State.Stunned)
+            if (totalCollisions == 0 && player.CurrentState != Player.State.Stunned && player.WallJump == Player.Direction.None)
                 player.CurrentState = Player.State.Jumping;
         }
 

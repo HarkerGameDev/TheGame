@@ -24,11 +24,11 @@ namespace Source
         public static float AI_WAIT = 3f;           // number of seconds until AI jumps again
         public static float AI_HOLD = 1f;           // how long AI holds the jump button
 
-        public static float PLAYER_WIDTH = 0.6f;    // width of player in m
-        public static float PLAYER_HEIGHT = 1.8f;   // height of player in m
-        public static float NODE_SIZE = 2f;         // length of square side when drawing node in m
-        public static float KILL_TIME = 0.2f;       // peace period (in s) after someone dies before someone new can die
-        public static float RESPAWN_TIME = 1f;
+        public const float PLAYER_WIDTH = 0.6f;    // width of player in m
+        public const float PLAYER_HEIGHT = 1.8f;   // height of player in m
+        public const float NODE_SIZE = 2f;         // length of square side when drawing node in m
+        public const float KILL_TIME = 0.2f;       // peace period (in s) after someone dies before someone new can die
+        public const float RESPAWN_TIME = 1f;
 
         // Particle textures (to be reused when needed)
         public static List<Texture2D> SLIDE_TEXTURES, JETPACK_TEXTURES, ROCKET_TEXTURES;
@@ -61,12 +61,12 @@ namespace Source
         public const float WALL_JUMP_X = 7.6f;   // m/s -- horizontal jump off a wall
         public const float WALL_STICK_VEL = 3.4f;     // m/s -- downwards velocity when sticking to a wall
         public const float WALL_STICK_ACCEL = 90f;   // m/s^2 -- how quickly player will accelerate to wall-sticking velocity (constant w/ respect to distance)
-        public const float WALL_LEWAY = 0.2f;       // s -- time during which player moves from wall but still stick to it, Super Meat Boy style
+        public const float WALL_HITBOX = PLAYER_WIDTH + 0.4f;       // s -- time during which player moves from wall but still stick to it, Super Meat Boy style
         //public const float WALL_JUMP_LEWAY = 0.3f;    // s -- time after which player can no longer wall jump after leaving a wall
         //public const float WALL_STICK_SCALE = 0.5f; // -- scale of vertical velocity when beginning to wall slide
         //public const float WALL_SLIDE_SCALE = 0.2f; // -- gravity scale when sliding on the wall
 
-        public const float GRAVITY = 19f;   // m/s^2 -- gravity for players
+        public const float GRAVITY = 21f;   // m/s^2 -- gravity for players
         public const float GRAVITY_PART = 15f; // m/s^2 -- gravity for particles
 
         public const float MIN_VELOCITY = 1f;  // m/s -- what can be considered target velocity

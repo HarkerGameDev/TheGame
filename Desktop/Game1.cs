@@ -1051,6 +1051,16 @@ namespace Source
 
             if (player.CurrentState != Player.State.Stunned)
             {
+                // Wall-jump
+                Vector2 dir = new Vector2(GameData.WALL_HITBOX, 0f);
+                float ray = Raycast(player.Position - dir, dir);
+                if (ray < 1f)
+                    player.WallJump = Player.Direction.Left;
+                else if (ray < 2f)
+                    player.WallJump = Player.Direction.Right;
+                else
+                    player.WallJump = Player.Direction.None;
+
                 if (controls.JumpHeld)
                 {
                     if (!player.PrevJump)       // toggle jump
@@ -1078,7 +1088,7 @@ namespace Source
                             else
                                 player.Velocity.X = -GameData.WALL_JUMP_X;
                             player.JumpTime = GameData.JUMP_TIME;
-                            //player.WallJump = Player.Jump.None;
+                            player.WallJump = Player.Direction.None;
                         }
                         else if (player.AbilityOneTime < 0)        // jump abilities
                         {
@@ -1094,9 +1104,14 @@ namespace Source
                                     break;
                                 case Character.AbilityOne.Grapple:
                                     //player.GrappleTarget = player.Position + new Vector2(10f, -10f);
-                                    player.GrappleTarget = Raycast(player.Position, new Vector2(player.FacingRight ? 1f : -1f, GameData.GRAPPLE_ANGLE));
-                                    player.TargetRadius = Vector2.Distance(player.Position, player.GrappleTarget);
-                                    player.GrappleRight = player.Flip == SpriteEffects.None;
+                                    dir = new Vector2(player.FacingRight ? 1f : -1f, GameData.GRAPPLE_ANGLE);
+                                    ray = Raycast(player.Position, dir);
+                                    if (ray < GameData.MAX_GRAPPLE)
+                                    {
+                                        player.GrappleTarget = player.Position + dir * ray;
+                                        player.TargetRadius = Vector2.Distance(player.Position, player.GrappleTarget);
+                                        player.GrappleRight = player.Flip == SpriteEffects.None;
+                                    }
                                     break;
                                 case Character.AbilityOne.Blink:
                                     player.AbilityOneTime = GameData.BLINK_COOLDOWN;
@@ -1334,12 +1349,12 @@ namespace Source
         }
 
         /// <summary>
-        /// Casts a ray from start in the given direction, returning found point or Vector2.Zero
+        /// Casts a ray from start in the given direction, returning the number of "dir" vector it takes to get to the closest contact
         /// </summary>
         /// <param name="start"></param>
         /// <param name="dir"></param>
-        /// <returns>The nearest point of collision, or Vector2.Zero if nothing</returns>
-        private Vector2 Raycast(Vector2 start, Vector2 dir)
+        /// <returns>The distance to the nearest contact or float.MaxValue</returns>
+        private float Raycast(Vector2 start, Vector2 dir)
         {
             float minT = float.MaxValue;
             foreach (Platform plat in platforms)
@@ -1348,10 +1363,7 @@ namespace Source
                 if (t < minT)
                     minT = t;
             }
-            if (minT < GameData.MAX_GRAPPLE)
-                return start + dir * minT;
-            else
-                return Vector2.Zero;
+            return minT;
         }
 
         private void wobbleScreen(float amplifier)
@@ -1676,7 +1688,7 @@ namespace Source
         /// </summary>
         private void CheckPlayer(float deltaTime)
         {
-            // Update all particle emitters
+            // Update player particle emitters
             particleEmitter.Update(deltaTime);
             foreach (Player player in players)
             {
