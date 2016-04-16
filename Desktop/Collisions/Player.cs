@@ -15,9 +15,6 @@ namespace Source.Collisions
     /// </summary>
     public class Player : Polygon
     {
-        private const float BAR_WIDTH = 1f; // length of bar in meters
-        private const float BAR_HEIGHT = 0.25f;
-
         public bool Alive;
         public int Score;
         public int Checkpoints;
@@ -370,9 +367,12 @@ namespace Source.Collisions
             //JetpackEmitter.Draw(spriteBatch);
             //particles!!!
 
-            //Vector2 pos = new Vector2(Position.X - BAR_WIDTH / 2, Position.Y - Size.Y * 0.7f);
-            //Game1.DrawRectangle(spriteBatch, pos, Color.LightSalmon, new Vector2(BAR_WIDTH, BAR_HEIGHT));
-            //Game1.DrawRectangle(spriteBatch, pos, Color.Crimson, new Vector2(BAR_WIDTH * BoostTime / GameData.BOOST_LENGTH, BAR_HEIGHT));
+            Vector2 pos = ConvertUnits.ToDisplayUnits(new Vector2(Position.X, Position.Y - Size.Y * 0.7f));
+            Vector2 origin = new Vector2(0.5f);
+            spriteBatch.Draw(Game1.whiteRect, pos, null, GameData.BAR_1_COLOR, 0f, origin,
+                ConvertUnits.ToDisplayUnits(new Vector2(AbilityOneTime * GameData.BAR_SCALE, GameData.BAR_HEIGHT)), SpriteEffects.None, 0.1f);
+            spriteBatch.Draw(Game1.whiteRect, pos, null, GameData.BAR_2_COLOR, 0f, origin,
+                ConvertUnits.ToDisplayUnits(new Vector2(AbilityTwoTime * GameData.BAR_SCALE, GameData.BAR_HEIGHT)), SpriteEffects.None, 0.1f);
         }
 
         private void DrawLine(SpriteBatch spriteBatch, Vector2 start, Vector2 end, float height, Color color)

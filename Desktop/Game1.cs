@@ -1861,13 +1861,16 @@ namespace Source
                         break;
                     }
                 }
-                foreach (Player player in players)
+                for (int i = players.Count - 1; i >= 0; i--)
                 {
+                    Player player = players[i];
                     player.ResetValues();
                     player.MoveToPosition(alive.Position);
                     player.Checkpoints = alive.Checkpoints;
                     player.Progress = alive.Progress;
                     player.Node = alive.Node;
+                    if (player.ClonedPlayer != null)
+                        players.Remove(player.ClonedPlayer);
                     //Console.WriteLine("Set player checkpoints to {0} and progress to {1}", player.Checkpoints, player.Progress);
                 }
                 respawnTime = GameData.RESPAWN_TIME;
@@ -2121,7 +2124,7 @@ namespace Source
             Matrix view = Matrix.CreateTranslation(new Vector3(screenCenter - averagePos, 0f));
 
             // Draw players
-            spriteBatch.Begin(SpriteSortMode.BackToFront, transformMatrix: view);
+            spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.NonPremultiplied, transformMatrix: view);
             foreach (Player player in players)
             {
                 if (player.Alive)

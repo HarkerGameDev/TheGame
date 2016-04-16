@@ -26,6 +26,10 @@ namespace Source
 
         public const float PLAYER_WIDTH = 0.6f;    // width of player in m
         public const float PLAYER_HEIGHT = 1.8f;   // height of player in m
+        public const float BAR_SCALE = 0.2f;      // multipler for bad width with AbilityTime
+        public const float BAR_HEIGHT = 0.25f;  // height of cooldown bar in meters
+        public static Color BAR_1_COLOR = new Color(Color.Fuchsia, 0.5f);       // color for jump ability
+        public static Color BAR_2_COLOR = new Color(Color.GhostWhite, 0.5f);    // color for special 1
         public const float NODE_SIZE = 2f;         // length of square side when drawing node in m
         public const float KILL_TIME = 0.2f;       // peace period (in s) after someone dies before someone new can die
         public const float RESPAWN_TIME = 1f;
