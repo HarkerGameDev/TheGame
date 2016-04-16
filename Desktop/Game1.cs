@@ -52,6 +52,7 @@ namespace Source
 
         public static Texture2D whiteRect;
         public static Texture2D smear;
+        Texture2D platformTexture;
         Tuple<Texture2D, float, float, float>[] prevBackground, background;
         float fadeTime;
         public SpriteFont fontSmall, fontBig;
@@ -558,7 +559,7 @@ namespace Source
                         Vector2 position = new Vector2(file.ReadSingle(), file.ReadSingle());
                         Vector2 size = new Vector2(file.ReadSingle(), file.ReadSingle());
                         float rotation = file.ReadSingle();
-                        platforms.Add(new Platform(whiteRect, position, size, rotation));
+                        platforms.Add(new Platform(platformTexture, position, size, rotation));
                     }
                 }
                 catch (IOException e)
@@ -634,6 +635,7 @@ namespace Source
                     Content.Load<Texture2D>(string.Format("Backgrounds/Background{0}/layer{1}", loadLevel, i)),
                     layer[0], layer[1], layer[2]);
             }
+            platformTexture = Content.Load<Texture2D>(string.Format("Backgrounds/Background{0}/platform", loadLevel));
         }
 
         /// <summary>
@@ -670,7 +672,11 @@ namespace Source
                         editLevel = !editLevel;
                         if (!editLevel)
                         {
-                            currentPlatform = null;
+                            if (currentPlatform != null)
+                            {
+                                currentPlatform.Color = Color.White;
+                                currentPlatform = null;
+                            }
                             currentZoom = GameData.PIXEL_METER;
                         }
                         else
@@ -1095,7 +1101,7 @@ namespace Source
                             switch (player.CurrentCharacter.Ability1)
                             {
                                 case Character.AbilityOne.Platform:
-                                    Platform plat = new Platform(whiteRect, player.Position + new Vector2(0, GameData.PLATFORM_DIST),
+                                    Platform plat = new Platform(platformTexture, player.Position + new Vector2(0, GameData.PLATFORM_DIST),
                                         new Vector2(GameData.PLATFORM_WIDTH, GameData.PLATFORM_HEIGHT));
                                     platforms.Add(plat);
                                     player.AbilityOneTime = GameData.PLATFORM_COOLDOWN;
@@ -1436,7 +1442,10 @@ namespace Source
                             Collisions.Polygon body = world.TestPoint(mouseSimPos);
                             if (body != null && body is Platform)
                             {
+                                if (currentPlatform != null)
+                                    currentPlatform.Color = Color.White;
                                 currentPlatform = (Platform)body;
+                                currentPlatform.Color = Color.Green;
                                 selectedNode = null;
                             }
                         }
@@ -1543,7 +1552,7 @@ namespace Source
                         topLeft = startDraw;
                         size = endDraw - startDraw;
                     }
-                    currentPlatform = new Platform(whiteRect, topLeft + size / 2f, size);
+                    currentPlatform = new Platform(platformTexture, topLeft + size / 2f, size);
                     platforms.Add(currentPlatform);
                 }
                 editingPlatform = false;
@@ -1564,7 +1573,10 @@ namespace Source
                 else if (keyboard.IsKeyDown(Keys.Down))
                     currentPlatform.MoveByPosition(Vector2.UnitY);
                 else if (keyboard.IsKeyDown(Keys.Enter))        // Deselect platform
+                {
+                    currentPlatform.Color = Color.White;
                     currentPlatform = null;
+                }
                 else if (ToggleKey(Keys.V))
                     currentPlatform.Rotate(MathHelper.PiOver4);
                 else if (ToggleKey(Keys.C))
@@ -2124,7 +2136,7 @@ namespace Source
             Matrix view = Matrix.CreateTranslation(new Vector3(screenCenter - averagePos, 0f));
 
             // Draw players
-            spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.NonPremultiplied, transformMatrix: view);
+            spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.NonPremultiplied, SamplerState.LinearWrap, transformMatrix: view);
             foreach (Player player in players)
             {
                 if (player.Alive)
@@ -2152,8 +2164,8 @@ namespace Source
                 obstacle.Draw(spriteBatch);
             foreach (Drop drop in drops)
                 drop.Draw(spriteBatch);
-            if (currentPlatform != null)
-                DrawRect(currentPlatform.Position, Color.Green, currentPlatform.Rotation, currentPlatform.Origin, currentPlatform.Size);
+            //if (currentPlatform != null)
+            //    DrawRect(currentPlatform.Position, Color.Green, currentPlatform.Rotation, currentPlatform.Origin, currentPlatform.Size);
             if (editingPlatform)
             {
                 Vector2 topLeft, size;
@@ -2332,7 +2344,7 @@ namespace Source
         /// <param name="scale">The horizontal and vertical scale for the rectangle</param>
         private void DrawRect(Vector2 position, Color color, float rotation, Vector2 origin, Vector2 scale)
         {
-            spriteBatch.Draw(whiteRect, ConvertUnits.ToDisplayUnits(position), null, color, rotation, origin, ConvertUnits.ToDisplayUnits(scale), SpriteEffects.None, 1f);
+            spriteBatch.Draw(whiteRect, ConvertUnits.ToDisplayUnits(position), null, color, rotation, origin, ConvertUnits.ToDisplayUnits(scale), SpriteEffects.None, 0.8f);
         }
     }
 }

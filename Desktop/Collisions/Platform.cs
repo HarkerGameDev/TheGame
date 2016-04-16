@@ -23,7 +23,7 @@ namespace Source.Collisions
         public Platform(Texture2D texture, Vector2 position, Vector2 size, float rotation = 0f)
             : base(texture, position, size, null, rotation)
         {
-            Color = Color.Crimson;
+            Color = Color.White;
         }
     }
 }

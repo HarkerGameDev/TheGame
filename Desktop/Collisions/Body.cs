@@ -30,7 +30,7 @@ namespace Source.Collisions
         {
             this.texture = texture;
             Position = position;
-            Size = size;
+            Size = size.X < 0 ? -size : size;
             Rotation = MathHelper.WrapAngle(rotation);
 
             Velocity = Vector2.Zero;
@@ -70,7 +70,16 @@ namespace Source.Collisions
 
         public virtual void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(Position), null, Color, Rotation, Origin, ConvertUnits.ToDisplayUnits(Size) / (Origin * 2), SpriteEffects.None, 1f);
+            //spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(Position), null, Color.Green, Rotation, Origin, ConvertUnits.ToDisplayUnits(Size) / (Origin * 2), SpriteEffects.None, 1f);
+            Rectangle dest = new Rectangle(ConvertUnits.ToDisplayUnits(Position - Size / 2f).ToPoint(), ConvertUnits.ToDisplayUnits(Size).ToPoint());
+            Rectangle source = new Rectangle(
+                new Point((int)(dest.X * GameData.BODY_TEX_SCALE), (int)(dest.Y * GameData.BODY_TEX_SCALE)),
+                new Point((int)(dest.Width * GameData.BODY_TEX_SCALE), (int)(dest.Height * GameData.BODY_TEX_SCALE)));
+            //source.Width = (int)(source.Width * GameData.BODY_TEX_SCALE);
+            //source.Height = (int)(source.Height * GameData.BODY_TEX_SCALE);
+            //source.X = (int)(source.X * GameData.BODY_TEX_SCALE);
+            //source.Y = (int)(source.Y * GameData.BODY_TEX_SCALE);
+            spriteBatch.Draw(texture, dest, source, Color, Rotation, Vector2.Zero, SpriteEffects.None, 1f);
         }
 
         /// <summary>

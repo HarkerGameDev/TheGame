@@ -33,6 +33,7 @@ namespace Source
         public const float NODE_SIZE = 2f;         // length of square side when drawing node in m
         public const float KILL_TIME = 0.2f;       // peace period (in s) after someone dies before someone new can die
         public const float RESPAWN_TIME = 1f;
+        public const float BODY_TEX_SCALE = 3f;   // scale for platform texture when drawing
 
         // Particle textures (to be reused when needed)
         public static List<Texture2D> SLIDE_TEXTURES, JETPACK_TEXTURES, ROCKET_TEXTURES;
