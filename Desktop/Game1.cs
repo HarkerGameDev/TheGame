@@ -666,7 +666,7 @@ namespace Source
                         LoadUI(Menu.Pause);
                         //MediaPlayer.Play(songs[2]);
                     }
-#if DEBUG
+
                     if (ToggleKey(Keys.E))
                     {
                         editLevel = !editLevel;
@@ -686,7 +686,6 @@ namespace Source
                         }
                         ConvertUnits.SetDisplayUnitToSimUnitRatio(currentZoom);
                     }
-#endif
 
                     //if (ToggleKey(Keys.I))
                     //    LoadBackground(0);

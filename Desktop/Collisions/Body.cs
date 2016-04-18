@@ -72,9 +72,10 @@ namespace Source.Collisions
         {
             //spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(Position), null, Color.Green, Rotation, Origin, ConvertUnits.ToDisplayUnits(Size) / (Origin * 2), SpriteEffects.None, 1f);
             Rectangle dest = new Rectangle(ConvertUnits.ToDisplayUnits(Position - Size / 2f).ToPoint(), ConvertUnits.ToDisplayUnits(Size).ToPoint());
+            float scale = ConvertUnits.ToSimUnits(GameData.BODY_TEX_SCALE);
             Rectangle source = new Rectangle(
-                new Point((int)(dest.X * GameData.BODY_TEX_SCALE), (int)(dest.Y * GameData.BODY_TEX_SCALE)),
-                new Point((int)(dest.Width * GameData.BODY_TEX_SCALE), (int)(dest.Height * GameData.BODY_TEX_SCALE)));
+                new Point((int)(dest.X * scale), (int)(dest.Y * scale)),
+                new Point((int)(dest.Width * scale), (int)(dest.Height * scale)));
             //source.Width = (int)(source.Width * GameData.BODY_TEX_SCALE);
             //source.Height = (int)(source.Height * GameData.BODY_TEX_SCALE);
             //source.X = (int)(source.X * GameData.BODY_TEX_SCALE);
