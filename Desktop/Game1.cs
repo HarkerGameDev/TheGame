@@ -367,6 +367,7 @@ namespace Source
                 player.ResetValues();
                 player.Checkpoints = 0;
                 player.Progress = 0;
+                player.Node = cameraPath.First;
             }
             //levelEnd = 0;
             totalTime = 0;
@@ -1129,8 +1130,14 @@ namespace Source
                                 case Character.AbilityOne.Jump:
                                     if (--player.JumpsLeft > 0)
                                     {
-                                        player.Velocity.Y *= GameData.AIR_JUMP_MOMENTUM;
+                                        if (player.Velocity.Y > 0)
+                                            player.Velocity.Y *= GameData.AIR_JUMP_MOMENTUM_DOWN;
+                                        else
+                                            player.Velocity.Y *= GameData.AIR_JUMP_MOMENTUM;
                                         player.Velocity.Y -= GameData.AIR_JUMP_SPEED;
+
+                                        player.JumpSpeed = player.Velocity.Y * GameData.AIR_JUMP_HOLD;
+                                        player.JumpTime = GameData.AIR_JUMP_TIME;
                                     }
                                     break;
                             }
@@ -1160,6 +1167,7 @@ namespace Source
                         // TODO fix when player mashes grapple to get super-speed
                         player.Velocity *= GameData.GRAPPLE_BOOST;
                         player.GrappleTarget = Vector2.Zero;
+                        player.AbilityOneTime = GameData.GRAPPLE_COOLDOWN;
                     }
                     player.JetpackEnabled = false;
                 }
@@ -1212,9 +1220,15 @@ namespace Source
                             break;
                         case Character.AbilityTwo.Hook:
                             if (player.HookedLocation != Vector2.Zero)
+                            {
                                 player.HookedLocation = Vector2.Zero;
+                                player.AbilityTwoTime = GameData.HOOK_COOLDOWN;
+                            }
                             else if (player.HookedPlayer != null)
+                            {
                                 player.HookedPlayer = null;
+                                player.AbilityTwoTime = GameData.HOOK_COOLDOWN;
+                            }
                             else if (player.Projectiles.Count < 1)      // player is not currently firing
                             {
                                 //player.AbilityTwoTime = GameData.HOOK_COOLDOWN;

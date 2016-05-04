@@ -175,10 +175,12 @@ namespace Source
         public const float MAX_GRAPPLE = 12f;       // maximum grapple distance (in m)
         public const float GRAPPLE_ANGLE = -1f;     // direction height of grapple assuming horizontal direction of +1
         public const float GRAPPLE_ELASTICITY = 4f;      // scale of elasticity, where higher values = more rigid
-        public const float GRAPPLE_BOOST = 1.0f;      // boost in momentum after releasing a rope
+        public const float GRAPPLE_BOOST = 1.15f;      // boost in momentum after releasing a rope
+        public const float GRAPPLE_COOLDOWN = 0.6f;       // cooldown between grapples
         //public const float GRAPPLE_HELP = 10f;      // help to push player when no manual input
         //public const float GRAPPLE_HELP_MIN = 3f;  // minimum length of velocity while swinging
-        public const float HOOK_LIFE = 6f;      // cooldown for hookshot ability
+        public const float HOOK_LIFE = 1.5f;      // lifetime of the initial hook projectile
+        public const float HOOK_COOLDOWN = 2.5f;      // cooldown for hookshot ability
         public const float HOOK_X = 35f;            // initial x velocity of hookshot (w/o player)
         public const float HOOK_Y = -3f;            // initial y velocity of hookshot (w/o player)
         public const float HOOK_SCALE = 0.2f;       // scale of player's velocity in hook when firing
@@ -208,7 +210,10 @@ namespace Source
 
         public const int TOTAL_JUMPS = 3;       // number of jumps the acrobat can do in total (including intial jump)
         public const float AIR_JUMP_SPEED = JUMP_SPEED + 4f;    // velocity of jump when acrobat jumping in air
-        public const float AIR_JUMP_MOMENTUM = 0.5f;    // vertical velocity kept when jumping
+        public const float AIR_JUMP_MOMENTUM = 0.5f;    // vertical velocity kept when jumping while going up
+        public const float AIR_JUMP_MOMENTUM_DOWN = 0.2f;   // momentum kept when jumping while going down
+        public const float AIR_JUMP_HOLD = 0.5f;        // minimum jump speed while holding jump
+        public const float AIR_JUMP_TIME = JUMP_TIME * 0.8f;       // jump held time for the air jump
         public const float BOOMERANG_COOLDOWN = 6f;    // cooldown for boomerang throw ability
         public const float BOOMERANG_X = 20f;          // initial x velocity of boomerang (w/o player)
         public const float BOOMERANG_Y = -18f;          // initial y velocity of boomerang (w/o player)

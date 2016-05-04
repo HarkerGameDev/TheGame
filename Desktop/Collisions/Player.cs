@@ -146,7 +146,10 @@ namespace Source.Collisions
             {
                 Vector2 dist = HookedPlayer.Position - Position;
                 if (dist.LengthSquared() < 1)
+                {
                     HookedPlayer = null;
+                    AbilityTwoTime = GameData.HOOK_COOLDOWN;
+                }
                 else
                 {
                     dist.Normalize();
@@ -159,7 +162,10 @@ namespace Source.Collisions
             {
                 Vector2 dist = HookedLocation - Position;
                 if (dist.LengthSquared() < 1)
+                {
                     HookedLocation = Vector2.Zero;
+                    AbilityTwoTime = GameData.HOOK_COOLDOWN;
+                }
                 else
                 {
                     dist.Normalize();
@@ -370,7 +376,7 @@ namespace Source.Collisions
             Vector2 pos = ConvertUnits.ToDisplayUnits(new Vector2(Position.X, Position.Y - Size.Y * 0.7f));
             Vector2 origin = new Vector2(0.5f);
             spriteBatch.Draw(Game1.whiteRect, pos, null, GameData.BAR_1_COLOR, 0f, origin,
-                ConvertUnits.ToDisplayUnits(new Vector2(JetpackTime > 0 ? JetpackTime : AbilityOneTime * GameData.BAR_SCALE, GameData.BAR_HEIGHT)), SpriteEffects.None, 0.1f);
+                ConvertUnits.ToDisplayUnits(new Vector2(CurrentCharacter.Ability1 == Character.AbilityOne.Jetpack ? JetpackTime : AbilityOneTime * GameData.BAR_SCALE, GameData.BAR_HEIGHT)), SpriteEffects.None, 0.1f);
             spriteBatch.Draw(Game1.whiteRect, pos, null, GameData.BAR_2_COLOR, 0f, origin,
                 ConvertUnits.ToDisplayUnits(new Vector2(AbilityTwoTime * GameData.BAR_SCALE, GameData.BAR_HEIGHT)), SpriteEffects.None, 0.1f);
         }

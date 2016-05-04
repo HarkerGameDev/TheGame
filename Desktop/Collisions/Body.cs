@@ -71,16 +71,18 @@ namespace Source.Collisions
         public virtual void Draw(SpriteBatch spriteBatch)
         {
             //spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(Position), null, Color.Green, Rotation, Origin, ConvertUnits.ToDisplayUnits(Size) / (Origin * 2), SpriteEffects.None, 1f);
-            Rectangle dest = new Rectangle(ConvertUnits.ToDisplayUnits(Position - Size / 2f).ToPoint(), ConvertUnits.ToDisplayUnits(Size).ToPoint());
+
+            Rectangle dest = new Rectangle(ConvertUnits.ToDisplayUnits(Position).ToPoint(), ConvertUnits.ToDisplayUnits(Size).ToPoint());
             float scale = ConvertUnits.ToSimUnits(GameData.BODY_TEX_SCALE);
+            //Vector2 size = new Vector2(dest.Width * scale, dest.Height * scale);
             Rectangle source = new Rectangle(
-                new Point((int)(dest.X * scale), (int)(dest.Y * scale)),
+                new Point((int)((dest.X - dest.Width / 2f) * scale), (int)((dest.Y - dest.Height / 2f) * scale)),
                 new Point((int)(dest.Width * scale), (int)(dest.Height * scale)));
             //source.Width = (int)(source.Width * GameData.BODY_TEX_SCALE);
             //source.Height = (int)(source.Height * GameData.BODY_TEX_SCALE);
             //source.X = (int)(source.X * GameData.BODY_TEX_SCALE);
             //source.Y = (int)(source.Y * GameData.BODY_TEX_SCALE);
-            spriteBatch.Draw(texture, dest, source, Color, Rotation, Vector2.Zero, SpriteEffects.None, 1f);
+            spriteBatch.Draw(texture, dest, source, Color, Rotation, source.Size.ToVector2() / 2f, SpriteEffects.None, 0.9f);
         }
 
         /// <summary>
