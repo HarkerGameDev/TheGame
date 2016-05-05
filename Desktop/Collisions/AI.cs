@@ -15,30 +15,50 @@ namespace Source.Collisions
     public class AI : Player
     {
         public GameData.SimulatedControls Controls;
-        private float timer;
+        public float Timer;
+        public Player Parent;
 
-        public AI(Texture2D texture, Vector2 position, Character character, LinkedListNode<Vector2> checkpoint, GameData.SimulatedControls controls, Direction direction)
+        public AI(Texture2D texture, Vector2 position, Character character, LinkedListNode<Vector2> checkpoint, GameData.SimulatedControls controls, bool facingRight)
             : base(texture, position, character, checkpoint)
         {
+            Parent = null;
             this.Controls = controls;
-            timer = GameData.AI_WAIT;
-            if (direction == Direction.Right)
+            Timer = 0;
+            if (facingRight)
+                Controls.Right = true;
+            else
+                Controls.Left = true;
+        }
+
+        public AI(Player parent, GameData.SimulatedControls controls)
+            : base(parent.texture, parent.Position, parent.CurrentCharacter, parent.Node)
+        {
+            Parent = parent;
+            Progress = parent.Progress;
+            Checkpoints = parent.Checkpoints;
+            Velocity = parent.Velocity;
+
+            Controls = controls;
+            Timer = 0;
+            if (parent.FacingRight)
                 controls.Right = true;
-            else if (direction == Direction.Left)
+            else
                 controls.Left = true;
+
+            Color.A /= 2;
         }
 
         public override void Update(float deltaTime)
         {
             base.Update(deltaTime);
 
-            timer -= deltaTime;
-            if (timer < 0)
+            Timer -= deltaTime;
+            if (Timer < 0)
             {
                 Controls.JumpHeld = false;
-                timer = GameData.AI_WAIT;
+                //Timer = GameData.AI_WAIT;
             }
-            else if (timer < GameData.AI_HOLD)
+            else
             {
                 Controls.JumpHeld = true;
             }

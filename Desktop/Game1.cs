@@ -435,7 +435,7 @@ namespace Source
                 int character = GameData.PLAYERS[i];
                 if (playerControls[i] is GameData.SimulatedControls)
                     players.Add(new AI(Content.Load<Texture2D>("Art/GreenDude"), GameData.PLAYER_START, Character.playerCharacters[character], cameraPath.First,
-                        (GameData.SimulatedControls)playerControls[i], Player.Direction.None));
+                        (GameData.SimulatedControls)playerControls[i], true));
                 else
                     players.Add(new Player(Content.Load<Texture2D>("Art/GreenDude"), GameData.PLAYER_START, Character.playerCharacters[character], cameraPath.First));
             }
@@ -1185,13 +1185,27 @@ namespace Source
                     switch (player.CurrentCharacter.Ability2)
                     {
                         case Character.AbilityTwo.Clone:
-                            player.AbilityTwoTime = GameData.CLONE_COOLDOWN;
-                            GameData.SimulatedControls simulatedControls = new GameData.SimulatedControls(this);
-                            playerControls.Insert(players.Count, simulatedControls);
-                            AI clone = new AI(player.texture, player.Position, player.CurrentCharacter, player.Node, simulatedControls, player.TargetVelocity);
-                            players.Add(clone);
-                            player.ClonedPlayer = clone;
-                            player.CloneTime = GameData.CLONE_TIME;
+                            //player.AbilityTwoTime = GameData.CLONE_COOLDOWN;
+                            if (player.ClonedPlayer == null)
+                            {
+                                GameData.SimulatedControls simulatedControls = new GameData.SimulatedControls(this);
+                                playerControls.Insert(players.Count, simulatedControls);
+                                AI clone = new AI(player, simulatedControls);
+                                clone.MaxVelocity = GameData.CLONE_VELOCITY;
+                                players.Add(clone);
+                                player.ClonedPlayer = clone;
+                                player.CloneTime = GameData.CLONE_TIME;
+                                clone.AbilityTwoTime = player.CloneTime;
+                            }
+                            else
+                            {
+                                AI clone = player.ClonedPlayer;
+                                if (clone.Timer > 0)
+                                {
+                                    clone.Controls.JumpHeld = false;
+                                }
+                                clone.Timer = GameData.CLONE_JUMP_TIME;
+                            }
                             break;
                         case Character.AbilityTwo.Timewarp:
                             player.AbilityTwoTime = GameData.TIMEWARP_COOLDOWN;
@@ -1837,17 +1851,24 @@ namespace Source
                     Vector2 dist = ConvertUnits.ToDisplayUnits(player.Position - cameraPos);
                     if (Math.Abs(dist.X) > GraphicsDevice.Viewport.Width / 2f || Math.Abs(dist.Y) > GraphicsDevice.Viewport.Height / 2f)
                     {
-                        Console.WriteLine("Player {0} is off-screen, with cameraPos {1}", i, cameraPos);
-                        if (cameraType == CameraType.Average)
+                        if (player is AI && ((AI)player).Parent != null)
                         {
-                            last.Kill();
-                            killTime = GameData.KILL_TIME;
-                            break;
+                            ((AI)player).Parent.CloneTime = 0;
                         }
                         else
                         {
-                            player.Kill();
-                            continue;
+                            Console.WriteLine("Player {0} is off-screen, with cameraPos {1}", i, cameraPos);
+                            if (cameraType == CameraType.Average)
+                            {
+                                last.Kill();
+                                killTime = GameData.KILL_TIME;
+                                break;
+                            }
+                            else
+                            {
+                                player.Kill();
+                                continue;
+                            }
                         }
                     }
                 }

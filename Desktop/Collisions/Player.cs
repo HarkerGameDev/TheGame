@@ -34,6 +34,7 @@ namespace Source.Collisions
         public Character CurrentCharacter;
         public SpriteEffects Flip;
         public bool FacingRight { get { return TargetVelocity == Direction.None ? Flip == SpriteEffects.None : TargetVelocity == Direction.Right; } }
+        public float MaxVelocity;
 
         public ParticleEmitter SlideEmitter, JetpackEmitter;
 
@@ -107,6 +108,7 @@ namespace Source.Collisions
             Progress = 0;
             Place = 0;
             Node = checkpoint;
+            MaxVelocity = GameData.MAX_VELOCITY;
 
             ResetValues();
 
@@ -261,10 +263,10 @@ namespace Source.Collisions
                     }
                 }
 
-                if (Velocity.X > GameData.MAX_VELOCITY)
-                    Velocity.X = GameData.MAX_VELOCITY;
-                else if (Velocity.X < -GameData.MAX_VELOCITY)
-                    Velocity.X = -GameData.MAX_VELOCITY;
+                if (Velocity.X > MaxVelocity)
+                    Velocity.X = MaxVelocity;
+                else if (Velocity.X < -MaxVelocity)
+                    Velocity.X = -MaxVelocity;
 
                 if (CurrentState == State.WallStick)
                 {
@@ -400,6 +402,10 @@ namespace Source.Collisions
         public void Kill()
         {
             Alive = false;
+            if (SpawnedPlatform != null)
+            {
+                PlatformTime = 0;
+            }
         }
     }
 }

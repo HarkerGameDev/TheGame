@@ -147,11 +147,20 @@ namespace Source.Collisions
                 if (player.ClonedPlayer != null)
                 {
                     player.CloneTime -= deltaTime;
+                    AI clone = player.ClonedPlayer;
                     if (player.CloneTime < 0)
                     {
-                        game.playerControls.Remove(player.ClonedPlayer.Controls);
-                        game.players.Remove(player.ClonedPlayer);
+                        if (clone.SpawnedPlatform != null)
+                        {
+                            game.platforms.Remove(clone.SpawnedPlatform);
+                            clone.SpawnedPlatform = null;
+                        }
+                        player.MoveToPosition(clone.Position);
+                        player.Velocity = clone.Velocity;
+                        game.playerControls.Remove(clone.Controls);
+                        game.players.Remove(clone);
                         player.ClonedPlayer = null;
+                        player.AbilityTwoTime = GameData.CLONE_COOLDOWN;
                     }
                 }
 

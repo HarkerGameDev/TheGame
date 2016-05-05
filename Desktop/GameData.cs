@@ -166,14 +166,16 @@ namespace Source
         public const float PLATFORM_HEIGHT = 1f;    // height of platform
         public const float PLATFORM_COOLDOWN = 4f;  // cooldown for platform ability
         public const float PLATFORM_LIFE = 2.2f;      // how long the platform lasts before despawning
-        public const float CLONE_TIME = 6f;         // how long the clone will last before dying (ignoring other means)
-        public const float CLONE_COOLDOWN = 10f;    // cooldown for clone ability
+        public const float CLONE_TIME = 2.3f;         // how long the clone will last before dying
+        public const float CLONE_COOLDOWN = 6f;    // cooldown for clone ability
+        public const float CLONE_VELOCITY = MAX_VELOCITY + 10f;  // maximum velocity for the clone
+        public const float CLONE_JUMP_TIME = JUMP_TIME;     // time for which clone will hold jump after the jump key is pressed
         public const float INVERT_TIME = 10f;        // time during which controls will be inverted
         public const float INVERT_COOLDOWN = 22f;   // cooldown for casting invert
 
         public const float GRAPPLE_HEIGHT = 3f;     // pixel height of grapple rope
         public const float MAX_GRAPPLE = 12f;       // maximum grapple distance (in m)
-        public const float GRAPPLE_ANGLE = -1f;     // direction height of grapple assuming horizontal direction of +1
+        public const float GRAPPLE_ANGLE = -1f;     // direction height of grapple assuming horizontal direction of +1 unit
         public const float GRAPPLE_ELASTICITY = 4f;      // scale of elasticity, where higher values = more rigid
         public const float GRAPPLE_BOOST = 1.15f;      // boost in momentum after releasing a rope
         public const float GRAPPLE_COOLDOWN = 0.6f;       // cooldown between grapples
